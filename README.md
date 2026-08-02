@@ -31,6 +31,26 @@ prompt to stdout — paste that into a chat and you get the same result with one
 Options: `--guests`, `--busy`, `--risk {low,normal,high}`, `--sale`, `--nights`,
 `--notes`, `--profile`, `--corpus`, `--model`. `--model` defaults to `$PANTRY_MODEL`.
 
+## Adding a recipe
+
+```sh
+./onboard.py --url https://natashaskitchen.com/meatloaf-recipe/
+./onboard.py --text notes.txt              # a typed ingredient list, quantities optional
+./onboard.py --image screenshot.png        # needs ANTHROPIC_API_KEY for the vision step
+./onboard.py --transcript transcript.md    # a screenshot you transcribed by hand
+```
+
+Each run writes `recipes/<slug>.md` — the ingredients, verbatim — and fills in the
+recipe's row in `corpus.md`. It never overwrites a value a person put in the corpus; where
+its own reading disagrees, it says so and leaves yours alone.
+
+**It does not guess.** A quantity the source omits is recorded as omitted, a yield nobody
+states stays `unknown`, and anything it cannot settle comes out as a question with the
+recipe's name on it. `./onboard.py --batch <dir> --report <file>` does a directory of
+inputs and writes the tally, including how much of each capture is actually missing.
+
+Run `python3 test_onboard.py` after touching the ingredient grammar.
+
 ## The two files that matter
 
 Everything the planner knows lives in two markdown files you edit by hand.
@@ -53,6 +73,13 @@ and the tool works.
 Done, from a saved recipe document: 25 recipes, as 8 links, 6 typed-out ingredient lists,
 and 11 screenshots. That's the §1b thread-mining accelerator arriving on day one rather
 than at phase 1b.
+
+All 25 now have an ingredient file in `recipes/`, onboarded by `onboard.py` from the same
+document — six links fetched, six typed notes parsed, eleven screenshots read. Five of the
+eleven screenshots are short of content and say so; the run is reported honestly in
+[`docs/onboarding-run.md`](docs/onboarding-run.md), and what it means is in
+[`docs/onboarding-findings.md`](docs/onboarding-findings.md). Sixteen of the 25 still have
+no yield, because no source ever stated one.
 
 It also means the unaided-recall baseline was never measurable here — the recipes came off
 a saved document, not out of memory, which is a different and better thing. The saved doc

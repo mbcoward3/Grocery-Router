@@ -1,0 +1,9 @@
+corpus: BLT
+source: household notes, sources/Recipes.pdf page 10-11 (typed)
+
+BLT
+bread
+Bacon
+Lettuce
+Tomato
+Mayo

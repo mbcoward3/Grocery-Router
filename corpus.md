@@ -9,7 +9,16 @@ bookmarked but never made does not belong here — that's a candidate, and the p
 proposes those on its own, marked `[candidate]`.
 
 **No ingredient lists, deliberately.** They feed the shopping list, which is a separate
-deterministic step. The planner doesn't need them.
+deterministic step. The planner doesn't need them. They live in `recipes/<slug>.md`, one
+file per recipe, loaded only for the meals a week actually uses (`docs/step2-design.md` §1).
+
+**`Yield` is the one field that moved in from `recipes/`.** The planner needs it to reason
+about leftovers — a cold run once proposed a double batch of a recipe that already served
+8. It is in adult-equivalents and it is filled in only where the source states servings.
+**`unknown` is a real value, not a gap to fill**: 16 of these came from a screenshot or a
+typed note that never said how many it feeds, and a plausible guess is worse than a blank.
+Answering those 16 is the highest-value thing anyone can do to this file — see
+`docs/onboarding-findings.md` §4.
 
 **Growing it is the point, not a chore.** Add a line whenever one comes back to you, and
 whenever a candidate gets cooked and kept.
@@ -30,33 +39,33 @@ not a bug.
 
 ## Format
 
-| Recipe | Protein | Cuisine | Active | Passive | Last cooked | Notes |
-|---|---|---|---|---|---|---|
-| Chicken and biscuits casserole | chicken | American | med | ~35m oven | | thecountrycook.net |
-| Sausage and peppers | pork | Italian-American | med | — | | chefjeanpierre.com |
-| Crock pot Italian beef sandwiches | beef | American | low | hours, slow cooker | | iowagirleats.com |
-| Meatloaf | beef | American | med | ~60m oven | | natashaskitchen.com |
-| Beef stew with carrots and potatoes | beef | American | med | long simmer | | onceuponachef.com; braise |
-| 3-ingredient teriyaki chicken | chicken | Japanese-ish | low | — | | tasty.co; check sauce for peanut |
-| Chicken veggie stir fry | chicken | Chinese-ish | med | — | | tasty.co; check sauce for peanut |
-| Easy salmon dinner | fish | American | low | — | | tasty.co |
-| Chili | beef | American | low | simmer | | |
-| Enchiladas | beef | Tex-Mex | med | ~25m oven | | protein confirmed beef |
-| Chicken noodle soup | chicken | American | med | simmer | | |
-| Tacos | beef | Tex-Mex | low | — | | ground beef + seasoning packet |
-| Hamburgers | beef | American | low | — | | |
-| Pork loin and rice | pork | American | low | oven | | |
-| Cheesy pasta | beef | American | low | — | | ground beef, elbows, cream cheese, marinara |
-| Biscuits and gravy | pork | American | low | short oven | | sausage; breakfast-for-dinner |
-| BLT | pork | American | low | — | | bacon; barely cooking |
-| Meatball subs | beef | Italian-American | low | — | | |
-| Chicken and dumplings | chicken | American | low | simmer | | lilluna.com; **status uncertain — see below** |
-| Sliders | beef | American | low | short oven | | |
-| Beef dip Sammies | beef | American | low | slow cooker | | |
-| Chicken chili | chicken | American | low | simmer | | cream cheese |
-| Zuppa toscana | pork | Italian-American | med | simmer | | sausage |
-| Beef pot roast | beef | American | med | very long | | braise |
-| Tuna melt | fish | American | low | — | | |
+| Recipe | Protein | Cuisine | Yield | Active | Passive | Last cooked | Notes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Chicken and biscuits casserole | chicken | American | 6 AE | med | ~35m oven |  | thecountrycook.net |
+| Sausage and peppers | pork | Italian-American | 4 AE | med | — |  | chefjeanpierre.com |
+| Crock pot Italian beef sandwiches | beef | American | 8 AE | low | hours, slow cooker |  | iowagirleats.com |
+| Meatloaf | beef | American | 8 AE | med | ~60m oven |  | natashaskitchen.com |
+| Beef stew with carrots and potatoes | beef | American | 6 AE | med | long simmer |  | onceuponachef.com; braise |
+| 3-ingredient teriyaki chicken | chicken | Japanese-ish | 4 AE | low | — |  | tasty.co; check sauce for peanut |
+| Chicken veggie stir fry | chicken | Chinese-ish | 6 AE | med | — |  | tasty.co; check sauce for peanut |
+| Easy salmon dinner | fish | American | 2 AE | low | — |  | tasty.co |
+| Chili | beef | American | unknown | low | simmer |  |  |
+| Enchiladas | beef | Tex-Mex | unknown | med | ~25m oven |  | protein confirmed beef |
+| Chicken noodle soup | chicken | American | unknown | med | simmer |  |  |
+| Tacos | beef | Tex-Mex | unknown | low | — |  | ground beef + seasoning packet |
+| Hamburgers | beef | American | unknown | low | — |  |  |
+| Pork loin and rice | pork | American | unknown | low | oven |  |  |
+| Cheesy pasta | beef | American | unknown | low | — |  | ground beef, elbows, cream cheese, marinara |
+| Biscuits and gravy | pork | American | unknown | low | short oven |  | sausage; breakfast-for-dinner |
+| BLT | pork | American | unknown | low | — |  | bacon; barely cooking |
+| Meatball subs | beef | Italian-American | unknown | low | — |  |  |
+| Chicken and dumplings | chicken | American | 6 AE | low | simmer |  | lilluna.com; **status uncertain — see below** |
+| Sliders | beef | American | unknown | low | short oven |  |  |
+| Beef dip Sammies | beef | American | unknown | low | slow cooker |  |  |
+| Chicken chili | chicken | American | unknown | low | simmer |  | cream cheese |
+| Zuppa toscana | pork | Italian-American | unknown | med | simmer |  | sausage |
+| Beef pot roast | beef | American | unknown | med | very long |  | braise |
+| Tuna melt | fish | American | unknown | low | — |  |  |
 
 **Effort is two numbers, and only the first one is capped.**
 

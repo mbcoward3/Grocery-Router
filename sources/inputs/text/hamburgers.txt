@@ -1,0 +1,13 @@
+corpus: Hamburgers
+source: household notes, sources/Recipes.pdf page 10 (typed)
+
+Hamburgers
+2lb ground beef
+Onion
+Buns
+Mayo
+Mustard
+Ketchup
+Salt
+Pepper
+Garlic powder

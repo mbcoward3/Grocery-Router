@@ -1,0 +1,14 @@
+corpus: Tacos
+source: household notes, sources/Recipes.pdf page 9-10 (typed)
+
+Tacos
+1 lb ground beef
+1 oz pkt La Preferida Taco Seasoning
+⅔ cup water
+Flour tortillas
+Shredded cheese
+Chopped onions
+Sour cream
+Avocado
+El Paso mild taco sauce
+El Paso hot taco sauce
