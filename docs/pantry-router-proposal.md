@@ -115,6 +115,51 @@ State the cost plainly, because it is a correctness gap and not just a missing f
 
 ## 6. The three steps
 
+### Step 0 - The prep job, before anyone opens anything
+
+**Runs unattended, shortly before the weekly session.** Its job is to have every slow or
+external answer already in hand, so the session never waits on a network call and never
+asks the household something it could have looked up.
+
+- **Sale hunting.** Pull this week's Kroger promotions. This is the one input that is
+  genuinely time-sensitive and genuinely external, and it is useless if fetched while
+  someone is sitting there.
+- **Seasonality window.** What is actually good right now, cross-checked against those
+  promo prices. Where the model's prior and the real price agree, the signal is strong.
+- **Staleness pass.** Read last-cooked dates and compute what has fallen out of rotation.
+- **Open loops.** Which of last week's meals have no recorded outcome yet - this becomes
+  the feedback prompt that opens the session.
+
+Output is a **briefing**: a small cached artifact the session reads instantly. If the prep
+job fails, the session still runs on a stale briefing and says so. It must degrade, never
+block.
+
+### Step 0.5 - One session a week
+
+**The household interacts with this tool once.** Everything - feedback, planning,
+adjusting, ordering - happens in a single sitting, and the tool asks for nothing between
+sessions. That constraint is a design driver, not a nicety: a tool that pings them on a
+Wednesday is a tool that gets ignored by the second week.
+
+The order inside the session matters, and it is **feedback first**:
+
+1. **Directed feedback on last week.** Not a blank "how did it go" - specific, answerable
+   prompts drawn from the briefing's open loops. *You planned five, here are the two with
+   no outcome recorded. Cooked, skipped, or flopped?* This is the corpus-tuning step, and
+   putting it first means the week that follows is planned against a corpus that already
+   knows what just happened.
+2. **Next week's proposals**, planned with that fresh signal plus the briefing.
+3. **Adjust in place.** Opt out of individual suggestions, change the number of dinners,
+   add guests, turn a dial - then **request additional generation to fill the gaps** left
+   by whatever was dropped. Regeneration is targeted at the holes, never a reroll of the
+   whole week, so accepted proposals stay put.
+4. **Confirm**, and the list and cart follow deterministically.
+
+Two consequences worth stating. The feedback step is the *only* reliable moment signals
+get captured, so it has to be fast and specific enough that nobody skips it - a bare "how
+was it" collects nothing. And because generation is incremental, the planner must be able
+to fill a partial week without re-proposing what is already accepted.
+
 ### Step 1 - The week
 
 **A pool, not a grid.** v2.2 rendered the week as five day-bound rows. The interview killed that for this household: hard nights are **unpredictable week to week**, with no recurring squeeze to plan around. Binding meals to named days would guarantee a wrong assignment most weeks and train them to ignore the day column - and a plan you have to mentally re-shuffle every night is worse than no plan.
@@ -144,7 +189,7 @@ Standing planning constraints, given to the model rather than coded: vary protei
 
 **Effort is two axes, and only one of them is capped.** *Active* time - hands on, at the stove - is capped at 20–30 minutes on weeknights. *Passive* time is not capped at all: slow cookers, braises and long oven sits are fine on a Tuesday. v2.2's single effort scalar collapsed these, and the corpus shows exactly what that costs: beef stew and pot roast rated `high` and would have been filtered out of every weeknight, when their length is entirely unattended. **A planner that reads total time will systematically discard the household's easiest meals.** One or two weekend nights carry a real active-time budget; the rest of the week does not.
 
-**Protein balance has a number, not just "vary it."** Beef is 12 of 25 recipes, and asked directly whether that was preference or rut the household said *somewhere between* - so the cap is **3–4 beef nights a week**, filled out from chicken, pork and fish. A soft cap, not a push away: the model should not moralise at them about beef, and a week that wants five is allowed to say why. Seasonality enters here too, and needs no infrastructure: it isn't a preference, it's a proxy for price and quality, and the model already knows what's good in August. Cross-check it against actual Kroger promo pricing - where the prior and the price agree, the signal is strong. Coupling is the cost of good proposals - independent draws degrade gracefully, a coupled set cascades - so visible links let them repair a broken Wednesday instead of abandoning the week. Sales are opportunistic: flag when something already planned is on sale.
+**Protein balance stays a judgment, not a quota.** An earlier v2.3 draft set a 3–4 beef-night cap against the measured 48% share. That was wrong and is removed. **The corpus is the household's own expression of what it wants, and it self-corrects** - if they lean toward chicken, chicken recipes accumulate and the mix moves without anyone setting a number. A quota overrides that signal rather than reading it, and it puts the tool in the position of arguing with them about their own food. Vary protein across a week because variety is good planning; never to hit a target. Seasonality enters here too, and needs no infrastructure: it isn't a preference, it's a proxy for price and quality, and the model already knows what's good in August. Cross-check it against actual Kroger promo pricing - where the prior and the price agree, the signal is strong. Coupling is the cost of good proposals - independent draws degrade gracefully, a coupled set cascades - so visible links let them repair a broken Wednesday instead of abandoning the week. Sales are opportunistic: flag when something already planned is on sale.
 
 ### Step 2 - The list
 

@@ -37,11 +37,12 @@ every week downstream.
 
 *What this household likes. Each claim carries its trace.*
 
-- **Beef runs at about half the repertoire, and that's more than they'd choose.** 12 of 25
-  recipes. Asked directly whether this was preference or rut, the answer was "somewhere
-  between" — so the planner applies a **soft cap of 3–4 beef nights a week** and fills the
-  rest from chicken, pork and fish. It does not push beef away harder than that. *Because
-  they said so when asked, against a corpus count.*
+- **Beef runs at about half the repertoire.** 12 of 25 recipes. Asked whether that was
+  preference or rut, the answer was "somewhere between." **No cap is applied.** The corpus
+  is the household's own expression of what it wants, and it self-corrects: add chicken
+  recipes and the mix shifts on its own. A quota fights that signal instead of reading it.
+  The planner varies protein across a week because variety is good planning — not to hit a
+  number. *Because they said so, and because a count is not a mandate.*
 - **Cooks with shortcuts on purpose.** Seasoning packets, canned soup, refrigerated
   biscuits, blocks of cream cheese recur across the corpus. A scratch-everything proposal
   is wrong for this household regardless of how good the recipe is. *Because it's visible
