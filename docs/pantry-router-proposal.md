@@ -237,4 +237,4 @@ Sequencing note: 1 before 1b is deliberate. Building this household's bootstrap 
 2. How many recipe links are in the message thread? That sizes the bootstrap.
 3. A sample Kroger order confirmation email, to scope the spike - and check whether it yields a retroactive baseline.
 4. Write profile v0 by hand, as if the system had produced it. If you can't write a useful one from what you already know, the format is wrong. Then write a second one for a household with an empty corpus, and see whether the format survives having no evidence to point at.
-5. Hand-run the planner against both, before writing any code. Scaffolds are in `experiments/hand-run/`; the bar is *would you cook this week?*
+5. Fill in `profile.md` and `corpus.md` and run `plan.py` on a real week. The bar is *would you cook this week?* — answered by cooking it, not by scoring the output.
