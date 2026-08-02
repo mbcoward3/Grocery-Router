@@ -2,7 +2,14 @@
 
 **Decide the week, confirm the list, source the items.**
 
-*Status: draft v2.2*
+*Status: draft v2.3*
+
+> **Revision note (v2.3).** The corpus got seeded and the household interview ran. Both
+> contradicted things v2.2 asserted. The repertoire is ~30–35, not 60. Effort turned out
+> to be two axes rather than one. Day-assignment turned out to be the wrong output shape.
+> And the system's first attempt at lateral inference — reading a preference off a recipe
+> count — was wrong in a way the household had to correct. Sections 1, 4, 5, 6, 11, 12 and
+> 13 changed. Sides are deferred by decision, not oversight (§5).
 
 ---
 
@@ -10,9 +17,13 @@
 
 A household of two adults, a 3-year-old, and a 1-year-old, plus frequent visitors. Everyone eats the same meal. **Both adults cook, plan, and use the tool equally** - there is no primary operator, so this is one shared brain rather than two profiles that need reconciling.
 
-**The problem is recall, not discovery.** The household has roughly 60 recipes it has tried and likes. Under the stress of picking a week, about 15 surface. The other 45 aren't missing or disliked - they just don't come to mind on a Sunday. The gap between 15 and 60 is the product.
+**The problem is recall, not discovery — but the gap is smaller than v2.2 claimed.** That draft asserted ~60 known recipes against ~15 that surface. Seeding the corpus measured it: **25 recorded, and the household puts the true repertoire at 30–35.** The recall gap is real but it is roughly 15-of-32, not 15-of-60.
 
 > **Proposals surface known-good meals they wouldn't have remembered, and they get cooked.**
+
+**That halving matters, because it moves the household toward the cold-start end of its own curve.** With ~32 proven recipes, retrieval alone cannot fill a year of weeks without heavy repetition. Acquisition is not just the stranger's path (§4) — it is this household's path too, sooner than v2.2 expected. The corpus is also narrow where it is deep: **beef is 12 of 25**, and roughly 18 of 25 are plain American comfort food.
+
+**The corpus arrived off a saved document, not out of memory**, which is a better result than the unaided-recall exercise v2.2 planned and also destroys that baseline measurement (§12). It confirms §4's central claim from the other direction: the recipes memory couldn't retrieve were already written down somewhere.
 
 **The opponent is Kroger's "buy it again."** Good at what it does, and a rut-amplifier by construction: it can only return what you recently bought, which is the same 15. The competitive position is breadth, not efficiency. Efficiency is a constraint - don't make the week slower - never the goal.
 
@@ -61,13 +72,15 @@ Note the scope precisely: this gates §8 and the Phase 2 branch, **not** the cor
 
 ## 4. The corpus
 
-**Getting the 60 in is the highest-value work in the project**, and it has the same failure as the weekly planning: asked to list 60 recipes, they'll produce the 15 they can remember. **You cannot self-report your way out of a recall gap.**
+**Getting the corpus in is the highest-value work in the project**, and it has the same failure as the weekly planning: asked to list their recipes, they'll produce the 15 they can remember. **You cannot self-report your way out of a recall gap.**
 
-The 45 live in their heads and **in their messages** - links texted back and forth, "let's do the miso salmon," photos of things that worked. The thread already logged what memory can't retrieve.
+They live in their heads and **in their saved artifacts** - a recipe document, links texted back and forth, photos of things that worked. Those already logged what memory can't retrieve.
 
-- **Bootstrap by mining the message thread for recipe links.** One-time extraction, not a feature. Plausibly 20-30 recipes for free
+> **Done, and it validated the mechanism.** Seeding pulled **25 recipes from one saved document** - 8 links, 6 typed-out ingredient lists, 11 screenshots named in the text layer. That is the accelerator below landing before Phase 1 rather than at 1b, and it produced in one pass roughly what thread-mining was projected to yield. The prediction that survived: nobody recalled 25 recipes: they recalled *where the list was*.
+
+- **Bootstrap by mining saved artifacts for recipes** - the recipe document, then the message thread. One-time extraction, not a feature. Yielded 25; the thread may still add to it
 - **Capture at the moment of recall, from either phone.** Recipes come back in the kitchen on a Tuesday, not at an onboarding screen. Adding one takes five seconds from anywhere: a share-sheet target, or forwarding a link. They already share recipes by message, so hook that habit rather than building a new one
-- **Let the model prompt laterally** when they do sit down. Not a form - a conversation that works outward from what's already in the corpus, by protein, cuisine, season, and "what do you make when there's no time." Starting from empty, it works outward from the setup profile and the model's own priors instead. **This is the general-purpose bootstrap**; thread mining and receipt parsing are accelerators layered on top, available to this household and not to everyone
+- **Let the model prompt laterally** when they do sit down. Not a form - a conversation that works outward from what's already in the corpus, by protein, cuisine, season, and "what do you make when there's no time." Starting from empty, it works outward from the setup profile and the model's own priors instead. **This is the general-purpose bootstrap**; artifact mining and receipt parsing are accelerators layered on top, available to this household and not to everyone. **Run it one question at a time.** Batched multi-select produced a dismissal; asked singly, the same questions produced the design corrections in §5, §6 and §13 - including one the household volunteered unprompted, which a fixed form would have had no slot for
 - **Mine reconciliation data** once §3 lands: ingredients bought repeatedly imply recipes not yet in the system
 
 **The corpus is never done, and growing it is a goal of the tool rather than a precondition for using it.** The system must be useful at 0, 15, and 60. Two jobs sit on one continuum: *retrieval* surfaces proven recipes that fell out of rotation, and *acquisition* adds new ones that earn their way in. Corpus size decides the mix - at 0 every dinner is acquisition, at 60 most of the value is retrieval - and the model reads that off the corpus rather than a mode flag. There is no separate onboarding mode, only a different place on the same curve.
@@ -84,7 +97,7 @@ Three states, and nothing is ever deleted:
 - **Corpus** - proven. Deprioritized when consistently passed over, never demoted for a single miss
 - **Archived** - proven but repeatedly avoided. Stops surfacing, stays retrievable on request
 
-The 60 existing recipes enter the corpus directly, since they've already cleared the bar in real life. Only genuinely new suggestions pass through candidate.
+The 25 existing recipes entered the corpus directly, since they've already cleared the bar in real life. Only genuinely new suggestions pass through candidate. One exception is already logged: *chicken and dumplings* was written with a question mark in the source and nobody remembers why, so it sits in the corpus marked uncertain and gets resolved the first time it comes up.
 
 That direct entry is worth naming honestly: it's self-reported proof, so the real bar is **proven-or-attested**. Someone attesting to eight recipes at setup is doing exactly what this household does with sixty. The epistemics are identical; only the volume differs, which is why cold start is a corpus size and not a second product.
 
@@ -94,25 +107,44 @@ Archiving rather than deleting is the right fit for a second brain: a brain does
 
 ## 5. Scope
 
-5 dinners a week, which is **not** 5 cooking events - some nights are leftovers by design. Lunch is a byproduct: leftovers become lunches, so certain meals scale up on purpose. Servings in adult-equivalents (~2.5 base, per-meal control for guests); "serves 4" means nothing until converted. Kroger pickup today, Costco later, store layer pluggable. We build the cart, they check out. No nutrition tracking, recipe hosting, or maintained inventory.
+5 dinners a week, which is **not** 5 cooking events - some nights are leftovers by design. Confirmed and now specific: leftovers do **both** jobs here, covering next-day lunches *and* standing in for a dinner, so the planner should target **5–6 cooks across 7 nights** and favour dishes that scale. Servings in adult-equivalents (~2.5 base, per-meal control for guests); "serves 4" means nothing until converted. Kroger pickup today, Costco later, store layer pluggable. We build the cart, they check out. No nutrition tracking, recipe hosting, or maintained inventory.
+
+**Dinners only, and sides are explicitly deferred.** The corpus is mains-only: vegetables look nearly absent from it, but that is a recording artifact rather than the diet - sides get served and never get written down. The household's call is to reach a working dinners-only steady state first, so this is a deferral, not an oversight.
+
+State the cost plainly, because it is a correctness gap and not just a missing feature: **grocery lists generated from a mains-only corpus will be systematically short.** Step 2 must say so on the list itself rather than presenting a complete-looking week that quietly omits every side. A visible "sides not included" line costs nothing and prevents the tool being blamed for the household getting home without green beans - the same reasoning as flagging likely-owned items instead of dropping them (§6).
 
 ## 6. The three steps
 
 ### Step 1 - The week
 
+**A pool, not a grid.** v2.2 rendered the week as five day-bound rows. The interview killed that for this household: hard nights are **unpredictable week to week**, with no recurring squeeze to plan around. Binding meals to named days would guarantee a wrong assignment most weeks and train them to ignore the day column - and a plan you have to mentally re-shuffle every night is worse than no plan.
+
+So the week is a **set with a required effort mix**, picked from night-of:
+
 ```
-Mon   Chicken thighs + rice          4 AE   [cook big -> Tue]
-Tue   Leftovers (Mon)
-Wed   Chicken piccata              2.5 AE   [not since March, and you have capers]
-Thu   Tacos                          6 AE   [+2 guests]
-Fri   Miso salmon                  2.5 AE   [new - close to your sheet pan salmon]
+This week - 5 cooks, 7 nights
+
+  Chicken thighs + rice        4 AE   low active    [cook big -> covers a second night]
+  Chicken piccata            2.5 AE   low active    [not since March, and you have capers]
+  Tacos                        6 AE   low active    [+2 guests]
+  Beef stew                  2.5 AE   med active    [long, but unattended]
+  Miso salmon                2.5 AE   med active    [new - close to your sheet pan salmon]
+
+  3 of 5 are low-active, so any night can be a bad night.
+  Stew and the thighs both scale -> 2 leftover nights covered.
 ```
+
+Day-binding stays available as a **rendering choice**, not a structural one - a household with a fixed Thursday class should get the grid. What must not be structural is the assumption that the week *has* a known shape. Keep that out of the planner the same way corpus size is kept out of the architecture (§1).
 
 Swap, reroll, pin, adjust servings. **Every proposal shows why it surfaced**, which is the tool doing its job in the open and the thing that makes a forgotten recipe land. It also makes rejection legible: swapping out a meal the system just said hasn't been made since March is a signal about the *recipe*, not the week.
 
-**One pool, not tiers.** Anchors and deep cuts are the same 60; the difference is recall frequency, which is a measurement rather than a tag. Surfacing a forgotten one makes it recent and the split re-forms on its own.
+**One pool, not tiers.** Anchors and deep cuts are the same ~32; the difference is recall frequency, which is a measurement rather than a tag. Surfacing a forgotten one makes it recent and the split re-forms on its own.
 
-Standing planning constraints, given to the model rather than coded: vary protein and cuisine, at least one low-effort night, share perishables across meals and **show the coupling**, and hold the week's candidate count to what corpus size and the week's risk appetite justify. Seasonality enters here too, and needs no infrastructure: it isn't a preference, it's a proxy for price and quality, and the model already knows what's good in August. Cross-check it against actual Kroger promo pricing - where the prior and the price agree, the signal is strong. Coupling is the cost of good proposals - independent draws degrade gracefully, a coupled set cascades - so visible links let them repair a broken Wednesday instead of abandoning the week. Sales are opportunistic: flag when something already planned is on sale.
+Standing planning constraints, given to the model rather than coded: vary protein and cuisine, share perishables across meals and **show the coupling**, and hold the week's candidate count to what corpus size and the week's risk appetite justify. Two of these arrived from the interview with real numbers attached:
+
+**Effort is two axes, and only one of them is capped.** *Active* time - hands on, at the stove - is capped at 20–30 minutes on weeknights. *Passive* time is not capped at all: slow cookers, braises and long oven sits are fine on a Tuesday. v2.2's single effort scalar collapsed these, and the corpus shows exactly what that costs: beef stew and pot roast rated `high` and would have been filtered out of every weeknight, when their length is entirely unattended. **A planner that reads total time will systematically discard the household's easiest meals.** One or two weekend nights carry a real active-time budget; the rest of the week does not.
+
+**Protein balance has a number, not just "vary it."** Beef is 12 of 25 recipes, and asked directly whether that was preference or rut the household said *somewhere between* - so the cap is **3–4 beef nights a week**, filled out from chicken, pork and fish. A soft cap, not a push away: the model should not moralise at them about beef, and a week that wants five is allowed to say why. Seasonality enters here too, and needs no infrastructure: it isn't a preference, it's a proxy for price and quality, and the model already knows what's good in August. Cross-check it against actual Kroger promo pricing - where the prior and the price agree, the signal is strong. Coupling is the cost of good proposals - independent draws degrade gracefully, a coupled set cascades - so visible links let them repair a broken Wednesday instead of abandoning the week. Sales are opportunistic: flag when something already planned is on sale.
 
 ### Step 2 - The list
 
@@ -155,7 +187,7 @@ Every signal below is evidence attached to a profile claim, not a number in a we
 | Rejecting a shown reason | The recipe was rated higher than it deserved |
 | **Candidate cooked and flopped, with reason** | **Where taste ends - the highest-value signal at low corpus size** |
 | Candidate cooked and kept | Which priors were right, and what to reach for next |
-| Cooked-through over months | Which of the 60 are real |
+| Cooked-through over months | Which of the corpus are real |
 | Servings adjustments | Consumption and guest patterns |
 | Strike-outs in Step 2 | What they keep stocked |
 | Quantity edits (preference kind) | Consumption rates |
@@ -182,11 +214,11 @@ The model sits above this, at planning and profile revision only.
 
 ## 11. Roadmap
 
-**0 - Baseline.** Watch their real process end to end, including "buy it again," *before* either of them has seen anything. Count distinct recipes cooked in a month today - by inbox archaeology if the §3 spike lands, by observation if it doesn't.
+**0 - Baseline.** Watch their real process end to end, including "buy it again," *before* either of them has seen anything. Count distinct recipes cooked in a month today - by inbox archaeology if the §3 spike lands, by observation if it doesn't. **Partly spent already:** seeding the corpus means they have now seen the system reason about their food, so the clean-room version of this is gone. Inbox archaeology is unaffected and is now the only uncontaminated baseline available (§12).
 
 **1 - The loop, built cold-start first.** Setup interview -> profile v0 -> Step 1 -> Step 2 -> Kroger cart, working correctly at corpus size zero. This is the path every user hits, this household included, and it holds no assumption that a corpus already exists.
 
-**1b - This household's accelerators.** Message-thread mining, five-second capture, receipt-email spike. Drops 60 proven recipes onto a loop that already runs without them, and flips the retrieval/acquisition mix in one step.
+**1b - This household's accelerators.** ~~Recipe-document mining~~ **done, out of order** - 25 recipes landed before Phase 1 exists. Remaining: message-thread mining for the 5–10 unwritten regulars, five-second capture, receipt-email spike. The sequencing note below still holds for what's left, but the corpus is no longer hypothetical while the loop gets built, so **Phase 1 must be tested at corpus size zero deliberately** - the populated corpus is now sitting right there, and that is exactly the condition under which cold start silently rots (§13).
 
 **2 - Inferred pantry.** Reconciliation feeding staple flags with decay. Gated on the spike.
 
@@ -202,7 +234,9 @@ Sequencing note: 1 before 1b is deliberate. Building this household's bootstrap 
 
 ## 12. Evaluation
 
-**Primary at high corpus size: repertoire breadth.** Distinct recipes cooked over a rolling quarter, against the ~15 that rotate today. If the 45 stay dormant, the project failed regardless of how good the carts are.
+**Primary at high corpus size: repertoire breadth.** Distinct recipes cooked over a rolling quarter, against the ~15 that rotate today. If the dormant ones stay dormant, the project failed regardless of how good the carts are. **The target is now ~32, not 60** - and since that ceiling is low enough to hit inside a quarter, breadth alone stops being a sufficient metric sooner than v2.2 assumed. Once the repertoire is exhausted, acquisition rate below is the live number.
+
+**The unaided-recall baseline is gone and is not recoverable.** v2.2 required writing down how many recipes they could list cold, before the first run, as the only way to distinguish a tool that surfaced forgotten meals from one that agreed with what they'd have picked anyway. The corpus came off a saved document instead, so that number was never taken. Two consequences, both accepted: the *count* is better evidence than unaided recall would have been, and the *discrimination* it was meant to provide has to come from the surfaced-and-cooked secondary metric instead. Watch that one harder than v2.2 planned to.
 
 **Primary at low corpus size: acquisition rate.** Net-new recipes proposed, cooked, and kept, per month - plus the keep rate, since acquisition that mostly flops is churn rather than growth. Someone starting at zero has no ~15 to beat, so breadth isn't measurable yet and corpus growth is the only honest read. The two metrics hand off as the corpus fills; they don't compete.
 
@@ -223,18 +257,22 @@ Sequencing note: 1 before 1b is deliberate. Building this household's bootstrap 
 - **Signals aren't attributed.** Two people cook and plan, and a swap by one is recorded as a household preference. Mostly fine, occasionally wrong - if one of them quietly hates mushrooms, the profile will learn "the household is lukewarm on mushrooms" instead. Watch for profile claims that feel half-true; that's the tell.
 - **Ungrounded profile claims.** The model will happily produce confident opinions about taste from three data points. No claim without a trace to specific events, and they see the trace.
 - **Staleness-only surfacing selects for duds.** "Longest since cooked" preferentially returns recipes that fell out of rotation *for a reason*. The profile has to carry why something stopped being made, not just when.
-- **Breadth fights the sizing model.** The big bag of rice pays off only if they keep cooking rice. Rotating 60 recipes means shorter, less predictable reorder intervals.
+- **Staleness surfacing cannot run at all yet.** No last-cooked date exists for any of the 25 - it was never recorded, and the seeded corpus has the column empty. A core §1 mechanism is therefore **unavailable until the tool has been used for months**, and early weeks must surface on other grounds. Worth stating because it is easy to mistake for a bug later, and because it means the first weeks are a weaker test of the central bet than they'll look.
+- **The system will over-read the corpus, and already has.** Reading the seeded corpus, it inferred a sandwich preference from a count of seven and reported it as "a real, distinctive pattern, not noise." The household's answer: *I wouldn't put much weight to this, just happens to be so.* No malice and no hallucination - the count was correct - but a confident preference claim was manufactured from a frequency artifact, which is §2's ungrounded-claim failure arriving through a side door that "no claim without a trace" does not close. **A trace to a real count is still not evidence of a preference.** Counts justify a question, never a conclusion; the profile now carries that instance as a standing caution.
+- **Effort was mis-modelled on the first pass**, and the same shape of error will recur. A single scalar looked obviously right and silently excluded the household's easiest meals (§6). The tell was the household volunteering that a question didn't fit - which only happened because the interview ran one question at a time and left room to answer sideways. Batched forms suppress exactly this signal.
+- **Breadth fights the sizing model.** The big bag of rice pays off only if they keep cooking rice. Rotating ~32 recipes means shorter, less predictable reorder intervals - though a smaller repertoire than v2.2 assumed makes this milder, and the household's heavy reuse of shortcut staples (seasoning packets, canned soup, biscuit tubes, cream cheese) cuts against it further.
 - **Cart API is write-only.** Local state, expect drift.
 - **Plans break on Wednesdays.** Replanning out of scope, stated not silent: the plan is immutable after ordering, and the coupling display exists so they can repair by hand.
 - **Recipe sites are litigious about scraping.** Only pages the user personally navigated to.
-- **Generalizing may sand off the edge.** Earlier drafts held that value lives entirely in learned state, making a stranger's first week a plumbing test and nothing more. That's still true of *retrieval* value, but acquisition value is real from week one, so cold start is now a product path. The cost is that the sharpest version of this document is the one written for a specific household with 60 dormant recipes. Keep corpus size out of the architecture; keep the design concrete.
+- **Generalizing may sand off the edge.** Earlier drafts held that value lives entirely in learned state, making a stranger's first week a plumbing test and nothing more. That's still true of *retrieval* value, but acquisition value is real from week one, so cold start is now a product path. The cost is that the sharpest version of this document is the one written for a specific household. **That edge got blunter this round, not by generalizing but by measuring:** the household turned out to have ~32 recipes rather than 60, which puts it closer to the middle of its own curve than to the retrieval-heavy end it was designed around. The corollary is that cold start is now the *shared* path rather than the stranger's path, which strengthens §4 and weakens the claim that this household is the sharpest instance of the problem. Keep corpus size out of the architecture; keep the design concrete.
 
 ---
 
 ## Next session
 
-1. Watch them plan and order a week, before showing them anything.
-2. How many recipe links are in the message thread? That sizes the bootstrap.
-3. A sample Kroger order confirmation email, to scope the spike - and check whether it yields a retroactive baseline.
-4. Write profile v0 by hand, as if the system had produced it. If you can't write a useful one from what you already know, the format is wrong. Then write a second one for a household with an empty corpus, and see whether the format survives having no evidence to point at.
-5. Fill in `profile.md` and `corpus.md` and run `plan.py` on a real week. The bar is *would you cook this week?* — answered by cooking it, not by scoring the output.
+1. **Run `plan.py` on a real week and cook it.** `profile.md` and `corpus.md` are populated; this is now the binding next step and everything below is secondary to it. The bar is *would you cook this week?* — answered by cooking it, not by scoring the output.
+2. **Teach `plan.py` the two-axis effort model and the pool output** before that run, or the first week will filter out stew and pot roast and hand back a grid nobody wants.
+3. Start recording last-cooked dates from the first week, since nothing else can start the clock (§13).
+4. How many *additional* recipes are in the message thread, beyond the 25? That sizes what's left of the bootstrap and should find the 5–10 unwritten regulars.
+5. A sample Kroger order confirmation email, to scope the spike - and check whether it yields a retroactive baseline. This is now the only uncontaminated baseline still available (§12).
+6. Write a second `profile.md` for a household with an empty corpus, and see whether the format survives having no evidence to point at. Untouched by this round and still worth doing - more so now that a populated corpus is sitting in the repo tempting Phase 1 to assume one.
