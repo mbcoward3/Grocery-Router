@@ -45,17 +45,18 @@ nothing goes in until it's been made and kept. That bar is what makes the corpus
 draw from — surfacing one is a recall problem, never a quality gamble. Bookmarked-but-never-cooked
 doesn't belong; the planner proposes those itself, marked `[candidate]`.
 
-Both ship with blanks. Fill them in and the tool works.
+`corpus.md` is seeded with 25 recipes. `profile.md` still ships with blanks — fill it in
+and the tool works.
 
 ## Seeding the corpus
 
-One sitting, no notes, no scrolling your messages. Whatever you reach unaided is the
-starting corpus.
+Done, from a saved recipe document: 25 recipes, as 8 links, 6 typed-out ingredient lists,
+and 11 screenshots. That's the §1b thread-mining accelerator arriving on day one rather
+than at phase 1b.
 
-**Write that number down before your first run.** Once you've seen the planner propose a
-week you can never measure it again, and it's the only number that later distinguishes a
-tool that surfaced things you'd forgotten from one that agreed with what you'd have picked
-anyway. That distinction is the entire project.
+It also means the unaided-recall baseline was never measurable here — the recipes came off
+a saved document, not out of memory, which is a different and better thing. The saved doc
+is exactly the artifact §4 predicted: *the 45 live in their heads and in their messages.*
 
 ## What it does
 
