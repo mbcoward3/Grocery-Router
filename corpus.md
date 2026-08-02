@@ -20,9 +20,9 @@ Seeded from `Recipes.pdf` — 25 recipes: 8 saved links, 6 typed out with ingred
 saved as screenshots. All entered the corpus directly on the proven-or-attested bar (§4),
 since they were collected as things this household actually makes.
 
-`Protein` and `Cuisine` are read off the recipe. **`Effort` is inferred and unverified** —
-it's the system's guess at your weeknight scale, not something you said. Correct any line
-that's wrong; that's the profile-correction mechanism working (§2).
+`Protein` and `Cuisine` are read off the recipe. **`Active` and `Passive` are inferred and
+unverified** — the system's guess, not something you said. Correct any line that's wrong;
+that's the profile-correction mechanism working (§2).
 
 `Last cooked` is empty because it was never recorded. It fills in as the tool gets used.
 Until then the planner can't do staleness-based surfacing, which is a real limitation and
@@ -30,40 +30,58 @@ not a bug.
 
 ## Format
 
-| Recipe | Protein | Cuisine | Effort | Last cooked | Notes |
-|---|---|---|---|---|---|
-| Chicken and biscuits casserole | chicken | American | medium | | thecountrycook.net |
-| Sausage and peppers | pork | Italian-American | medium | | chefjeanpierre.com |
-| Crock pot Italian beef sandwiches | beef | American | low | | iowagirleats.com; slow cooker, sandwich |
-| Meatloaf | beef | American | medium | | natashaskitchen.com |
-| Beef stew with carrots and potatoes | beef | American | high | | onceuponachef.com; braise |
-| 3-ingredient teriyaki chicken | chicken | Japanese-ish | low | | tasty.co |
-| Chicken veggie stir fry | chicken | Chinese-ish | low | | tasty.co |
-| Easy salmon dinner | fish | American | low | | tasty.co |
-| Chili | beef | American | medium | | |
-| Enchiladas | beef | Tex-Mex | medium | | protein unconfirmed |
-| Chicken noodle soup | chicken | American | medium | | |
-| Tacos | beef | Tex-Mex | low | | ground beef + seasoning packet |
-| Hamburgers | beef | American | low | | |
-| Pork loin and rice | pork | American | medium | | |
-| Cheesy pasta | beef | American | low | | ground beef, elbows, cream cheese, marinara |
-| Biscuits and gravy | pork | American | low | | sausage; breakfast-for-dinner |
-| BLT | pork | American | low | | bacon; sandwich, barely cooking |
-| Meatball subs | beef | Italian-American | low | | sandwich |
-| Chicken and dumplings | chicken | American | low | | lilluna.com; canned/biscuit-tube shortcut version |
-| Sliders | beef | American | low | | sandwich |
-| Beef dip Sammies | beef | American | low | | sandwich |
-| Chicken chili | chicken | American | medium | | |
-| Zuppa toscana | pork | Italian-American | medium | | sausage |
-| Beef pot roast | beef | American | high | | braise |
-| Tuna melt | fish | American | low | | sandwich |
+| Recipe | Protein | Cuisine | Active | Passive | Last cooked | Notes |
+|---|---|---|---|---|---|---|
+| Chicken and biscuits casserole | chicken | American | med | ~35m oven | | thecountrycook.net |
+| Sausage and peppers | pork | Italian-American | med | — | | chefjeanpierre.com |
+| Crock pot Italian beef sandwiches | beef | American | low | hours, slow cooker | | iowagirleats.com |
+| Meatloaf | beef | American | med | ~60m oven | | natashaskitchen.com |
+| Beef stew with carrots and potatoes | beef | American | med | long simmer | | onceuponachef.com; braise |
+| 3-ingredient teriyaki chicken | chicken | Japanese-ish | low | — | | tasty.co; check sauce for peanut |
+| Chicken veggie stir fry | chicken | Chinese-ish | med | — | | tasty.co; check sauce for peanut |
+| Easy salmon dinner | fish | American | low | — | | tasty.co |
+| Chili | beef | American | low | simmer | | |
+| Enchiladas | beef | Tex-Mex | med | ~25m oven | | protein confirmed beef |
+| Chicken noodle soup | chicken | American | med | simmer | | |
+| Tacos | beef | Tex-Mex | low | — | | ground beef + seasoning packet |
+| Hamburgers | beef | American | low | — | | |
+| Pork loin and rice | pork | American | low | oven | | |
+| Cheesy pasta | beef | American | low | — | | ground beef, elbows, cream cheese, marinara |
+| Biscuits and gravy | pork | American | low | short oven | | sausage; breakfast-for-dinner |
+| BLT | pork | American | low | — | | bacon; barely cooking |
+| Meatball subs | beef | Italian-American | low | — | | |
+| Chicken and dumplings | chicken | American | low | simmer | | lilluna.com; **status uncertain — see below** |
+| Sliders | beef | American | low | short oven | | |
+| Beef dip Sammies | beef | American | low | slow cooker | | |
+| Chicken chili | chicken | American | low | simmer | | cream cheese |
+| Zuppa toscana | pork | Italian-American | med | simmer | | sausage |
+| Beef pot roast | beef | American | med | very long | | braise |
+| Tuna melt | fish | American | low | — | | |
 
-**Effort** is your weeknight scale, not an objective one: `low` = you'd do it on a bad
-Tuesday, `medium` = fine any night with a plan, `high` = weekend or company.
+**Effort is two numbers, and only the first one is capped.**
+
+- **Active** — hands-on time. `low` ≈ under 15 min, `med` ≈ 15–30, `high` ≈ 30+.
+  The household ceiling is 20–30 min active on weeknights, so `low` and `med` are both
+  weeknight-eligible and `high` is weekend-only.
+- **Passive** — unattended time. **Not capped.** Slow cookers, braises and long oven times
+  are fine on a weeknight.
+
+This split matters: under a single effort scalar, beef stew and pot roast rated `high` and
+would have been wrongly filtered out of every weeknight. They're `med` active — the length
+is all unattended.
 
 ## Flagged for confirmation
 
-- **Chicken and dumplings** was written `Chicken and dumplings?` in the source. The
-  question mark reads as uncertainty about whether it's actually made and liked. If it's
-  aspirational rather than proven, it belongs out of the corpus — say so and it moves.
-- **Enchiladas** protein is a guess (beef, to match the rest of the Tex-Mex here).
+- **Chicken and dumplings** was written `Chicken and dumplings?` in the source, and the
+  household doesn't remember what the question mark meant. Left in the corpus, marked
+  uncertain. Resolve it the first time it comes up in a real week: if it turns out to be
+  aspirational rather than cooked-and-liked, it moves out to candidates.
+- ~~Enchiladas protein~~ — confirmed beef.
+
+## Counts, as of seeding
+
+Protein: **beef 12**, chicken 6, pork 5, fish 2. Cuisine: ~18 American, 3
+Italian-American, 2 Tex-Mex, 2 loosely Asian.
+
+Beef at 48% is above what the household wants — see the soft cap in `profile.md`. The
+cuisine spread is recorded as fact, not as a problem; nobody has said they want it widened.

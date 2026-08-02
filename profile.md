@@ -21,19 +21,40 @@ every week downstream.
 - **Guests:** frequent. Pass `--guests` per week rather than setting a standing number.
 - **Everyone eats the same meal.** Proposals must be family-edible — a light filter, not
   a design driver.
-- **Allergies:** `[...]` *(none is a valid answer — write "none")*
-- **Hard vetoes:** `[...]` *(foods that are never proposed, ever)*
-- **Weeknight effort ceiling:** `[...]` *(e.g. "45 min active, Mon–Thu")*
+- **Allergies:** peanut. No peanuts, peanut butter, peanut sauce or peanut oil as an
+  ingredient. Trace-risk and shared-facility products are acceptable — this filters the
+  recipe, not the pantry. Bears on nothing currently in the corpus, but rules out satay
+  and a wide band of Thai and Chinese dishes when widening, and the stir fry and teriyaki
+  are the two existing entries where a bought sauce could carry it.
+- **Hard vetoes:** none stated.
+- **Weeknight effort ceiling:** 20–30 min **active**, Mon–Fri. One or two weekend nights
+  (usually Sat/Sun) are open to something longer and nicer.
+- **Passive time is not capped.** Slow-cooker meals fit fine. The ceiling is standing at
+  the stove, not elapsed time — see the effort note under Patterns.
 - **Store / pickup:** Kroger, `[... location]`
 
 ## Taste
 
 *What this household likes. Each claim carries its trace.*
 
-- `[...]` — *because `[...]`*
-- `[...]` — *because `[...]`*
-- `[...]` — *because `[...]`*
-- `[...]` — *because `[...]`*
+- **Beef runs at about half the repertoire, and that's more than they'd choose.** 12 of 25
+  recipes. Asked directly whether this was preference or rut, the answer was "somewhere
+  between" — so the planner applies a **soft cap of 3–4 beef nights a week** and fills the
+  rest from chicken, pork and fish. It does not push beef away harder than that. *Because
+  they said so when asked, against a corpus count.*
+- **Cooks with shortcuts on purpose.** Seasoning packets, canned soup, refrigerated
+  biscuits, blocks of cream cheese recur across the corpus. A scratch-everything proposal
+  is wrong for this household regardless of how good the recipe is. *Because it's visible
+  in the ingredient lists of the six typed-out recipes.*
+- **Cuisine is narrow: roughly 18 of 25 are plain American comfort food**, plus 3
+  Italian-American, 2 Tex-Mex, 2 loosely Asian. Recorded as a fact about the corpus, not
+  yet as a preference — nobody has said whether they want it widened. *Because it's a
+  count off the corpus.*
+
+> **Not** a pattern: the seven sandwiches. That count looked like a signal and isn't —
+> asked directly, the answer was "I wouldn't put much weight to this, just happens to be
+> so." Left here as a caution, because it is exactly the kind of number this project is
+> built to over-read.
 
 > Worked examples of the shape, not entries to keep:
 > - *Reaches for bright, acidic food — lemon, capers, vinegar-forward dressings. Because
@@ -46,11 +67,19 @@ every week downstream.
 
 *How the week actually runs. Same evidence rule.*
 
-- **Weeknight rhythm:** `[...]` — *because `[...]`*
-- **Which nights are hard:** `[...]` — *because `[...]`*
-- **Leftover behavior:** `[...]` — *because `[...]`*
-  *(Five dinners is not five cooking events. Say which nights are leftovers by design and
-  which meals get scaled up to become lunches.)*
+- **Weeknight rhythm:** 20–30 minutes active, five nights. One or two weekend nights have
+  real room. *Because they said so.*
+- **Which nights are hard: unpredictable, week to week.** No recurring squeeze to plan
+  around. **This changes the output shape** — assigning meals to named days is wrong here.
+  The planner should propose a *pool* with the right effort mix and let the household pick
+  night-of. *Because they said so when asked for a pattern.*
+- **Effort is two numbers, not one.** Active time is capped; passive time isn't. Stew, pot
+  roast and zuppa toscana are low-active and high-passive, and a single effort scalar
+  wrongly excludes them from weeknights. The corpus records both. *Because they raised
+  slow cookers unprompted as not fitting the question.*
+- **Leftover behavior: both lunches and second dinners.** A big cook covers the next day's
+  lunches *and* can stand in for a dinner. So **seven nights is not seven cooks** — the
+  planner should target 5–6 and favor dishes that scale. *Because they said so.*
 - **What happens when a plan breaks:** `[...]` — *because `[...]`*
 
 ## Known gaps
@@ -60,7 +89,19 @@ confident invention.*
 
 - Signals aren't attributed to either adult (§13) — a preference stated here is a
   household preference, and may be half-true.
-- `[...]`
+- **The corpus is mains-only.** Vegetables look nearly absent from it, but that's a
+  recording artifact, not the diet — sides get served and never get written down. Two
+  consequences: don't read the corpus as evidence about how this household eats, and
+  expect generated grocery lists to be **systematically short** until sides are captured.
+- **The repertoire is about 30–35, not 25.** Five to ten regulars were never written down.
+  The corpus is a floor.
+- **No last-cooked dates exist.** Staleness-based surfacing — a core §1 mechanism — can't
+  run until the tool has been used long enough to record them.
+- **Effort ratings are the system's guess.** Every one is marked unverified; none came
+  from the household.
+- **Nobody has said whether they want the repertoire widened.** The corpus is narrow in
+  cuisine and protein, and that's measured — but "narrow" is only a problem if they think
+  it is, and they haven't been asked.
 
 ## Not yet known
 
