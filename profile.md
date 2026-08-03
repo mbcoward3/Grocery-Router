@@ -96,8 +96,10 @@ confident invention.*
   expect generated grocery lists to be **systematically short** until sides are captured.
 - **The repertoire is about 30–35, not 25.** Five to ten regulars were never written down.
   The corpus is a floor.
-- **No last-cooked dates exist.** Staleness-based surfacing — a core §1 mechanism — can't
-  run until the tool has been used long enough to record them.
+- **No last-cooked dates exist yet.** They accrue about five per session. This limits
+  *ranking* among the corpus, not the ability to surface from it: the whole corpus is small
+  enough to go into context on every run, so the planner can propose across all of it from
+  the first week. Roughly 9 of the 24 are dormant today and surfaceable immediately.
 - **Effort ratings are the system's guess.** Every one is marked unverified; none came
   from the household.
 - **Nobody has said whether they want the repertoire widened.** The corpus is narrow in

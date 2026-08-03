@@ -95,7 +95,7 @@ This is not politeness, it is the cold-start constraint (§4 of the proposal). O
 recipe has to stay a five-second operation, and someone arriving with an empty corpus must
 never be asked to fill in a substitution matrix before they can eat. **The capture tool
 records these when the source or the household states them, and never blocks on them.**
-They accumulate over months, the way the corpus itself does.
+They accumulate as recipes get cooked, and nothing waits on them.
 
 ### 2.2 Variants
 

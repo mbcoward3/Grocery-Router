@@ -33,9 +33,10 @@ since they were collected as things this household actually makes.
 unverified** — the system's guess, not something you said. Correct any line that's wrong;
 that's the profile-correction mechanism working (§2).
 
-`Last cooked` is empty because it was never recorded. It fills in as the tool gets used.
-Until then the planner can't do staleness-based surfacing, which is a real limitation and
-not a bug.
+`Last cooked` is empty because it was never recorded. It fills in as the tool gets used,
+about five entries per session. It is **not** a precondition for the tool working: this
+table is small enough to hand a planner in full on every run, so it can propose across all
+24 from the first week. Dates refine the ranking; they don't unlock the mechanism.
 
 ## Format
 
