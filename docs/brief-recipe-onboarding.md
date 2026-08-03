@@ -33,11 +33,21 @@ The tool must handle all three, because the real corpus is all three:
 
 ## Hard rules
 
-**Never invent.** This is the whole of it. A missing quantity is recorded as missing, not
-estimated. An unreadable screenshot is reported as unreadable. A recipe whose yield is not
-stated gets `yield: unknown`, and that is a perfectly good outcome. The household can
-answer any of these in two seconds; a plausible-looking wrong number they never notice
-costs them a meal.
+**Never invent — but do recover.** A missing quantity is recorded as missing, not
+estimated. A yield nobody states is `unknown`, and that is a perfectly good outcome.
+
+The refinement, learned from the first run: when a capture is short and the recipe is
+*identifiable*, go and find the real thing. Re-fetch the source, or search for the same
+recipe by title and distinctive ingredients, fill from what you find, and **cite it,
+marking those lines recovered rather than captured.** Recovering from a real source is
+sourcing. Writing `1 lb chicken breast` because soup usually has chicken is invention, and
+that stays banned.
+
+Know the limit of this. The chicken noodle soup capture is missing its chicken, and no
+amount of searching fixes it, because **this household cooks it two ways** — sometimes
+rotisserie, sometimes a whole young chicken boiled for its stock. There was never one
+right line to recover. When a gap turns out to be variation rather than truncation, the
+answer is a variant block, not a better fetch.
 
 **Mark inferred metadata as inferred.** `protein` and `cuisine` can be read off a recipe
 confidently. `active` and `passive` effort usually cannot — they are the system's guess at
@@ -57,6 +67,24 @@ because nothing in the corpus told it the yield.
 **Flag peanut.** The household has a peanut allergy at ingredient level — peanuts, peanut
 butter, peanut sauce, peanut oil. Nothing currently in the corpus contains any, but
 bought sauces are where it would hide. Surface it rather than filtering silently.
+
+**Capture variants, tolerances and outputs when the source states them — never block on
+them.** Three optional fields, specified in `docs/step2-design.md` §2.1–2.4:
+
+- **`## Variants`** — a recipe cooked more than one way, where the choice changes the
+  shopping list or the effort. Already in this corpus at least three times.
+- **`accepts:`** on an ingredient — what else would do. Sources often say it outright:
+  the meatball subs already read `provolone or mozzarella`. **Record what is stated;
+  never infer that one cheese stands in for another.**
+- **`produces:`** — a cook that outputs an ingredient. The pot roast makes jus and the
+  beef dip Sammies needs au jus; both are in this corpus.
+
+**These are enrichments, not requirements.** A recipe with a title, a source and a flat
+ingredient list is complete. Onboarding must stay a five-second operation and must work
+for a household with an empty corpus, so a missing variant block is never a question worth
+asking. Record them where the source or the household already states them; let the rest
+accumulate over months. **If capturing one of these would mean guessing, do not capture
+it.**
 
 **Preserve the ingredient line verbatim** alongside anything you parse out of it. The
 downstream list builder has to handle `1 (14.5 oz) can beef broth` and `3 cups bell

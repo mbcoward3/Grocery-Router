@@ -83,6 +83,115 @@ Parse failures are **surfaced, never dropped**. An ingredient the parser cannot 
 onto the list as raw text with a flag. Silently losing a line means someone gets home
 without the chuck roast.
 
+### 2.1 Everything below here is optional
+
+The three features that follow — variants, substitution, produced items — are
+**enrichments, not requirements**. A recipe file with a title, a source and a flat
+ingredient list is complete and always will be. Each of these degrades to exactly the
+current behaviour when absent: no variants means one implicit variant, no `accepts:` means
+no substitution, no `produces:` means nothing.
+
+This is not politeness, it is the cold-start constraint (§4 of the proposal). Onboarding a
+recipe has to stay a five-second operation, and someone arriving with an empty corpus must
+never be asked to fill in a substitution matrix before they can eat. **The capture tool
+records these when the source or the household states them, and never blocks on them.**
+They accumulate over months, the way the corpus itself does.
+
+### 2.2 Variants
+
+Some recipes are cooked more than one way, and the choice changes the shopping list, the
+effort, or both. This is already in the corpus at least three times: the chicken noodle
+soup (rotisserie chicken, or a whole young chicken boiled for its stock), the meatball subs
+(`16 frozen meatballs or homemade below`), and the enchiladas.
+
+```markdown
+## Variants
+
+### Rotisserie          <!-- default: first listed -->
+active:  ~20 min
+passive: 20 min simmer
++ 1 rotisserie chicken, meat pulled
+
+### Whole young chicken
+active:  ~35 min
+passive: 1.5-2 hr
++ 1 young chicken, 3-4 lb
+  replaces: 6 cups chicken broth
+  produces: 8 cups chicken stock, keeps 4 days or freezes
+```
+
+Lines prefixed `+` are added to the base list. `replaces:` removes a base line. A variant
+carries its own effort, since that is usually the whole difference.
+
+**One corpus row, not two.** Splitting a meal into two rows fragments its last-cooked
+history and clutters an index that must stay small enough to send to a model on every run.
+
+**The planner picks the variant and names it** — *"chicken noodle soup — rotisserie,
+20 min"* — because the choice is a planning decision, not a shopping one. Two hours of
+passive time versus twenty minutes decides whether the meal can be proposed at all. The
+session shows the choice with one tap to flip it.
+
+### 2.3 Substitution
+
+An ingredient may declare what else would do:
+
+```markdown
+- 1 cup shredded provolone cheese    accepts: mozzarella, colby jack
+```
+
+**Tolerance is declared, never inferred.** A model reasoning that cheese is cheese will
+eventually swap the ingredient that was the point. Sources often state it outright — the
+meatball subs already read `provolone or mozzarella` — and the household can state the
+rest.
+
+Applied in **Step 2, not the planner**, for the same reason coupling moved: consolidation
+needs the whole week's items visible at once. Given declared tolerances it is mechanical —
+if a recipe accepts colby jack and colby jack is already in the week's cart, propose the
+merge.
+
+**Shown, never silent**, with a one-tap undo:
+
+```
+Colby jack, 2 bags -> 1 bag    [subs: meatball subs, enchiladas]   [keep separate]
+```
+
+Worth noting because it is not obvious: substitution is what **makes the pack-sizing model
+work** (§7 of the proposal). The larger bag pays off only if it gets used, and
+consolidation is what creates the second use.
+
+### 2.4 Produced items
+
+A cook can output an ingredient, not just a meal. The corpus already contains real pairs:
+the beef pot roast produces jus and the beef dip Sammies needs au jus; the crock pot
+Italian beef produces shredded beef and juice well beyond one dinner.
+
+```markdown
+produces: 2 cups au jus, keeps 4 days
+
+- 2 cups au jus    may come from: beef pot roast
+```
+
+**This is leftovers generalised.** The system already models *cook big Monday, eat
+Tuesday*; here the leftover is an ingredient rather than a meal. Framing it that way lets
+it reuse machinery that has to exist anyway instead of introducing a dependency graph.
+
+Three rules keep it from becoming one:
+
+**Always buy the fallback.** The link saves you *using* the bought item, never buying it.
+Skipping the pot roast must not leave the beef dip with no jus and none in the cart. This
+is the strongest coupling in the system and it is the one that breaks rather than degrades
+(§13 of the proposal).
+
+**Never a schedule.** A link implies producer-before-consumer, which quietly reintroduces
+the day-ordering the pool model deliberately removed. Render it as a note — *"if you do the
+pot roast first, the beef dip is nearly free"* — not a sequence.
+
+**A tiebreaker, never a driver.** The planner has already been caught manufacturing
+coupling once, choosing a candidate built around an ingredient already in the week.
+Output-linking pulls harder in the same direction, and left unchecked it converges on a
+small set of mutually reinforcing recipes — which fights breadth, the point of the whole
+project.
+
 ## 3. Canonical items
 
 `items.md` — one hand-maintained table, the normalization target and the thing that makes
@@ -114,16 +223,23 @@ The table starts small and grows on parse failure. An unrecognized item defaults
 ## 4. Pipeline
 
 ```
-week (from Step 1)
+week (from Step 1, with a variant chosen per meal)
   -> load        recipes/<slug>.md for each chosen meal
-  -> parse       ingredient lines -> (qty, unit, item, note)
+  -> resolve     apply the chosen variant's + and replaces: lines
+  -> parse       ingredient lines -> (qty, unit, item, note, accepts)
   -> scale       recipe yield vs. this week's AE -> multiplier per recipe
   -> normalize   item -> canonical, via items.md synonyms
   -> convert     units -> a common unit per canonical item, via each_equiv
   -> aggregate   sum across recipes, keeping provenance
+  -> consolidate merge items whose accepts: lists overlap something already in the week
+  -> link        mark lines available from another meal's produces:, keep the buy
   -> classify    staple -> flagged section; everything else -> aisle sections
-  -> emit        the list
+  -> emit        the list, with every merge and link shown and reversible
 ```
+
+Three of those stages are no-ops on a recipe that declares nothing, which is the point
+(§2.1). `resolve` passes the base list through, `consolidate` finds no tolerances, `link`
+finds no producers.
 
 Deterministic end to end. No model in this path — parsing is code, not a prompt. Every
 stage is independently testable, and provenance is carried through so any line can answer
