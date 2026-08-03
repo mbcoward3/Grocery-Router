@@ -30,7 +30,10 @@ topped with fresh parsley. ENJOY!
 
 ## Open questions
 
-- corpus.md flags this recipe's membership as uncertain: the source document wrote it "Chicken and dumplings?" and nobody remembers what the question mark meant. Onboarding does not resolve that - it is still open.
+- **Resolved by household decision: this is a candidate, not corpus.** The source document
+  wrote it "Chicken and dumplings?", nobody could recall why, and rather than leave one
+  unproven entry weakening the corpus guarantee it now waits in `candidates.md` until it is
+  cooked. The capture itself is complete; only the claim that it is proven was removed.
 
 ## Capture notes
 

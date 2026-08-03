@@ -59,9 +59,8 @@ not a bug.
 | Biscuits and gravy | pork | American | unknown | low | short oven |  | sausage; breakfast-for-dinner |
 | BLT | pork | American | unknown | low | — |  | bacon; barely cooking |
 | Meatball subs | beef | Italian-American | unknown | low | — |  |  |
-| Chicken and dumplings | chicken | American | 6 AE | low | simmer |  | lilluna.com; **status uncertain — see below** |
 | Sliders | beef | American | unknown | low | short oven |  |  |
-| Beef dip Sammies | beef | American | unknown | low | slow cooker |  |  |
+| Beef dip Sammies | beef | American | 8 AE | low | slow cooker *or* stovetop braise — see variants |  | 3 lb roast |
 | Chicken chili | chicken | American | unknown | low | simmer |  | cream cheese |
 | Zuppa toscana | pork | Italian-American | unknown | med | simmer |  | sausage |
 | Beef pot roast | beef | American | unknown | med | very long |  | braise |

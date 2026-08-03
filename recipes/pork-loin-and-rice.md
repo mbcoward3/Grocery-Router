@@ -12,8 +12,14 @@ status:   complete
 
 - pork loin    <!-- quantity not stated -->
 - White rice    <!-- quantity not stated -->
-- Soup sauce    <!-- quantity not stated -->
+- soy sauce    <!-- quantity not stated -->
 
 ## Open questions
 
 - how many adults does this feed? The source never states servings.
+
+## Capture notes
+
+- The source typed `Soup sauce`. The household confirmed this is a typo for **soy sauce**.
+  Recorded here because the raw line is preserved above the correction in every other file
+  and this one deliberately diverges: the original names nothing that can be bought.

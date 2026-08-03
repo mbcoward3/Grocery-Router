@@ -2,19 +2,32 @@
 
 source:   photograph of a handwritten recipe card, no author or publication
 modality: screenshot
-yield:    unknown (not stated in source)
+yield:    8 AE (household; 3 lb roast)
 active:   not stated in source
-passive:  oven (method word in the source's own steps; unverified)
+passive:  varies by variant - see below
 peanut:   none seen
 status:   partial
 images:   sources/Recipes.pdf page 18, one photograph
 
 ## Ingredients
 
-- Chunk beef Roast    <!-- quantity not stated -->
+- 3 lb chuck beef roast    <!-- card states no quantity; 3 lb per household -->
 - Onion Soup Mix (Lipton's)    <!-- quantity not stated -->
 - Jar of Pepperocinis    <!-- quantity not stated -->
 - Buns    <!-- quantity not stated -->
+
+## Variants
+
+*The household makes this both ways. The card describes the stovetop braise; `corpus.md`
+had recorded the slow cooker. Neither was wrong.*
+
+### Stovetop braise
+active:  ~25 min
+passive: simmer, time unknown - the card is cut off at "then turn down to"
+
+### Slow cooker
+active:  ~15 min
+passive: hours, unattended
 
 ## Method
 
@@ -30,6 +43,4 @@ under broiler til toasty. (watch carefully)
 
 - **content may be missing** - The photograph cuts off the bottom of the card mid-sentence at "then turn down to", so the simmer temperature, the cooking time and anything written below are unreadable.
 - No quantities are given for any ingredient. The only number on the card is "1 pkg onion soup mix", and it appears in the method rather than the list.
-- The roast size is not stated, and it is the one number that decides how much this feeds.
-- corpus.md records this recipe's passive time as "slow cooker", but the card describes a stovetop braise in a large pan. One of the two is wrong.
-- how many adults does this feed? The source never states servings.
+- The stovetop simmer time and temperature are still unreadable on the card.
