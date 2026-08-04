@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pantry Router</title>
+<style>
+:root {
+  --bg: #fbfaf8; --panel: #ffffff; --ink: #1a1917; --muted: #6f6a63;
+  --line: #e7e3dd; --accent: #7c4a2d; --accent-soft: #f3ece6;
+  --ok: #3f6b4a; --warn: #8a6d1f; --shadow: 0 1px 2px rgba(26,25,23,.05), 0 8px 24px rgba(26,25,23,.05);
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #14130f; --panel: #1c1a16; --ink: #efece6; --muted: #9d968c;
+    --line: #2e2b25; --accent: #d69b71; --accent-soft: #27231d;
+    --ok: #8fc09b; --warn: #d9bd6e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 16px/1.55 ui-serif, Georgia, "Iowan Old Style", "Palatino Linotype", serif;
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 120px; }
+
+header.top { margin-bottom: 40px; }
+.eyebrow { font: 600 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); }
+h1 { font-size: 40px; line-height: 1.1; margin: 10px 0 6px; font-weight: 600; letter-spacing: -.02em; }
+.sub { color: var(--muted); font-size: 15px; }
+
+section { margin: 44px 0; }
+h2 { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--muted); font-family: ui-sans-serif, system-ui, sans-serif;
+  margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+h2 .n { color: var(--accent); font-variant-numeric: tabular-nums; }
+.lede { color: var(--muted); font-size: 15px; margin: 0 0 18px; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 18px 20px; }
+.stack > * + * { margin-top: 10px; }
+
+/* meals */
+.meal { display: grid; grid-template-columns: 1fr auto; gap: 4px 14px; align-items: start; }
+.meal .title { font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+.meal .why { color: var(--muted); font-size: 14.5px; grid-column: 1 / -1; }
+.meal .meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;
+  align-items: center; }
+.tag { font: 500 12px/1 ui-sans-serif, system-ui, sans-serif; padding: 5px 9px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--muted); white-space: nowrap; }
+.tag.cand { background: transparent; border: 1px dashed var(--accent); color: var(--accent); }
+.tag.low { color: var(--ok); }
+.actions { display: flex; gap: 6px; }
+button { font: 500 13px/1 ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+  background: transparent; border: 1px solid var(--line); border-radius: 9px;
+  padding: 8px 12px; cursor: pointer; transition: background .12s, border-color .12s, transform .06s; }
+button:hover { background: var(--accent-soft); border-color: var(--accent); }
+button:active { transform: translateY(1px); }
+button.ghost { border-color: transparent; color: var(--muted); padding: 6px 8px; }
+button.ghost:hover { color: var(--ink); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; padding: 11px 18px; }
+@media (prefers-color-scheme: dark) { button.primary { color: #17140f; } }
+button.primary:hover { filter: brightness(1.06); background: var(--accent); }
+button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (prefers-color-scheme: dark) { button[aria-pressed="true"] { color: #17140f; } }
+button:disabled { opacity: .45; cursor: default; }
+select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: 9px; padding: 7px 8px; }
+
+/* dials */
+.dials { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; }
+.dial .lab { font: 600 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 9px; }
+.stepper { display: flex; align-items: center; gap: 12px; }
+.stepper .val { font-size: 24px; font-weight: 600; min-width: 2ch; text-align: center;
+  font-variant-numeric: tabular-nums; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; padding: 8px 13px; }
+.seg button + button { border-left: 1px solid var(--line); }
+
+/* feedback */
+.fb { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+.fb + .fb { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.fb .name { font-size: 17px; font-weight: 600; }
+
+/* briefing */
+.brief { background: var(--accent-soft); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 14px 18px; font-size: 14.5px; }
+.brief ul { margin: 8px 0 0; padding-left: 18px; }
+.brief li { margin: 3px 0; color: var(--muted); }
+.brief li b { color: var(--ink); font-weight: 600; }
+.demo { font: 600 10px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--warn); border: 1px solid var(--warn);
+  border-radius: 4px; padding: 2px 4px; margin-right: 6px; }
+
+/* list */
+.listout { font: 14.5px/1.6 ui-sans-serif, system-ui, sans-serif; }
+.listout h1 { font-size: 20px; margin: 0 0 4px; }
+.listout h2 { font-size: 11px; margin: 22px 0 8px; color: var(--accent); }
+.listout ul { margin: 0; padding-left: 18px; }
+.listout li { margin: 4px 0; }
+.listout em { color: var(--muted); font-style: italic; }
+.listout hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
+
+.foot { color: var(--muted); font-size: 13.5px; margin-top: 12px; }
+.empty { color: var(--muted); font-style: italic; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+.spin { opacity: .5; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow" id="status">loading</div>
+    <h1 id="weekTitle">—</h1>
+    <div class="sub" id="weekSub"></div>
+  </header>
+
+  <div id="briefing"></div>
+
+  <section id="lastWeek" hidden>
+    <h2><span class="n">1</span> Last week</h2>
+    <p class="lede">Two seconds each. This is the only thing that makes next week better.</p>
+    <div class="card" id="fbList"></div>
+    <div class="row">
+      <button class="primary" id="applyBtn">Save to the corpus</button>
+      <span class="foot" id="applyNote"></span>
+    </div>
+  </section>
+
+  <section id="thisWeek">
+    <h2><span class="n" id="stepNum">2</span> This week</h2>
+    <p class="lede" id="effort"></p>
+    <div class="stack" id="meals"></div>
+    <div class="row">
+      <button id="fillBtn">Suggest another</button>
+      <span class="foot" id="fillNote"></span>
+    </div>
+  </section>
+
+  <section id="dials">
+    <h2><span class="n" id="stepNum2">3</span> Dials</h2>
+    <p class="lede">Change one and the week refills around what you have kept.</p>
+    <div class="card dials">
+      <div class="dial">
+        <div class="lab">Dinners</div>
+        <div class="stepper">
+          <button data-d="nights" data-v="-1">−</button>
+          <span class="val" id="nights">5</span>
+          <button data-d="nights" data-v="1">+</button>
+        </div>
+      </div>
+      <div class="dial">
+        <div class="lab">Extra mouths</div>
+        <div class="stepper">
+          <button data-d="guests" data-v="-1">−</button>
+          <span class="val" id="guests">0</span>
+          <button data-d="guests" data-v="1">+</button>
+        </div>
+      </div>
+      <div class="dial">
+        <div class="lab">New things</div>
+        <div class="seg" id="risk">
+          <button data-r="low">None</button>
+          <button data-r="normal">One</button>
+          <button data-r="high">Two</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="listSec">
+    <h2><span class="n" id="stepNum3">4</span> The list</h2>
+    <p class="lede">Deterministic. No model touches this — it is your recipes, added up.</p>
+    <div class="card"><div class="listout" id="listOut"><span class="empty">Not built yet.</span></div></div>
+    <div class="row">
+      <button class="primary" id="listBtn">Build the list</button>
+      <button id="orderBtn" disabled>Mark ordered</button>
+      <span class="foot" id="orderNote"></span>
+    </div>
+  </section>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+let S = null;
+
+async function api(path, body) {
+  const opt = body ? {method: 'POST', headers: {'Content-Type': 'application/json'},
+                      body: JSON.stringify(body)} : {};
+  const r = await fetch(path, opt);
+  return r.json();
+}
+
+function esc(s) { return (s||'').replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+/* Just enough markdown for what shop.py emits. */
+function md(text) {
+  const out = [];
+  let inList = false;
+  for (const raw of text.split('\n')) {
+    const line = raw.trimEnd();
+    const close = () => { if (inList) { out.push('</ul>'); inList = false; } };
+    if (/^# /.test(line))       { close(); out.push(`<h1>${inline(line.slice(2))}</h1>`); }
+    else if (/^## /.test(line)) { close(); out.push(`<h2>${inline(line.slice(3))}</h2>`); }
+    else if (/^- /.test(line))  { if (!inList) { out.push('<ul>'); inList = true; }
+                                  out.push(`<li>${inline(line.slice(2))}</li>`); }
+    else if (/^---$/.test(line)){ close(); out.push('<hr>'); }
+    else if (line.trim() === '') { close(); }
+    else                         { close(); out.push(`<p>${inline(line)}</p>`); }
+  }
+  if (inList) out.push('</ul>');
+  return out.join('');
+}
+function inline(s) {
+  return esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+               .replace(/\*(.+?)\*/g, '<em>$1</em>')
+               .replace(/`(.+?)`/g, '<code>$1</code>');
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso + 'T12:00:00');
+  return d.toLocaleDateString(undefined, {month: 'long', day: 'numeric'});
+}
+
+function renderBriefing(b) {
+  const el = $('#briefing');
+  if (!b.available) {
+    el.innerHTML = `<div class="brief"><b>No prep run yet.</b> <span style="color:var(--muted)">
+      Run <code>./prep.py</code> before a session and the sales, the staleness pass and the
+      open questions land here. The session never waits for it.</span></div>`;
+    return;
+  }
+  const items = b.lines.map(l => {
+    const demo = l.startsWith('DEMO — ');
+    const text = demo ? l.slice(7) : l;
+    return `<li>${demo ? '<span class="demo">demo</span>' : ''}${inline(text)}</li>`;
+  }).join('');
+  el.innerHTML = `<div class="brief"><b>Before you start</b><ul>${items}</ul></div>`;
+}
+
+function renderLastWeek(p) {
+  const sec = $('#lastWeek');
+  if (!p || p.status === 'cooked') { sec.hidden = true; renumber(false); return; }
+  sec.hidden = false; renumber(true);
+  $('#fbList').innerHTML = p.meals.map(m => {
+    const cur = p.feedback[m.slug] || '';
+    const btn = (val, label) =>
+      `<button data-fb="${m.slug}" data-val="${val}" aria-pressed="${cur.startsWith(val)}">${label}</button>`;
+    return `<div class="fb"><div>
+        <div class="name">${esc(m.title)}${m.candidate ? ' <span class="tag cand">new</span>' : ''}</div>
+      </div>
+      <div class="actions">${btn('kept','Kept it')}${btn('flopped','Nope')}${btn('not cooked',"Didn't cook")}</div>
+    </div>`;
+  }).join('') || '<span class="empty">Nothing was planned.</span>';
+  const answered = Object.keys(p.feedback).length;
+  $('#applyBtn').disabled = answered === 0;
+  $('#applyNote').textContent = answered
+    ? `${answered} of ${p.meals.length} answered`
+    : 'Answer at least one.';
+}
+
+function renumber(hasLastWeek) {
+  $('#stepNum').textContent  = hasLastWeek ? 2 : 1;
+  $('#stepNum2').textContent = hasLastWeek ? 3 : 2;
+  $('#stepNum3').textContent = hasLastWeek ? 4 : 3;
+}
+
+function renderWeek(w) {
+  $('#weekTitle').textContent = `Week of ${fmtDate(w.date)}`;
+  $('#weekSub').textContent =
+    `${w.meals.length} of ${w.nights} dinners · ${w.ae} adult-equivalents`;
+  $('#status').textContent = w.status === 'ordered' ? 'ordered' : 'planning';
+  $('#effort').textContent = w.effort;
+  $('#nights').textContent = w.nights;
+  $('#guests').textContent = w.guests;
+  document.querySelectorAll('#risk button').forEach(b =>
+    b.setAttribute('aria-pressed', b.dataset.r === w.risk));
+
+  $('#meals').innerHTML = w.meals.map(m => {
+    const tags = [
+      m.candidate ? '<span class="tag cand">never cooked here</span>' : '',
+      m.yield ? `<span class="tag">${esc(m.yield)}</span>` : '',
+      `<span class="tag ${m.active === 'low' ? 'low' : ''}">${esc(m.active || 'med')} active</span>`,
+      m.passive && m.passive !== '—' ? `<span class="tag">${esc(m.passive)}</span>` : '',
+    ].join('');
+    const variant = m.variants.length > 1
+      ? `<select data-var="${m.slug}">` + m.variants.map(v =>
+          `<option${v === m.variant ? ' selected' : ''}>${esc(v)}</option>`).join('') + '</select>'
+      : '';
+    return `<div class="card meal">
+      <div class="title">${esc(m.title)}</div>
+      <div class="actions"><button class="ghost" data-drop="${m.slug}" title="Not this week">Drop</button></div>
+      <div class="why">${esc(m.reason)}</div>
+      <div class="meta">${tags}${variant}</div>
+    </div>`;
+  }).join('') || '<div class="card"><span class="empty">Empty week. Press Suggest another.</span></div>';
+
+  const short = w.nights - w.meals.length;
+  $('#fillNote').textContent = short > 0
+    ? `${short} short of ${w.nights}` : 'The week is full — this adds one more.';
+  $('#orderBtn').disabled = w.status === 'ordered';
+  $('#orderNote').textContent = w.status === 'ordered'
+    ? `Saved to weeks/${w.date}.md` : '';
+}
+
+function render() {
+  renderBriefing(S.briefing);
+  renderLastWeek(S.previous);
+  renderWeek(S.week);
+}
+
+async function load() { S = await api('/api/state'); render(); }
+
+document.addEventListener('click', async (e) => {
+  const t = e.target.closest('button, [data-drop]');
+  if (!t) return;
+  if (t.dataset.drop)  { S = await api('/api/drop', {slug: t.dataset.drop}); return render(); }
+  if (t.dataset.fb)    { S = await api('/api/feedback', {slug: t.dataset.fb, outcome: t.dataset.val}); return render(); }
+  if (t.dataset.r)     { S = await api('/api/dials', {risk: t.dataset.r}); return render(); }
+  if (t.dataset.d) {
+    const cur = S.week[t.dataset.d];
+    const next = Math.max(t.dataset.d === 'nights' ? 1 : 0, cur + Number(t.dataset.v));
+    S = await api('/api/dials', {[t.dataset.d]: next});
+    return render();
+  }
+  if (t.id === 'fillBtn')  { t.classList.add('spin'); S = await api('/api/fill', {});
+                             t.classList.remove('spin'); return render(); }
+  if (t.id === 'applyBtn') {
+    const r = await api('/api/apply', {}); S = r; render();
+    $('#applyNote').textContent = r.applied.length
+      ? r.applied.join(' · ') : 'Nothing to write.';
+    return;
+  }
+  if (t.id === 'listBtn') {
+    $('#listOut').innerHTML = '<span class="empty">Adding it up…</span>';
+    const r = await api('/api/list');
+    $('#listOut').innerHTML = md(r.markdown);
+    return;
+  }
+  if (t.id === 'orderBtn') { S = await api('/api/order', {}); return render(); }
+});
+
+document.addEventListener('change', async (e) => {
+  if (e.target.dataset.var) {
+    S = await api('/api/variant', {slug: e.target.dataset.var, variant: e.target.value});
+    render();
+  }
+});
+
+load();
+</script>
+</body>
+</html>
