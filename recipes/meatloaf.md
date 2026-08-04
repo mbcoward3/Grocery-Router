@@ -18,7 +18,8 @@ status:   complete
 - 3  garlic cloves (minced)
 - 2 Tbsp ketchup
 - 3 Tbsp fresh parsley (finely chopped)
-- 3/4 cup Panko breadcrumbs (or gluten-free bread crumbs)
+- 3/4 cup Panko breadcrumbs (or gluten-free bread crumbs)    accepts: gluten-free bread crumbs
+  <!-- source: "3/4 cup Panko breadcrumbs (or gluten-free bread crumbs)" -->
 - 1/3 cup milk
 - 1 tsp salt (or to taste)
 - 1 tsp Italian seasoning

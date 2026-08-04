@@ -6,7 +6,7 @@ The household cooks a fraction of what it enjoys. Roughly 60 recipes have been t
 liked; under the stress of picking a week, about 15 surface. The gap between 15 and 60 is
 the product. Full reasoning in [`docs/pantry-router-proposal.md`](docs/pantry-router-proposal.md).
 
-This is Step 1 of three — the week. The shopping list and the Kroger cart come later.
+Step 1 (the week) and Step 2 (the list) exist. The Kroger cart comes later.
 
 ## Setup
 
@@ -51,6 +51,29 @@ inputs and writes the tally, including how much of each capture is actually miss
 
 Run `python3 test_onboard.py` after touching the ingredient grammar.
 
+## The list
+
+```sh
+./shop.py --week crock-pot-italian-beef,sausage-and-peppers        # a week
+./shop.py --week chicken-noodle-soup:whole-young-chicken --guests 2
+./shop.py --audit                                                  # what the tables don't know
+```
+
+Loads only the recipes the week actually uses, applies the chosen variant, scales each
+recipe against its own yield, converts units per item, adds it up, and prints the list by
+aisle with provenance on every line — plus what's shared between meals and what's stranded
+if a night falls through.
+
+**Deterministic end to end. There is no model in this path and there must not be one** —
+parsing a recipe is code, not a prompt. Nothing is silently dropped: a line the parser
+can't read comes out as raw text with a flag, an item with no `items.md` row is printed
+verbatim so you can buy it by eye, and a recipe whose yield nobody knows says it wasn't
+scaled instead of pretending.
+
+`--audit` parses all 27 recipe files and reports every gap. It currently reports none:
+265 ingredient lines, all parsed, all recognised. Run `python3 test_shop.py` after
+touching any of it — the week of 2 August is in there as an acceptance fixture.
+
 ## The two files that matter
 
 Everything the planner knows lives in two markdown files you edit by hand.
@@ -75,11 +98,15 @@ and 11 screenshots. That's the §1b thread-mining accelerator arriving on day on
 than at phase 1b.
 
 All 25 now have an ingredient file in `recipes/`, onboarded by `onboard.py` from the same
-document — six links fetched, six typed notes parsed, eleven screenshots read. Five of the
-eleven screenshots are short of content and say so; the run is reported honestly in
-[`docs/onboarding-run.md`](docs/onboarding-run.md), and what it means is in
-[`docs/onboarding-findings.md`](docs/onboarding-findings.md). Sixteen of the 25 still have
-no yield, because no source ever stated one.
+document — six links fetched, six typed notes parsed, eleven screenshots read. The run is
+reported honestly in [`docs/onboarding-run.md`](docs/onboarding-run.md), and what it means
+is in [`docs/onboarding-findings.md`](docs/onboarding-findings.md).
+
+A second pass went back to the sources for what the first pass could only flag:
+[`docs/onboarding-pass-2-findings.md`](docs/onboarding-pass-2-findings.md). Five of the
+fifteen unknown yields were recovered from the pages the screenshots showed the address bar
+of; three turned out not to be questions at all. Seven remain, and only the household can
+close them.
 
 It also means the unaided-recall baseline was never measurable here — the recipes came off
 a saved document, not out of memory, which is a different and better thing. The saved doc
@@ -98,7 +125,10 @@ to lose you in week one.
 
 ## Where it goes
 
-Log outcomes, so cooked-and-kept candidates enter the corpus on their own. Then the
-shopping list — deterministic, no model past parsing. Then the Kroger cart. Then the
-inferred pantry, which depends on parsing order confirmation emails and may not be
-obtainable at all.
+Log outcomes, so cooked-and-kept candidates enter the corpus on their own. Then the Kroger
+cart — SKU matching and pack sizing, behind a store adapter so a second store is a new
+file. Then the inferred pantry, which depends on parsing order confirmation emails and may
+not be obtainable at all.
+
+The one thing that would improve every part of this at once is cooking a week and saying
+what happened.

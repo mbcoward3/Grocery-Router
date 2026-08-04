@@ -1,12 +1,13 @@
 # Chili
 
-source:   julieseatsandtreats.com (site shown in the screenshot address bar; the recipe's own URL is not visible)
-modality: screenshot
-yield:    unknown (not stated in source)
+source:   https://www.julieseatsandtreats.com/easy-chili-recipe/ (recovered — the screenshots showed only the address bar)
+modality: screenshot, completed by recovery
+yield:    4 AE (source: 4 servings) [recovered]
+times:    prep 10 min, cook 20 min, total 30 min (source) [recovered]
 active:   not stated in source
 passive:  simmer (method word in the source's own steps; unverified)
 peanut:   none seen
-status:   partial
+status:   complete
 images:   sources/Recipes.pdf pages 2-5, three screenshots, timestamped 11:49 and 11:50
 
 ## Ingredients
@@ -23,7 +24,7 @@ images:   sources/Recipes.pdf pages 2-5, three screenshots, timestamped 11:49 an
 - 1/2 tsp oregano
 - 2 Tbsp tomato paste
 - sour cream and shredded cheese to top with optional    <!-- quantity not stated -->
-- 1 can petite diced tomatoes 14 oz can
+- 1 can petite diced tomatoes 14.5 oz can    <!-- captured as "14 oz"; source says 14.5 oz [recovered] -->
 
 ## Method
 
@@ -37,8 +38,12 @@ reduce the heat to low and simmer for 20 minutes, uncovered, stirring occasional
 Remove chili from stove and let set 5-10 minutes then serve. Top with cheese and sour
 cream if desired.
 
-## Open questions
+## Recovery notes
 
-- **content may be missing** - The ingredient list spans two screenshots taken at different scroll positions. Whether any lines fall in the gap between "1/2 tsp oregano" and "2 Tbsp tomato paste" cannot be told from the images.
-- The screenshots show the site but not which of its chili recipes this is, so the source cannot be resolved to a URL and cannot be re-fetched.
-- how many adults does this feed? The source never states servings.
+Identified by searching the site for a chili matching the captured lines, and confirmed
+against the fetched page: the ingredient list matches all thirteen captured lines in order.
+
+- ~~**content may be missing**~~ — **closed.** Nothing falls in the seam between
+  "1/2 tsp oregano" and "2 Tbsp tomato paste"; the source has exactly those lines adjacent.
+- ~~which of the site's chili recipes this is~~ — **closed**, it is *Easy Chili Recipe*.
+- ~~how many adults does this feed~~ — **closed by the source: 4 servings.**

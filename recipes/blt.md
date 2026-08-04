@@ -2,7 +2,7 @@
 
 source:   household notes, sources/Recipes.pdf page 10-11 (typed)
 modality: text
-yield:    unknown (not stated in source)
+yield:    per portion — no batch exists (see Open questions)
 active:   not stated in source
 passive:  not stated in source
 peanut:   none seen
@@ -18,4 +18,9 @@ status:   complete
 
 ## Open questions
 
-- how many adults does this feed? The source never states servings.
+- ~~how many adults does this feed?~~ — **withdrawn. The question does not apply to this
+  recipe.** A BLT has no batch size; you make one per person and the ingredient list has no
+  quantities because there is nothing fixed to quantify. No source states a yield because
+  no source could. See `docs/step2-design.md` §2.5.
+- What is left is a real but smaller question, and it belongs to the shopping list rather
+  than the recipe: **how much bacon per sandwich.**

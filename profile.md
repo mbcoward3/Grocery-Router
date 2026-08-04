@@ -37,7 +37,7 @@ every week downstream.
 
 *What this household likes. Each claim carries its trace.*
 
-- **Beef runs at about half the repertoire.** 12 of 25 recipes. Asked whether that was
+- **Beef runs at about half the repertoire.** 12 of the 24 in the corpus. Asked whether that was
   preference or rut, the answer was "somewhere between." **No cap is applied.** The corpus
   is the household's own expression of what it wants, and it self-corrects: add chicken
   recipes and the mix shifts on its own. A quota fights that signal instead of reading it.
@@ -47,7 +47,7 @@ every week downstream.
   biscuits, blocks of cream cheese recur across the corpus. A scratch-everything proposal
   is wrong for this household regardless of how good the recipe is. *Because it's visible
   in the ingredient lists of the six typed-out recipes.*
-- **Cuisine is narrow: roughly 18 of 25 are plain American comfort food**, plus 3
+- **Cuisine is narrow: 17 of the 24 are plain American comfort food**, plus 3
   Italian-American, 2 Tex-Mex, 2 loosely Asian. Recorded as a fact about the corpus, not
   yet as a preference — nobody has said whether they want it widened. *Because it's a
   count off the corpus.*

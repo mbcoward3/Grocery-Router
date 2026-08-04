@@ -1,9 +1,11 @@
 # Step 2 — The List
 
-**Design doc. Concrete enough to build from.**
+**Design doc. Built — `shop.py`, `test_shop.py`, `items.md`, `recipes/`.**
 
 Step 1 chooses the week. Step 2 turns that week into a grocery list. This document
-specifies Step 2 and the storage it needs, which does not currently exist.
+specified Step 2 before it existed; it now describes something running. Where the two ever
+disagree, the code is right and this file is stale — say so here rather than quietly
+patching around it. §2.4 and §2.5 both carry corrections that building it forced.
 
 ---
 
@@ -161,15 +163,24 @@ consolidation is what creates the second use.
 
 ### 2.4 Produced items
 
-A cook can output an ingredient, not just a meal. The corpus already contains real pairs:
-the beef pot roast produces jus and the beef dip Sammies needs au jus; the crock pot
-Italian beef produces shredded beef and juice well beyond one dinner.
+A cook can output an ingredient, not just a meal.
 
 ```markdown
-produces: 2 cups au jus, keeps 4 days
+produces: chicken stock, keeps 4 days or freezes
 
-- 2 cups au jus    may come from: beef pot roast
+- 6 cups chicken broth    may come from: chicken noodle soup, whole-bird variant
 ```
+
+**The corpus contains exactly one of these, and it is worth saying how few that is.** This
+section was first written claiming three pairs — the pot roast making jus for the beef dip
+Sammies, the Italian beef making shredded beef for something. Read against the actual
+files, neither survives: the beef dip makes its own liquid from its own roast and never
+buys jus, and nothing in the corpus consumes shredded beef. Both were plausible and both
+were invented. The one real pair is inside a single recipe — the whole-bird chicken noodle
+soup boils its own stock and `replaces:` the bought broth with it.
+
+That ratio is the argument for the three rules below. A feature that fires once in
+twenty-four recipes must not be allowed to reshape the twenty-three.
 
 **This is leftovers generalised.** The system already models *cook big Monday, eat
 Tuesday*; here the leftover is an ingredient rather than a meal. Framing it that way lets
@@ -191,6 +202,45 @@ coupling once, choosing a candidate built around an ingredient already in the we
 Output-linking pulls harder in the same direction, and left unchecked it converges on a
 small set of mutually reinforcing recipes — which fights breadth, the point of the whole
 project.
+
+### 2.5 Yield is three things, not one
+
+Written first as a single number in adult-equivalents, on the assumption that every recipe
+has one and some sources forget to print it. Going back to fifteen sources to fill the
+blanks disproved that. **Not every recipe has a yield, and of those that do, not all state
+it in people.**
+
+```markdown
+yield:   8 AE                    # a batch, in adult-equivalents
+yield:   8 enchiladas            # a batch, in portions
+portion: enchilada; 2 per adult  # the conversion, household-stated, optional
+yield:   per portion             # no batch exists
+yield:   unknown                 # a batch dish whose source never said
+```
+
+**`N AE`** is the ordinary case and needs no comment.
+
+**`N <things>`** is what published sources actually print for anything countable: *8
+enchiladas*, *24 sliders*. That is real information and throwing it away as `unknown` loses
+the shopping list's scaling factor. What it lacks is the appetite number, and **no source
+can supply that** — it is a fact about the eaters. One sentence from the household turns it
+into AE, and it is reusable forever, because a slider is a slider.
+
+**`per portion` is the case that was missing entirely**, and it changes what gets asked.
+Burgers, tacos and BLTs have no batch size: you make as many as there are people. `2lb
+ground beef` on the hamburgers is a unit of purchase, not a serving. Their ingredient lists
+carry almost no quantities — not because the capture failed, but because there is nothing
+fixed to quantify. **No source states a yield for these because none could**, and asking
+the household is asking a question with no answer. Scaling is `AE × per-portion amount`
+and the batch never enters it.
+
+Recognising this shrank the outstanding work: of fifteen `unknown` yields, five were
+recoverable from sources, three were never questions, and seven are genuine.
+
+**Why the distinction has to live in the data and not in the planner's head.** A model asked
+*how many does a BLT serve* will answer four, confidently, forever. The value of a schema
+here is that it can say *this recipe does not have that property* — which is a thing a
+plausible guess can never say.
 
 ## 3. Canonical items
 
@@ -227,7 +277,9 @@ week (from Step 1, with a variant chosen per meal)
   -> load        recipes/<slug>.md for each chosen meal
   -> resolve     apply the chosen variant's + and replaces: lines
   -> parse       ingredient lines -> (qty, unit, item, note, accepts)
-  -> scale       recipe yield vs. this week's AE -> multiplier per recipe
+  -> scale       recipe yield vs. this week's AE -> multiplier per recipe (§2.5:
+                 `N AE` divides; `N things` needs a portion rate; `per portion`
+                 multiplies by AE directly; `unknown` scales x1 and says so)
   -> normalize   item -> canonical, via items.md synonyms
   -> convert     units -> a common unit per canonical item, via each_equiv
   -> aggregate   sum across recipes, keeping provenance
@@ -291,12 +343,42 @@ SKU matching, pack sizing (§7), and the cart write are Step 3 and the store ada
 2 ends at canonical items with quantities. The adapter interface in §10 takes it from
 there, and stays behind that boundary so a second store is a new file.
 
-## 8. Build order
+## 8. Build order — done
 
-1. `recipes/` schema + parser, tested against the six recipes already typed out in the
-   source PDF and the four fetched from links. Ten real recipes is a real test set.
-2. `items.md` + normalize/convert, seeded from those ten.
-3. Aggregate + emit, graded against the Aug 2 fixture.
-4. Coupling report, which falls out of provenance at near-zero extra cost.
-5. Backfill the remaining corpus recipes into `recipes/` as they get cooked — no need to
-   do all 25 up front, since Step 2 only loads the chosen week.
+1. ~~`recipes/` schema + parser~~ — **done**, and the test set turned out to be all 27
+   files rather than the ten planned. `./shop.py --audit` reports **265 ingredient lines,
+   0 unparseable**.
+2. ~~`items.md` + normalize/convert~~ — **done**, 119 rows, and `--audit` reports 0 lines
+   with no row. It was 27 rows and 154 unknown names when this was written.
+3. ~~Aggregate + emit~~ — **done**, graded against the Aug 2 fixture in `test_shop.py`.
+4. ~~Coupling report~~ — **done**, and it did fall out of provenance for nearly nothing.
+5. Backfill remaining recipes as they get cooked — **not needed**, all 27 exist.
+
+**What building it changed in this document**, since a design doc that survives contact
+unamended is usually a design doc nobody read:
+
+- **§2.5 is new.** `yield` was specified as one number in adult-equivalents. Three of the
+  corpus's recipes have no batch size at all, and two published sources state portions
+  rather than servings. See `docs/onboarding-pass-2-findings.md` §1.
+- **§2.4's examples were wrong.** Two of the three `produces:` pairs it claimed do not
+  exist in the files. Corrected in place, with the count pinned by a test.
+- **The normalizer needed a safety rule that isn't in §3.** Matching sub-phrases of an item
+  name let `onion powder` resolve to `onion` — a fresh onion in the cart for a teaspoon of
+  spice, silently, across eighteen lines of the corpus. A partial match is now only accepted
+  when every word it leaves behind is noise. **A mis-merge is worse than an unknown line**,
+  because an unknown line gets printed and a mis-merge does not, and §3's "grows on parse
+  failure" model quietly assumed failures are visible.
+- **One line can name two items.** `2 tsp thyme and rosemary` matched `thyme` and dropped
+  the rosemary. Both are emitted now, and neither carries the quantity, because splitting
+  `2 tsp` between them would be a guess.
+
+## 9. What is still not built
+
+- **Step 3.** SKU matching, pack sizing, the Kroger cart. §7 above.
+- **Consolidation has never fired on real data.** Four of the corpus's five declared
+  tolerances resolve to the same canonical item as the thing they replace, and the fifth has
+  no partner in the corpus. It is correct and tested; it is waiting for more recipes.
+- **`produces:` has one instance**, inside a single recipe. The cross-recipe case the
+  feature was designed for has not occurred.
+- **Sides.** The corpus is mains-only and every list says so. This is the largest known
+  omission in the output and it is a capture problem, not a code problem.

@@ -1,30 +1,42 @@
 # Meatball subs
 
-source:   spendwithpennies.com (site shown in the screenshot address bar; the recipe's own URL is not visible)
-modality: screenshot
-yield:    unknown (not stated in source)
+source:   https://www.spendwithpennies.com/meatball-sub/ (recovered — the screenshots showed only the address bar)
+modality: screenshot, completed by recovery
+yield:    4 AE (source: 4 servings) [recovered]
+times:    prep 20 min, cook 15 min, total 35 min (source) [recovered]
 active:   not stated in source
-passive:  oven (method word in the source's own steps; unverified)
+passive:  varies by variant — see below
 peanut:   none seen
 status:   complete
 images:   sources/Recipes.pdf pages 12-13, two screenshots, timestamped 10:49
 
 ## Ingredients
 
-- 16 frozen meatballs or homemade below
 - 2 cups pasta sauce or marinara sauce
 - 4 hoagie rolls
 - 4 tablespoons garlic butter
-- 1 cup shredded provolone or mozzarella cheese
+- 1 cup shredded provolone or mozzarella cheese    accepts: mozzarella
+  <!-- source line reads "shredded provolone or mozzarella cheese" -->
 
-### Meatballs (or use frozen meatballs if preferred)
+## Variants
 
-- 1 pound lean ground beef
-- 1 egg
-- ½ cup seasoned bread crumbs
-- ½ teaspoon Italian seasoning
-- ½ teaspoon onion powder
-- salt and pepper to taste    <!-- quantity not stated -->
+*The source offers both and the household has not said which it makes. The frozen route is
+listed first and is the default until someone says otherwise — flipping it is one tap.*
+
+### Frozen
+active:  ~15 min
+passive: 10 min simmer
++ 16 frozen meatballs
+
+### Homemade
+active:  ~35 min
+passive: 20 min oven, then 10 min simmer
++ 1 pound lean ground beef
++ 1 egg
++ ½ cup seasoned bread crumbs
++ ½ teaspoon Italian seasoning
++ ½ teaspoon onion powder
++ salt and pepper to taste    <!-- quantity not stated -->
 
 ## Method
 
@@ -39,7 +51,16 @@ dish. Place 4 meatballs in each roll and top with a little bit of sauce and chee
 Broil 2-3 minutes or until cheese is melted. Serve with additional sauce for dipping if
 desired.
 
-## Open questions
+## Recovery notes
 
-- The ingredient list offers frozen meatballs OR the homemade sub-list; which one this household makes is not recorded.
-- how many adults does this feed? The source never states servings.
+Identified as *Meatball Sub* on spendwithpennies.com and confirmed against the fetched page.
+
+- ~~how many adults does this feed~~ — **closed by the source: 4 servings**, one sub each.
+- ~~frozen OR homemade is not recorded~~ — **no longer a blocking question.** It is a
+  variant, both are captured, and the planner picks one and shows which.
+
+## Capture notes
+
+- The live page now reads `1 cup shredded Italian cheese blend or mozzarella or provolone`.
+  The screenshot's older wording is kept as captured; the `accepts:` above records only the
+  tolerance both versions state.

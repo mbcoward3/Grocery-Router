@@ -14,11 +14,19 @@ file per recipe, loaded only for the meals a week actually uses (`docs/step2-des
 
 **`Yield` is the one field that moved in from `recipes/`.** The planner needs it to reason
 about leftovers — a cold run once proposed a double batch of a recipe that already served
-8. It is in adult-equivalents and it is filled in only where the source states servings.
-**`unknown` is a real value, not a gap to fill**: 16 of these came from a screenshot or a
-typed note that never said how many it feeds, and a plausible guess is worse than a blank.
-Answering those 16 is the highest-value thing anyone can do to this file — see
-`docs/onboarding-findings.md` §4.
+8. It takes three shapes, and which one applies is a fact about the dish
+(`docs/step2-design.md` §2.5):
+
+- **`N AE`** — a batch dish whose source states servings, in adult-equivalents.
+- **`N <things>`** — a batch measured in portions rather than people, like `8 enchiladas`.
+  Real information; it needs one number from the household to become AE.
+- **`per portion`** — no batch exists. Burgers, tacos and BLTs scale with the headcount,
+  which is *why* no source states a yield for them. Asking is a question with no answer.
+
+**`unknown` is a real value, not a gap to fill**, and it now means only one thing: a genuine
+batch dish whose source never said. Seven rows are in that state and the household is the
+only thing that can answer them. Five more were closed by going back to the sources, and
+three were never questions at all.
 
 **Growing it is the point, not a chore.** Add a line whenever one comes back to you, and
 whenever a candidate gets cooked and kept.
@@ -50,21 +58,21 @@ table is small enough to hand a planner in full on every run, so it can propose 
 | 3-ingredient teriyaki chicken | chicken | Japanese-ish | 4 AE | low | — |  | tasty.co; check sauce for peanut |
 | Chicken veggie stir fry | chicken | Chinese-ish | 6 AE | med | — |  | tasty.co; check sauce for peanut |
 | Easy salmon dinner | fish | American | 2 AE | low | — |  | tasty.co |
-| Chili | beef | American | unknown | low | simmer |  |  |
-| Enchiladas | beef | Tex-Mex | unknown | med | ~25m oven |  | protein confirmed beef |
-| Chicken noodle soup | chicken | American | unknown | med | simmer |  |  |
-| Tacos | beef | Tex-Mex | unknown | low | — |  | ground beef + seasoning packet |
-| Hamburgers | beef | American | unknown | low | — |  |  |
+| Chili | beef | American | 4 AE | low | 20m simmer |  | julieseatsandtreats.com |
+| Enchiladas | beef | Tex-Mex | 8 enchiladas | med | 30-35m oven |  | southernbite.com; protein confirmed beef |
+| Chicken noodle soup | chicken | American | unknown | med | rotisserie *or* whole bird — see variants |  |  |
+| Tacos | beef | Tex-Mex | per portion | low | — |  | ground beef + seasoning packet |
+| Hamburgers | beef | American | per portion | low | — |  |  |
 | Pork loin and rice | pork | American | unknown | low | oven |  |  |
 | Cheesy pasta | beef | American | unknown | low | — |  | ground beef, elbows, cream cheese, marinara |
 | Biscuits and gravy | pork | American | unknown | low | short oven |  | sausage; breakfast-for-dinner |
-| BLT | pork | American | unknown | low | — |  | bacon; barely cooking |
-| Meatball subs | beef | Italian-American | unknown | low | — |  |  |
-| Sliders | beef | American | unknown | low | short oven |  |  |
+| BLT | pork | American | per portion | low | — |  | bacon; barely cooking |
+| Meatball subs | beef | Italian-American | 4 AE | low | frozen *or* homemade — see variants |  | spendwithpennies.com |
+| Sliders | beef | American | 24 sliders | low | 12-15m oven |  | natashaskitchen.com |
 | Beef dip Sammies | beef | American | 8 AE | low | slow cooker *or* stovetop braise — see variants |  | 3 lb roast |
 | Chicken chili | chicken | American | unknown | low | simmer |  | cream cheese |
 | Zuppa toscana | pork | Italian-American | unknown | med | simmer |  | sausage |
-| Beef pot roast | beef | American | unknown | med | very long |  | braise |
+| Beef pot roast | beef | American | 8 AE | med | 8-10 hr slow cooker |  | dinnerthendessert.com |
 | Tuna melt | fish | American | unknown | low | — |  |  |
 
 **Effort is two numbers, and only the first one is capped.**
@@ -81,16 +89,22 @@ is all unattended.
 
 ## Flagged for confirmation
 
-- **Chicken and dumplings** was written `Chicken and dumplings?` in the source, and the
-  household doesn't remember what the question mark meant. Left in the corpus, marked
-  uncertain. Resolve it the first time it comes up in a real week: if it turns out to be
-  aspirational rather than cooked-and-liked, it moves out to candidates.
+- ~~Chicken and dumplings~~ — **moved to `candidates.md`** by household decision. Rather
+  than leave one unproven entry weakening the guarantee that everything here is
+  cooked-and-liked, it waits until it is actually cooked.
 - ~~Enchiladas protein~~ — confirmed beef.
+- **Seven yields still say `unknown`**, and every one is a genuine batch dish whose source
+  never stated servings: chicken noodle soup, pork loin and rice, cheesy pasta, biscuits
+  and gravy, chicken chili, zuppa toscana, tuna melt. Nothing but the household can close
+  these. Two more are portion counts waiting on one number each — *how many enchiladas is
+  an adult*, and the same for sliders.
 
-## Counts, as of seeding
+## Counts
 
-Protein: **beef 12**, chicken 6, pork 5, fish 2. Cuisine: ~18 American, 3
+Protein: **beef 12**, chicken 5, pork 5, fish 2, across 24. Cuisine: 17 American, 3
 Italian-American, 2 Tex-Mex, 2 loosely Asian.
 
-Beef at 48% is above what the household wants — see the soft cap in `profile.md`. The
-cuisine spread is recorded as fact, not as a problem; nobody has said they want it widened.
+Beef at 50% is recorded, not corrected. **There is no quota** — the corpus is the
+household's own expression of what it wants, and adding chicken recipes shifts the mix on
+its own (`profile.md`). The cuisine spread is likewise a fact, not a problem; nobody has
+said they want it widened.

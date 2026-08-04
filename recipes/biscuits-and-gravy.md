@@ -10,7 +10,8 @@ status:   complete
 
 ## Ingredients
 
-- 1 sausage tube spicy or regular
+- 1 sausage tube spicy or regular    accepts: regular sausage tube
+  <!-- source line reads "1 sausage tube spicy or regular" -->
 - Tube of biscuits    <!-- quantity not stated -->
 - Onion    <!-- quantity not stated -->
 - Flour    <!-- quantity not stated -->

@@ -44,7 +44,7 @@ to melt the cheese.
 
 ## Open questions
 
-- **content may be missing** - The ingredient list spans two story frames; the seam falls between "2-3 tbsp mayo" and "1-2 tsp yellow mustard" and cannot be confirmed continuous.
+- **content may be missing, permanently** - The ingredient list spans two story frames; the seam falls between "2-3 tbsp mayo" and "1-2 tsp yellow mustard" and cannot be confirmed continuous. **Recovery was not attempted and should not be**: an expired Instagram story has no published page behind it, so there is nothing to search for. This one is short forever unless the household remembers.
 - Four of the sandwich lines are "of choice" or unmeasured - bread, cheese, butter or oil, pickle slices.
 - The can size of the tuna is not given.
 - how many adults does this feed? The source never states servings.

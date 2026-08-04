@@ -1,12 +1,14 @@
 # Enchiladas
 
-source:   southernbite.com (site shown in the screenshot address bar; the recipe's own URL is not visible)
-modality: screenshot
-yield:    unknown (not stated in source)
+source:   https://southernbite.com/5-ingredient-beef-enchiladas/ (recovered — the screenshots showed only the address bar)
+modality: screenshot, completed by recovery
+yield:    8 enchiladas (source) [recovered]
+portion:  enchilada; per-adult count not stated anywhere — household
+times:    prep 20 min, cook 35 min, total 55 min (source) [recovered]
 active:   not stated in source
 passive:  oven (method word in the source's own steps; unverified)
 peanut:   none seen
-status:   partial
+status:   complete
 images:   sources/Recipes.pdf pages 6-7, two screenshots, timestamped 19:14
 
 ## Ingredients
@@ -14,7 +16,8 @@ images:   sources/Recipes.pdf pages 6-7, two screenshots, timestamped 19:14
 - 1 pound lean ground beef
 - 1 cup chunky salsa
 - 1 (10-ounce) can red enchilada sauce
-- 8 (8-inch) tortillas (We much prefer flour tortillas in this recipe, but corn are more traditional.)
+- 8 (8-inch) tortillas (We much prefer flour tortillas in this recipe, but corn are more traditional.)    accepts: corn tortillas
+  <!-- source: "We much prefer flour tortillas in this recipe, but corn are more traditional." -->
 - 1 (8-ounce) package Borden® Cheese Thick Cut Shredded Four Cheese Mexican (about 2 cups)
 
 ## Method
@@ -32,7 +35,16 @@ up and place them in the dish, seam side down. Pour the remaining enchilada sauc
 them and sprinkle the remaining cheese over. Tightly wrap the dish with aluminum foil
 and bake for 30 to 35 minutes.
 
+## Recovery notes
+
+Identified as *5 Ingredient Beef Enchiladas* and confirmed against the fetched page.
+
+- ~~**content may be missing**~~ — **closed.** The recipe has exactly five ingredients and
+  the capture has all five, in order. Nothing was scrolled past above the ground beef.
+- ~~how many adults does this feed~~ — **the source says 8 enchiladas, not servings.** That
+  is a portion count, not an adult-equivalent, and no source can supply the conversion.
+
 ## Open questions
 
-- **content may be missing** - The screenshot starts at the first ingredient with the "Ingredients" heading above it cut off, so it cannot be confirmed that no lines were scrolled past above "1 pound lean ground beef".
-- how many adults does this feed? The source never states servings.
+- How many enchiladas is one adult? Two seconds to answer, and it turns `8 enchiladas` into
+  a yield the planner can use. See `docs/step2-design.md` §2.5.
