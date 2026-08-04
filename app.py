@@ -17,8 +17,11 @@ Standard library only, no build step, no dependencies.
 
 import argparse
 import json
+import os
+import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -28,6 +31,54 @@ import pantry
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
+DEMO: Path | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Demo mode
+# --------------------------------------------------------------------------- #
+
+DEMO_FILES = ("corpus.md", "candidates.md", "profile.md", "items.md")
+
+
+def start_demo() -> Path:
+    """Run against a scratch copy of the household's files.
+
+    A hosted demo is a stranger's hands on your corpus. Everything a session
+    writes - last-cooked dates, promotions, the decision log - is real behaviour
+    that has to work, so it cannot be stubbed out; it just must not land in the
+    repo. So the files are copied to a temp directory at boot and `pantry` is
+    pointed there. Reset puts it back.
+    """
+    global DEMO
+    DEMO = Path(tempfile.mkdtemp(prefix="pantry-demo-"))
+    reset_demo()
+    pantry.ROOT = DEMO
+    pantry.CORPUS = DEMO / "corpus.md"
+    pantry.CANDIDATES = DEMO / "candidates.md"
+    pantry.PROFILE = DEMO / "profile.md"
+    pantry.WEEKS = DEMO / "weeks"
+    pantry.CACHE = DEMO / ".cache"
+    pantry.DECISIONS = DEMO / "decisions.jsonl"
+    pantry._FILE_INDEX = None
+    return DEMO
+
+
+def reset_demo() -> None:
+    if DEMO is None:
+        return
+    for name in DEMO_FILES:
+        shutil.copy(ROOT / name, DEMO / name)
+    if not (DEMO / "recipes").exists():
+        shutil.copytree(ROOT / "recipes", DEMO / "recipes")
+    shutil.rmtree(DEMO / "weeks", ignore_errors=True)
+    (DEMO / "decisions.jsonl").unlink(missing_ok=True)
+    # Carry over a briefing cached at image-build time, so a hosted visitor
+    # lands on a full page instead of an empty card.
+    shutil.rmtree(DEMO / ".cache", ignore_errors=True)
+    if (ROOT / ".cache").exists():
+        shutil.copytree(ROOT / ".cache", DEMO / ".cache")
+    pantry._FILE_INDEX = None
 
 
 # --------------------------------------------------------------------------- #
@@ -56,6 +107,7 @@ def state() -> dict:
         "counts": {"corpus": len(corpus), "candidates": len(pantry.load_candidates())},
         "metrics": metrics(),
         "planner": "ranker",
+        "demo": DEMO is not None,
     }
 
 
@@ -104,7 +156,8 @@ def grocery_list(week: pantry.Week) -> dict:
     if not specs:
         return {"ok": True, "markdown": "_Nothing planned yet._"}
     cmd = [sys.executable, str(ROOT / "shop.py"), "--week", ",".join(specs),
-           "--ae", str(pantry.BASE_AE), "--guests", str(week.guests)]
+           "--ae", str(pantry.BASE_AE), "--guests", str(week.guests),
+           "--root", str(pantry.ROOT)]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
         return {"ok": False, "markdown": f"```\n{proc.stderr.strip()}\n```"}
@@ -204,7 +257,13 @@ def post_order(body):
     return state()
 
 
+def post_reset(body):
+    reset_demo()
+    return state()
+
+
 ROUTES = {
+    "/api/reset": post_reset,
     "/api/dials": post_dials,
     "/api/drop": post_drop,
     "/api/lock": post_lock,
@@ -252,16 +311,31 @@ class Handler(BaseHTTPRequestHandler):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--port", type=int, default=8765)
+    ap.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8765)))
+    ap.add_argument("--host", default=os.environ.get("HOST", "127.0.0.1"),
+                    help="0.0.0.0 to accept connections from outside this machine")
+    ap.add_argument("--demo", action="store_true",
+                    default=os.environ.get("PANTRY_DEMO") == "1",
+                    help="work off a scratch copy so nothing writes to the repo")
     ap.add_argument("--no-open", action="store_true")
     args = ap.parse_args()
 
-    server = ThreadingHTTPServer(("127.0.0.1", args.port), Handler)
-    url = f"http://127.0.0.1:{args.port}"
-    print(f"Pantry Router — {url}")
+    if args.demo:
+        start_demo()
+
+    # Refuse the combination that would let a stranger write to the real corpus.
+    if args.host != "127.0.0.1" and not args.demo:
+        print("Refusing to serve the real corpus on a public interface.\n"
+              "  Pass --demo to run against a scratch copy, or keep --host 127.0.0.1.",
+              file=sys.stderr)
+        return 2
+
+    server = ThreadingHTTPServer((args.host, args.port), Handler)
+    url = f"http://{'127.0.0.1' if args.host == '0.0.0.0' else args.host}:{args.port}"
+    print(f"Pantry Router — {url}{'  [demo: writes go to a scratch copy]' if args.demo else ''}")
     print(f"  corpus {len(pantry.load_corpus())} · candidates {len(pantry.load_candidates())} "
           f"· week {pantry.monday()}")
-    if not args.no_open:
+    if not args.no_open and args.host == "127.0.0.1":
         threading.Timer(0.4, lambda: webbrowser.open(url)).start()
     try:
         server.serve_forever()
@@ -270,4 +344,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)

@@ -28,6 +28,11 @@ what stamps `Last cooked`, promotes a candidate that earned its place, and gives
 something to rank on. Without it every recipe looks equally forgotten forever.
 
 Architecture and the decisions behind it: [`docs/architecture.md`](docs/architecture.md).
+Putting it on a URL someone else can click: [`docs/deploy.md`](docs/deploy.md).
+
+`app.py` binds localhost and **refuses to serve the real corpus on a public interface** —
+pass `--demo` and it works off a scratch copy instead, where planning, feedback, promotion
+and the list all run for real and none of it reaches the repo.
 
 ## Planning from the terminal
 

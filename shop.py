@@ -1019,7 +1019,13 @@ def main(argv=None):
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--no-coupling", action="store_true")
     ap.add_argument("--audit", action="store_true", help="parse every recipe, report gaps")
+    ap.add_argument("--root", type=Path, help="read recipes/ and items.md from here")
     args = ap.parse_args(argv)
+
+    if args.root:
+        globals()["ROOT"] = args.root
+        globals()["RECIPES"] = args.root / "recipes"
+        globals()["ITEMS"] = args.root / "items.md"
 
     if args.audit:
         audit()
