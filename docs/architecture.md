@@ -31,7 +31,7 @@ good* to someone who did not build it.
 | 2 | **A household has multiple members** | A user/household split in every table from day one |
 | 3 | **v1 assumes someone walks the aisles.** Kroger pickup arrives with the Kroger step | Aisle sorting becomes vestigial the day pickup lands |
 | 4 | **The tool fills a cart; a human submits it** | Never a fully unattended week — deliberately |
-| 5 | **SQLite now, Postgres later.** Markdown becomes import/export | "Fix the file by hand" stops being free and becomes UI I have to build |
+| 5 | **Markdown files stay the source of truth.** No database until SaaS, and that is an explicit restructure | Concurrency between two members stays crude; the rules below are enforced by code rather than by schema |
 | 6 | **A model goes wherever it makes the product better** | Non-determinism in more places; the discipline has to be explicit, not incidental |
 | 7 | **One process.** Prep is a real job, triggered by a button in v1 | Long jobs block a request until there is a worker |
 | 8 | **Log every week; show a few metrics** | A decisions table on day one, unrecoverable if skipped |
@@ -69,76 +69,76 @@ store/        The only code that knows what SQLite is. One repository per
 adapters/     Kroger, behind an interface, so a second store is a new file.
 ```
 
-## Schema, and the rules it enforces
+## Storage — reversed, on purpose
 
-The interesting part is that most of the product rules we had been *stating* become
-things the database can *refuse*.
+**This started as "SQLite now, Postgres later" and was reversed after a second look.**
+Recorded rather than patched away, because the reasoning is what makes the next reversal
+cheap to evaluate.
 
-```
-household(id, name)
-member(id, household_id, name)
+The case for reversing: a database for a household of one buys correctness nobody is
+currently violating, and costs the one property this project has leaned on hardest —
+`profile.md` opens by saying that correcting the file **is** the trust mechanism, and that
+it beats any opaque score. In files that is free. In a hosted database it is a UI feature
+to build, and until it is built the household has *less* control over its own preferences
+than it has today. Paying that now, for a benefit that arrives with SaaS, is the wrong
+order. Git also goes on being the audit log for free.
 
-recipe(id, household_id, title, slug, protein, cuisine,
-       yield_kind, yield_n, yield_unit,          -- the three shapes, 2.5
-       active, passive, source, modality, capture_status,
-       state)                                    -- candidate | corpus | retired
-ingredient(id, recipe_id, position, raw, qty, unit, item, note,
-           pack_n, pack_unit, may_come_from)
-ingredient_accepts(ingredient_id, item_id)       -- declared, never inferred
-variant(id, recipe_id, name, position, active, passive)
-variant_line(id, variant_id, op, text)           -- add | replaces | produces
+The cost accepted: two members editing at once is handled crudely, and the rules below get
+enforced in code rather than refused by a schema. **The restructure is a real project when
+it comes, not a config change** — that is understood and accepted, not hand-waved.
 
-item(id, household_id, canonical, aisle, staple, each_equiv)
-synonym(item_id, text)
+## The rules, and what enforces them
 
-week(id, household_id, date, nights, guests, risk, status)
-week_meal(id, week_id, recipe_id, variant_id, position, reason, locked)
-cook_log(id, household_id, recipe_id, week_id, cooked_on,
-         outcome, member_id, note)               -- kept | flopped | not cooked
+Files do not refuse bad writes, so a single module does. Everything that mutates household
+data goes through it; nothing else opens a file for writing.
 
-profile_claim(id, household_id, section, text,
-              evidence NOT NULL,                 -- "no claim without a trace"
-              member_id, created_at)
-decision(id, household_id, week_id, kind, payload, created_at)
-```
+| Rule | Today | Under a schema later |
+|---|---|---|
+| Membership is earned — nothing enters `corpus.md` uncooked | One function may insert a corpus row, and only with a recorded outcome | `state='corpus'` requires a `cook_log` row |
+| No claim without a trace | A profile claim without evidence fails the write | `evidence NOT NULL` |
+| No writer overwrites a human value | Checked per cell before writing | Same check, plus row-level history |
+| Step 2 never calls a model | `domain/` may not import anything doing I/O; a test walks the import graph | Unchanged |
 
-Three of these are rules made structural:
+There is a live violation of the first rule today: `onboard.py` will append a never-cooked
+recipe straight into the proven corpus. It is stated in five prose locations and enforced
+nowhere. That is the write module's first job.
 
-- **`corpus.md` and `candidates.md` collapse into one table** with a `state` column. They
-  were always one thing with a boolean on it, and keeping them as two files meant the
-  three-state model lived in prose. Promotion becomes a state change with a `cook_log` row
-  behind it — and the constraint is that `state = 'corpus'` requires one. Membership is
-  earned, in the schema.
-- **`profile_claim.evidence` is `NOT NULL`.** The rule `profile.md` opens with, enforced by
-  the database instead of by whoever is reading.
-- **`decision` is the evaluation harness.** Every proposal, dial change and outcome, stored
-  as it happens. It is what lets a planner change be replayed against real history instead
-  of argued about. It cannot be reconstructed later, which is why it exists on day one.
+**`corpus.md` and `candidates.md` stay two files** rather than collapsing into one table
+with a `state` column. Two files is the cruder expression of a three-state model, but the
+separation is legible on disk and the promotion path is one function either way.
 
-## Migration
+## The decision log survives the reversal
 
-Everything already built becomes seed data, not waste. `corpus.md`, `candidates.md`,
-`items.md`, `recipes/*.md` and `profile.md` are the fixture the importer is written
-against — 24 recipes, 27 files, 265 ingredient lines, 119 canonical items, all real. A
-one-time import, and the export path back out is what keeps "your data is yours" true
-after files stop being the truth.
+The one thing that does **not** get deferred, because the argument for it was never about
+storage: **a decision that was not recorded cannot be recovered.** Every proposal, dial
+change and outcome gets appended to `decisions.jsonl` as it happens — one JSON object per
+line, append-only, diffable, and trivially loadable into whatever the harness becomes.
 
-The determinism work survives intact: `shop.py`'s pipeline is already pure functions over
-parsed data, so it moves into `domain/` almost unchanged.
+This is what lets a planner change be replayed against real history instead of argued
+about, and it is what answers *is it any good* for someone who did not build it. It costs
+one function today and cannot be backfilled at any price.
+
+## Members, without accounts
+
+Decision 2 stands — a household has multiple members, and attribution is the point, because
+`profile.md` records outright that a stated preference "may be half-true" when nobody knows
+which adult said it. That needs a name on a claim, not a login.
+
+So: **members are a field, not an auth system.** Feedback and profile claims carry who said
+them; there is no signup, no session, no password. Auth arrives with hosting, and arrives
+against data that already knows who said what.
 
 ## Still open
 
-1. **How much tenancy gets built now** — multi-tenant schema with one seeded household and
-   no login, versus real auth and signup. The shape is settled; only the timing is not.
-2. **How Kroger is actually talked to.** Official API, and what the product does when it
-   is unavailable or the SKU match is wrong. Deferred on purpose to the Kroger step.
-3. **How the list reaches the person shopping in v1**, given they are walking aisles.
-4. **What is allowed to break.** Prep degrades rather than blocks; the same posture has not
+1. **How Kroger is actually talked to.** Official API, and what the product does when it is
+   unavailable or the SKU match is wrong. Deferred on purpose to the Kroger step.
+2. **How the list reaches the person shopping in v1**, given they are walking aisles.
+3. **What is allowed to break.** Prep degrades rather than blocks; the same posture has not
    been stated for the planner, the store adapter, or a half-finished session.
 
-## What this invalidates
+## What survives
 
-`pantry.py`, `app.py`, `prep.py` and `web/index.html` were written against markdown as the
-source of truth and a single household. They are on disk, uncommitted, and get reworked
-rather than kept. The ranker and the session flow inside them are worth carrying over; the
-storage assumptions are not.
+`pantry.py`, `prep.py`, `app.py` and `web/index.html` were written against markdown as the
+source of truth, which is now the decision rather than the thing being replaced. They stand,
+and the work in front of us is the write module, the decision log, member attribution, and
+making the session good — not a migration.
