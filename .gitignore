@@ -1,2 +1,5 @@
 __pycache__/
 *.pyc
+
+# Cached by the prep job. Regenerated on demand, never the source of truth.
+.cache/

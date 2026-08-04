@@ -13,6 +13,14 @@ every week downstream.
 
 ---
 
+## Members
+
+*Who lives here and can answer for the household. **Attribution, not accounts** — there is
+no login. A name on a claim is what lets this profile stop saying "may be half-true".*
+
+- Michael
+- Sam
+
 ## Hard constraints
 
 *Not preferences. The planner must never violate these, and they need no evidence.*

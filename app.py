@@ -50,10 +50,38 @@ def state() -> dict:
     corpus = pantry.load_corpus()
     return {
         "week": week.to_json(),
-        "previous": (prev.to_json() | {"applied": bool(prev.feedback)}) if prev else None,
+        "previous": prev.to_json() if prev else None,
         "briefing": pantry.briefing(),
+        "members": pantry.load_members(),
         "counts": {"corpus": len(corpus), "candidates": len(pantry.load_candidates())},
-        "planner": "model" if pantry.__dict__.get("_model") else "ranker",
+        "metrics": metrics(),
+        "planner": "ranker",
+    }
+
+
+def metrics() -> dict:
+    """The product claim, as numbers. It says the gap between the recipes you
+    reach for and the ones you like *is* the product - so the honest measures are
+    how much of the corpus is still dormant and how much of it gets cooked.
+
+    Read off the decision log and the corpus. Zeroes are correct at week one and
+    are shown as zeroes rather than hidden.
+    """
+    corpus = pantry.load_corpus()
+    cooked = {r["slug"] for r in corpus if (r.get("last cooked") or "").strip()}
+    applied = pantry.decisions({"feedback_applied"})
+    proposed = pantry.decisions({"proposed"})
+    surfaced = {a["recipe"] for d in proposed for a in d.get("added", [])}
+    drops = len(pantry.decisions({"drop"}))
+    offered = sum(len(d.get("added", [])) for d in proposed)
+    return {
+        "corpus": len(corpus),
+        "cooked_ever": len(cooked),
+        "dormant": len(corpus) - len(cooked),
+        "surfaced_ever": len(surfaced),
+        "kept": sum(1 for d in applied if d.get("outcome", "").startswith("kept")),
+        "accept_rate": None if not offered else round(100 * (offered - drops) / offered),
+        "weeks": len(pantry.list_weeks()),
     }
 
 
@@ -63,13 +91,16 @@ def refill(week: pantry.Week) -> pantry.Week:
     This is the gap-filling the session is built around: dropping one meal and
     asking for another must not re-roll the four the household already accepted.
     """
-    week.meals = pantry.propose(week.nights, week.guests, week.risk, keep=week.meals)
+    week.meals = pantry.propose(week.nights, week.guests, week.risk, keep=week.meals,
+                                avoid=set(week.declined))
     pantry.write_week(week)
     return week
 
 
 def grocery_list(week: pantry.Week) -> dict:
-    specs = [m.slug + (f":{m.variant}" if m.variant else "") for m in week.meals]
+    missing = [m.title for m in week.meals if not m.has_file]
+    specs = [m.file + (f":{m.variant}" if m.variant else "")
+             for m in week.meals if m.has_file]
     if not specs:
         return {"ok": True, "markdown": "_Nothing planned yet._"}
     cmd = [sys.executable, str(ROOT / "shop.py"), "--week", ",".join(specs),
@@ -77,7 +108,14 @@ def grocery_list(week: pantry.Week) -> dict:
     proc = subprocess.run(cmd, capture_output=True, text=True)
     if proc.returncode != 0:
         return {"ok": False, "markdown": f"```\n{proc.stderr.strip()}\n```"}
-    return {"ok": True, "markdown": proc.stdout}
+    out = proc.stdout
+    if missing:
+        # Surfaced, never silent. A list that quietly omits a meal is the failure
+        # this whole pipeline is built to avoid.
+        out += ("\n\n## Not on this list\n\n*No ingredient file exists for these yet, so "
+                "nothing was added for them:*\n\n"
+                + "\n".join(f"- {t}" for t in missing) + "\n")
+    return {"ok": True, "markdown": out}
 
 
 # --------------------------------------------------------------------------- #
@@ -86,17 +124,27 @@ def grocery_list(week: pantry.Week) -> dict:
 
 def post_dials(body):
     week = current_week()
+    before = {"nights": week.nights, "guests": week.guests, "risk": week.risk}
     week.nights = max(1, min(14, int(body.get("nights", week.nights))))
     week.guests = max(0.0, float(body.get("guests", week.guests)))
     week.risk = body.get("risk", week.risk)
     week.meals = week.meals[:week.nights]
-    return refill(week) and state()
+    pantry.log("dials", week=week.date, before=before,
+               after={"nights": week.nights, "guests": week.guests, "risk": week.risk})
+    refill(week)
+    return state()
 
 
 def post_drop(body):
     week = current_week()
+    meal = next((m for m in week.meals if m.slug == body["slug"]), None)
     week.meals = [m for m in week.meals if m.slug != body["slug"]]
+    if body["slug"] not in week.declined:
+        week.declined.append(body["slug"])
     pantry.write_week(week)
+    # The most useful signal in the session: offered, and turned down.
+    pantry.log("drop", week=week.date, recipe=body["slug"],
+               reason_shown=meal.reason if meal else "", candidate=bool(meal and meal.candidate))
     return state()
 
 
@@ -115,18 +163,20 @@ def post_variant(body):
         if m.slug == body["slug"]:
             m.variant = body.get("variant", "")
     pantry.write_week(week)
+    pantry.log("variant", week=week.date, recipe=body["slug"], variant=body.get("variant", ""))
     return state()
 
 
 def post_fill(body):
-    return refill(current_week()) and state()
+    refill(current_week())
+    return state()
 
 
 def post_feedback(body):
     week = pantry.previous_week(pantry.monday())
     if week is None:
         return state()
-    week.feedback[body["slug"]] = body["outcome"]
+    week.feedback[body["slug"]] = {"outcome": body["outcome"], "by": body.get("by", "")}
     pantry.write_week(week)
     return state()
 
@@ -135,7 +185,10 @@ def post_apply(body):
     week = pantry.previous_week(pantry.monday())
     if week is None:
         return {"applied": [], **state()}
-    applied = pantry.apply_feedback(week)
+    try:
+        applied = pantry.apply_feedback(week)
+    except pantry.RuleViolation as exc:
+        return {"applied": [], "refused": str(exc), **state()}
     week.status = "cooked"
     pantry.write_week(week)
     return {"applied": applied, **state()}
@@ -145,6 +198,9 @@ def post_order(body):
     week = current_week()
     week.status = "ordered"
     pantry.write_week(week)
+    pantry.log("ordered", week=week.date,
+               meals=[{"recipe": m.slug, "variant": m.variant} for m in week.meals],
+               ae=week.ae)
     return state()
 
 

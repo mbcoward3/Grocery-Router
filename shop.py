@@ -855,8 +855,16 @@ def emit(week, lines, unknown, merges, links, ae, scales, items) -> str:
         out.append("")
         for line in group:
             head, name = display(line)
+            splits = list(line.split)
+            if line.qty is None and splits:
+                # One recipe measured it and another didn't. Lead with the number
+                # that exists rather than "some + 8 sprigs" — the unmeasured line
+                # is covered by buying the bunch either way.
+                q, u = max(splits, key=lambda s: s[0])
+                splits.remove((q, u))
+                head = f"{round_out(q, u)}{'' if u == 'ea' else ' ' + plural(u, q)}"
             extra = "".join(f" + {round_out(q, u)}{'' if u == 'ea' else ' ' + u}"
-                            for q, u in line.split)
+                            for q, u in splits)
             pack = ""
             if line.packs and line.unit in COUNTABLE:
                 sizes = sorted({f"{p[0]:g} {p[1]}" for p in line.packs})

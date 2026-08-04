@@ -10,9 +10,26 @@ Step 1 (the week) and Step 2 (the list) exist. The Kroger cart comes later.
 
 ## Setup
 
-None. Python 3, standard library only.
+None. Python 3, standard library only. No dependencies, no build step, no database.
 
-## Use
+## The session
+
+```sh
+./prep.py     # optional: cache the briefing first
+./app.py      # http://127.0.0.1:8765
+```
+
+One page, once a week, in order: what happened last week, what to cook this week, the
+dials, the list. The server owns nothing — state lives in `weeks/<date>.md` and the same
+markdown files you edit by hand, so it can be killed at any point without losing anything.
+
+Feedback is the part that matters. Answering *kept it / nope / didn't cook* on last week is
+what stamps `Last cooked`, promotes a candidate that earned its place, and gives the ranker
+something to rank on. Without it every recipe looks equally forgotten forever.
+
+Architecture and the decisions behind it: [`docs/architecture.md`](docs/architecture.md).
+
+## Planning from the terminal
 
 ```sh
 ./plan.py                                          # a normal week
@@ -73,6 +90,23 @@ scaled instead of pretending.
 `--audit` parses all 27 recipe files and reports every gap. It currently reports none:
 265 ingredient lines, all parsed, all recognised. Run `python3 test_shop.py` after
 touching any of it — the week of 2 August is in there as an acceptance fixture.
+
+## The rules, and what enforces them
+
+Files don't refuse a bad write, so `pantry.py` does. Everything that mutates household data
+goes through it, and these are tested in `test_pantry.py` rather than stated in prose:
+
+- **Membership is earned.** `promote()` is the only function that may add a row to
+  `corpus.md`, and only for a candidate whose cook was *kept*. Onboarding used to append
+  never-cooked recipes straight into the corpus; it now refuses and says why.
+- **No claim without a trace.** A profile claim with no evidence fails the write.
+- **No writer overwrites a human value.** `Last cooked` is the one field the tool owns.
+- **A flop is never deleted.** It stays in `candidates.md` with the reason — at this corpus
+  size it's the most informative signal the system gets all week.
+
+Every proposal, drop, dial change and outcome is appended to `decisions.jsonl`. That's what
+lets a change to the ranker be replayed against real history instead of argued about, and
+it's the one thing that can't be backfilled.
 
 ## The two files that matter
 

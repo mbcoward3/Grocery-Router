@@ -107,6 +107,17 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
 .listout em { color: var(--muted); font-style: italic; }
 .listout hr { border: 0; border-top: 1px solid var(--line); margin: 22px 0; }
 
+.whobar { display: flex; align-items: center; gap: 10px; margin: -4px 0 16px;
+  font: 500 12px ui-sans-serif, system-ui, sans-serif; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .08em; }
+.by { font: 500 12px ui-sans-serif, system-ui, sans-serif; color: var(--muted); }
+
+.mrow { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 18px; }
+.mrow div { display: flex; flex-direction: column; gap: 2px; }
+.mrow b { font-size: 26px; font-weight: 600; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums; }
+.mrow span { font: 500 12px ui-sans-serif, system-ui, sans-serif; color: var(--muted); }
+
 .foot { color: var(--muted); font-size: 13.5px; margin-top: 12px; }
 .empty { color: var(--muted); font-style: italic; }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
@@ -184,6 +195,11 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
       <span class="foot" id="orderNote"></span>
     </div>
   </section>
+
+  <section id="metricsSec">
+    <h2>Is it working</h2>
+    <div class="card" id="metrics"></div>
+  </section>
 </div>
 
 <script>
@@ -244,25 +260,52 @@ function renderBriefing(b) {
   el.innerHTML = `<div class="brief"><b>Before you start</b><ul>${items}</ul></div>`;
 }
 
+let WHO = null;
+
 function renderLastWeek(p) {
   const sec = $('#lastWeek');
   if (!p || p.status === 'cooked') { sec.hidden = true; renumber(false); return; }
   sec.hidden = false; renumber(true);
-  $('#fbList').innerHTML = p.meals.map(m => {
-    const cur = p.feedback[m.slug] || '';
+  if (WHO === null) WHO = (S.members || [])[0] || '';
+
+  const who = (S.members || []).length > 1
+    ? `<div class="whobar">Answering as
+        <span class="seg">${S.members.map(n =>
+          `<button data-who="${esc(n)}" aria-pressed="${n === WHO}">${esc(n)}</button>`).join('')}
+        </span></div>` : '';
+
+  $('#fbList').innerHTML = who + p.meals.map(m => {
+    const fb = p.feedback[m.slug] || {};
+    const cur = fb.outcome || '';
+    const by = fb.by ? ` <span class="by">${esc(fb.by)}</span>` : '';
     const btn = (val, label) =>
       `<button data-fb="${m.slug}" data-val="${val}" aria-pressed="${cur.startsWith(val)}">${label}</button>`;
     return `<div class="fb"><div>
-        <div class="name">${esc(m.title)}${m.candidate ? ' <span class="tag cand">new</span>' : ''}</div>
+        <div class="name">${esc(m.title)}${m.candidate ? ' <span class="tag cand">new</span>' : ''}${by}</div>
       </div>
       <div class="actions">${btn('kept','Kept it')}${btn('flopped','Nope')}${btn('not cooked',"Didn't cook")}</div>
     </div>`;
   }).join('') || '<span class="empty">Nothing was planned.</span>';
+
   const answered = Object.keys(p.feedback).length;
   $('#applyBtn').disabled = answered === 0;
   $('#applyNote').textContent = answered
     ? `${answered} of ${p.meals.length} answered`
     : 'Answer at least one.';
+}
+
+function renderMetrics(m) {
+  const pct = m.accept_rate === null ? '—' : m.accept_rate + '%';
+  $('#metrics').innerHTML = `
+    <div class="mrow">
+      <div><b>${m.cooked_ever}</b><span>of ${m.corpus} cooked</span></div>
+      <div><b>${m.dormant}</b><span>still dormant</span></div>
+      <div><b>${m.surfaced_ever}</b><span>surfaced so far</span></div>
+      <div><b>${pct}</b><span>kept when offered</span></div>
+      <div><b>${m.weeks}</b><span>weeks planned</span></div>
+    </div>
+    <div class="foot">The claim this tool makes is that the gap between what you reach for
+    and what you like is the product. Dormant is that gap. Zeroes are honest at week one.</div>`;
 }
 
 function renumber(hasLastWeek) {
@@ -313,6 +356,7 @@ function render() {
   renderBriefing(S.briefing);
   renderLastWeek(S.previous);
   renderWeek(S.week);
+  renderMetrics(S.metrics);
 }
 
 async function load() { S = await api('/api/state'); render(); }
@@ -321,7 +365,10 @@ document.addEventListener('click', async (e) => {
   const t = e.target.closest('button, [data-drop]');
   if (!t) return;
   if (t.dataset.drop)  { S = await api('/api/drop', {slug: t.dataset.drop}); return render(); }
-  if (t.dataset.fb)    { S = await api('/api/feedback', {slug: t.dataset.fb, outcome: t.dataset.val}); return render(); }
+  if (t.dataset.who)   { WHO = t.dataset.who; return render(); }
+  if (t.dataset.fb)    { S = await api('/api/feedback',
+                           {slug: t.dataset.fb, outcome: t.dataset.val, by: WHO || ''});
+                         return render(); }
   if (t.dataset.r)     { S = await api('/api/dials', {risk: t.dataset.r}); return render(); }
   if (t.dataset.d) {
     const cur = S.week[t.dataset.d];

@@ -964,18 +964,19 @@ def upsert_corpus(path, rec, dry_run=False):
         i += 1
 
     if row_idx is None:
-        cells = [""] * len(header)
-        cells[0] = rec.get("corpus_title") or rec["title"]
-        if protein:
-            cells[idx["protein"]] = f"{protein} (inferred)"
-        if cuisine:
-            cells[idx["cuisine"]] = f"{cuisine} (inferred)"
-        cells[ycol] = rec["yield"] or "unknown"
-        if "notes" in idx:
-            cells[idx["notes"]] = f"onboarded from {rec['modality']}"
-        lines.insert(header_idx + 1, "| " + " | ".join(cells) + " |")
-        result["action"] = "added"
-        result["row"] = lines[header_idx + 1]
+        # **Onboarding may not add a corpus row.** It used to, which meant one
+        # `--url` put a never-cooked recipe into the file whose entire value is
+        # that everything in it has been cooked and liked. Capturing a recipe is
+        # not evidence about this household; only cooking it is. The row belongs
+        # in `candidates.md`, and `pantry.promote()` is the only door into the
+        # corpus (docs/architecture.md, "The rules, and what enforces them").
+        result["action"] = "refused"
+        result["reason"] = (
+            "not in the corpus, and onboarding may not put it there — membership is "
+            "earned by being cooked and kept. The capture is written; add the row to "
+            "candidates.md if you mean to try it."
+        )
+        return result
     else:
         cells = [c.strip() for c in lines[row_idx].strip().strip("|").split("|")]
         while len(cells) < len(header):
