@@ -62,15 +62,45 @@ docker run -p 7860:7860 pantry
 Fly, Railway, Cloud Run, a Pi on your desk. `PORT` and `HOST` are read from the
 environment, which is what most platforms set for you.
 
+## The demo household is invented
+
+A hosted URL serves `demo/`, not the real household. Two different reasons, and only the
+first one is about privacy:
+
+**The real `profile.md` names who lives here, their ages and a food allergy.** That should
+not be on a public URL. `demo/` supplies its own profile, corpus and candidates; the recipe
+files and `items.md` are shared, because those are published recipes with nothing private
+in them and duplicating them would only let them drift. The handwritten family recipe card
+is dropped from the demo corpus for the same reason as the profile.
+
+**The invented household is also the better demo.** The real corpus has no cooking history
+yet, which is the one state where the tool has least to say — every reason comes out as
+*no record of cooking this yet*. The demo household has a fabricated year of it, so a
+visitor sees the thing actually working:
+
+```
+Tuna melt              not cooked in 11 months
+Enchiladas             the only beef in the week so far
+Pork loin and rice     low active — a night a bad day cannot break
+Chicken noodle soup    not cooked in 7 months
+Sheet pan fajitas      new here — widening the corpus is the other half of the job
+```
+
+`test_pantry.py` enforces the separation rather than trusting it — the demo profile may not
+contain a real member's name, the demo corpus may not contain the family recipe, and both
+files have to say outright that they are invented.
+
 ## What a visitor will see
 
 Honest about the empty spots, because they are the point rather than an oversight:
 
-- **No "Last week" section on the first visit.** There is no previous week. It appears
-  once one exists.
-- **Metrics read 24 dormant, 0 cooked.** Correct. Nothing has been cooked yet, and the gap
-  between what gets reached for and what the household likes *is* the product — so the
-  number that should move over time starts where it honestly starts.
+- **Last week is seeded and unanswered on purpose.** Four meals, three proven and one
+  candidate. Answering them stamps last-cooked dates, promotes the candidate into the
+  corpus, and moves the metrics — which is the mechanism the whole product rests on, and it
+  cannot be shown any other way.
+- **Four recipes still read as dormant.** Correct, and the point: the gap between what gets
+  reached for and what the household likes *is* the product, so that number is the one
+  worth watching.
 - **The sale lines say `demo`.** There is no Kroger integration. The staleness and
   open-question lines beneath them are real, computed off the corpus.
 

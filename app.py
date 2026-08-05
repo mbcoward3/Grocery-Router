@@ -39,20 +39,42 @@ DEMO: Path | None = None
 # --------------------------------------------------------------------------- #
 
 DEMO_FILES = ("corpus.md", "candidates.md", "profile.md", "items.md")
+DEMO_SRC = ROOT / "demo"
+
+
+def _demo_source(name: str) -> Path:
+    """`demo/` wins where it has an opinion; the root fills the rest.
+
+    Only three files differ - the corpus, the candidates and the profile. The
+    recipes and the item table are public recipe data with nothing private in
+    them, so they are shared rather than duplicated and left to drift.
+    """
+    override = DEMO_SRC / name
+    return override if override.exists() else ROOT / name
 
 
 def start_demo() -> Path:
-    """Run against a scratch copy of the household's files.
+    """Run against a scratch copy of an invented household's files.
 
-    A hosted demo is a stranger's hands on your corpus. Everything a session
-    writes - last-cooked dates, promotions, the decision log - is real behaviour
-    that has to work, so it cannot be stubbed out; it just must not land in the
-    repo. So the files are copied to a temp directory at boot and `pantry` is
-    pointed there. Reset puts it back.
+    Two separate problems, and the demo directory solves the second one:
+
+    **A stranger's hands on the corpus.** Everything a session writes -
+    last-cooked dates, promotions, the decision log - is real behaviour that has
+    to work, so it cannot be stubbed; it just must not land in the repo. Hence
+    the temp copy, and Reset to put it back.
+
+    **A stranger's eyes on the household.** The real `profile.md` carries who
+    lives here, their ages and a food allergy. `demo/` replaces it, so a hosted
+    deployment serves an invented family - which also makes the better demo,
+    since the invented one can have the cooking history the real one has not
+    accumulated yet.
     """
     global DEMO
     DEMO = Path(tempfile.mkdtemp(prefix="pantry-demo-"))
-    reset_demo()
+    # Repoint *before* populating. Seeding the demo's first week while pantry
+    # still points at the repo writes the demo's data into the real household -
+    # which it did, once, and which is the whole failure this mode exists to
+    # prevent.
     pantry.ROOT = DEMO
     pantry.CORPUS = DEMO / "corpus.md"
     pantry.CANDIDATES = DEMO / "candidates.md"
@@ -61,6 +83,7 @@ def start_demo() -> Path:
     pantry.CACHE = DEMO / ".cache"
     pantry.DECISIONS = DEMO / "decisions.jsonl"
     pantry._FILE_INDEX = None
+    reset_demo()
     return DEMO
 
 
@@ -68,7 +91,7 @@ def reset_demo() -> None:
     if DEMO is None:
         return
     for name in DEMO_FILES:
-        shutil.copy(ROOT / name, DEMO / name)
+        shutil.copy(_demo_source(name), DEMO / name)
     if not (DEMO / "recipes").exists():
         shutil.copytree(ROOT / "recipes", DEMO / "recipes")
     shutil.rmtree(DEMO / "weeks", ignore_errors=True)
@@ -79,6 +102,46 @@ def reset_demo() -> None:
     if (ROOT / ".cache").exists():
         shutil.copytree(ROOT / ".cache", DEMO / ".cache")
     pantry._FILE_INDEX = None
+    seed_last_week()          # last, or the rmtree above deletes it
+
+
+def seed_last_week():
+    """Give the demo a week to give feedback on.
+
+    The first stage of a session is *what happened last week*, and with no
+    previous week it does not render at all - so a first-time visitor never sees
+    the feedback loop, which is the mechanism the whole product rests on. The
+    seeded week is left unanswered on purpose: the visitor gets to be the one
+    who closes it and watch the corpus change.
+    """
+    import datetime as _dt
+    last = (_dt.date.fromisoformat(pantry.monday()) - _dt.timedelta(days=7)).isoformat()
+    if pantry.read_week(last):
+        return
+
+    # Named rather than re-proposed. Running the ranker for last week returns
+    # this week's answer - correctly, since nothing has said those meals were
+    # cooked - but a visitor reads two identical weeks as a broken tool. These
+    # four are the ones whose last-cooked dates in demo/corpus.md already fall
+    # inside that window, so the seed agrees with the history rather than
+    # inventing a second one. Three proven to confirm, one candidate to promote.
+    want = ["blt", "chili", "tacos", "chicken-and-dumplings"]
+    index = {r["slug"]: r for r in pantry.load_corpus() + pantry.load_candidates()}
+    proven = {r["slug"] for r in pantry.load_corpus()}
+
+    w = pantry.Week(date=last, nights=4, status="planning")
+    for sl in want:
+        row = index.get(sl)
+        if row is None:
+            continue
+        w.meals.append(pantry.Meal(
+            slug=sl, title=row["recipe"], protein=row.get("protein", ""),
+            cuisine=row.get("cuisine", ""), yield_=row.get("yield", ""),
+            active=(row.get("active") or "").lower(), passive=row.get("passive", ""),
+            variants=pantry.variants_for(sl), candidate=sl not in proven,
+            reason="planned last week"))
+    pantry.write_week(w)
+    pantry.DECISIONS.unlink(missing_ok=True)   # the seed is not a real decision
 
 
 # --------------------------------------------------------------------------- #

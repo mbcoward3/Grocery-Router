@@ -265,5 +265,47 @@ class TestMembers(Isolated):
         self.assertEqual(pantry.load_members(), ["Michael", "Sam"])
 
 
+class TestDemoIsolation(unittest.TestCase):
+    """A hosted deployment serves `demo/`. These are the tests that keep the real
+    household out of it — checked rather than trusted, because the failure is
+    silent, public, and about a family rather than a bug."""
+
+    def setUp(self):
+        import app
+        self.app = app
+
+    def test_the_private_files_are_overridden(self):
+        for name in ("profile.md", "candidates.md", "corpus.md"):
+            with self.subTest(file=name):
+                self.assertEqual(self.app._demo_source(name), REAL / "demo" / name)
+
+    def test_public_recipe_data_is_shared_not_duplicated(self):
+        """`items.md` and `recipes/` are published recipes with nothing private
+        in them. Copying them would only let them drift."""
+        self.assertEqual(self.app._demo_source("items.md"), REAL / "items.md")
+
+    def test_no_household_identity_reaches_the_demo_profile(self):
+        text = (REAL / "demo" / "profile.md").read_text()
+        real_members = pantry.load_members()
+        self.assertTrue(real_members, "the real profile should name its members")
+        for name in real_members:
+            self.assertNotRegex(text, rf"\b{name}\b")
+        for detail in ("peanut", "3-year-old", "1-year-old"):
+            self.assertNotIn(detail, text.lower())
+
+    def test_the_demo_household_names_itself(self):
+        text = (REAL / "demo" / "profile.md").read_text()
+        self.assertIn("invented", text.lower(),
+                      "a fabricated profile has to say it is fabricated")
+
+    def test_the_handwritten_family_recipe_is_not_in_the_demo_corpus(self):
+        """Every other recipe came off a public site. The beef dip is a
+        photograph of someone's recipe card."""
+        self.assertNotIn("Beef dip", (REAL / "demo" / "corpus.md").read_text())
+
+    def test_the_demo_corpus_says_its_history_is_invented(self):
+        self.assertIn("none of it is real", (REAL / "demo" / "corpus.md").read_text())
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

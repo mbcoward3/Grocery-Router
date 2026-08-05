@@ -345,16 +345,20 @@ def _pick_reason(row, gap, picked, ae, used_kinds: set, used_texts: set,
     different distances and that is still two useful reasons.
     """
     options = _reasons(row, gap, picked, ae, candidate)
-    for kind, text in options:
+    # `plain` says nothing. It must never win over a real reason just because it
+    # is the only *kind* left unused - a second meal that is genuinely stale at a
+    # different distance beats "nothing rules it out this week" every time.
+    real = [(k, t) for k, t in options if k != "plain"]
+    for kind, text in real:
         if kind not in used_kinds:
             used_kinds.add(kind)
             used_texts.add(text)
             return text
-    for kind, text in options:
+    for kind, text in real:
         if text not in used_texts:
             used_texts.add(text)
             return text
-    return options[0][1]
+    return options[-1][1]
 
 
 def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
