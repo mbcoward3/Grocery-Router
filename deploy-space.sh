@@ -26,6 +26,24 @@ if [[ -z "${HF_TOKEN:-}" ]]; then
 fi
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Create the Space if it is not there yet. One HTTP call, so there is nothing to
+# install and no CLI to keep current. A Space that already exists returns 409,
+# which is a success for our purposes.
+CREATE_CODE="$(curl -sS -o /tmp/hf-create.$$ -w '%{http_code}' \
+  -X POST https://huggingface.co/api/repos/create \
+  -H "Authorization: Bearer ${HF_TOKEN}" \
+  -H 'Content-Type: application/json' \
+  -d "{\"name\":\"${SPACE#*/}\",\"organization\":\"${SPACE%/*}\",\"type\":\"space\",\"sdk\":\"docker\"}")"
+case "$CREATE_CODE" in
+  200|201) echo "created space ${SPACE}" ;;
+  409)     echo "space ${SPACE} already exists" ;;
+  401|403) echo "token rejected (HTTP $CREATE_CODE). It needs write access to ${SPACE}." >&2
+           cat /tmp/hf-create.$$ >&2; rm -f /tmp/hf-create.$$; exit 77 ;;
+  *)       echo "could not create the space (HTTP $CREATE_CODE):" >&2
+           cat /tmp/hf-create.$$ >&2; rm -f /tmp/hf-create.$$; exit 1 ;;
+esac
+rm -f /tmp/hf-create.$$
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 
