@@ -28,7 +28,11 @@ what stamps `Last cooked`, promotes a candidate that earned its place, and gives
 something to rank on. Without it every recipe looks equally forgotten forever.
 
 Architecture and the decisions behind it: [`docs/architecture.md`](docs/architecture.md).
-Putting it on a URL someone else can click: [`docs/deploy.md`](docs/deploy.md).
+
+**It runs locally, and nothing is deployed.** The container and the one-command deploy both
+work, but Hugging Face now requires PRO to host a Docker Space and the free alternatives
+each want something. [`docs/deploy.md`](docs/deploy.md) has what was tried, what it
+returned, and the one option that is genuinely free.
 
 `app.py` binds localhost and **refuses to serve the real corpus on a public interface** —
 pass `--demo` and it works off a scratch copy instead, where planning, feedback, promotion

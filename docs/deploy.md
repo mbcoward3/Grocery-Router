@@ -22,35 +22,50 @@ puts it back.
 
 The Dockerfile sets `PANTRY_DEMO=1`, so anything built from it is safe to expose.
 
-## Hugging Face Spaces — free, no card
+## Nothing is deployed, and here is what that cost to find out
 
-The path of least friction, and the only one on this page that has never asked me for a
-payment method.
+An earlier version of this page said Hugging Face Spaces was free for this and was **the
+only option that had never asked for a payment method**. That was wrong. Creating the Space
+returns:
 
-1. huggingface.co → **New Space** → SDK **Docker**, template **Blank**, visibility public.
-2. Push this repo to the Space's git remote.
-3. Add this to the top of the Space's `README.md` — Spaces reads its config from there:
-
-```yaml
----
-title: Pantry Router
-emoji: 🧺
-colorFrom: yellow
-colorTo: red
-sdk: docker
-app_port: 7860
----
+```
+402 Payment Required
+Static Spaces are free for everyone, but hosting Gradio and Docker
+Spaces on free cpu-basic requires a PRO subscription.
 ```
 
-That's it — it builds and gives you a public URL. The `PORT` default in the Dockerfile is
-already 7860 to match.
+Verified against a real account: a **static** Space creates fine, a **Docker** Space does
+not. So this whole page's premise — that a container is the easy free path — held for
+neither of the hosts it recommended without qualification.
 
-## Render — free web service
+Left here rather than deleted, because the deploy machinery below all works and the
+constraint is worth knowing before anyone spends an evening on it.
+
+## Hugging Face Spaces — needs PRO ($9/mo)
+
+Everything is ready for it. `./deploy-space.sh <user>/<space>` creates the Space, generates
+the front matter Spaces reads its config from, and pushes 532KB. The Dockerfile already
+defaults `PORT` to 7860 to match. It is one command the moment the account can host Docker.
+
+## Render — free tier, unverified
 
 Detects the Dockerfile with no config. New → Web Service → point at the repo → instance
-type **Free**. Free services spin down after inactivity, so the first visit after a quiet
-spell takes about thirty seconds. Check whether a card is required at signup; that has
-changed more than once.
+type **Free**: 750 instance-hours a month, spins down after 15 minutes without traffic and
+takes about a minute to wake, no persistent disk. Their docs do not say plainly whether a
+payment method is required up front — **I have not tested this one**, and given the
+paragraph above, treat it as a claim to check rather than a recommendation.
+
+## The option that is genuinely free
+
+A **static** Space, with [Pyodide](https://pyodide.org) running `pantry.py` and `shop.py`
+in the browser. CPython compiled to WebAssembly, so it is the real code rather than a
+port — which matters, because a JavaScript reimplementation would be a second copy of the
+business logic to keep honest, and this project already found what that costs when two
+ingredient parsers disagreed on three of twelve hard cases.
+
+Not built. It needs `app.py`'s subprocess call to `shop.py` replaced with a direct function
+call, and the markdown files written into Pyodide's in-memory filesystem at startup.
+Neither is hard; nobody has needed it yet.
 
 ## Anything else that runs a container
 
