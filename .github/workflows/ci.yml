@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+# The project has no dependencies, so there is nothing to install, cache or pin.
+# That is a property worth defending: if this job ever needs a `pip install`,
+# something has been added that the household would also have to install.
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: No dependencies
+        run: |
+          if [ -f requirements.txt ] || [ -f pyproject.toml ]; then
+            echo "::error::A dependency file appeared. The whole project is the standard library."
+            exit 1
+          fi
+          python3 -c "import sys; print(sys.version)"
+
+      - name: Tests
+        run: |
+          python3 test_pantry.py
+          python3 test_shop.py
+          python3 test_onboard.py
+
+      - name: Every recipe parses and every item is known
+        # docs/step2-design.md 3: the item table grows on parse failure, and a
+        # failure is only useful if it is visible. This is that check, in CI.
+        run: |
+          python3 shop.py --audit | tee /tmp/audit.txt
+          grep -qE '^0 unparseable, 0 lines with no items.md row' /tmp/audit.txt || {
+            echo "::error::shop.py --audit found gaps. Add the missing items.md rows."
+            exit 1
+          }
+
+      - name: The shopping list still matches the week of 2 August
+        # The acceptance fixture. The correct answer was worked out by hand
+        # before any of this code existed, which is what makes it a fixture
+        # rather than a snapshot of whatever the code happens to do now.
+        run: |
+          python3 - <<'PY'
+          import test_shop, unittest
+          suite = unittest.TestLoader().loadTestsFromTestCase(test_shop.TestAugustFixture)
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          raise SystemExit(0 if result.wasSuccessful() else 1)
+          PY
+
+      - name: The session boots and serves a week
+        # A green unit suite with a broken app has happened on this project
+        # before. This is the end-to-end smoke test.
+        run: |
+          PANTRY_DEMO=1 PORT=8765 python3 app.py --no-open &
+          for i in $(seq 1 30); do
+            curl -sf localhost:8765/api/state > /tmp/state.json && break
+            sleep 1
+          done
+          python3 - <<'PY'
+          import json
+          s = json.load(open("/tmp/state.json"))
+          assert s["demo"] is True, "the hosted app must not serve the real household"
+          assert len(s["week"]["meals"]) == 5, s["week"]["meals"]
+          assert s["previous"] and s["previous"]["meals"], "the demo needs a week to give feedback on"
+          reasons = [m["reason"] for m in s["week"]["meals"]]
+          assert len(set(reasons)) == len(reasons), f"repeated reason: {reasons}"
+          print("\n".join(f"  {m['title']:34} {m['reason']}" for m in s["week"]["meals"]))
+          PY
+          curl -sf localhost:8765/api/list | python3 -c "import json,sys; assert json.load(sys.stdin)['ok']"
+
+      - name: The demo never leaks the household
+        run: |
+          git diff --quiet || {
+            echo "::error::Running the app dirtied tracked files. Demo mode must not write to the repo."
+            git diff --stat
+            exit 1
+          }
+
+      - name: The static build still assembles
+        # The browser smoke test lives in the deploy workflow, because booting
+        # Pyodide costs about a minute and this job runs on every push. This
+        # step only catches the cheap failure - a build that no longer produces
+        # a page - not a page that no longer runs.
+        run: |
+          python3 build_static.py
+          test -s dist/index.html
+          grep -q 'id="payload"' dist/index.html
+          test -f dist/pyodide/pyodide.asm.wasm

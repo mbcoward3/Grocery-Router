@@ -19,7 +19,6 @@ import argparse
 import json
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
 import threading
@@ -28,6 +27,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pantry
+import shop
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
@@ -213,18 +213,28 @@ def refill(week: pantry.Week) -> pantry.Week:
 
 
 def grocery_list(week: pantry.Week) -> dict:
+    """Step 2, called in process.
+
+    This used to shell out to `shop.py`. It doesn't any more, for a reason worth
+    recording: the browser build has no subprocesses. Calling the same functions
+    directly is what lets one implementation serve both, rather than a second
+    copy of the pipeline that has to be kept honest against the first.
+    """
     missing = [m.title for m in week.meals if not m.has_file]
     specs = [m.file + (f":{m.variant}" if m.variant else "")
              for m in week.meals if m.has_file]
     if not specs:
         return {"ok": True, "markdown": "_Nothing planned yet._"}
-    cmd = [sys.executable, str(ROOT / "shop.py"), "--week", ",".join(specs),
-           "--ae", str(pantry.BASE_AE), "--guests", str(week.guests),
-           "--root", str(pantry.ROOT)]
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    if proc.returncode != 0:
-        return {"ok": False, "markdown": f"```\n{proc.stderr.strip()}\n```"}
-    out = proc.stdout
+
+    shop.configure(pantry.ROOT)
+    ae = pantry.BASE_AE + week.guests
+    try:
+        built = shop.build(specs, ae)
+    except (FileNotFoundError, SystemExit) as exc:
+        return {"ok": False, "markdown": f"```\n{exc}\n```"}
+    meals, lines, unknown, merges, links, scales, items = built
+    out = shop.emit(meals, lines, unknown, merges, links, ae, scales, items)
+    out += "\n" + shop.coupling_report(lines, items)
     if missing:
         # Surfaced, never silent. A list that quietly omits a meal is the failure
         # this whole pipeline is built to avoid.
@@ -338,6 +348,29 @@ ROUTES = {
 }
 
 
+def handle(path: str, body: dict | None = None) -> tuple[int, dict]:
+    """Route one request. **The only place routing lives.**
+
+    Two front doors call this: the HTTP server below, and the browser build,
+    where there is no server at all and the page's `fetch` is shimmed to call
+    straight into Python. Keeping them on one function is what stops the hosted
+    version drifting from the local one.
+    """
+    if body is None:
+        if path == "/api/state":
+            return 200, state()
+        if path == "/api/list":
+            return 200, grocery_list(current_week())
+        return 404, {"error": "not found"}
+    fn = ROUTES.get(path)
+    if fn is None:
+        return 404, {"error": "not found"}
+    try:
+        return 200, fn(body)
+    except Exception as exc:                       # surfaced, never swallowed
+        return 500, {"error": f"{type(exc).__name__}: {exc}"}
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, *_):
         pass
@@ -354,22 +387,14 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path in ("/", "/index.html"):
             return self._send(200, (WEB / "index.html").read_bytes(), "text/html; charset=utf-8")
-        if self.path == "/api/state":
-            return self._send(200, json.dumps(state()))
-        if self.path == "/api/list":
-            return self._send(200, json.dumps(grocery_list(current_week())))
-        self._send(404, json.dumps({"error": "not found"}))
+        code, payload = handle(self.path)
+        self._send(code, json.dumps(payload))
 
     def do_POST(self):
-        fn = ROUTES.get(self.path)
-        if fn is None:
-            return self._send(404, json.dumps({"error": "not found"}))
         length = int(self.headers.get("Content-Length") or 0)
         body = json.loads(self.rfile.read(length) or b"{}")
-        try:
-            return self._send(200, json.dumps(fn(body)))
-        except Exception as exc:                       # surfaced, never swallowed
-            return self._send(500, json.dumps({"error": f"{type(exc).__name__}: {exc}"}))
+        code, payload = handle(self.path, body)
+        self._send(code, json.dumps(payload))
 
 
 def main():

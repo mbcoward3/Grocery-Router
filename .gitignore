@@ -3,3 +3,6 @@ __pycache__/
 
 # Cached by the prep job. Regenerated on demand, never the source of truth.
 .cache/
+
+# Built by build_static.py. The runtime it copies in lives in vendor/.
+dist/

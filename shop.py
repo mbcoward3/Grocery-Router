@@ -33,6 +33,20 @@ ROOT = Path(__file__).resolve().parent
 RECIPES = ROOT / "recipes"
 ITEMS = ROOT / "items.md"
 
+
+def configure(root: "Path") -> None:
+    """Point the loader at a different copy of the data.
+
+    Needed twice: demo mode runs against a scratch directory, and the browser
+    build runs against files written into an in-memory filesystem. Both want the
+    same parsing code reading a different place, which is the whole reason this
+    module never hardcodes a path past this line.
+    """
+    global ROOT, RECIPES, ITEMS
+    ROOT = Path(root)
+    RECIPES = ROOT / "recipes"
+    ITEMS = ROOT / "items.md"
+
 # Household default, from profile.md: 2 adults, a 3-year-old, a 1-year-old.
 DEFAULT_AE = 2.5
 
@@ -1023,9 +1037,7 @@ def main(argv=None):
     args = ap.parse_args(argv)
 
     if args.root:
-        globals()["ROOT"] = args.root
-        globals()["RECIPES"] = args.root / "recipes"
-        globals()["ITEMS"] = args.root / "items.md"
+        configure(args.root)
 
     if args.audit:
         audit()
