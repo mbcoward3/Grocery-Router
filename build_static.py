@@ -54,7 +54,7 @@ CODE = ["pantry.py", "shop.py", "app.py", "prep.py",
         # but it degrades to "nothing landed" rather than failing, and the button
         # is part of the session being shown. Missing from the payload it would
         # be a 500 on a public URL instead.
-        "acquire.py", "onboard.py"]
+        "acquire/__init__.py", "acquire/adapters.py", "onboard.py"]
 DATA = ["corpus.md", "candidates.md", "profile.md", "items.md"]
 
 

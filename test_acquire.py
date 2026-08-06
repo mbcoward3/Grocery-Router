@@ -95,7 +95,7 @@ class Isolated(unittest.TestCase):
         self.addCleanup(setattr, onboard, "from_url", onboard.from_url)
         self.addCleanup(setattr, acquire, "PAUSE", acquire.PAUSE)
 
-        def search(query, host, limit=5):
+        def search(query, host, limit=5, **kw):
             calls["search"].append((query, host))
             return [{"title": r["title"], "url": r["source"], "host": host}
                     for r in hits.get(host, [])]
@@ -333,10 +333,10 @@ class TestTheRun(Isolated):
                   {COD["source"]: COD})
         inner = acquire.search
 
-        def search(query, host, limit=5):
+        def search(query, host, limit=5, **kw):
             if host == "tasty.co":
                 raise acquire.Unavailable("HTTP 404")
-            return inner(query, host, limit)
+            return inner(query, host, limit, **kw)
         acquire.search = search
         self.assertEqual(len(acquire.acquire(self.gap_week(), want=1)), 1)
 
