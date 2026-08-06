@@ -637,6 +637,51 @@ def onboard_capture(url: str) -> dict:
     return rec
 
 
+def get_cart() -> dict:
+    """What would go in the cart, and what would not. **Never submitted.**
+
+    Runs the same `shop.build` the grocery list does and then matches each line
+    against the store, so the cart and the list can never disagree about what the
+    week needs - there is one pipeline and this is a second reader of it.
+
+    With no store configured every line comes back unmatched with a sentence
+    saying so, which is honest and is also exactly what the hosted demo shows.
+    """
+    from adapters import match as skus
+    import adapters as store_mod
+
+    week = current_week()
+    have = [m for m in week.meals if m.has_file]
+    specs = [m.file + (f":{m.variant}" if m.variant else "") for m in have]
+    sides = [r for r in pantry.load_sides()
+             if r["slug"] in week.sides and pantry.recipe_file(r["slug"]).exists()]
+    specs += [pantry.file_index().get(r["slug"], r["slug"]) for r in sides]
+    if not specs:
+        return {"ok": True, "markdown": "_Nothing planned yet._"}
+
+    shop.configure(pantry.ROOT)
+    ae = pantry.BASE_AE + week.guests
+    try:
+        built = shop.build(specs, [m.ae(ae) for m in have] + [ae] * len(sides))
+    except (FileNotFoundError, SystemExit) as exc:
+        return {"ok": False, "markdown": f"```\n{exc}\n```"}
+    lines = built[1]
+    items = built[6]
+    # Staples are skipped rather than matched. `items.md` marks them because the
+    # household almost certainly already has salt, and a cart that buys salt
+    # every week is the tool being confidently unhelpful.
+    wanted = [l for l in lines
+              if not (items.get(l.canonical) and items[l.canonical].staple)]
+
+    store = store_mod.store()
+    cart = skus.plan_cart(wanted, lambda term: store.search(term), store.name)
+    pantry.log("cart_planned", week=week.date, store=store.name,
+               matched=len(cart.lines), unmatched=len(cart.unmatched),
+               total=round(cart.total, 2))
+    return {"ok": True, "markdown": skus.report(cart), "store": store.name,
+            "matched": len(cart.lines), "unmatched": len(cart.unmatched)}
+
+
 def post_profile(body):
     """Edit `profile.md` from the session.
 
@@ -742,6 +787,8 @@ def handle(path: str, body: dict | None = None) -> tuple[int, dict]:
             return 200, state()
         if path == "/api/list":
             return 200, grocery_list(current_week())
+        if path == "/api/cart":
+            return 200, get_cart()
         if path == "/api/profile":
             return 200, {"text": pantry.PROFILE.read_text(encoding="utf-8")
                                  if pantry.PROFILE.exists() else ""}

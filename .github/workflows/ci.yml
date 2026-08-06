@@ -38,6 +38,7 @@ jobs:
           python3 test_adapters.py
           python3 test_review.py
           python3 test_session.py
+          python3 test_store.py
 
       - name: The tests never leak into the household files
         # A harness that forgets to repoint one path writes into the real data.

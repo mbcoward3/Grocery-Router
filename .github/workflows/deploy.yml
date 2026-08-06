@@ -45,6 +45,7 @@ jobs:
           python3 test_adapters.py
           python3 test_review.py
           python3 test_session.py
+          python3 test_store.py
 
       - name: Build
         run: python3 build_static.py

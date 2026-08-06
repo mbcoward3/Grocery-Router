@@ -196,6 +196,29 @@ A side typed in by name with no link is allowed: *green beans* is a side and eve
 what it is. It carries no ingredients, and the list says which one you are shopping for
 yourself rather than pretending.
 
+## Prices and the cart
+
+```sh
+export KROGER_CLIENT_ID=… KROGER_CLIENT_SECRET=… KROGER_LOCATION_ID=…
+./prep.py        # real promotions in the briefing
+./app.py         # "Price the cart" in the session
+```
+
+**No credentials is the normal case**, the same way no API key is for the planner. Without
+them the briefing shows the labelled `DEMO` sale lines it always has and the cart comes
+back empty with a reason — which is what CI and the hosted demo run, and why neither needs
+a credential.
+
+**Nothing here can order anything.** Client credentials read the catalogue; writing a cart
+needs a *user* authorization obtained in a browser. So *the tool fills a cart and a human
+submits it* is a property of Kroger's own auth model, not of our restraint.
+
+**A match that is not confident is not made.** `onion powder` resolving to `onion` cost one
+wasted vegetable in a list a human reads first; the same error against a cart costs money
+on an item nobody chose, in a box that arrives. So an uncertain match is refused, the
+refusal says what it was looking for and what was on the shelf, and you settle it in the
+aisle. A gap in a cart is a smaller failure than a stranger's guess in it.
+
 ## The rules, and what enforces them
 
 Files don't refuse a bad write, so `pantry.py` does. Everything that mutates household data

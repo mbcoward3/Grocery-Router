@@ -44,8 +44,37 @@ def staleness(today):
 
 
 def sales(today):
-    """Not real. There is no store adapter; see docs/step2-design.md 7."""
+    """Real when a store is configured, and clearly fake when one is not.
+
+    This function has emitted invented `DEMO` lines since it was written, on the
+    grounds that a dead card teaches less about the design than a labelled fake
+    one. That was the right call while there was no adapter. There is one now, so
+    a household with Kroger credentials gets prices that are true, and one
+    without gets exactly what it got before - **still labelled, because a
+    plausible number nobody can trace is the failure this project is built
+    around.**
+    """
     corpus = {r["slug"] for r in pantry.load_corpus()}
+    try:
+        import adapters
+        store = adapters.store()
+        if store.configured:
+            terms = sorted({(r.get("protein") or "").strip()
+                            for r in pantry.load_corpus()} - {""})
+            on_sale = store.promotions(terms)
+            lines = []
+            for prod in on_sale[:4]:
+                hits = [r["recipe"] for r in pantry.load_corpus()
+                        if (r.get("protein") or "").lower() in prod.name.lower()]
+                saving = f"${prod.promo:.2f} (was ${prod.price:.2f})"
+                lines.append(f"{prod.name} {saving}"
+                             + (f" → {', '.join(hits[:2])}" if hits else ""))
+            if lines:
+                return lines
+            return ["nothing on your list is on sale at that store this week"]
+    except Exception as exc:                       # degrades, never blocks
+        return [f"no prices — the store could not be reached ({exc})"]
+
     rng = random.Random(today.isoformat())
     lines = []
     for item, price, slugs in rng.sample(DEMO_SALES, 3):

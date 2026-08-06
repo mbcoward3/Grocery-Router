@@ -250,6 +250,7 @@ input[type=url]:focus { outline: none; border-color: var(--accent); }
     <div class="card"><div class="listout" id="listOut"><span class="empty">Not built yet.</span></div></div>
     <div class="row">
       <button class="primary" id="listBtn">Build the list</button>
+      <button id="cartBtn" title="Match it to the store — nothing is ordered">Price the cart</button>
       <button id="orderBtn" disabled>Mark ordered</button>
       <span class="foot" id="orderNote"></span>
     </div>
@@ -671,6 +672,16 @@ document.addEventListener('click', async (e) => {
   if (t.id === 'listBtn') {
     $('#listOut').innerHTML = '<span class="empty">Adding it up…</span>';
     const r = await api('/api/list');
+    $('#listOut').innerHTML = md(r.markdown);
+    return;
+  }
+  if (t.id === 'cartBtn') {
+    // Never submits. Decision 4, and also a fact about the credentials this
+    // runs on — the product scope cannot write a cart even if asked.
+    t.classList.add('spin');
+    $('#listOut').innerHTML = '<span class="empty">Matching to the store…</span>';
+    const r = await api('/api/cart');
+    t.classList.remove('spin');
     $('#listOut').innerHTML = md(r.markdown);
     return;
   }

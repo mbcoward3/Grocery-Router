@@ -55,6 +55,7 @@ CODE = ["pantry.py", "shop.py", "app.py", "prep.py",
         # is part of the session being shown. Missing from the payload it would
         # be a 500 on a public URL instead.
         "acquire/__init__.py", "acquire/adapters.py", "onboard.py",
+        "adapters/__init__.py", "adapters/kroger.py", "adapters/match.py",
         # review.py reads decisions.jsonl back; app.py imports it for the
         # metrics strip and for recording what a drop was turned down against.
         "review.py"]

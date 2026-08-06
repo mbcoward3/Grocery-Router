@@ -67,6 +67,8 @@ domain/       Recipes, ingredients, weeks, items, scaling, aggregation.
 store/        The only code that knows what SQLite is. One repository per
               aggregate. Postgres later is an implementation, not a rewrite.
 adapters/     Kroger, behind an interface, so a second store is a new file.
+              Built. `NoStore` is the no-credential default and a supported
+              state; `match.py` is deterministic and refuses an uncertain match.
 ```
 
 ### `planner/` as built, and the one place it differs
@@ -160,13 +162,48 @@ So: **members are a field, not an auth system.** Feedback and profile claims car
 them; there is no signup, no session, no password. Auth arrives with hosting, and arrives
 against data that already knows who said what.
 
+## Kroger — the two open questions, answered
+
+**How it is talked to.** The official developer API, over `urllib`, in `adapters/`. Two
+scopes, and the gap between them is the safety story: client credentials read the catalogue
+— names, sizes, prices, promotions — while writing a cart needs a *user* authorization that
+person obtains in a browser. **Decision 4 is therefore not enforced by our restraint.**
+There is no credential in this codebase that can spend money, and adding prices did not
+create one. Cart writing is deliberately not implemented: the token needs a real OAuth
+redirect through a registered callback, which needs a hosted URL this project does not have,
+and writing an untestable path against an API nobody has run is how a plausible-looking
+thing that has never worked gets committed.
+
+No credentials is the normal case, exactly as no API key is for the planner. `NoStore` is
+what CI and the hosted demo run, and it is why neither needs one.
+
+**What happens when it is wrong or down** — two different failures, and conflating them
+would be the mistake.
+
+*Down* is easy, and the posture was already written: degrades, never blocks. A timeout, a
+500, an expired token and a missing credential all end the same way — no prices, a line
+saying why, a list that still gets somebody to the shop. Nothing in Step 2 waits on a
+network.
+
+*Wrong* is the dangerous one and gets the stricter rule: **a match that is not confident is
+not made.** `onion powder` → `onion` put a fresh onion in the cart for a teaspoon of spice,
+and that was the *cheap* version — it cost one wasted vegetable in a list a human reads
+first. The same error against a cart costs money, on an item nobody chose, in a box that
+arrives. So `adapters/match.py` returns nothing and names what it wanted, and the household
+settles it in the aisle.
+
+**A gap in a cart is a smaller failure than a stranger's guess in it.** That asymmetry is
+why matching is deterministic, why it lives behind an interface with no model near it, and
+why the floor is set to refuse a partial match rather than accept one.
+
 ## Still open
 
-1. **How Kroger is actually talked to.** Official API, and what the product does when it is
-   unavailable or the SKU match is wrong. Deferred on purpose to the Kroger step.
-2. **How the list reaches the person shopping in v1**, given they are walking aisles.
-3. **What is allowed to break.** Prep degrades rather than blocks; the same posture has not
-   been stated for the planner, the store adapter, or a half-finished session.
+1. **How the list reaches the person shopping in v1**, given they are walking aisles.
+2. **The cart write itself.** Everything up to it exists and is tested; it is one
+   `POST /v1/cart/add` with a user token, and it needs a hosted callback first.
+3. **What is allowed to break.** Now stated for prep, the planner, the store adapter and
+   acquisition — all four degrade rather than block. Not yet stated for a half-finished
+   session.
 
 ## What survives
 

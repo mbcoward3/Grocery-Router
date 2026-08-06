@@ -20,7 +20,7 @@ This brief is ordered. The order is the recommendation.
   under Pyodide, not a port.
 - **The model planner.** `planner/`, two implementations behind `pantry.propose()`. See
   §1 below and `docs/model-planner-findings.md`.
-- 288 tests, standard library only.
+- 317 tests, standard library only.
 
 **Written but never run:** `.github/workflows/*`. CI has never executed; the deploy has
 never fired. The Space was pushed by hand.
@@ -83,21 +83,26 @@ Hard constraints still apply to something a person chose; relevance does not. Th
 no-protein filter exists because full-text search returns cake, and applying it to a pasted
 link would refuse a vegetarian main somebody deliberately went and found.
 
-## 4. Kroger
+## 4. Kroger — **built, except the cart write**
 
-Sales in the briefing are fabricated and marked `demo`. There are no prices and no cart.
-`docs/architecture.md` settles the shape: **the tool fills a cart and a human submits it.**
-Never unattended spending.
+`adapters/`, behind the interface `docs/architecture.md` reserved. Both open questions are
+answered there rather than here, because they turned out to be architecture.
 
-Do it in two pieces, and the first is worth having alone:
+Prices and promotions reach the Step 0 briefing when credentials are set, and the invented
+`DEMO` lines remain, still labelled, when they are not. SKU matching is deterministic in
+`adapters/match.py` and this is where pack sizing and the `accepts:` tolerances finally
+earn their keep.
 
-- **Prices and promotions into the Step 0 briefing.** Makes the briefing real.
-- **SKU matching and the cart write.** Canonical item → a product someone would actually
-  buy. This is the hard part and it is where pack sizing (§7 of the proposal) and the
-  `accepts:` tolerances finally earn their keep.
+**The rule that shapes all of it:** a match that is not confident is not made. `onion
+powder` → `onion` cost one wasted vegetable in a list a human reads; the same error against
+a cart costs money on an item nobody chose. A gap in a cart is a smaller failure than a
+stranger's guess in it.
 
-**Open:** how Kroger is talked to at all, and what the product does when the SKU match is
-wrong or the API is down. Deliberately unanswered — answer it before building.
+**Not built:** the cart write. It needs a user OAuth token from a real redirect through a
+registered callback, which needs a hosted URL this project does not have. Everything up to
+it exists and is tested; `./app.py` → *Price the cart* shows exactly what would be sent.
+Writing that path untested against an API nobody has run is how a plausible thing that has
+never worked gets committed.
 
 ## 5. Session depth — **built**
 
