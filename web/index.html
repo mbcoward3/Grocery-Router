@@ -158,6 +158,7 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
     <h2><span class="n" id="stepNum">2</span> This week</h2>
     <p class="lede" id="effort"></p>
     <div class="stack" id="meals"></div>
+    <p class="foot" id="planner"></p>
     <div class="row">
       <button id="fillBtn">Suggest another</button>
       <span class="foot" id="fillNote"></span>
@@ -318,6 +319,31 @@ function renderMetrics(m) {
     and what you like is the product. Dormant is that gap. Zeroes are honest at week one.</div>`;
 }
 
+// Which planner produced the week, said plainly under it.
+//
+// Not a badge. Someone looking at this needs to be able to tell a week the model
+// planned from a week it half-planned before validation dropped three picks and
+// the ranker finished the job — those look identical on the board and are very
+// different facts about how well this works. So the drops are printed, and a
+// fallback prints the sentence that caused it rather than a shrug.
+function renderPlanner(p) {
+  if (!p) return;
+  const bits = [];
+  if (p.used === 'model') {
+    bits.push(`Planned by ${p.model || 'a model'}.`);
+    if (p.note) bits.push(esc(p.note));
+    if (p.coupling) bits.push(esc(p.coupling));
+    if (p.gaps) bits.push(esc(p.gaps));
+  } else if (p.fallback) {
+    bits.push(`Planned by the ranker — the model was asked and ${esc(p.fallback)}.`);
+  } else {
+    bits.push('Planned by the ranker, deterministically.');
+  }
+  for (const d of p.dropped || []) bits.push(`Dropped: ${esc(d)}.`);
+  for (const w of p.warnings || []) bits.push(`Note: ${esc(w)}.`);
+  $('#planner').innerHTML = bits.join(' ');
+}
+
 function renumber(hasLastWeek) {
   $('#stepNum').textContent  = hasLastWeek ? 2 : 1;
   $('#stepNum2').textContent = hasLastWeek ? 3 : 2;
@@ -377,6 +403,7 @@ function render() {
   renderBriefing(S.briefing);
   renderLastWeek(S.previous);
   renderWeek(S.week);
+  renderPlanner(S.planner);
   renderMetrics(S.metrics);
 }
 

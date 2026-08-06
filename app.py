@@ -27,6 +27,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pantry
+import planner
 import shop
 
 ROOT = Path(__file__).resolve().parent
@@ -169,8 +170,37 @@ def state() -> dict:
         "members": pantry.load_members(),
         "counts": {"corpus": len(corpus), "candidates": len(pantry.load_candidates())},
         "metrics": metrics(),
-        "planner": "ranker",
+        "planner": planner_state(),
         "demo": DEMO is not None,
+    }
+
+
+def planner_state() -> dict:
+    """Which planner produced the week on the board, and what it had to say.
+
+    This used to be the string `"ranker"`, hardcoded, which was true and stopped
+    being true the moment a model could plan. It is read back off the decision
+    log rather than held in memory because the week is re-read from disk on every
+    request and this process may not be the one that planned it.
+
+    `dropped` and `warnings` are surfaced rather than swallowed on purpose. A
+    model week that quietly lost three picks to validation and got topped up by
+    the ranker is *not* the same week as one the model planned outright, and the
+    difference is exactly what someone evaluating whether this works needs to
+    see.
+    """
+    last = pantry.last_proposal() or {}
+    return {
+        "used": last.get("planner", "ranker"),
+        "asked": last.get("asked", ""),
+        "available": planner.which(),
+        "model": last.get("model", ""),
+        "note": last.get("note", ""),
+        "coupling": last.get("coupling", ""),
+        "gaps": last.get("gaps", ""),
+        "dropped": last.get("dropped", []),
+        "warnings": last.get("warnings", []),
+        "fallback": last.get("fallback", ""),
     }
 
 

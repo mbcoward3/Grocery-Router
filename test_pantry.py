@@ -10,6 +10,7 @@ touches the real corpus.
 """
 
 import datetime as dt
+import os
 import shutil
 import tempfile
 import unittest
@@ -21,9 +22,19 @@ REAL = Path(__file__).resolve().parent
 
 
 class Isolated(unittest.TestCase):
-    """Point pantry at a scratch copy of the household's files."""
+    """Point pantry at a scratch copy of the household's files.
+
+    Also pins the planner deterministic. `propose()` now picks between the ranker
+    and the model on whether `ANTHROPIC_API_KEY` is set, and a test suite that
+    starts making paid network calls because of an environment variable someone
+    exported in their shell is a suite nobody can trust. These are the ranker's
+    tests; `test_planner.py` is where the model planner is tested, against a stub.
+    """
 
     def setUp(self):
+        self._env = {k: os.environ.get(k) for k in ("PANTRY_PLANNER", "ANTHROPIC_API_KEY")}
+        os.environ["PANTRY_PLANNER"] = "ranker"
+        os.environ.pop("ANTHROPIC_API_KEY", None)
         self.tmp = Path(tempfile.mkdtemp())
         for name in ("corpus.md", "candidates.md", "profile.md"):
             shutil.copy(REAL / name, self.tmp / name)
@@ -42,6 +53,11 @@ class Isolated(unittest.TestCase):
     def tearDown(self):
         for k, v in self._saved.items():
             setattr(pantry, k, v)
+        for k, v in self._env.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
         pantry._FILE_INDEX = None
         shutil.rmtree(self.tmp, ignore_errors=True)
 

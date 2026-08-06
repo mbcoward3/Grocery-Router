@@ -33,6 +33,7 @@ jobs:
           python3 test_pantry.py
           python3 test_shop.py
           python3 test_onboard.py
+          python3 test_planner.py
 
       - name: Every recipe parses and every item is known
         # docs/step2-design.md 3: the item table grows on parse failure, and a
@@ -95,3 +96,18 @@ jobs:
           test -s dist/index.html
           grep -q 'id="payload"' dist/index.html
           test -f dist/pyodide/pyodide.asm.wasm
+          # app.py imports `planner` to report which planner ran, so a payload
+          # missing the package is a blank page on a public URL rather than a
+          # red build. Cheap to check here; expensive to find out there.
+          grep -q 'planner/__init__.py' dist/index.html
+
+      - name: The demo plans deterministically
+        # There is no key in CI and none in a browser tab, so the ranker is what
+        # a stranger sees. That is the arrangement, not an accident, and it is
+        # worth failing loudly if it ever inverts.
+        run: |
+          python3 - <<'PY'
+          import planner
+          assert planner.which() == "ranker", planner.which()
+          print("no key present → ranker, as the hosted demo requires")
+          PY

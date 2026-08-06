@@ -41,7 +41,14 @@ PYODIDE_FILES = ["pyodide.js", "pyodide.mjs", "pyodide.asm.js", "pyodide.asm.was
 
 # Everything the app reads at runtime. The demo copies win where they exist -
 # see app._demo_source. Recipes and items are public recipe data and shared.
-CODE = ["pantry.py", "shop.py", "app.py", "prep.py"]
+CODE = ["pantry.py", "shop.py", "app.py", "prep.py",
+        # The whole planner package, including the model implementation that can
+        # never run here - there is no key in a browser tab and no socket under
+        # Pyodide. It ships anyway because `app.py` imports `planner` to report
+        # which planner ran, and because shipping only the half that works is how
+        # a build starts drifting from the source it was built from.
+        "planner/__init__.py", "planner/prompt.py", "planner/model.py",
+        "planner/constraints.py"]
 DATA = ["corpus.md", "candidates.md", "profile.md", "items.md"]
 
 
@@ -74,8 +81,16 @@ const boot = (async () => {
   const pyodide = await loadPyodide({ indexURL: %(pyodide)s });
   const files = JSON.parse(document.getElementById('payload').textContent);
 
-  pyodide.FS.mkdirTree('/app/recipes');
+  // `/app` first and unconditionally. It used to get made as a side effect of
+  // mkdirTree('/app/recipes'), which is the kind of load-bearing accident that
+  // only announces itself as `ErrnoError` on a blank page.
+  pyodide.FS.mkdirTree('/app');
   for (const [name, text] of Object.entries(files)) {
+    // Every directory the payload mentions, rather than a hardcoded list of
+    // two. A package added on the Python side should not need a matching edit
+    // in a JavaScript string literal to survive the build.
+    const at = name.lastIndexOf('/');
+    if (at > 0) pyodide.FS.mkdirTree('/app/' + name.slice(0, at));
     pyodide.FS.writeFile('/app/' + name, text);
   }
 

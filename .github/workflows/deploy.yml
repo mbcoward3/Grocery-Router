@@ -40,6 +40,7 @@ jobs:
           python3 test_pantry.py
           python3 test_shop.py
           python3 test_onboard.py
+          python3 test_planner.py
 
       - name: Build
         run: python3 build_static.py

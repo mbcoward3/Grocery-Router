@@ -7,9 +7,11 @@ Three jobs, and the split between them is the architecture:
 plain dicts. These files stay the database - hand-editable markdown in git, so
 history and audit come free and correcting the tool is still just editing a file.
 
-**Propose.** `propose()` ranks the corpus deterministically and always works.
-When a model is available it plans instead, and the ranker becomes the fallback.
-Two implementations behind one call is what lets the app be alive with no setup.
+**Propose.** `propose()` is one call with two implementations behind it. `rank()`
+scores the corpus deterministically and always works; `planner/model.py` plans
+with a model when a key is present, and anything it proposes that fails
+validation is dropped and made up from the ranker. Two implementations behind one
+call is what lets the app be alive with no setup.
 
 **Write.** Every mutation goes through here, and the rules the project has been
 stating in prose are enforced as code:
@@ -361,15 +363,26 @@ def _pick_reason(row, gap, picked, ae, used_kinds: set, used_texts: set,
     return options[-1][1]
 
 
-def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
-            keep: list[Meal] | None = None, today: dt.date | None = None,
-            avoid: set[str] | None = None) -> list[Meal]:
+def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
+         keep: list[Meal] | None = None, today: dt.date | None = None,
+         avoid: set[str] | None = None) -> list[Meal]:
     """Deterministic ranker. Fills the week up to `nights`, leaving `keep` alone.
 
     Gap-filling is the whole point: the session lets the household drop a meal
     and ask for another. Two things follow, and missing either makes the feature
     useless - the meals already accepted must not be re-rolled, and a meal that
     was just turned down must not come straight back. `avoid` carries the second.
+
+    **Public, and named, because it is not a fallback to apologise for.** It is
+    what runs in the hosted demo, in CI, and any week the model is unreachable,
+    and `docs/architecture.md` is explicit that it has to stay genuinely good.
+    `propose()` chooses between this and the model planner; anything that wants
+    the deterministic answer specifically should call this directly and get it
+    with no environment variable in the way.
+
+    Does not write to the decision log. `propose()` logs once, for whichever
+    implementation actually produced the week - two entries for one proposal
+    would quietly corrupt every count read back off the log.
     """
     today = today or dt.date.today()
     keep = list(keep or [])
@@ -450,11 +463,92 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
         if best_cand:
             used_candidates += 1
 
+    return picked
+
+
+def _log_proposal(picked: list[Meal], keep: list[Meal], nights: int, guests: float,
+                  risk: str, **extra) -> None:
     log("proposed", nights=nights, guests=guests, risk=risk,
         kept=[m.slug for m in keep],
         added=[{"recipe": m.slug, "reason": m.reason, "candidate": m.candidate}
-               for m in picked[len(keep):]])
+               for m in picked[len(keep):]],
+        **extra)
+
+
+def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
+            keep: list[Meal] | None = None, today: dt.date | None = None,
+            avoid: set[str] | None = None, planner: str | None = None,
+            client=None) -> list[Meal]:
+    """Plan the week. **The one call, with two implementations behind it.**
+
+    `planner/` decides which: `"ranker"` or `"model"`, from the argument, then
+    `PANTRY_PLANNER`, then whether an API key is present. Callers do not have to
+    care, and the session does not have a mode switch - a household with a key
+    gets the better planner, a browser tab with no key gets a real week anyway.
+
+    **The model may fill part of a week, and the ranker finishes it.** Every pick
+    that fails validation - a slug that resolves to nothing, a reason claiming a
+    recency no date supports, a peanut recipe - is dropped rather than repaired,
+    which can leave the week short. Topping up from the ranker is why that is
+    safe to do: refusing a bad pick costs a good reason, never a night's dinner.
+
+    Falling back is recorded, never silent. `decisions.jsonl` gets the planner
+    that produced the week and, when the model was asked and could not deliver,
+    the sentence saying why - so `PANTRY_PLANNER=model` quietly degrading into
+    the ranker for a month is a thing someone can find out.
+
+    `client` is passed through to the model planner as its HTTP seam; tests use
+    it, nothing else does.
+    """
+    import planner as planners            # deferred: the browser build has no planner/
+
+    keep = list(keep or [])
+    which = planners.which(planner)
+    if which != planners.MODEL:
+        picked = rank(nights, guests, risk, keep, today, avoid)
+        _log_proposal(picked, keep, nights, guests, risk, planner="ranker")
+        return picked
+
+    from planner import model as model_planner
+
+    try:
+        result = model_planner.plan(nights=nights, guests=guests, risk=risk, keep=keep,
+                                    today=today, avoid=avoid, client=client)
+    except model_planner.PlannerUnavailable as exc:
+        picked = rank(nights, guests, risk, keep, today, avoid)
+        _log_proposal(picked, keep, nights, guests, risk,
+                      planner="ranker", asked="model", fallback=str(exc))
+        return picked
+
+    picked = keep + result.meals
+    topped_up = []
+    if len(picked) < nights:
+        picked = rank(nights, guests, risk, picked, today, avoid)
+        topped_up = [m.slug for m in picked[len(keep) + len(result.meals):]]
+
+    _log_proposal(picked, keep, nights, guests, risk,
+                  planner="model" if result.meals else "ranker",
+                  asked="model", model=result.model,
+                  note=result.note, coupling=result.coupling, gaps=result.gaps,
+                  dropped=result.dropped, warnings=result.warnings,
+                  topped_up=topped_up,
+                  fallback="" if result.meals else
+                           "the model proposed nothing that survived validation")
     return picked
+
+
+def last_proposal() -> dict | None:
+    """The most recent `proposed` record, or `None`.
+
+    How the session finds out which planner ran and what it had to say. The
+    decision log is the right home for it rather than a variable on this module:
+    a week is re-read from disk on every request and this process may not be the
+    one that planned it, so anything held in memory would be gone by the time
+    anybody looked. It also means the answer survives a restart, which is the
+    same argument the log was built on.
+    """
+    records = decisions({"proposed"})
+    return records[-1] if records else None
 
 
 def effort_mix(meals: list[Meal]) -> str:

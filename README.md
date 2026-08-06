@@ -29,6 +29,32 @@ something to rank on. Without it every recipe looks equally forgotten forever.
 
 Architecture and the decisions behind it: [`docs/architecture.md`](docs/architecture.md).
 
+### Who plans the week
+
+Two implementations behind one call, and the session has no mode switch:
+
+```sh
+./app.py                                  # no key → the deterministic ranker
+ANTHROPIC_API_KEY=… ./app.py              # a key  → the model planner
+PANTRY_PLANNER=ranker ./app.py            # pin it deterministic anyway
+```
+
+The **ranker** scores the corpus on staleness, protein and cuisine spread, and effort mix.
+It always works, it needs nothing, and it is what the hosted demo and CI run — so it is
+held to the same bar as the model rather than kept around as an apology.
+
+The **model planner** can say things the ranker cannot: *you drifted away from Italian
+around March and this is the one you kept going back to before that*. The reason is the
+product, and that is the kind of reason that makes a forgotten recipe land.
+
+**It selects and explains; it does not name food.** It is given the corpus with a slug
+column and a computed `days since` column, no ingredients, and it hands back slugs plus
+reasons. Protein, cuisine, yield and effort are read off the corpus row — so a slug that
+resolves to nothing is dropped rather than nudged to its nearest neighbour, and a reason
+claiming a recency no date supports is dropped too. Whatever it drops, the ranker fills in,
+so a refused pick costs a good reason and never a dinner. Every drop, every fallback and
+every constraint warning is written to `decisions.jsonl` and shown under the week.
+
 **It runs locally, and nothing is deployed.** The container and the one-command deploy both
 work, but Hugging Face now requires PRO to host a Docker Space and the free alternatives
 each want something. [`docs/deploy.md`](docs/deploy.md) has what was tried, what it
@@ -112,10 +138,17 @@ goes through it, and these are tested in `test_pantry.py` rather than stated in 
 - **No writer overwrites a human value.** `Last cooked` is the one field the tool owns.
 - **A flop is never deleted.** It stays in `candidates.md` with the reason — at this corpus
   size it's the most informative signal the system gets all week.
+- **The planner may not violate a hard constraint**, and since a model planner can propose
+  things a ranker structurally cannot, that stopped being a sentence in `profile.md` and
+  became `planner/constraints.py`. A peanut recipe never reaches the week; a reason
+  claiming a recency no date supports never reaches the week; a week with more high-active
+  cooks than the weeknight ceiling leaves room for says so out loud rather than quietly
+  deleting one. Tested in `test_planner.py`, with no key and no network.
 
-Every proposal, drop, dial change and outcome is appended to `decisions.jsonl`. That's what
-lets a change to the ranker be replayed against real history instead of argued about, and
-it's the one thing that can't be backfilled.
+Every proposal, drop, dial change and outcome is appended to `decisions.jsonl` — including
+which planner produced the week and, when the model was asked and could not deliver, the
+sentence saying why. That's what lets a change to the planner be replayed against real
+history instead of argued about, and it's the one thing that can't be backfilled.
 
 ## The two files that matter
 

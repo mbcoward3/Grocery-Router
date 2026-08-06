@@ -69,6 +69,38 @@ store/        The only code that knows what SQLite is. One repository per
 adapters/     Kroger, behind an interface, so a second store is a new file.
 ```
 
+### `planner/` as built, and the one place it differs
+
+The two implementations exist and the interface is `pantry.propose()`. One thing in the
+sketch above did not happen: **the ranker did not move into `planner/`.** It stays in
+`pantry.py` next to the corpus loaders and the `Meal` it builds, because moving it would
+have bought a tidier directory listing at the price of a circular import and a diff across
+a hundred and twenty-nine passing tests. It is `pantry.rank()` — public and named, so
+anything wanting the deterministic answer can ask for it directly.
+
+What lives in `planner/` is the choice (`which()`), the model implementation, the prompt,
+and the constraint checks. Selection is: an explicit argument, then `PANTRY_PLANNER`, then
+whether `ANTHROPIC_API_KEY` is set. **No key is a supported configuration, not a degraded
+one** — it is what the hosted demo and CI run, and CI asserts it.
+
+The model boundary above said a model may *propose the week and write the reasons*. In
+practice that had to be narrowed to make it safe, and the narrowing is the design:
+
+**The model selects and explains. It does not state facts.** It is handed the corpus as a
+table with a slug column, a computed `days since` column and no ingredients, and it returns
+slugs and reasons. Protein, cuisine, yield, active and passive are read back off the corpus
+row, so there is nowhere for an invented field to land. A slug that resolves to nothing is
+dropped — never resolved to its nearest neighbour, because `onion powder` → `onion` is on
+the list of what silent mis-merges cost here. A reason claiming recency about a row with no
+last-cooked date is dropped, which is the coupling receipt in its other coat: give a model
+a gap and it will fill it with something plausible.
+
+Everything dropped gets made up by the ranker, which is what makes refusing cheap: a
+refused pick costs a good reason, never a night's dinner. Every drop, fallback and warning
+lands in `decisions.jsonl` and under the week in the session. **A model that quietly
+degraded to the ranker for a month would be the real failure**, and it is the one this is
+built to make impossible.
+
 ## Storage — reversed, on purpose
 
 **This started as "SQLite now, Postgres later" and was reversed after a second look.**
