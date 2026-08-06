@@ -123,6 +123,9 @@ def print_week(args):
         print(f"  {meal.title + tag:38} {meal.yield_ or 'unknown':14} "
               f"{meal.active or 'med':5} active   {meal.reason}")
     print(f"\n{pantry.effort_mix(meals)}")
+    if last.get("planned_short"):
+        print(f"{last['planned_short']} of the {args.nights} nights are leftovers by "
+              f"design, not cooks")
 
     for label, key in (("coupling", "coupling"), ("gaps", "gaps")):
         if last.get(key):

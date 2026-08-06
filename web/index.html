@@ -339,6 +339,12 @@ function renderPlanner(p) {
   } else {
     bits.push('Planned by the ranker, deterministically.');
   }
+  // Fewer cooks than nights is usually the point here — a big cook covers a
+  // second dinner — so it has to read as intent and not as a gap the tool
+  // failed to fill.
+  if (p.planned_short > 0) {
+    bits.push(`${p.planned_short} of the nights are meant to be leftovers, not cooks.`);
+  }
   for (const d of p.dropped || []) bits.push(`Dropped: ${esc(d)}.`);
   for (const w of p.warnings || []) bits.push(`Note: ${esc(w)}.`);
   $('#planner').innerHTML = bits.join(' ');

@@ -521,9 +521,30 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
         return picked
 
     picked = keep + result.meals
+
+    # **A short week is not always a failed week, and the difference matters.**
+    #
+    # `profile.md` says seven nights is not seven cooks - a big cook covers the
+    # next day's lunches and can stand in for a dinner - and the prompt tells the
+    # planner to scale a meal on purpose and say which night it feeds. It is also
+    # told outright that proposing fewer nights than asked for is allowed and is
+    # sometimes correct. So four cooks for five nights is frequently the *right*
+    # answer, and topping it up to five silently deletes the leftover night the
+    # week was built around.
+    #
+    # What the top-up is actually for is the picks validation took away. So it
+    # makes up exactly those and no more: a refused pick still costs a good
+    # reason and never a dinner, and a deliberate short week survives intact.
+    # Told apart by whether anything was dropped, which is the only honest signal
+    # available - a model that returned four meals and had none refused chose the
+    # number, and it was allowed to.
+    # Nothing survived at all is not a short week, it is a failed one: there is
+    # no deliberate plan left to respect, so the ranker takes the whole thing.
+    make_up = (nights - len(picked) if not result.meals
+               else min(nights - len(picked), len(result.dropped)))
     topped_up = []
-    if len(picked) < nights:
-        picked = rank(nights, guests, risk, picked, today, avoid)
+    if make_up > 0:
+        picked = rank(len(picked) + make_up, guests, risk, picked, today, avoid)
         topped_up = [m.slug for m in picked[len(keep) + len(result.meals):]]
 
     _log_proposal(picked, keep, nights, guests, risk,
@@ -531,7 +552,7 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
                   asked="model", model=result.model,
                   note=result.note, coupling=result.coupling, gaps=result.gaps,
                   dropped=result.dropped, warnings=result.warnings,
-                  topped_up=topped_up,
+                  topped_up=topped_up, planned_short=nights - len(picked),
                   fallback="" if result.meals else
                            "the model proposed nothing that survived validation")
     return picked

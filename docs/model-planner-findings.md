@@ -53,6 +53,63 @@ do freely: a refused pick costs a good reason, never a night's dinner. It is als
 ranker had to stay genuinely good rather than becoming an apology — it is now load-bearing
 on the model's best day, not just its worst.
 
+## The first real run
+
+No API key was available, so the prompt was run against a model a different way: two
+subagents were handed `planner/model.py`'s assembled prompt verbatim — the real one, built
+from the real files — with instructions to read nothing else and reply as the planner. Their
+replies were then fed through the real pipeline via the `client` seam. One against the
+household's own corpus (24 recipes, **zero** last-cooked dates), one against the demo
+household (23 recipes, **19** dates), both for five nights at normal risk.
+
+This tests the one thing the stubs could not: whether the prompt actually produces a usable
+answer. It is not a substitute for a keyed run — no HTTP, no `max_tokens`, no real
+`stop_reason` — but it is the part that was guesswork.
+
+**Both replies parsed. Zero invented slugs. Zero constraint drops.**
+
+- Every slug came back copied from the catalogue character for character. The
+  drop-don't-repair path never fired, which is the outcome it was built to make safe rather
+  than the outcome it was built to expect.
+- **The recency discipline held on both sides of the line.** The real household's reply
+  said outright that no last-cooked dates exist and surfaced on season, protein spread and
+  effort instead. The demo reply made exactly one recency claim — *"at 53 days it is out of
+  the recent rotation"* — against a row dated 2026-06-14, which is 53 days before the run
+  date, and it named in its own gaps section the two rows reading `unknown` as ones it could
+  not make such a claim about. That is the invented-coupling trap declining to fire.
+- **The reasons are visibly better than the ranker's**, which was the entire bet. The
+  ranker said *low active — a night a bad day cannot break*. The model said *slow-cooker
+  braise with near-zero hands-on at dinnertime, scaled to its full yield on purpose so it
+  covers a second dinner plus lunches — the insurance for a week whose hard nights are
+  unpredictable*. Same recipe, same corpus, and only one of them explains itself.
+
+### The bug it found
+
+**Both replies planned four cooks for five nights, deliberately** — one meal scaled to
+cover a second dinner, with a leftovers night named. That is not a shortfall: `profile.md`
+says seven nights is not seven cooks, and the prompt tells the planner to scale a meal on
+purpose and says proposing fewer nights is allowed.
+
+`propose()` topped it up to five anyway, adding a tuna melt and silently deleting the
+leftover night the week was built around. A stub never caught it because I wrote the stubs,
+and I wrote them full.
+
+Fixed: the top-up now makes up **exactly the picks validation took away** and no more, told
+apart by whether anything was dropped. Nothing dropped and a short week means the planner
+chose the number and was allowed to. Nothing surviving at all is still a full ranker week,
+because there is no deliberate plan left to respect. The shortfall is reported as
+`planned_short` and reads as intent in the session rather than as a gap.
+
+This is the finding that justifies the exercise. It is a product bug — the tool overriding
+a correct plan — and no amount of testing against my own fixtures would have surfaced it,
+because my fixtures agreed with my assumptions.
+
+### The other thing it wanted and could not have
+
+Both replies scaled servings per meal — *"served at 3 AE rather than its 2 AE base"*. There
+is no per-meal servings field on `Meal`; guests are a week-level dial. The model asked for
+the thing `docs/brief-next.md` §5 already lists as missing, unprompted, on its first run.
+
 ## What worked
 
 - **The prompt survived reuse intact.** The brief said it was not naive and not to rewrite
@@ -136,6 +193,13 @@ Recorded so nobody spends a household conversation on them.
 4. **What happens when a plan breaks?** Still `[...]` in `profile.md`. The prompt spends a
    paragraph on coupling and cascade specifically so a broken Wednesday is repairable, and
    it is writing against a blank.
+
+## What a keyed run would still add
+
+The subagent run covered the prompt and the parsing. It did not touch: a real HTTP round
+trip, `max_tokens` truncation, a real `stop_reason`, rate limits, or latency. Those paths
+are stubbed and tested, and they have never been observed. `./plan.py --week` is the
+command; the fallback sentence tells you which of the three is wrong if it fails.
 
 ## Still true, and unchanged by any of this
 

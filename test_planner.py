@@ -331,16 +331,39 @@ class TestTheWeekIsAlwaysWhole(Isolated):
     def use(self, client, **kw):
         return pantry.propose(planner="model", client=client, **kw)
 
-    def test_a_short_model_week_is_topped_up_by_the_ranker(self):
-        got = self.use(lambda p: reply([pick(self.slugs()[0])]), nights=5)
-        self.assertEqual(len(got), 5)
-        self.assertEqual(len({m.slug for m in got}), 5)
-
-    def test_the_top_up_is_recorded_as_such(self):
-        self.use(lambda p: reply([pick(self.slugs()[0])]), nights=5)
+    def test_picks_lost_to_validation_are_made_up_by_the_ranker(self):
+        """The top-up's actual job: a refused pick costs a good reason, never a
+        dinner."""
+        got = self.use(lambda p: reply([pick(self.slugs()[0]),
+                                        pick("thai-peanut-noodles"),
+                                        pick("kung-pao-anything")]), nights=5)
+        self.assertEqual(len(got), 3)          # 1 kept + 2 made up for the drops
         last = pantry.last_proposal()
-        self.assertEqual(last["planner"], "model")
-        self.assertEqual(len(last["topped_up"]), 4)
+        self.assertEqual(len(last["dropped"]), 2)
+        self.assertEqual(len(last["topped_up"]), 2)
+
+    def test_a_deliberately_short_week_is_left_alone(self):
+        """**Found by running the real prompt through a real model.** Both
+        replies came back with four cooks for five nights on purpose - one meal
+        scaled to cover a second dinner, which is what `profile.md` asks for and
+        what the prompt tells the planner to do. Topping that up to five silently
+        deleted the leftover night the week was built around."""
+        got = self.use(lambda p: reply([pick(s, "a reason") for s in self.slugs(4)]),
+                       nights=5)
+        self.assertEqual(len(got), 4)
+        last = pantry.last_proposal()
+        self.assertEqual(last["topped_up"], [])
+        self.assertEqual(last["planned_short"], 1)
+
+    def test_a_short_week_with_drops_is_made_up_only_by_what_was_dropped(self):
+        """Both things at once: three picks for five nights with one refused
+        gets one back, not two. The other night was the planner's choice."""
+        got = self.use(lambda p: reply([pick(self.slugs()[0]), pick(self.slugs()[1]),
+                                        pick("invented-noodles")]), nights=5)
+        self.assertEqual(len(got), 3)
+        last = pantry.last_proposal()
+        self.assertEqual(len(last["topped_up"]), 1)
+        self.assertEqual(last["planned_short"], 2)
 
     def test_kept_meals_are_left_alone(self):
         first = pantry.rank(3, 0, "normal")

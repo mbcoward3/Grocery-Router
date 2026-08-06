@@ -201,6 +201,7 @@ def planner_state() -> dict:
         "dropped": last.get("dropped", []),
         "warnings": last.get("warnings", []),
         "fallback": last.get("fallback", ""),
+        "planned_short": last.get("planned_short", 0),
     }
 
 
