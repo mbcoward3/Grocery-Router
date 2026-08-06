@@ -128,6 +128,18 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
 
 .foot { color: var(--muted); font-size: 13.5px; margin-top: 12px; }
 .empty { color: var(--muted); font-style: italic; }
+.meal.locked { border-color: var(--accent); }
+.tag.serves { border-style: dashed; }
+.meal .recipe { grid-column: 1 / -1; margin-top: 12px; padding-top: 12px;
+  border-top: 1px solid var(--line); font-size: 13.5px; color: var(--muted);
+  max-height: 340px; overflow-y: auto; }
+.meal button[disabled] { opacity: .38; cursor: default; }
+.meal button[disabled]:hover { background: transparent; border-color: var(--line); }
+#profileText { width: 100%; box-sizing: border-box; min-height: 420px; margin-top: 14px;
+  font: 400 12.5px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--ink); background: transparent; border: 1px solid var(--line);
+  border-radius: 11px; padding: 14px; resize: vertical; }
+#profileText:focus { outline: none; border-color: var(--accent); }
 .behaviour { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
 .behaviour b { display: block; font-size: 13px; margin: 14px 0 8px; }
 .behaviour table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -173,6 +185,7 @@ input[type=url]:focus { outline: none; border-color: var(--accent); }
     <p class="foot" id="planner"></p>
     <div class="row">
       <button id="fillBtn">Suggest another</button>
+      <button id="reshuffleBtn" title="Re-roll everything that isn't locked">Reshuffle</button>
       <button id="acquireBtn">Find something new</button>
       <span class="foot" id="fillNote"></span>
     </div>
@@ -224,6 +237,22 @@ input[type=url]:focus { outline: none; border-color: var(--accent); }
       <button class="primary" id="listBtn">Build the list</button>
       <button id="orderBtn" disabled>Mark ordered</button>
       <span class="foot" id="orderNote"></span>
+    </div>
+  </section>
+
+  <section id="profileSec">
+    <h2>The profile</h2>
+    <p class="lede">Correcting this page is the trust mechanism, and it beats any
+      opaque score. It was only reachable from a text editor until now.</p>
+    <div class="row">
+      <button id="profileBtn">Open the profile</button>
+      <span class="foot" id="profileNote"></span>
+    </div>
+    <div id="profileBox" hidden>
+      <textarea id="profileText" spellcheck="false"></textarea>
+      <div class="row"><button class="primary" id="profileSave">Save it</button>
+        <span class="foot">Saved whole, like everything else here. The rule the file
+          opens with still applies: no claim without a trace.</span></div>
     </div>
   </section>
 
@@ -426,11 +455,28 @@ function renderWeek(w) {
       ? `<select data-var="${m.slug}">` + m.variants.map(v =>
           `<option${v === m.variant ? ' selected' : ''}>${esc(v)}</option>`).join('') + '</select>'
       : '';
-    return `<div class="card meal">
+    // Locking is the household saying "this one is settled", which is only a
+    // statement if something else can move — so it disables drop and swap, and
+    // Reshuffle re-rolls everything it doesn't cover.
+    const serves = m.ae_override
+      ? `<span class="tag serves">serves ${m.ae_override}</span>` : '';
+    return `<div class="card meal${m.locked ? ' locked' : ''}">
       <div class="title">${esc(m.title)}</div>
-      <div class="actions"><button class="ghost" data-drop="${m.slug}" title="Not this week">Drop</button></div>
+      <div class="actions">
+        <button class="ghost" data-lock="${m.slug}" data-on="${m.locked ? 1 : 0}"
+          title="${m.locked ? 'Unlock' : 'Keep this one when reshuffling'}"
+          aria-pressed="${m.locked}">${m.locked ? 'Locked' : 'Lock'}</button>
+        <button class="ghost" data-see="${m.slug}" title="Read the recipe">Recipe</button>
+        <button class="ghost" data-serve="${m.slug}" data-ae="${m.ae_override || 0}"
+          title="Servings for this meal only">Serves</button>
+        <button class="ghost" data-swap="${m.slug}" title="Something else instead"
+          ${m.locked ? 'disabled' : ''}>Swap</button>
+        <button class="ghost" data-drop="${m.slug}" title="Not this week"
+          ${m.locked ? 'disabled' : ''}>Drop</button>
+      </div>
       <div class="why">${esc(m.reason)}</div>
-      <div class="meta">${tags}${variant}</div>
+      <div class="meta">${tags}${serves}${variant}</div>
+      <div class="recipe" id="recipe-${m.slug}" hidden></div>
     </div>`;
   }).join('') || '<div class="card"><span class="empty">Empty week. Press Suggest another.</span></div>';
 
@@ -467,6 +513,31 @@ document.addEventListener('click', async (e) => {
   const t = e.target.closest('button, [data-drop]');
   if (!t) return;
   if (t.dataset.drop)  { S = await api('/api/drop', {slug: t.dataset.drop}); return render(); }
+  if (t.dataset.swap)  { t.classList.add('spin');
+                         S = await api('/api/swap', {slug: t.dataset.swap});
+                         return render(); }
+  if (t.dataset.lock)  { S = await api('/api/lock',
+                           {slug: t.dataset.lock, locked: t.dataset.on !== '1'});
+                         return render(); }
+  if (t.dataset.serve) {
+    // Prompted rather than a stepper: guests are a number somebody knows, and
+    // clicking +0.5 eleven times to say "six for dinner Thursday" is worse.
+    const now = Number(t.dataset.ae) || '';
+    const said = prompt(`Adult-equivalents for this meal only.\n` +
+      `Blank or 0 goes back to the week's ${S.week.ae}.`, now);
+    if (said === null) return;
+    S = await api('/api/servings', {slug: t.dataset.serve, ae: Number(said) || 0});
+    return render();
+  }
+  if (t.dataset.see) {
+    const box = $('#recipe-' + t.dataset.see);
+    if (!box.hidden) { box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = '<span class="empty">Reading…</span>';
+    const r = await api('/api/recipe/' + encodeURIComponent(t.dataset.see));
+    box.innerHTML = md(r.markdown);
+    return;
+  }
   if (t.dataset.who)   { WHO = t.dataset.who; return render(); }
   if (t.dataset.fb)    { S = await api('/api/feedback',
                            {slug: t.dataset.fb, outcome: t.dataset.val, by: WHO || ''});
@@ -496,6 +567,25 @@ document.addEventListener('click', async (e) => {
         ).join(' ')
       : 'Nothing new landed. Everything found was already known, off-target, or ' +
         'ruled out by a hard constraint.';
+    return;
+  }
+  if (t.id === 'reshuffleBtn') { t.classList.add('spin');
+                                 S = await api('/api/reshuffle', {});
+                                 t.classList.remove('spin'); return render(); }
+  if (t.id === 'profileBtn') {
+    const box = $('#profileBox');
+    if (!box.hidden) { box.hidden = true; return; }
+    const r = await api('/api/profile');
+    $('#profileText').value = r.text;
+    box.hidden = false;
+    return;
+  }
+  if (t.id === 'profileSave') {
+    const r = await api('/api/profile', {text: $('#profileText').value});
+    S = r; render();
+    $('#profileNote').textContent = r.profile_error
+      || 'Saved. The planner reads this on the next proposal.';
+    if (!r.profile_error) $('#profileBox').hidden = true;
     return;
   }
   if (t.id === 'onboardBtn') {

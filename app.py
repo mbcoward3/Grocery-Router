@@ -265,15 +265,18 @@ def grocery_list(week: pantry.Week) -> dict:
     copy of the pipeline that has to be kept honest against the first.
     """
     missing = [m.title for m in week.meals if not m.has_file]
-    specs = [m.file + (f":{m.variant}" if m.variant else "")
-             for m in week.meals if m.has_file]
+    have = [m for m in week.meals if m.has_file]
+    specs = [m.file + (f":{m.variant}" if m.variant else "") for m in have]
     if not specs:
         return {"ok": True, "markdown": "_Nothing planned yet._"}
 
     shop.configure(pantry.ROOT)
     ae = pantry.BASE_AE + week.guests
+    # One number per meal, so guests on Thursday scale Thursday and not the
+    # week. Meals with no override get the week's number, so a week nobody has
+    # touched produces exactly the list it did before.
     try:
-        built = shop.build(specs, ae)
+        built = shop.build(specs, [m.ae(ae) for m in have])
     except (FileNotFoundError, SystemExit) as exc:
         return {"ok": False, "markdown": f"```\n{exc}\n```"}
     meals, lines, unknown, merges, links, scales, items = built
@@ -327,6 +330,107 @@ def post_lock(body):
             m.locked = bool(body.get("locked"))
     pantry.write_week(week)
     return state()
+
+
+def post_servings(body):
+    """Servings for one meal, rather than for the week.
+
+    `profile.md` asks for this outright: guests are frequent and come on
+    particular nights, so a week-level dial buys food for four dinners nobody is
+    eating. Both model-planned weeks scaled a single meal on their own the first
+    time they ran, unprompted, which is the strongest signal available that the
+    dial was in the wrong place.
+
+    Zero clears it and the meal goes back to the week's number, which is why the
+    override is `0` rather than `None` - the session sends a number either way.
+    """
+    week = current_week()
+    for m in week.meals:
+        if m.slug == body["slug"]:
+            m.ae_override = max(0.0, float(body.get("ae") or 0))
+    pantry.write_week(week)
+    pantry.log("servings", week=week.date, recipe=body["slug"],
+               ae=float(body.get("ae") or 0))
+    return state()
+
+
+def post_swap(body):
+    """Replace one meal with another, rather than dropping and refilling.
+
+    Two clicks became one, and the difference is not only convenience: a drop
+    followed by a refill is two decisions in the log for one intent, which makes
+    the accept rate in `review.py` read a swap as a rejection *and* the
+    replacement as an unrelated offer. It is one decision, so it is logged as one.
+
+    The dropped meal still goes to `declined`, so gap-filling cannot hand back
+    the thing that was just turned down.
+    """
+    week = current_week()
+    meal = next((m for m in week.meals if m.slug == body["slug"]), None)
+    if meal is None:
+        return state()
+    if meal.locked:
+        return dict(state(), error=f"{meal.title} is locked.")
+    week.meals = [m for m in week.meals if m.slug != body["slug"]]
+    if body["slug"] not in week.declined:
+        week.declined.append(body["slug"])
+    week.meals = pantry.propose(week.nights, week.guests, week.risk,
+                                keep=week.meals, avoid=set(week.declined),
+                                week=week.date)
+    pantry.write_week(week)
+    added = [m.slug for m in week.meals if m.slug not in
+             {*week.declined, *(x.slug for x in week.meals[:-1])}]
+    pantry.log("swap", week=week.date, out=body["slug"],
+               reason_kind=review.kind_of(body["slug"]),
+               into=added[-1] if added else "")
+    return state()
+
+
+def post_reshuffle(body):
+    """Re-roll everything that is not locked.
+
+    What makes the lock mean anything. Until now `refill` kept every meal already
+    on the board, so a locked meal and an unlocked one were treated identically
+    and the field was decoration. Locking is the household saying *this one is
+    settled* - and that is only a statement if something else can move.
+    """
+    week = current_week()
+    locked = [m for m in week.meals if m.locked]
+    moved = [m.slug for m in week.meals if not m.locked]
+    # **The re-rolled meals are declined, not merely re-proposed.** The ranker is
+    # deterministic: hand it the same corpus and the same locked meal and it
+    # returns the same four others, so a reshuffle that only re-ran it would be a
+    # button that changes nothing. This project has shipped one of those before -
+    # the risk dial nudged a score in a fight candidates lose by design - and the
+    # lesson recorded then was that a control has to change an outcome.
+    #
+    # So reshuffle means *not these*, which is also what it reads as. Same
+    # semantics as a drop, which is the honest way to spend the corpus: press it
+    # enough times in one week and the pool runs out, and that is a true fact
+    # about a 24-recipe corpus rather than a bug.
+    for slug in moved:
+        if slug not in week.declined:
+            week.declined.append(slug)
+    week.meals = pantry.propose(week.nights, week.guests, week.risk, keep=locked,
+                                avoid=set(week.declined), week=week.date)
+    pantry.write_week(week)
+    pantry.log("reshuffle", week=week.date, kept=[m.slug for m in locked],
+               rerolled=moved)
+    return state()
+
+
+def get_recipe(slug: str) -> dict:
+    """The recipe, to read without leaving the session.
+
+    Served as its own markdown rather than rendered into something prettier. The
+    file is the store, it is what the household edits when the tool is wrong, and
+    showing anything else here would put a second version of the truth on screen.
+    """
+    path = pantry.recipe_file(slug)
+    if not path.exists():
+        return {"ok": False, "slug": slug,
+                "markdown": "_No capture on file for this one yet._"}
+    return {"ok": True, "slug": slug, "markdown": path.read_text(encoding="utf-8")}
 
 
 def post_variant(body):
@@ -408,6 +512,40 @@ def post_onboard(body):
     })
 
 
+def post_profile(body):
+    """Edit `profile.md` from the session.
+
+    `profile.md` opens by saying that correcting the file **is** the trust
+    mechanism and that it beats any opaque score. In a hosted deployment that
+    sentence was false - the file was unreachable, so the household had less
+    control over its own stated preferences than a local user did.
+
+    **The whole file, replaced whole**, the same way a week is written. It is
+    markdown a person is meant to read and edit, and offering a form with fields
+    would be this code deciding which parts of the household's own description of
+    itself are editable.
+
+    Two guards, and neither is about taste. An empty file is refused, because
+    saving nothing over the only record of a peanut allergy is not an edit anyone
+    means to make. And the result has to still parse as the profile - if the
+    Members section stops being findable, the write is rejected and the reason
+    said out loud rather than discovered three weeks later by a planner with no
+    constraints.
+    """
+    text = body.get("text") or ""
+    if not text.strip():
+        return dict(state(), profile_error="Refusing to save an empty profile.")
+    before = pantry.PROFILE.read_text(encoding="utf-8") if pantry.PROFILE.exists() else ""
+    pantry.PROFILE.write_text(text, encoding="utf-8")
+    if before and not pantry.load_members():
+        pantry.PROFILE.write_text(before, encoding="utf-8")
+        return dict(state(), profile_error=(
+            "That would have left no Members section, so nothing was saved. "
+            "Keep a `## Members` heading with a name under it."))
+    pantry.log("profile_edited", bytes_before=len(before), bytes_after=len(text))
+    return dict(state(), profile_error="", profile_saved=True)
+
+
 def post_feedback(body):
     week = pantry.previous_week(pantry.monday())
     if week is None:
@@ -454,6 +592,10 @@ ROUTES = {
     "/api/fill": post_fill,
     "/api/acquire": post_acquire,
     "/api/onboard": post_onboard,
+    "/api/servings": post_servings,
+    "/api/swap": post_swap,
+    "/api/reshuffle": post_reshuffle,
+    "/api/profile": post_profile,
     "/api/feedback": post_feedback,
     "/api/apply": post_apply,
     "/api/order": post_order,
@@ -473,6 +615,11 @@ def handle(path: str, body: dict | None = None) -> tuple[int, dict]:
             return 200, state()
         if path == "/api/list":
             return 200, grocery_list(current_week())
+        if path == "/api/profile":
+            return 200, {"text": pantry.PROFILE.read_text(encoding="utf-8")
+                                 if pantry.PROFILE.exists() else ""}
+        if path.startswith("/api/recipe/"):
+            return 200, get_recipe(path[len("/api/recipe/"):])
         return 404, {"error": "not found"}
     fn = ROUTES.get(path)
     if fn is None:

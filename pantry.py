@@ -279,7 +279,14 @@ class Meal:
     # it needs to survive, and that is append-only.
     reason_kind: str = ""
     candidate: bool = False
+    # Both of these had a field and no way to survive a page reload, because the
+    # week file's meal line had nowhere to put them. `locked` in particular was
+    # settable and then silently forgotten, which is worse than not having it.
     locked: bool = False
+    # Extra adult-equivalents for this meal only. Guests on Thursday are a fact
+    # about Thursday; scaling the whole week to them buys four dinners nobody
+    # eats. 0 means "use the week's number".
+    ae_override: float = 0.0
 
     @property
     def file(self) -> str:
@@ -289,6 +296,9 @@ class Meal:
     @property
     def has_file(self) -> bool:
         return recipe_file(self.slug).exists()
+
+    def ae(self, week_ae: float) -> float:
+        return self.ae_override or week_ae
 
     def to_json(self):
         d = asdict(self)
@@ -635,7 +645,16 @@ class Week:
                 "feedback": self.feedback, "effort": effort_mix(self.meals)}
 
 
-MEAL_LINE = re.compile(r"^- (.+?) \| (.*?) \| (.*?) active \| variant: (.*?) \| (.*)$")
+# Optional labelled segments sit between the variant and the reason, and the
+# reason stays last and greedy so a pipe inside it is still safe. Old lines,
+# written before either segment existed, parse unchanged - these files are in
+# git and previous weeks have to keep reading.
+MEAL_LINE = re.compile(
+    r"^- (?P<title>.+?) \| (?P<yield>.*?) \| (?P<active>.*?) active"
+    r" \| variant: (?P<variant>.*?)"
+    r"(?: \| serves: (?P<ae>[\d.]+))?"
+    r"(?P<locked> \| locked)?"
+    r" \| (?P<reason>.*)$")
 
 
 def read_week(date: str) -> Week | None:
@@ -662,14 +681,17 @@ def read_week(date: str) -> Week | None:
         if section == "meals" and s.startswith("- "):
             m = MEAL_LINE.match(s)
             if m:
-                title, yld, active, variant, reason = m.groups()
+                g = m.groupdict()
+                title = g["title"]
                 cand = title.endswith("[candidate]")
                 title = title.replace("[candidate]", "").strip()
                 sl = slug(title)
-                w.meals.append(Meal(slug=sl, title=title, yield_=yld, active=active,
-                                    variant="" if variant == "—" else variant,
-                                    variants=variants_for(sl), reason=reason,
-                                    candidate=cand))
+                w.meals.append(Meal(slug=sl, title=title, yield_=g["yield"],
+                                    active=g["active"],
+                                    variant="" if g["variant"] == "—" else g["variant"],
+                                    variants=variants_for(sl), reason=g["reason"],
+                                    candidate=cand, locked=bool(g["locked"]),
+                                    ae_override=float(g["ae"] or 0)))
         if section == "declined" and s.startswith("- "):
             w.declined.append(slug(s[2:]))
         if section == "feedback" and s.startswith("- "):
@@ -697,8 +719,10 @@ def write_week(w: Week) -> Path:
            f"status: {w.status}", "", "## Meals", ""]
     for m in w.meals:
         tag = " [candidate]" if m.candidate else ""
+        extra = f" | serves: {m.ae_override:g}" if m.ae_override else ""
+        extra += " | locked" if m.locked else ""
         out.append(f"- {m.title}{tag} | {m.yield_ or 'unknown'} | {m.active or 'med'} "
-                   f"active | variant: {m.variant or '—'} | {m.reason}")
+                   f"active | variant: {m.variant or '—'}{extra} | {m.reason}")
     if w.declined:
         out += ["", "## Declined", "",
                 "*Offered this week and turned down. Kept so gap-filling does not hand "

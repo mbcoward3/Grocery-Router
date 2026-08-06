@@ -968,16 +968,31 @@ def coupling_report(lines: list[Line], items: dict[str, Item]) -> str:
 # Driver
 # --------------------------------------------------------------------------- #
 
-def build(week_spec: list[str], ae: float):
+def build(week_spec: list[str], ae):
+    """`ae` is the week's adult-equivalents, or one per spec.
+
+    A list is how per-meal servings reach the list. `profile.md` asks for it
+    outright - *"Guests: frequent. Pass `--guests` per week"* is followed by a
+    note that guests come on particular nights - and both model-planned weeks
+    scaled a single meal up on their own, unprompted, the first time they ran.
+    Guests on Thursday only is a fact about Thursday, and scaling the whole week
+    to it buys food for four dinners nobody is eating.
+
+    Still deterministic, and still no model anywhere near it: the number arrives
+    from the session as a number.
+    """
     items, index = load_items()
     week = []
     entries = []
     scales = []
-    for spec in week_spec:
+    per_meal = ae if isinstance(ae, (list, tuple)) else [ae] * len(week_spec)
+    if len(per_meal) != len(week_spec):
+        raise ValueError(f"{len(per_meal)} servings for {len(week_spec)} meals")
+    for spec, meal_ae in zip(week_spec, per_meal):
         slug, _, variant_name = spec.partition(":")
         recipe = load_recipe(slug.strip())
         ingredients, variant = resolve(recipe, variant_name.strip() or None)
-        mult, why = scale(recipe, ae)
+        mult, why = scale(recipe, meal_ae)
         scales.append((slug, why))
         week.append((recipe, variant))
         for ing in ingredients:

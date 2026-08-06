@@ -37,6 +37,7 @@ jobs:
           python3 test_acquire.py
           python3 test_adapters.py
           python3 test_review.py
+          python3 test_session.py
 
       - name: Every recipe parses and every item is known
         # docs/step2-design.md 3: the item table grows on parse failure, and a
