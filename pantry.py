@@ -786,6 +786,95 @@ def promote(target_slug: str, when: str, outcome: str = "kept") -> bool:
     return True
 
 
+def _ensure_column(table: Table, name: str) -> tuple[Table, int]:
+    """Make sure a column exists, adding it to the header and padding every row.
+
+    Same move `onboard.ensure_yield_column` makes on the corpus. These files are
+    hand-edited markdown and a column that appears in code before it appears on
+    disk is a normal state, not a corruption - so it is migrated in place rather
+    than demanded of whoever last touched the file.
+    """
+    if name in table.header:
+        return table, table.header.index(name)
+    lines = table.lines
+
+    def widen(line: str, cell: str, pad: str) -> str:
+        """Append one cell, keeping whatever spacing the file already uses. These
+        are files a person edits by hand and diffs by eye; a migration that
+        reformats the table it touched is a migration nobody can review."""
+        body = line.rstrip()
+        if not body.endswith("|"):
+            body += "|"
+        return f"{body}{pad}{cell}{pad}|"
+
+    sep = table.header_i + 1
+    has_sep = (sep < len(lines) and lines[sep].strip()
+               and set(lines[sep].strip()) <= set("|-: "))
+    # `| --- |` and `|---|` are both in use across these files.
+    pad = " " if has_sep and " " in lines[sep].strip("| ") else ""
+
+    lines[table.header_i] = widen(lines[table.header_i], name.title(), " ")
+    if has_sep:
+        lines[sep] = widen(lines[sep], "---", pad)
+    for i in table.where:
+        lines[i] = widen(lines[i], "", " ")
+    CANDIDATES.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    table = _rows(CANDIDATES)
+    return table, table.header.index(name)
+
+
+def add_candidate(title: str, *, source: str, protein: str = "", cuisine: str = "",
+                  yield_: str = "", active: str = "", passive: str = "",
+                  proposed: str = "", found_by: str = "") -> bool:
+    """Add a never-cooked recipe to `candidates.md`. Returns `False` if it is
+    already known, raises `RuleViolation` if it does not belong here at all.
+
+    **The door `upsert_corpus` refuses to be.** Onboarding says outright that a
+    capture is not evidence about this household and that the row belongs in
+    candidates; until now nothing put it there, so every candidate in the file
+    was typed by a person and the tool could not grow its own corpus.
+
+    Two refusals, and both protect the thing that makes the corpus worth having:
+
+    **A source is required.** A candidate with no page behind it is the failure
+    this whole project exists to avoid - `1 lb chicken breast because soup
+    usually has chicken`. Acquisition may only add a recipe somebody could go and
+    read, so the citation is a precondition of the write and not a nicety
+    attached after it.
+
+    **Nothing already in the corpus may be re-added.** A proven recipe reappearing
+    as a gamble would quietly destroy the guarantee that corpus membership means
+    cooked and liked, and it is the same mistake in reverse as putting a capture
+    straight into the corpus.
+    """
+    if not (source or "").strip():
+        raise RuleViolation(
+            f"{title!r}: a candidate needs a source. A recipe nobody can go and read "
+            f"is not an acquisition, it is an invention."
+        )
+    sl = slug(title)
+    if any(r["slug"] == sl for r in load_corpus()):
+        raise RuleViolation(
+            f"{sl}: already in the corpus, where it is proven. A candidate carries the "
+            f"gamble and this recipe has stopped being one."
+        )
+    if any(r["slug"] == sl for r in load_candidates()):
+        return False
+
+    table = _rows(CANDIDATES)
+    table, _ = _ensure_column(table, "source")
+    lines, where, header = table.lines, table.where, table.header
+    values = {"recipe": title, "protein": protein, "cuisine": cuisine,
+              "yield": yield_, "active": active, "passive": passive,
+              "proposed": proposed or "—", "outcome": "untested", "source": source}
+    cells = [values.get(col, "") for col in header]
+    at = (where[-1] if where else table.header_i + 1) + 1
+    lines.insert(at, "| " + " | ".join(cells) + " |")
+    CANDIDATES.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    log("acquired", recipe=sl, source=source, found_by=found_by)
+    return True
+
+
 def add_profile_claim(section: str, text: str, evidence: str, by: str = "") -> None:
     """Append a claim to `profile.md`, **refusing one with no evidence.**
 

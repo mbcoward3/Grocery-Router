@@ -152,8 +152,17 @@ PROTEIN_MARKERS = [
     ("pork", ["italian sausage", "ground sausage", "sausage", "bacon",
               "pork loin", "pork tenderloin", "pork shoulder", "ham",
               "pork chops", "pancetta", "prosciutto"]),
+    # Species by name, and never the bare word `fish`. A live acquisition run
+    # refused four real fish recipes for having "no identifiable protein" -
+    # swordfish, crawfish and two others - which is a loud gap and the safe
+    # direction to fail in, but a wrong one. `fish` on its own is the unsafe fix:
+    # it would read `2 Tbsp fish sauce` as the protein of the dish, which is the
+    # same mis-merge as `onion powder` resolving to `onion`. `fish fillet` is
+    # safe because no bottle of sauce is a fillet.
     ("fish", ["salmon", "tuna", "cod", "tilapia", "shrimp", "halibut",
-              "yellowfin"]),
+              "yellowfin", "swordfish", "crawfish", "catfish", "snapper",
+              "mahi", "trout", "haddock", "pollock", "sea bass",
+              "fish fillet", "fish fillets", "white fish", "whitefish"]),
 ]
 
 CUISINE_MARKERS = [
@@ -322,14 +331,34 @@ NOT_THE_PROTEIN = re.compile(
 
 
 def infer_protein(ingredients):
-    for protein, markers in PROTEIN_MARKERS:
-        for ing in ingredients:
-            low = (ing["item"] or ing["raw"]).lower()
-            if NOT_THE_PROTEIN.search(low):
-                continue
+    """The dish's protein, and the ingredient line it was read off.
+
+    **The longest matching marker wins, not the first protein in the list.** This
+    used to walk `PROTEIN_MARKERS` in order and return on the first hit, which
+    meant `2 swordfish steaks` came back as *beef* - the beef list carries a bare
+    `steak`, beef is checked first, and `steak` is a substring of `steaks`. A live
+    acquisition run surfaced it; onboarding a swordfish recipe by URL would have
+    written beef into the corpus index just as quietly.
+
+    It is the same shape as `onion powder` resolving to `onion`: a partial match
+    accepted while a more specific one was available. Specificity is the fix in
+    both places - `swordfish` is nine characters of evidence against `steak`'s
+    five, and the longer match is the one that knows what the ingredient is.
+
+    Ingredient order still decides between two equally specific matches, because
+    the main protein is nearly always listed first.
+    """
+    for ing in ingredients:
+        low = (ing["item"] or ing["raw"]).lower()
+        if NOT_THE_PROTEIN.search(low):
+            continue
+        best, best_len = None, 0
+        for protein, markers in PROTEIN_MARKERS:
             for marker in markers:
-                if marker in low:
-                    return protein, ing["raw"]
+                if marker in low and len(marker) > best_len:
+                    best, best_len = protein, len(marker)
+        if best:
+            return best, ing["raw"]
     return None, None
 
 

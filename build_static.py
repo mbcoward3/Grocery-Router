@@ -48,7 +48,13 @@ CODE = ["pantry.py", "shop.py", "app.py", "prep.py",
         # which planner ran, and because shipping only the half that works is how
         # a build starts drifting from the source it was built from.
         "planner/__init__.py", "planner/prompt.py", "planner/model.py",
-        "planner/constraints.py"]
+        "planner/constraints.py",
+        # Acquisition and the capture it leans on. Also unable to do its job in a
+        # browser tab - Pyodide has no sockets, so every source is unreachable -
+        # but it degrades to "nothing landed" rather than failing, and the button
+        # is part of the session being shown. Missing from the payload it would
+        # be a 500 on a public URL instead.
+        "acquire.py", "onboard.py"]
 DATA = ["corpus.md", "candidates.md", "profile.md", "items.md"]
 
 
@@ -64,6 +70,22 @@ def collect() -> dict:
     for path in sorted((ROOT / "recipes").glob("*.md")):
         files[f"recipes/{path.name}"] = path.read_text(encoding="utf-8")
     return files
+
+
+def payload(files: dict) -> str:
+    """The payload, safe to sit inside a `<script>` tag.
+
+    A `</script>` anywhere in the embedded source closes the tag early and the
+    rest of the JSON becomes HTML. That is not hypothetical: `onboard.py` reads
+    schema.org data out of recipe pages, so it carries the literal string
+    `</script>` in a regex, and adding it to the payload turned the page into
+    `Unterminated string in JSON` - a blank page on a public URL, with a green
+    build behind it.
+
+    `\\/` is a valid JSON escape for `/`, so this parses back identically and the
+    browser never sees a closing tag it can act on.
+    """
+    return json.dumps(files).replace("</", "<\\/")
 
 
 LOADER = """
@@ -161,7 +183,7 @@ def main():
     inject = (
         f'<script src="pyodide/pyodide.js"></script>\n'
         f'<script type="application/json" id="payload">'
-        f'{json.dumps(files)}</script>\n'
+        f'{payload(files)}</script>\n'
         f'<style>.booting{{position:fixed;inset:0;display:grid;place-items:center;'
         f'font:500 15px ui-sans-serif,system-ui,sans-serif;color:var(--muted);'
         f'background:var(--bg);z-index:9}}</style>\n'

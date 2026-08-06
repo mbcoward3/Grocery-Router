@@ -53,22 +53,25 @@ mechanical test, and corpus membership is the proxy.
 **Still open here:** nobody has read a model-planned week and said whether the reasons land.
 That is question 1 in the findings and it is the whole product claim.
 
-## 2. Acquisition — the tool cannot find a recipe
+## 2. Acquisition — **built**
 
-`candidates.md` has three entries and a human put them there. The tool has never searched
-for a recipe, never read a page it was not handed, never judged fit against the profile.
-The proposal calls acquisition half the job. It is **0% built**, and it is the half that
-makes the corpus grow.
+`acquire.py`, plus `pantry.add_candidate()` as the write door and a *Find something new*
+button in the session. Report: `docs/acquisition-findings.md`.
 
-**Shape:** given a gap in the week and the profile, search, fetch, capture with the existing
-`onboard.py`, and land it in `candidates.md` with the source cited and a reason for the
-reach. Most of the machinery exists and has never been pointed at the open web.
+**Where it searches was the real decision.** Not a search engine: the sites the household
+already cooks from, read off the corpus and candidates files. Nine of eleven expose the
+WordPress REST search API — documented, public, no key, no scraping, and no way to surface
+a page that does not exist. The surface grows on its own as recipes get promoted from new
+sites. Widening past it is the household's call, not a default.
 
-**Done means:** a session can fill a gap with a recipe nobody had bookmarked, the capture is
-complete enough for the shopping list, and the candidate says where it came from.
+**No model runs in it**, deliberately. Every fit signal that matters is computable — peanut
+off the capture, active off the source's stated prep time, protein and cuisine off the
+ingredients, duplicates off the corpus. What a model would add is taste, and the household
+supplies that by cooking the thing.
 
-**The bar:** never invent a recipe. Every candidate resolves to a real page. `1 lb chicken
-breast` because soup usually has chicken is the failure this project exists to avoid.
+**Still open here:** the search is full-text and noisy, so relevance leans hard on the
+protein gate — which means a genuinely vegetarian main gets refused along with the cake.
+That is §6's to fix and is called out in the findings.
 
 ## 3. Onboarding in the app
 

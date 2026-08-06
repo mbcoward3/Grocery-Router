@@ -34,6 +34,7 @@ jobs:
           python3 test_shop.py
           python3 test_onboard.py
           python3 test_planner.py
+          python3 test_acquire.py
 
       - name: Every recipe parses and every item is known
         # docs/step2-design.md 3: the item table grows on parse failure, and a
@@ -100,6 +101,7 @@ jobs:
           # missing the package is a blank page on a public URL rather than a
           # red build. Cheap to check here; expensive to find out there.
           grep -q 'planner/__init__.py' dist/index.html
+          grep -q 'acquire.py' dist/index.html
 
       - name: The demo plans deterministically
         # There is no key in CI and none in a browser tab, so the ranker is what

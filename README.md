@@ -99,6 +99,37 @@ Running the two back to back is the cheapest way to answer *is the model planner
 better*, which is a question about whether the reasons land and not one any test can
 settle.
 
+## Finding a recipe you never bookmarked
+
+```sh
+./acquire.py                  # read this week's gaps, fill the biggest
+./acquire.py --protein pork   # go after one thing
+./acquire.py --dry-run        # search, capture, judge, write nothing
+./acquire.py --sources        # list the sites that would be searched
+```
+
+Also a button in the session — *Find something new*.
+
+**It searches the sites you already cook from**, read off the `Notes` and `Source`
+columns of `corpus.md` and `candidates.md`. Nine of the eleven expose the WordPress REST
+search API, which is a documented public endpoint returning real posts — no key, no
+dependency, no scraping. Cook something from a new site and promote it, and that site is
+in the search surface next week.
+
+Everything it finds is captured with `onboard.py`, which reads schema.org recipe data and
+**refuses to guess from page prose**. So every candidate resolves to a page you can go and
+read, with a real ingredient list the shopping list can use. `pantry.add_candidate()`
+refuses a candidate with no source at all — a recipe nobody can read is not an
+acquisition, it is an invention.
+
+What it refuses, and it will tell you which: peanut (a hard constraint), a page carrying
+no machine-readable recipe, something already in the corpus, the wrong protein for the
+gap, and anything with no identifiable protein — the search is full-text, so asking nine
+sites for `fish` returns muffins and a coffee cake, and the corpus is mains-only.
+
+Nothing it finds enters your week. It lands in `candidates.md` and has to win a slot from
+the planner like anything else, because membership is earned.
+
 ## Adding a recipe
 
 ```sh
@@ -154,6 +185,9 @@ goes through it, and these are tested in `test_pantry.py` rather than stated in 
 - **No writer overwrites a human value.** `Last cooked` is the one field the tool owns.
 - **A flop is never deleted.** It stays in `candidates.md` with the reason — at this corpus
   size it's the most informative signal the system gets all week.
+- **A candidate needs a source.** `add_candidate()` is the only door into `candidates.md`
+  and it refuses one with nothing behind it. `upsert_corpus` had been saying *"the row
+  belongs in candidates.md"* while nothing could put it there; this is that door.
 - **The planner may not violate a hard constraint**, and since a model planner can propose
   things a ranker structurally cannot, that stopped being a sentence in `profile.md` and
   became `planner/constraints.py`. A peanut recipe never reaches the week; a reason

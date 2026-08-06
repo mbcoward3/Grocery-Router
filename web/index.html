@@ -161,6 +161,7 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
     <p class="foot" id="planner"></p>
     <div class="row">
       <button id="fillBtn">Suggest another</button>
+      <button id="acquireBtn">Find something new</button>
       <span class="foot" id="fillNote"></span>
     </div>
   </section>
@@ -432,6 +433,24 @@ document.addEventListener('click', async (e) => {
   }
   if (t.id === 'fillBtn')  { t.classList.add('spin'); S = await api('/api/fill', {});
                              t.classList.remove('spin'); return render(); }
+  if (t.id === 'acquireBtn') {
+    // Goes to the open web, so it is slow and it is allowed to come back with
+    // nothing. Both of those are said out loud rather than left to a spinner.
+    t.classList.add('spin');
+    $('#fillNote').textContent = 'Searching the sites you already cook from…';
+    const r = await api('/api/acquire', {want: 1});
+    t.classList.remove('spin');
+    S = r; render();
+    $('#fillNote').innerHTML = (r.acquired && r.acquired.length)
+      ? r.acquired.map(a =>
+          `Added <b>${esc(a.title)}</b> to candidates — ${esc(a.reason)} ` +
+          `(<a href="${esc(a.source)}" target="_blank" rel="noreferrer">source</a>, ` +
+          `${a.ingredients} ingredients). It has to win a slot like anything else.`
+        ).join(' ')
+      : 'Nothing new landed. Everything found was already known, off-target, or ' +
+        'ruled out by a hard constraint.';
+    return;
+  }
   if (t.id === 'applyBtn') {
     const r = await api('/api/apply', {}); S = r; render();
     $('#applyNote').textContent = r.applied.length

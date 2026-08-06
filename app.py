@@ -329,6 +329,38 @@ def post_fill(body):
     return state()
 
 
+def post_acquire(body):
+    """Go and find a recipe nobody had bookmarked, for a gap in this week.
+
+    **The one route that touches the open web**, and it takes the same posture
+    `prep.py` does: degrades, never blocks. A source that cannot be reached is
+    skipped, and a run that finds nothing returns a normal session with a line
+    saying so rather than an error. In the browser build there are no sockets at
+    all, so every source is unreachable and this lands on exactly that path -
+    which is the honest outcome there and not a failure worth a stack trace.
+
+    Nothing it finds enters the week. A candidate goes into `candidates.md` and
+    has to win a slot from the planner like any other, because membership is
+    earned and being newly acquired is not a claim about this household.
+    """
+    week = current_week()
+    notes: list[str] = []
+    try:
+        import acquire        # deferred, and inside the guard: see the docstring
+        found = acquire.acquire(week.meals, want=int(body.get("want", 1)),
+                                log=notes.append)
+    except Exception as exc:                       # never take the session down
+        found = []
+        notes.append(f"acquisition failed: {type(exc).__name__}: {exc}")
+    out = state()
+    out["acquired"] = [{"title": f.rec["title"], "source": f.rec["source"],
+                        "reason": f.reason(),
+                        "ingredients": len(f.rec["ingredients"]),
+                        "questions": f.rec.get("questions", [])} for f in found]
+    out["acquire_log"] = notes
+    return out
+
+
 def post_feedback(body):
     week = pantry.previous_week(pantry.monday())
     if week is None:
@@ -373,6 +405,7 @@ ROUTES = {
     "/api/lock": post_lock,
     "/api/variant": post_variant,
     "/api/fill": post_fill,
+    "/api/acquire": post_acquire,
     "/api/feedback": post_feedback,
     "/api/apply": post_apply,
     "/api/order": post_order,
