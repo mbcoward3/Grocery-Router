@@ -6,7 +6,11 @@ The household cooks a fraction of what it enjoys. Roughly 60 recipes have been t
 liked; under the stress of picking a week, about 15 surface. The gap between 15 and 60 is
 the product. Full reasoning in [`docs/pantry-router-proposal.md`](docs/pantry-router-proposal.md).
 
-Step 1 (the week) and Step 2 (the list) exist. The Kroger cart comes later.
+Step 1 (the week) and Step 2 (the list) both work end to end. A model can plan the week
+when a key is present and a deterministic ranker does it when one is not; the tool can go
+and find recipes nobody bookmarked; prices and SKU matching are behind a store adapter.
+**No week has ever actually been cooked through it** — every `Last cooked` is empty, and
+that is the one gap none of this closes.
 
 ## Setup
 
