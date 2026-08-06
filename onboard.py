@@ -1348,6 +1348,9 @@ def main():
                      help="copy yields out of existing recipes/ files into the corpus")
     src.add_argument("--rescan-peanut", action="store_true",
                      help="write a peanut verdict into every capture that has none")
+    p.add_argument("--side", action="store_true",
+                   help="capture as a side: writes recipes/<slug>.md and a sides.md row, "
+                        "never a corpus or candidates row")
     p.add_argument("--corpus-row", help="the title of the corpus row this belongs to")
     p.add_argument("--title", help="override the recipe title")
     p.add_argument("--recipes", type=Path, default=ROOT / "recipes")
@@ -1370,6 +1373,24 @@ def main():
         for name, title, y, action in sync_existing(args.recipes, args.corpus,
                                                     args.dry_run):
             print(f"{action:28} {name:38} yield {y or 'unknown'}")
+        return
+
+    if args.side:
+        # A side is not a candidate. `candidates.md` exists so an unproven
+        # *dinner* carries its gamble visibly; green beans have no gamble. Same
+        # capture, different store.
+        import pantry
+        rec = from_url(args.url) if args.url else from_text(args.text)
+        if rec["status"] != "complete" or not rec["ingredients"]:
+            print(f"no machine-readable recipe at {args.url or args.text}", file=sys.stderr)
+            return
+        rec["slug"] = slugify(rec["title"])
+        Path(args.recipes).mkdir(parents=True, exist_ok=True)
+        (Path(args.recipes) / f"{rec['slug']}.md").write_text(render_recipe(rec))
+        added = pantry.add_side(rec["title"], source=rec.get("source", ""),
+                                passive=rec.get("passive") or "")
+        print(f"{'added' if added else 'already there'}  {rec['title']}  "
+              f"({len(rec['ingredients'])} ingredients)")
         return
 
     if args.batch:

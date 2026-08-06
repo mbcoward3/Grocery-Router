@@ -20,7 +20,7 @@ This brief is ordered. The order is the recommendation.
   under Pyodide, not a port.
 - **The model planner.** `planner/`, two implementations behind `pantry.propose()`. See
   §1 below and `docs/model-planner-findings.md`.
-- 171 tests, standard library only.
+- 288 tests, standard library only.
 
 **Written but never run:** `.github/workflows/*`. CI has never executed; the deploy has
 never fired. The Space was pushed by hand.
@@ -73,16 +73,15 @@ supplies that by cooking the thing.
 protein gate — which means a genuinely vegetarian main gets refused along with the cake.
 That is §6's to fix and is called out in the findings.
 
-## 3. Onboarding in the app
+## 3. Onboarding in the app — **built**
 
-Adding a recipe means running a CLI with a URL. For a tool whose thesis is closing the gap
-between the 15 you reach for and the 60 you like, **the growth path being a terminal command
-is close to fatal** — and it breaks the onboardability requirement outright.
+A box in the session. It goes through `acquire.from_url`, which is the same capture, the
+same constraint check and the same write door acquisition uses — a recipe somebody pasted
+and a recipe the tool found are the same recipe and get the same row.
 
-**Shape:** a box in the session. Paste a URL, get a captured recipe, land it in candidates.
-`onboard.py` already does the work; this is a route and a form.
-
-**Done means:** a person who has never opened a terminal can add a recipe.
+Hard constraints still apply to something a person chose; relevance does not. The
+no-protein filter exists because full-text search returns cake, and applying it to a pasted
+link would refuse a vegetarian main somebody deliberately went and found.
 
 ## 4. Kroger
 
@@ -100,31 +99,38 @@ Do it in two pieces, and the first is worth having alone:
 **Open:** how Kroger is talked to at all, and what the product does when the SKU match is
 wrong or the API is down. Deliberately unanswered — answer it before building.
 
-## 5. Session depth
+## 5. Session depth — **built**
 
-Today: drop a meal, ask for another, four dials. Missing, roughly in order of how often it
-would be wanted:
+All five. Swap is one decision rather than a drop plus a refill, which matters to
+`review.py`. Servings are per meal and reach the shopping list. Lock persists and
+Reshuffle is what gives it meaning — and Reshuffle had to *decline* what it re-rolled,
+because the ranker is deterministic and re-running it returns the same week. Recipes open
+in place. The profile is editable, written whole, and rolled back if it stops parsing.
 
-- **Swap *this* meal** for something similar, rather than drop-and-refill
-- **See the recipe** without leaving the session
-- **Servings per meal** — guests on Thursday only, which the profile explicitly asks for
-- **Lock** a meal so a refill cannot touch it (the field exists, the UI does not)
-- **Edit the profile in the app.** `profile.md` opens by saying correcting the file *is* the
-  trust mechanism; in a hosted deployment that is currently unreachable.
+## 6. Sides — **machinery built, file empty**
 
-## 6. Sides
+`sides.md` is the store, `pantry.add_side` is the door, and sides flow through the same
+capture, the same parser and the same aggregation as everything else — so a side sharing an
+onion with a main comes out as one line. Three routes in: `./acquire.py --sides`,
+`./onboard.py --url <link> --side`, and a box in the session that takes a name or a link.
+The grocery list's *"sides are not included"* line is conditional now and stops appearing
+once there are any.
 
-The corpus is mains-only and every list says so. Vegetables are absent from the data, not
-the diet — they get cooked and never written down. The household asked to reach a
-dinners-only steady state first; that is reached. **Every grocery list this tool produces is
-systematically short until this is solved.**
+**The file is empty and that is deliberate.** Seeding it would be inventing what this
+household eats, which is the one thing this project refuses to do anywhere else. Every list
+is still systematically short — the difference is that closing it is now a thing somebody
+can do in thirty seconds rather than a thing that needs building.
 
-## 7. Read the decision log back
+## 7. Read the decision log back — **built**
 
-`decisions.jsonl` records every proposal, drop, dial change and outcome. **Nothing reads
-it.** It was built because it cannot be backfilled — now use it: which reasons get accepted,
-which get dropped, whether breadth is actually increasing. The metrics strip currently shows
-five numbers computed off the corpus, not off behaviour.
+`review.py`, and the same numbers under the session's metrics strip. Which reasons get
+accepted and which get dropped, whether breadth is increasing, and the model against the
+ranker on real weeks. Reason *kinds* are recorded now, because the sentence alone cannot
+answer the first question — two meals stale at different distances are two sentences and
+one kind.
+
+**Still open here:** it is reading a log with one household-week in it. Every number is
+correct and none of them means anything yet.
 
 ---
 

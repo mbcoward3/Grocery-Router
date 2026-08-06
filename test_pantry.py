@@ -36,14 +36,15 @@ class Isolated(unittest.TestCase):
         os.environ["PANTRY_PLANNER"] = "ranker"
         os.environ.pop("ANTHROPIC_API_KEY", None)
         self.tmp = Path(tempfile.mkdtemp())
-        for name in ("corpus.md", "candidates.md", "profile.md"):
+        for name in ("corpus.md", "candidates.md", "sides.md", "profile.md"):
             shutil.copy(REAL / name, self.tmp / name)
         shutil.copytree(REAL / "recipes", self.tmp / "recipes")
         self._saved = {k: getattr(pantry, k) for k in
-                       ("ROOT", "CORPUS", "CANDIDATES", "PROFILE", "WEEKS", "CACHE", "DECISIONS")}
+                       ("ROOT", "CORPUS", "CANDIDATES", "SIDES", "PROFILE", "WEEKS", "CACHE", "DECISIONS")}
         pantry.ROOT = self.tmp
         pantry.CORPUS = self.tmp / "corpus.md"
         pantry.CANDIDATES = self.tmp / "candidates.md"
+        pantry.SIDES = self.tmp / "sides.md"
         pantry.PROFILE = self.tmp / "profile.md"
         pantry.WEEKS = self.tmp / "weeks"
         pantry.CACHE = self.tmp / ".cache"

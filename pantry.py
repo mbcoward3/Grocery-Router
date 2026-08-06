@@ -35,6 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CORPUS = ROOT / "corpus.md"
 CANDIDATES = ROOT / "candidates.md"
+SIDES = ROOT / "sides.md"
 PROFILE = ROOT / "profile.md"
 WEEKS = ROOT / "weeks"
 CACHE = ROOT / ".cache"
@@ -134,9 +135,17 @@ def _rows(path: Path) -> Table:
         if len(cells) < len(header):
             cells += [""] * (len(header) - len(cells))
         row = dict(zip(header, cells))
-        if not row.get("recipe"):
+        # **The first column is the name, whatever it is called.** This used to
+        # require a literal `recipe` header, which silently returned zero rows
+        # for `sides.md` - whose first column is `Side` - and so silently let a
+        # duplicate side be added twice. A table's identity column is its first
+        # one; hardcoding the word was a hidden assumption about which two files
+        # would ever exist.
+        name = row.get(header[0], "") if header else ""
+        if not name:
             continue
-        row["slug"] = slug(row["recipe"])
+        row.setdefault("recipe", name)
+        row["slug"] = slug(name)
         out.append(row)
         where.append(i)
     return Table(lines, out, where, header or [], header_i if header_i is not None else -1)
@@ -160,6 +169,57 @@ def load_candidates() -> list[dict]:
         r["slug"] = slug(r["recipe"])
         r["proven"] = False
     return rows
+
+
+def load_sides() -> list[dict]:
+    """The sides this household serves. Empty is a supported state and the
+    current one.
+
+    `docs/brief-next.md` §6: the corpus is mains-only, every list says so, and
+    vegetables are absent from the *data* rather than the diet. This is the store
+    that closes it - and it starts empty because seeding it would be inventing
+    what this household eats, which is the one thing this project refuses to do
+    anywhere else.
+    """
+    _, rows, _ = _rows(SIDES)
+    for r in rows:
+        r["slug"] = slug(r.get("side") or r.get("recipe") or "")
+        r["is_side"] = True
+    return [r for r in rows if r["slug"]]
+
+
+def add_side(name: str, *, source: str = "", goes_with: str = "", season: str = "",
+             active: str = "", passive: str = "", notes: str = "") -> bool:
+    """The only door into `sides.md`. Returns `False` if it is already there.
+
+    Looser than `add_candidate`, and deliberately: a side is not a gamble. The
+    corpus's strict membership bar exists because proposing a proven main has to
+    be risk-free, and *green beans* carries no such risk - the household is not
+    going to be lost for a week by a vegetable. What it still may not be is
+    invented, which is why a row without a name is refused and why every route
+    that writes one starts from a real page or a real person.
+    """
+    name = (name or "").strip()
+    if not name:
+        raise RuleViolation("a side needs a name")
+    sl = slug(name)
+    if any(r["slug"] == sl for r in load_sides()):
+        return False
+    if not SIDES.exists():
+        SIDES.write_text(
+            "# Sides\n\n| Side | Goes with | Season | Active | Passive | "
+            "Last served | Notes |\n|---|---|---|---|---|---|---|\n", encoding="utf-8")
+    table = _rows(SIDES)
+    lines, where, header = table.lines, table.where, table.header
+    values = {"side": name, "goes with": goes_with, "season": season,
+              "active": active, "passive": passive, "last served": "",
+              "notes": "; ".join(x for x in (notes, source) if x)}
+    cells = [values.get(col, "") for col in header]
+    at = (where[-1] if where else table.header_i + 1) + 1
+    lines.insert(at, "| " + " | ".join(cells) + " |")
+    SIDES.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    log("side_added", side=sl, source=source)
+    return True
 
 
 def load_members() -> list[str]:
@@ -630,6 +690,11 @@ class Week:
     # slug -> {"outcome": kept | flopped | not cooked, "by": member or ""}
     feedback: dict = field(default_factory=dict)
     declined: list[str] = field(default_factory=list)   # turned down this week
+    # Sides are their own list, not meals with a flag. A side does not compete
+    # for a night, does not count toward the effort mix, and is not a cook the
+    # week can be short of - folding it into `meals` would have every one of
+    # those questions answered wrongly by default.
+    sides: list[str] = field(default_factory=list)
 
     @property
     def ae(self) -> float:
@@ -642,7 +707,9 @@ class Week:
         return {"date": self.date, "nights": self.nights, "guests": self.guests,
                 "risk": self.risk, "status": self.status, "ae": self.ae,
                 "meals": [m.to_json() for m in self.meals], "declined": self.declined,
-                "feedback": self.feedback, "effort": effort_mix(self.meals)}
+                "feedback": self.feedback, "effort": effort_mix(self.meals),
+                "sides": [dict(r, has_file=recipe_file(r["slug"]).exists())
+                          for r in load_sides() if r["slug"] in self.sides]}
 
 
 # Optional labelled segments sit between the variant and the reason, and the
@@ -694,6 +761,8 @@ def read_week(date: str) -> Week | None:
                                     ae_override=float(g["ae"] or 0)))
         if section == "declined" and s.startswith("- "):
             w.declined.append(slug(s[2:]))
+        if section == "sides" and s.startswith("- "):
+            w.sides.append(slug(s[2:]))
         if section == "feedback" and s.startswith("- "):
             name, _, rest = s[2:].partition(":")
             if rest:
@@ -723,6 +792,11 @@ def write_week(w: Week) -> Path:
         extra += " | locked" if m.locked else ""
         out.append(f"- {m.title}{tag} | {m.yield_ or 'unknown'} | {m.active or 'med'} "
                    f"active | variant: {m.variant or '—'}{extra} | {m.reason}")
+    if w.sides:
+        index = {r["slug"]: r.get("side") or r["recipe"] for r in load_sides()}
+        out += ["", "## Sides", "",
+                "*Served alongside. Not cooks, and not counted as nights.*", ""]
+        out += [f"- {index.get(s, s.replace('-', ' '))}" for s in w.sides]
     if w.declined:
         out += ["", "## Declined", "",
                 "*Offered this week and turned down. Kept so gap-filling does not hand "

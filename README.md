@@ -173,6 +173,29 @@ scaled instead of pretending.
 265 ingredient lines, all parsed, all recognised. Run `python3 test_shop.py` after
 touching any of it — the week of 2 August is in there as an acceptance fixture.
 
+## Sides
+
+```sh
+./acquire.py --sides                      # go looking, on your own sources
+./onboard.py --url <link> --side          # capture one you already have
+```
+
+Also a box in the session, which takes a name or a link.
+
+`sides.md` is the store, and **it starts empty on purpose.** `profile.md` records that
+vegetables look nearly absent from the corpus but that this is a recording artifact rather
+than the diet — sides get cooked here and never got written down, which is why every
+grocery list this tool has produced has been systematically short and has said so.
+
+Seeding it with ten plausible vegetables would make the tool look finished and make every
+list wrong in a new way. A side goes in when somebody says it does. Once one is there it
+goes through the same parser and the same aggregation as everything else, so a side sharing
+an onion with a main comes out as one line — and the list stops saying it is short.
+
+A side typed in by name with no link is allowed: *green beans* is a side and everyone knows
+what it is. It carries no ingredients, and the list says which one you are shopping for
+yourself rather than pretending.
+
 ## The rules, and what enforces them
 
 Files don't refuse a bad write, so `pantry.py` does. Everything that mutates household data

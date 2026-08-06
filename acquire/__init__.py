@@ -493,6 +493,68 @@ def from_url(url: str, log=lambda *_: None) -> "Found":
     return found
 
 
+SIDE_QUERIES = ["roasted vegetables", "green beans", "side salad", "roasted potatoes",
+                "steamed broccoli", "rice pilaf"]
+
+
+def acquire_sides(want: int = 2, dry_run: bool = False,
+                  log=lambda *_: None) -> list["Found"]:
+    """Go looking for sides, against the same sources as everything else.
+
+    §6 of `docs/brief-next.md`: the corpus is mains-only and every grocery list
+    is systematically short because of it. `sides.md` is the store; this is one
+    of the three ways a row gets into it.
+
+    **The queries are generic on purpose and are not claims about this
+    household.** `roasted vegetables` is a search term, not a statement that
+    anybody here eats them - what makes a row real is somebody keeping it. The
+    protein gate that keeps cake out of dinner is skipped here, since a side has
+    no protein by definition and applying it would refuse every single result.
+    """
+    hosts = sources()
+    known = {r["slug"] for r in pantry.load_sides()}
+    budget = [MAX_FETCHES]
+    landed: list[Found] = []
+    for query in SIDE_QUERIES:
+        if len(landed) >= want or budget[0] <= 0:
+            break
+        gap = Gap("side", query, f"the corpus is mains-only and {query} is not in it")
+        log(f"\n  looking for: {query}")
+        for host in hosts:
+            if budget[0] <= 0 or len(landed) >= want:
+                break
+            try:
+                hits = search(query, host, log=log)
+            except Unavailable as exc:
+                log(f"    {host}: unreachable — {exc}")
+                continue
+            for hit in hits:
+                if budget[0] <= 0 or len(landed) >= want:
+                    break
+                if pantry.slug(hit["title"]) in known:
+                    continue
+                budget[0] -= 1
+                rec = onboard.from_url(hit["url"])
+                if rec.get("status") != "complete" or not rec.get("ingredients"):
+                    log(f"    {hit['title'][:48]:50} no recipe data")
+                    continue
+                verdict = Verdict(ok=True)
+                verdict.active, verdict.active_basis = active_from(rec)
+                log(f"    {hit['title'][:48]:50} ok")
+                if not dry_run:
+                    rec["slug"] = pantry.slug(rec["title"])
+                    (pantry.ROOT / "recipes").mkdir(parents=True, exist_ok=True)
+                    pantry.recipe_file(rec["slug"]).write_text(
+                        onboard.render_recipe(rec), encoding="utf-8")
+                    pantry._FILE_INDEX = None
+                    pantry.add_side(rec["title"], source=rec["source"],
+                                    active=verdict.active,
+                                    passive=rec.get("passive") or "")
+                known.add(pantry.slug(rec["title"]))
+                landed.append(Found(rec, verdict, gap, hit))
+    return landed
+
+
 def acquire(week_meals: list, want: int = 1, gap_filter: str | None = None,
             dry_run: bool = False, log=lambda *_: None) -> list[Found]:
     """Fill this week's gaps with recipes nobody had bookmarked.
@@ -552,6 +614,8 @@ def main():
                    help="list the domains that would be searched, and stop")
     p.add_argument("--probe", action="store_true",
                    help="with --sources: ask each one how it can be searched")
+    p.add_argument("--sides", action="store_true",
+                   help="go looking for sides instead of mains")
     p.add_argument("--no-scraping", action="store_true",
                    help="use only routes a site published for programs")
     args = p.parse_args()
@@ -569,6 +633,16 @@ def main():
                 print(f"  {host:28} {adapters.strategy(host)}")
             else:
                 print(f"  {host}")
+        return 0
+
+    if args.sides:
+        found = acquire_sides(want=args.want, dry_run=args.dry_run,
+                              log=lambda s="": print(s, file=sys.stderr))
+        for f in found:
+            print(f"{f.rec['title']}\n  source:  {f.rec['source']}")
+        if not found:
+            print("\nnothing landed.", file=sys.stderr)
+            return 1
         return 0
 
     week = pantry.read_week(pantry.monday())

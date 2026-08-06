@@ -24,15 +24,16 @@ REAL = Path(__file__).resolve().parent
 class Session(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
-        for name in ("corpus.md", "candidates.md", "profile.md", "items.md"):
+        for name in ("corpus.md", "candidates.md", "sides.md", "profile.md", "items.md"):
             shutil.copy(REAL / name, self.tmp / name)
         shutil.copytree(REAL / "recipes", self.tmp / "recipes")
         self._saved = {k: getattr(pantry, k) for k in
-                       ("ROOT", "CORPUS", "CANDIDATES", "PROFILE", "WEEKS", "CACHE",
+                       ("ROOT", "CORPUS", "CANDIDATES", "SIDES", "PROFILE", "WEEKS", "CACHE",
                         "DECISIONS")}
         pantry.ROOT = self.tmp
         pantry.CORPUS = self.tmp / "corpus.md"
         pantry.CANDIDATES = self.tmp / "candidates.md"
+        pantry.SIDES = self.tmp / "sides.md"
         pantry.PROFILE = self.tmp / "profile.md"
         pantry.WEEKS = self.tmp / "weeks"
         pantry.CACHE = self.tmp / ".cache"
@@ -242,6 +243,118 @@ class TestEditingTheProfile(Session):
         text = self.get("/api/profile")["text"]
         self.post("/api/profile", text=text.replace("- Michael", "- Michael\n- Robin"))
         self.assertIn("Robin", self.get("/api/state")["members"])
+
+class TestSides(Session):
+    """§6 — the largest known correctness gap. Every grocery list this tool has
+    produced has been systematically short, and every one has said so."""
+
+    def add(self, name, *raw, source="https://x.test/s/"):
+        """A side with a real capture behind it."""
+        import onboard
+        slug = pantry.slug(name)
+        pantry.recipe_file(slug).write_text(
+            f"# {name}\n\nsource:   {source}\nyield:    4 AE\n"
+            f"peanut:   none seen\nstatus:   complete\n\n## Ingredients\n\n"
+            + "\n".join(f"- {r}" for r in raw) + "\n")
+        pantry._FILE_INDEX = None
+        return pantry.add_side(name, source=source, active="low")
+
+    def test_it_starts_empty_and_that_is_the_point(self):
+        """Seeding it would be inventing what this household eats, which is the
+        one thing this project refuses to do anywhere else."""
+        self.assertEqual(pantry.load_sides(), [])
+        self.assertEqual(self.get("/api/state")["counts"]["sides"], 0)
+
+    def test_the_list_says_it_is_short_while_there_are_none(self):
+        self.assertIn("Sides are not included", self.get("/api/list")["markdown"])
+
+    def test_a_side_reaches_the_shopping_list(self):
+        self.add("Roasted carrots", "2 lb carrots", "2 tbsp olive oil")
+        self.post("/api/side", slug="roasted-carrots")
+        out = self.get("/api/list")["markdown"]
+        self.assertIn("carrots", out)
+        self.assertIn("1 side(s) included", out)
+        self.assertNotIn("Sides are not included", out)
+
+    def test_a_side_merges_with_a_main_rather_than_repeating(self):
+        """The reason sides are captured as recipe files rather than as a list of
+        words: same parser, same aggregation, one line for one onion."""
+        week = pantry.Week(date=pantry.monday())
+        row = next(r for r in pantry.load_corpus() if r["slug"] == "chili")
+        week.meals = [pantry.Meal(slug="chili", title=row["recipe"],
+                                  yield_=row["yield"], active=row["active"], reason="t")]
+        pantry.write_week(week)
+        self.add("Onion salad", "1 onion", "1 tbsp vinegar")
+        self.post("/api/side", slug="onion-salad")
+        out = self.get("/api/list")["markdown"]
+        # The Produce section only. The coupling report below it names shared
+        # items again by design, and the vinegar is a different ingredient.
+        produce = out.split("## Produce")[1].split("\n##")[0]
+        onions = [l for l in produce.splitlines()
+                  if l.startswith("- ") and "onions" in l]
+        self.assertEqual(len(onions), 1, onions)
+        self.assertIn("chili", onions[0])
+        self.assertIn("onion salad", onions[0])
+
+    def test_a_side_typed_in_by_name_is_allowed_and_reported(self):
+        """`green beans` is a side and everyone knows what it is. Refusing it
+        until somebody finds a web page would be the tool getting in the way of
+        the file it is asking to be filled — but it carries no ingredients, and
+        the list says which one you are shopping for yourself."""
+        self.post("/api/side/add", name="Green beans")
+        self.post("/api/side", slug="green-beans")
+        out = self.get("/api/list")["markdown"]
+        self.assertIn("Not on this list", out)
+        self.assertIn("Green beans (side)", out)
+
+    def test_sides_do_not_count_as_nights(self):
+        """A side is not a cook. Folding it into `meals` would have the effort
+        mix, the night count and the shortfall all answered wrongly."""
+        before = self.week()
+        self.add("Roasted carrots", "2 lb carrots")
+        self.post("/api/side", slug="roasted-carrots")
+        after = self.week()
+        self.assertEqual(len(after["meals"]), len(before["meals"]))
+        self.assertEqual(after["effort"], before["effort"])
+
+    def test_a_side_survives_a_reload(self):
+        self.add("Roasted carrots", "2 lb carrots")
+        self.post("/api/side", slug="roasted-carrots")
+        self.assertEqual(pantry.read_week(pantry.monday()).sides, ["roasted-carrots"])
+
+    def test_a_side_can_be_removed(self):
+        self.add("Roasted carrots", "2 lb carrots")
+        self.post("/api/side", slug="roasted-carrots")
+        out = self.post("/api/side", remove="roasted-carrots")
+        self.assertEqual(out["week"]["sides"], [])
+
+    def test_suggesting_from_an_empty_file_suggests_nothing(self):
+        """Not a failure. The honest response to no data is no suggestion, not a
+        plausible vegetable."""
+        self.assertEqual(self.post("/api/side", suggest=True)["week"]["sides"], [])
+
+    def test_suggest_prefers_what_has_not_been_served(self):
+        self.add("Roasted carrots", "2 lb carrots")
+        self.add("Green salad", "1 head lettuce")
+        picked = self.post("/api/side", suggest=True, want=1)["week"]["sides"]
+        self.assertEqual(len(picked), 1)
+
+    def test_the_same_side_is_not_added_twice(self):
+        self.add("Roasted carrots", "2 lb carrots")
+        self.assertFalse(self.add("Roasted carrots", "2 lb carrots"))
+        self.assertEqual(len(pantry.load_sides()), 1)
+
+    def test_a_side_never_reaches_the_corpus_or_the_candidates(self):
+        """Different store, different bar. A side is not a proven dinner and it
+        is not an unproven one either."""
+        before = (len(pantry.load_corpus()), len(pantry.load_candidates()))
+        self.add("Roasted carrots", "2 lb carrots")
+        self.assertEqual((len(pantry.load_corpus()), len(pantry.load_candidates())),
+                         before)
+
+    def test_a_side_with_no_name_is_refused(self):
+        with self.assertRaises(pantry.RuleViolation):
+            pantry.add_side("")
 
 
 if __name__ == "__main__":

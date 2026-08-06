@@ -58,7 +58,7 @@ CODE = ["pantry.py", "shop.py", "app.py", "prep.py",
         # review.py reads decisions.jsonl back; app.py imports it for the
         # metrics strip and for recording what a drop was turned down against.
         "review.py"]
-DATA = ["corpus.md", "candidates.md", "profile.md", "items.md"]
+DATA = ["corpus.md", "candidates.md", "sides.md", "profile.md", "items.md"]
 
 
 def collect() -> dict:

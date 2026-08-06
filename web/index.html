@@ -140,6 +140,10 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
   color: var(--ink); background: transparent; border: 1px solid var(--line);
   border-radius: 11px; padding: 14px; resize: vertical; }
 #profileText:focus { outline: none; border-color: var(--accent); }
+#sides { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 18px; }
+#sides h3 { font: 600 14px/1 ui-sans-serif, system-ui, sans-serif; margin: 0 0 12px; }
+.siderow { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.siderow + .siderow { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
 .behaviour { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
 .behaviour b { display: block; font-size: 13px; margin: 14px 0 8px; }
 .behaviour table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -196,6 +200,17 @@ input[type=url]:focus { outline: none; border-color: var(--accent); }
     </div>
     <p class="foot" id="onboardNote">Adding a recipe used to mean a terminal.
       Paste a link and it gets captured, checked and filed with the candidates.</p>
+
+    <div id="sides">
+      <h3>Sides</h3>
+      <div class="card" id="sidesList"></div>
+      <div class="row">
+        <input id="sideName" type="url" placeholder="A side — a name, or a link to one">
+        <button id="sideAdd">Add to sides</button>
+        <button id="sideSuggest">Suggest for this week</button>
+      </div>
+      <p class="foot" id="sideNote"></p>
+    </div>
   </section>
 
   <section id="dials">
@@ -427,6 +442,23 @@ function renderPlanner(p) {
   $('#planner').innerHTML = bits.join(' ');
 }
 
+// The corpus is mains-only and every list has said so since the first one. This
+// is the store that closes it — and it starts empty, because seeding it would be
+// inventing what this household eats.
+function renderSides(w, counts) {
+  const on = w.sides || [];
+  $('#sidesList').innerHTML = on.length
+    ? on.map(s => `<div class="siderow"><span>${esc(s.side || s.recipe)}` +
+        (s.has_file ? '' : ' <span class="tag">no ingredients captured</span>') +
+        `</span><button class="ghost" data-sideoff="${s.slug}">Remove</button></div>`).join('')
+    : `<span class="empty">${counts.sides
+        ? 'None on this week yet.'
+        : 'Nothing written down yet — so every list is short on vegetables, and says so.'}</span>`;
+  $('#sideNote').textContent = counts.sides
+    ? `${counts.sides} in sides.md.`
+    : 'A side goes in by name, by link, or by ./acquire.py --sides.';
+}
+
 function renumber(hasLastWeek) {
   $('#stepNum').textContent  = hasLastWeek ? 2 : 1;
   $('#stepNum2').textContent = hasLastWeek ? 3 : 2;
@@ -503,6 +535,7 @@ function render() {
   renderBriefing(S.briefing);
   renderLastWeek(S.previous);
   renderWeek(S.week);
+  renderSides(S.week, S.counts);
   renderPlanner(S.planner);
   renderMetrics(S.metrics);
 }
@@ -567,6 +600,24 @@ document.addEventListener('click', async (e) => {
         ).join(' ')
       : 'Nothing new landed. Everything found was already known, off-target, or ' +
         'ruled out by a hard constraint.';
+    return;
+  }
+  if (t.dataset.sideoff) { S = await api('/api/side', {remove: t.dataset.sideoff});
+                           return render(); }
+  if (t.id === 'sideSuggest') { S = await api('/api/side', {suggest: true, want: 2});
+                                return render(); }
+  if (t.id === 'sideAdd') {
+    const box = $('#sideName'), said = box.value.trim();
+    if (!said) { box.focus(); return; }
+    t.classList.add('spin');
+    const link = /^https?:\/\//.test(said);
+    const r = await api('/api/side/add', link ? {url: said} : {name: said});
+    t.classList.remove('spin');
+    S = r; render();
+    if (r.side_added) { box.value = ''; $('#sideNote').textContent =
+      `Added ${r.side_added} to sides.md.` + (link ? '' :
+      ' Typed in, so it has no ingredients — the list will say so until you add a link.'); }
+    else $('#sideNote').textContent = "Didn't add it — " + (r.side_error || 'unknown reason') + '.';
     return;
   }
   if (t.id === 'reshuffleBtn') { t.classList.add('spin');

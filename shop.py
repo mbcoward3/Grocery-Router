@@ -843,7 +843,8 @@ def link(lines: list[Line], week: list[tuple[Recipe, Variant | None]]) -> list[s
 AISLE_ORDER = ["produce", "meat", "seafood", "dairy", "bread", "frozen", "pantry", "other"]
 
 
-def emit(week, lines, unknown, merges, links, ae, scales, items) -> str:
+def emit(week, lines, unknown, merges, links, ae, scales, items,
+         sides: int = 0) -> str:
     out = []
     names = ", ".join(r.title + (f" ({v.name})" if v else "") for r, v in week)
     out.append(f"# Grocery list — {len(week)} meals, {ae:g} AE")
@@ -937,9 +938,18 @@ def emit(week, lines, unknown, merges, links, ae, scales, items) -> str:
 
     out.append("---")
     out.append("")
-    out.append("**Sides are not included.** The corpus is mains-only — sides get cooked here "
-               "and never got written down, so this list is systematically short on "
-               "vegetables. That is a known gap, not an oversight.")
+    # Conditional now, and it has to be: a list that keeps announcing it is short
+    # on vegetables while carrying three of them is a warning people learn to
+    # ignore, which is the same failure as a day label that is usually wrong.
+    if sides:
+        out.append(f"**{sides} side(s) included.** Everything else here is a main. "
+                   "Sides come from `sides.md`, which starts empty on purpose — the "
+                   "list is only as complete as what has been written down.")
+    else:
+        out.append("**Sides are not included.** The corpus is mains-only — sides get "
+                   "cooked here and never got written down, so this list is "
+                   "systematically short on vegetables. Add them to `sides.md` and "
+                   "they land here. That is a known gap, not an oversight.")
     return "\n".join(out)
 
 

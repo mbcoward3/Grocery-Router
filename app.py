@@ -40,7 +40,7 @@ DEMO: Path | None = None
 # Demo mode
 # --------------------------------------------------------------------------- #
 
-DEMO_FILES = ("corpus.md", "candidates.md", "profile.md", "items.md")
+DEMO_FILES = ("corpus.md", "candidates.md", "sides.md", "profile.md", "items.md")
 DEMO_SRC = ROOT / "demo"
 
 
@@ -80,6 +80,7 @@ def start_demo() -> Path:
     pantry.ROOT = DEMO
     pantry.CORPUS = DEMO / "corpus.md"
     pantry.CANDIDATES = DEMO / "candidates.md"
+    pantry.SIDES = DEMO / "sides.md"
     pantry.PROFILE = DEMO / "profile.md"
     pantry.WEEKS = DEMO / "weeks"
     pantry.CACHE = DEMO / ".cache"
@@ -170,7 +171,8 @@ def state() -> dict:
         "previous": prev.to_json() if prev else None,
         "briefing": pantry.briefing(),
         "members": pantry.load_members(),
-        "counts": {"corpus": len(corpus), "candidates": len(pantry.load_candidates())},
+        "counts": {"corpus": len(corpus), "candidates": len(pantry.load_candidates()),
+                   "sides": len(pantry.load_sides())},
         "metrics": metrics(),
         "planner": planner_state(),
         "demo": DEMO is not None,
@@ -267,6 +269,15 @@ def grocery_list(week: pantry.Week) -> dict:
     missing = [m.title for m in week.meals if not m.has_file]
     have = [m for m in week.meals if m.has_file]
     specs = [m.file + (f":{m.variant}" if m.variant else "") for m in have]
+    # Sides go through the same pipeline as everything else - same parser, same
+    # aggregation, same consolidation - so a side sharing an onion with a main
+    # merges into one line rather than appearing twice. That is the whole reason
+    # they are captured as recipe files instead of as a list of words.
+    sides = [r for r in pantry.load_sides()
+             if r["slug"] in week.sides and pantry.recipe_file(r["slug"]).exists()]
+    side_missing = [r.get("side") or r["recipe"] for r in pantry.load_sides()
+                    if r["slug"] in week.sides and not pantry.recipe_file(r["slug"]).exists()]
+    specs += [pantry.file_index().get(r["slug"], r["slug"]) for r in sides]
     if not specs:
         return {"ok": True, "markdown": "_Nothing planned yet._"}
 
@@ -276,18 +287,24 @@ def grocery_list(week: pantry.Week) -> dict:
     # week. Meals with no override get the week's number, so a week nobody has
     # touched produces exactly the list it did before.
     try:
-        built = shop.build(specs, [m.ae(ae) for m in have])
+        built = shop.build(specs, [m.ae(ae) for m in have] + [ae] * len(sides))
     except (FileNotFoundError, SystemExit) as exc:
         return {"ok": False, "markdown": f"```\n{exc}\n```"}
     meals, lines, unknown, merges, links, scales, items = built
-    out = shop.emit(meals, lines, unknown, merges, links, ae, scales, items)
+    out = shop.emit(meals, lines, unknown, merges, links, ae, scales, items,
+                    sides=len(sides))
     out += "\n" + shop.coupling_report(lines, items)
-    if missing:
+    if missing or side_missing:
         # Surfaced, never silent. A list that quietly omits a meal is the failure
-        # this whole pipeline is built to avoid.
+        # this whole pipeline is built to avoid — and a side typed in by name,
+        # with no capture behind it, is exactly that failure in miniature. It is
+        # on the week, it contributes nothing, and the only honest thing to do is
+        # say which one you are shopping for yourself.
         out += ("\n\n## Not on this list\n\n*No ingredient file exists for these yet, so "
                 "nothing was added for them:*\n\n"
-                + "\n".join(f"- {t}" for t in missing) + "\n")
+                + "\n".join(f"- {t}" for t in missing)
+                + ("\n" if missing and side_missing else "")
+                + "\n".join(f"- {t} (side)" for t in side_missing) + "\n")
     return {"ok": True, "markdown": out}
 
 
@@ -512,6 +529,114 @@ def post_onboard(body):
     })
 
 
+def suggest_sides(week, want: int = 2) -> list[str]:
+    """Pick sides for the week. Deterministic, and small on purpose.
+
+    Least-recently-served first, then anything whose `Goes with` is already
+    represented by a protein on the board, and never two rows with the same
+    `Goes with` in one week. That is the whole rule - there is no scoring model
+    here because there is nothing to score yet.
+
+    **Returns nothing while `sides.md` is empty**, which is the state today and
+    is not a failure. `profile.md` says vegetables are missing from the data
+    rather than the diet; the honest response is an empty suggestion and a
+    grocery list that keeps saying it is short, not a plausible vegetable.
+    """
+    rows = [r for r in pantry.load_sides() if r["slug"] not in week.sides]
+    if not rows:
+        return []
+    proteins = {(m.protein or "").lower() for m in week.meals}
+    today = pantry.monday()
+
+    def key(row):
+        served = (row.get("last served") or "").strip()
+        goes = (row.get("goes with") or "").strip().lower()
+        return (0 if not served else 1, served,
+                0 if (goes and goes in proteins) else 1, row["slug"])
+
+    picked, used = [], set()
+    for row in sorted(rows, key=key):
+        goes = (row.get("goes with") or "").strip().lower()
+        if goes and goes in used:
+            continue
+        picked.append(row["slug"])
+        if goes:
+            used.add(goes)
+        if len(picked) >= want:
+            break
+    return picked
+
+
+def post_side(body):
+    """Add or remove one side from the week, or fill it from `sides.md`."""
+    week = current_week()
+    if body.get("suggest"):
+        for slug in suggest_sides(week, int(body.get("want", 2))):
+            if slug not in week.sides:
+                week.sides.append(slug)
+    elif body.get("remove"):
+        week.sides = [s for s in week.sides if s != body["remove"]]
+    elif body.get("slug"):
+        known = {r["slug"] for r in pantry.load_sides()}
+        if body["slug"] in known and body["slug"] not in week.sides:
+            week.sides.append(body["slug"])
+    pantry.write_week(week)
+    pantry.log("sides", week=week.date, sides=list(week.sides))
+    return state()
+
+
+def post_add_side(body):
+    """Capture a side from a link, or take one by name.
+
+    Two routes because sides arrive two ways and both are real. A link goes
+    through the same capture as any recipe, so the ingredients reach the shopping
+    list. A name with no link is allowed - *green beans* is a side, everyone knows
+    what it is, and refusing it until somebody finds a web page for roasting them
+    would be the tool getting in the way of the file it is asking to be filled.
+    A named side with no capture carries no ingredients, and the list says so
+    rather than pretending.
+    """
+    url = (body.get("url") or "").strip()
+    name = (body.get("name") or "").strip()
+    try:
+        if url:
+            import acquire
+            rec = onboard_capture(url)
+            pantry.add_side(rec["title"], source=url,
+                            active=body.get("active", ""),
+                            passive=rec.get("passive") or "",
+                            goes_with=body.get("goes_with", ""),
+                            season=body.get("season", ""))
+            return dict(state(), side_added=rec["title"], side_error="")
+        if not name:
+            return dict(state(), side_error="Give a link or a name.")
+        pantry.add_side(name, goes_with=body.get("goes_with", ""),
+                        season=body.get("season", ""), active=body.get("active", ""),
+                        notes="typed in")
+        return dict(state(), side_added=name, side_error="")
+    except Exception as exc:
+        return dict(state(), side_error=str(exc) or type(exc).__name__)
+
+
+def onboard_capture(url: str) -> dict:
+    """Capture a page as a recipe file, without the candidate row.
+
+    A side is not a candidate: `candidates.md` exists so an unproven *dinner*
+    carries its gamble visibly, and a vegetable does not have one. So this
+    borrows the capture and stops short of the door into candidates.
+    """
+    import onboard
+    rec = onboard.from_url(url)
+    if rec.get("status") != "complete" or not rec.get("ingredients"):
+        raise ValueError("the page carries no machine-readable recipe")
+    rec["slug"] = pantry.slug(rec["title"])
+    (pantry.ROOT / "recipes").mkdir(parents=True, exist_ok=True)
+    pantry.recipe_file(rec["slug"]).write_text(onboard.render_recipe(rec),
+                                               encoding="utf-8")
+    pantry._FILE_INDEX = None
+    return rec
+
+
 def post_profile(body):
     """Edit `profile.md` from the session.
 
@@ -596,6 +721,8 @@ ROUTES = {
     "/api/swap": post_swap,
     "/api/reshuffle": post_reshuffle,
     "/api/profile": post_profile,
+    "/api/side": post_side,
+    "/api/side/add": post_add_side,
     "/api/feedback": post_feedback,
     "/api/apply": post_apply,
     "/api/order": post_order,

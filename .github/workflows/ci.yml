@@ -39,6 +39,18 @@ jobs:
           python3 test_review.py
           python3 test_session.py
 
+      - name: The tests never leak into the household files
+        # A harness that forgets to repoint one path writes into the real data.
+        # `sides.md` was added and four test files still pointed at the repo
+        # copy; it had written four rows into it before anyone noticed. The
+        # demo-leak check below runs after the app and would not have caught it.
+        run: |
+          git diff --quiet -- corpus.md candidates.md sides.md profile.md items.md recipes/ || {
+            echo "::error::Running the tests changed the household files."
+            git diff --stat
+            exit 1
+          }
+
       - name: Every recipe parses and every item is known
         # docs/step2-design.md 3: the item table grows on parse failure, and a
         # failure is only useful if it is visible. This is that check, in CI.
