@@ -116,7 +116,7 @@ one of its premises has genuinely changed: the trust mechanism it defended was *
 go and correct the file*, and that is now a feature in the session rather than a property of
 the filesystem.
 
-## Storage — reversed, on purpose
+### The original reasoning, left intact
 
 **This started as "SQLite now, Postgres later" and was reversed after a second look.**
 Recorded rather than patched away, because the reasoning is what makes the next reversal
