@@ -4,7 +4,15 @@
 interview and they are settled. Then `docs/pantry-router-proposal.md` for why the product
 exists, and `docs/step2-design.md` for the shopping list.
 
-This brief is ordered. The order is the recommendation.
+**All seven items are built.** What follows is kept in place rather than deleted, because
+the *constraints* in each one were the expensive part and re-deriving them would cost more
+than reading them. Each section now says what it became and what is still open under it.
+
+Reports: `docs/model-planner-findings.md`, `docs/acquisition-findings.md`,
+`docs/the-seven-findings.md`.
+
+The one thing that has not changed is at the bottom of this file and it is still the most
+important line in it.
 
 ---
 
