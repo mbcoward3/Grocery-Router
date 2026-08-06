@@ -204,6 +204,15 @@ Every one of these was a real bug in this repo. They rhyme, and the rhyme is wor
   ranker is running on staleness it cannot measure, and no proposal has ever been judged.
   **Nothing on this list matters as much as one real week.**
 
+## What is next, and it is not on this list
+
+Multi-tenancy. `docs/multi-tenancy.md` is the design.
+
+The first item there is not the database — it is a **data-crossing bug that already
+exists.** `app.py` is a `ThreadingHTTPServer` and which household it reads is a set of
+module-level globals in `pantry` and `shop`. One household is why that is safe today. Two
+is a stranger's allergy in somebody else's kitchen, shipped silently.
+
 ## Report
 
 Same standard as the two onboarding briefs, which were the most useful artifacts those runs

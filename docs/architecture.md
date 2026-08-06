@@ -103,6 +103,19 @@ lands in `decisions.jsonl` and under the week in the session. **A model that qui
 degraded to the ranker for a month would be the real failure**, and it is the one this is
 built to make impossible.
 
+## Storage — reversed, and now reversing back
+
+**Decision 5 said no database until SaaS, and that this would be a real project rather than
+a config change.** That is being taken up: `docs/multi-tenancy.md` is the restructure, on
+CloudNativePG, with the costs written next to it — including the end of the
+standard-library-only property, which CI currently enforces.
+
+The reasoning below is left exactly as it was. It is what made the second reversal cheap to
+evaluate, which was the entire point of writing it down rather than patching it away, and
+one of its premises has genuinely changed: the trust mechanism it defended was *a person can
+go and correct the file*, and that is now a feature in the session rather than a property of
+the filesystem.
+
 ## Storage — reversed, on purpose
 
 **This started as "SQLite now, Postgres later" and was reversed after a second look.**
