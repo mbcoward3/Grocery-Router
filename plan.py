@@ -87,6 +87,55 @@ def call_api(prompt, model, api_key):
         sys.exit(str(exc))
 
 
+def print_week(args):
+    """The validated week, exactly as the session would show it.
+
+    Worth its own flag rather than being folded into the default. What this file
+    has always printed is the model's prose, unread by any code - useful to a
+    person, and *not* what the app puts on the board. This runs the real
+    pipeline: `pantry.propose()`, slug validation, the hard-constraint checks,
+    and a ranker top-up for anything dropped. Which makes it the one command that
+    answers "is the model planner any good", for someone who did not build it and
+    should not have to launch a web server to find out.
+
+    Prints what was refused as well as what survived. A week that quietly lost
+    three picks to validation looks identical to a week the model planned
+    outright, and those are very different facts.
+    """
+    import pantry
+
+    meals = pantry.propose(nights=args.nights, risk=args.risk, planner=args.planner,
+                           client=None)
+    last = pantry.last_proposal() or {}
+
+    used = last.get("planner", "ranker")
+    if used == "model":
+        print(f"planned by {last.get('model') or 'a model'}\n")
+    elif last.get("fallback"):
+        print(f"planned by the ranker — the model was asked and {last['fallback']}\n")
+    else:
+        print("planned by the ranker, deterministically\n")
+
+    if last.get("note"):
+        print(f"{last['note']}\n")
+    for meal in meals:
+        tag = " [candidate]" if meal.candidate else ""
+        print(f"  {meal.title + tag:38} {meal.yield_ or 'unknown':14} "
+              f"{meal.active or 'med':5} active   {meal.reason}")
+    print(f"\n{pantry.effort_mix(meals)}")
+
+    for label, key in (("coupling", "coupling"), ("gaps", "gaps")):
+        if last.get(key):
+            print(f"\n{label}: {last[key]}")
+    for dropped in last.get("dropped", []):
+        print(f"\ndropped: {dropped}", file=sys.stderr)
+    for warning in last.get("warnings", []):
+        print(f"\nnote: {warning}", file=sys.stderr)
+    if last.get("topped_up"):
+        print(f"\nnote: {len(last['topped_up'])} night(s) filled by the ranker",
+              file=sys.stderr)
+
+
 def read_input(path, label):
     if not path.exists():
         sys.exit(f"Missing {label}: {path}. See README.md.")
@@ -120,7 +169,21 @@ def main():
         action="store_true",
         help="print the assembled prompt instead of calling the model",
     )
+    p.add_argument(
+        "--week",
+        action="store_true",
+        help="print the validated week the session would show, with what was dropped",
+    )
+    p.add_argument(
+        "--planner",
+        choices=["ranker", "model", "auto"],
+        default=None,
+        help="with --week: which planner to use (default: auto, on whether a key is set)",
+    )
     args = p.parse_args()
+
+    if args.week:
+        return print_week(args)
 
     profile_text = read_input(args.profile, "profile")
     corpus_text = read_input(args.corpus, "corpus")

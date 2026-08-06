@@ -83,6 +83,22 @@ prompt to stdout — paste that into a chat and you get the same result with one
 Options: `--guests`, `--busy`, `--risk {low,normal,high}`, `--sale`, `--nights`,
 `--notes`, `--profile`, `--corpus`, `--model`. `--model` defaults to `$PANTRY_MODEL`.
 
+`--week` is the other thing this file does, and it is not the same thing. The default
+prints the model's prose, which no code reads. `--week` runs the **real** pipeline —
+`pantry.propose()`, slug validation, the hard-constraint checks, a ranker top-up for
+anything dropped — and prints the week the session would put on the board, plus what was
+refused and why.
+
+```sh
+./plan.py --week                       # whichever planner a key selects
+./plan.py --week --planner ranker      # the deterministic one, for comparison
+./plan.py --week --planner model       # insist, and see it fail loudly if it can't
+```
+
+Running the two back to back is the cheapest way to answer *is the model planner any
+better*, which is a question about whether the reasons land and not one any test can
+settle.
+
 ## Adding a recipe
 
 ```sh
