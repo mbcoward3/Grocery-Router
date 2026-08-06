@@ -168,6 +168,11 @@ to lose you in week one.
 
 ## Where it goes
 
+**[`docs/brief-next.md`](docs/brief-next.md)** is the ordered task list: what to build, in
+what order, what not to re-open, and the traps this project has already fallen into. Start
+there.
+
+
 Log outcomes, so cooked-and-kept candidates enter the corpus on their own. Then the Kroger
 cart — SKU matching and pack sizing, behind a store adapter so a second store is a new
 file. Then the inferred pantry, which depends on parsing order confirmation emails and may
