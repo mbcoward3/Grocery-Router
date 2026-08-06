@@ -77,7 +77,7 @@ RECENCY_CLAIM = re.compile(
 HIGH_ACTIVE_PER_WEEK = 2
 
 
-def peanut_verdict(sl: str) -> str:
+def peanut_verdict(hh, sl: str) -> str:
     """The capture's recorded verdict for one recipe, lowercased.
 
     Returns `""` when the recipe has no file or the file predates the header.
@@ -88,14 +88,14 @@ def peanut_verdict(sl: str) -> str:
     Absence is absence. It is reported by `unchecked()` so a person can see it,
     and it does not silently block a meal this household already eats.
     """
-    path = pantry.recipe_file(sl)
+    path = pantry.recipe_file(hh, sl)
     if not path.exists():
         return ""
     m = PEANUT_HEADER.search(path.read_text(encoding="utf-8"))
     return m.group(1).strip().lower() if m else ""
 
 
-def check_meal(meal, row: dict | None) -> str | None:
+def check_meal(hh, meal, row: dict | None) -> str | None:
     """Why this pick may not go in the week, or `None` if nothing rules it out.
 
     `row` is the catalogue row the slug resolved to - `None` means it resolved to
@@ -104,7 +104,7 @@ def check_meal(meal, row: dict | None) -> str | None:
     if row is None:
         return f"{meal.slug!r} is not in the corpus or the candidates"
 
-    if PEANUT_BLOCKS in peanut_verdict(meal.slug):
+    if PEANUT_BLOCKS in peanut_verdict(hh, meal.slug):
         return f"{meal.title} contains peanut, and the allergy is a hard constraint"
 
     # The one invention that is cheap to catch. Most of this corpus has no
@@ -136,11 +136,11 @@ def check_week(meals: list) -> list[str]:
     return out
 
 
-def unchecked(meals: list) -> list[str]:
+def unchecked(hh, meals: list) -> list[str]:
     """Meals whose capture never recorded a peanut verdict.
 
     Not a violation and not a silence. The household is owed the difference
     between *scanned, nothing found* and *never scanned*, and four recipes are in
     the second state.
     """
-    return [m.title for m in meals if not peanut_verdict(m.slug)]
+    return [m.title for m in meals if not peanut_verdict(hh, m.slug)]

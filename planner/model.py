@@ -247,7 +247,7 @@ def extract(text: str) -> dict:
     return data
 
 
-def _meal_from(row: dict, reason: str, candidate: bool):
+def _meal_from(hh, row: dict, reason: str, candidate: bool):
     """Build the `Meal` from the row, taking exactly one thing from the model.
 
     Listing the fields out rather than looping is the point: every line here is a
@@ -261,8 +261,8 @@ def _meal_from(row: dict, reason: str, candidate: bool):
         yield_=row.get("yield", ""),
         active=(row.get("active") or "").lower(),
         passive=row.get("passive", ""),
-        variants=pantry.variants_for(row["slug"]),
-        variant=(pantry.variants_for(row["slug"]) or [""])[0],
+        variants=pantry.variants_for(hh, row["slug"]),
+        variant=(pantry.variants_for(hh, row["slug"]) or [""])[0],
         reason=(reason or "").strip(),
         # One kind for everything a model wrote. The ranker's kinds describe
         # *which rule* surfaced a meal, and a model's reason is not the output of
@@ -274,7 +274,7 @@ def _meal_from(row: dict, reason: str, candidate: bool):
     )
 
 
-def select(data: dict, index: dict, taken: set, limit: int) -> tuple[list, list[str]]:
+def select(hh, data: dict, index: dict, taken: set, limit: int) -> tuple[list, list[str]]:
     """Turn the envelope into meals, dropping everything that cannot be trusted.
 
     Returns `(meals, dropped)`, where each entry in `dropped` is a sentence
@@ -310,8 +310,8 @@ def select(data: dict, index: dict, taken: set, limit: int) -> tuple[list, list[
             dropped.append(f"{row['recipe']} came back with no reason")
             continue
 
-        meal = _meal_from(row, reason, candidate=row.get("_candidate", False))
-        why = constraints.check_meal(meal, row)
+        meal = _meal_from(hh, row, reason, candidate=row.get("_candidate", False))
+        why = constraints.check_meal(hh, meal, row)
         if why:
             dropped.append(why)
             continue
@@ -325,7 +325,7 @@ def select(data: dict, index: dict, taken: set, limit: int) -> tuple[list, list[
 # The entry point
 # --------------------------------------------------------------------------- #
 
-def plan(nights: int = 5, guests: float = 0.0, risk: str = "normal",
+def plan(hh, nights: int = 5, guests: float = 0.0, risk: str = "normal",
          keep: list | None = None, today: dt.date | None = None,
          avoid: set | None = None, client=None, model: str | None = None) -> Plan:
     """Plan the week with a model. Raises `PlannerUnavailable` if it cannot.
@@ -347,8 +347,8 @@ def plan(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     if limit <= 0:
         return Plan(meals=[], note="the week was already full", model=model or DEFAULT_MODEL)
 
-    corpus = pantry.load_corpus()
-    cands = [r for r in pantry.load_candidates()
+    corpus = pantry.load_corpus(hh)
+    cands = [r for r in pantry.load_candidates(hh)
              if "flopped" not in (r.get("outcome") or "")]
 
     index: dict[str, dict] = {}
@@ -360,8 +360,8 @@ def plan(nights: int = 5, guests: float = 0.0, risk: str = "normal",
         # impossible, and it is cheaper to be right here than to rely on that.
         index.setdefault(row["slug"], dict(row, _candidate=True))
 
-    profile_text = pantry.PROFILE.read_text(encoding="utf-8") \
-        if pantry.PROFILE.exists() else ""
+    profile_text = hh.profile.read_text(encoding="utf-8") \
+        if hh.profile.exists() else ""
     prompt = build_prompt(corpus, cands, profile_text, nights, guests, risk,
                           keep, avoid, today)
 
@@ -370,10 +370,10 @@ def plan(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     data = extract(text)
 
     taken = {m.slug for m in keep} | avoid
-    meals, dropped = select(data, index, taken, limit)
+    meals, dropped = select(hh, data, index, taken, limit)
 
     warnings = constraints.check_week(keep + meals)
-    stale = constraints.unchecked(meals)
+    stale = constraints.unchecked(hh, meals)
     if stale:
         warnings.append("no peanut scan on record for " + ", ".join(stale))
 

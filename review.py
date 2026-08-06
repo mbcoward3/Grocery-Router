@@ -43,6 +43,7 @@ import json
 import sys
 from collections import Counter, defaultdict
 
+import household
 import pantry
 
 # What each reason kind is claiming, for a report a person reads. The kinds
@@ -61,18 +62,18 @@ KIND_MEANING = {
 }
 
 
-def proposals() -> list[dict]:
-    return pantry.decisions({"proposed"})
+def proposals(hh) -> list[dict]:
+    return pantry.decisions(hh, {"proposed"})
 
 
-def offers() -> list[dict]:
+def offers(hh) -> list[dict]:
     """Every meal ever put in front of the household, newest last.
 
     One row per *offer*, not per recipe: the same recipe proposed in three weeks
     is three offers, and that is the right denominator for an accept rate.
     """
     out = []
-    for rec in proposals():
+    for rec in proposals(hh):
         for added in rec.get("added", []):
             out.append({"at": rec.get("at", ""), "recipe": added.get("recipe", ""),
                         "kind": added.get("kind", ""), "reason": added.get("reason", ""),
@@ -83,7 +84,7 @@ def offers() -> list[dict]:
     return out
 
 
-def kind_of(recipe: str) -> str:
+def kind_of(hh, recipe: str) -> str:
     """The reason kind this recipe was most recently proposed under.
 
     Used by the drop route, so a turn-down records what it was turned down
@@ -91,7 +92,7 @@ def kind_of(recipe: str) -> str:
     week's meal lines have a fixed format, and the log is append-only and already
     holds the answer.
     """
-    for offer in reversed(offers()):
+    for offer in reversed(offers(hh)):
         if offer["recipe"] == recipe:
             return offer["kind"]
     return ""
@@ -101,7 +102,7 @@ def kind_of(recipe: str) -> str:
 # Which reasons work
 # --------------------------------------------------------------------------- #
 
-def reasons() -> list[dict]:
+def reasons(hh) -> list[dict]:
     """Accept rate per reason kind, worst first.
 
     `dropped` is an explicit turn-down in the session. `kept` is a cook the
@@ -112,20 +113,20 @@ def reasons() -> list[dict]:
     """
     offered = Counter()
     by_recipe: dict[str, list[str]] = defaultdict(list)
-    for offer in offers():
+    for offer in offers(hh):
         if not offer["kind"]:
             continue
         offered[offer["kind"]] += 1
         by_recipe[offer["recipe"]].append(offer["kind"])
 
     dropped = Counter()
-    for rec in pantry.decisions({"drop"}):
+    for rec in pantry.decisions(hh, {"drop"}):
         kind = rec.get("reason_kind") or (by_recipe.get(rec.get("recipe", "")) or [""])[-1]
         if kind:
             dropped[kind] += 1
 
     kept = Counter()
-    for rec in pantry.decisions({"feedback_applied"}):
+    for rec in pantry.decisions(hh, {"feedback_applied"}):
         if not str(rec.get("outcome", "")).startswith("kept"):
             continue
         kinds = by_recipe.get(rec.get("recipe", ""))
@@ -150,7 +151,7 @@ def reasons() -> list[dict]:
 # Whether breadth is increasing
 # --------------------------------------------------------------------------- #
 
-def breadth() -> list[dict]:
+def breadth(hh) -> list[dict]:
     """Distinct recipes reaching the table, week by week.
 
     **The measure the product claim actually needs.** The opponent is *buy it
@@ -160,7 +161,7 @@ def breadth() -> list[dict]:
     """
     weeks: dict[str, dict] = {}
     seen: set[str] = set()
-    for rec in proposals():
+    for rec in proposals(hh):
         day = rec.get("week") or str(rec.get("at", ""))[:10]
         week = weeks.setdefault(day, {"week": day, "offered": 0, "new": 0,
                                       "proteins": set(), "cuisines": set(),
@@ -194,7 +195,7 @@ def breadth() -> list[dict]:
 # Whether the planner change was worth it
 # --------------------------------------------------------------------------- #
 
-def planners() -> dict:
+def planners(hh) -> dict:
     """The model against the ranker, on real weeks.
 
     This is the comparison `decisions.jsonl` exists for. It is reported even when
@@ -202,8 +203,8 @@ def planners() -> dict:
     the answer to how well the model planner is doing.
     """
     out: dict[str, dict] = {}
-    dropped = Counter(r.get("recipe", "") for r in pantry.decisions({"drop"}))
-    for offer in offers():
+    dropped = Counter(r.get("recipe", "") for r in pantry.decisions(hh, {"drop"}))
+    for offer in offers(hh):
         row = out.setdefault(offer["planner"],
                              {"planner": offer["planner"], "offered": 0,
                               "dropped": 0, "weeks": set()})
@@ -211,7 +212,7 @@ def planners() -> dict:
         row["weeks"].add(offer["at"][:10])
         if dropped.get(offer["recipe"]):
             row["dropped"] += 1
-    fallbacks = [r for r in proposals() if r.get("fallback")]
+    fallbacks = [r for r in proposals(hh) if r.get("fallback")]
     return {
         "by_planner": [
             {**{k: v for k, v in row.items() if k != "weeks"},
@@ -220,36 +221,36 @@ def planners() -> dict:
                                   / row["offered"]) if row["offered"] else None}
             for row in out.values()
         ],
-        "asked_for_a_model": sum(1 for r in proposals() if r.get("asked") == "model"),
+        "asked_for_a_model": sum(1 for r in proposals(hh) if r.get("asked") == "model"),
         "fell_back": len(fallbacks),
         "why": Counter(r["fallback"] for r in fallbacks).most_common(3),
     }
 
 
-def acquisition() -> dict:
+def acquisition(hh) -> dict:
     """Where new recipes came from. `found_by` tells searching from pasting."""
-    got = pantry.decisions({"acquired"})
+    got = pantry.decisions(hh, {"acquired"})
     return {
         "total": len(got),
         "by_route": dict(Counter(r.get("found_by", "?") for r in got)),
         "sources": Counter(
             str(r.get("source", "")).split("/")[2] for r in got
             if str(r.get("source", "")).count("/") > 2).most_common(5),
-        "promoted": len(pantry.decisions({"promote"})),
+        "promoted": len(pantry.decisions(hh, {"promote"})),
     }
 
 
-def summary() -> dict:
-    weeks = breadth()
+def summary(hh) -> dict:
+    weeks = breadth(hh)
     return {
-        "decisions": len(pantry.decisions()),
+        "decisions": len(pantry.decisions(hh)),
         "weeks_logged": len(weeks),
-        "offers": len(offers()),
+        "offers": len(offers(hh)),
         "distinct_recipes": weeks[-1]["distinct_so_far"] if weeks else 0,
-        "reasons": reasons(),
+        "reasons": reasons(hh),
         "breadth": weeks,
-        "planners": planners(),
-        "acquisition": acquisition(),
+        "planners": planners(hh),
+        "acquisition": acquisition(hh),
     }
 
 
@@ -275,8 +276,9 @@ def main():
     p.add_argument("--planners", action="store_true")
     p.add_argument("--json", action="store_true")
     args = p.parse_args()
+    hh = household.here()
 
-    data = summary()
+    data = summary(hh)
     if args.json:
         print(json.dumps(data, indent=2, default=str))
         return 0

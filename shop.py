@@ -29,23 +29,18 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-RECIPES = ROOT / "recipes"
-ITEMS = ROOT / "items.md"
+from household import Household, here
 
-
-def configure(root: "Path") -> None:
-    """Point the loader at a different copy of the data.
-
-    Needed twice: demo mode runs against a scratch directory, and the browser
-    build runs against files written into an in-memory filesystem. Both want the
-    same parsing code reading a different place, which is the whole reason this
-    module never hardcodes a path past this line.
-    """
-    global ROOT, RECIPES, ITEMS
-    ROOT = Path(root)
-    RECIPES = ROOT / "recipes"
-    ITEMS = ROOT / "items.md"
+# **`configure()` used to live here and has been deleted.** It set three module
+# globals so demo mode and the browser build could read a different directory,
+# and it had the same defect `pantry.py`'s globals had: `app.py` called it inside
+# a request handler, on a threaded server, so two households pricing a cart at
+# once could read each other's recipes. The four functions that need to know
+# take a `Household` now. See `household.py`.
+#
+# Everything between here and the driver is pure parsing and stays that way -
+# `domain/` purity is meant to become an import-graph test, and a household
+# argument on `parse_ingredient` would be the first thing to break it.
 
 # Household default, from profile.md: 2 adults, a 3-year-old, a 1-year-old.
 DEFAULT_AE = 2.5
@@ -202,8 +197,8 @@ def _strip_comments(text: str) -> str:
     return COMMENT.sub("", text)
 
 
-def load_recipe(slug: str) -> Recipe:
-    path = RECIPES / f"{slug}.md"
+def load_recipe(hh: Household, slug: str) -> Recipe:
+    path = hh.recipes / f"{slug}.md"
     if not path.exists():
         raise FileNotFoundError(f"no recipe file for {slug!r} (looked in {path})")
     lines = _strip_comments(path.read_text(encoding="utf-8")).splitlines()
@@ -498,12 +493,12 @@ def scale(recipe: Recipe, ae: float) -> tuple[float, str]:
 # Stage: normalize (items.md)
 # --------------------------------------------------------------------------- #
 
-def load_items() -> tuple[dict[str, Item], dict[str, str]]:
+def load_items(hh: Household) -> tuple[dict[str, Item], dict[str, str]]:
     items: dict[str, Item] = {}
     index: dict[str, str] = {}
-    if not ITEMS.exists():
+    if not hh.items.exists():
         return items, index
-    for line in ITEMS.read_text(encoding="utf-8").splitlines():
+    for line in hh.items.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line.startswith("|") or line.startswith("|---") or "canonical" in line[:20]:
             continue
@@ -978,7 +973,7 @@ def coupling_report(lines: list[Line], items: dict[str, Item]) -> str:
 # Driver
 # --------------------------------------------------------------------------- #
 
-def build(week_spec: list[str], ae):
+def build(hh: Household, week_spec: list[str], ae):
     """`ae` is the week's adult-equivalents, or one per spec.
 
     A list is how per-meal servings reach the list. `profile.md` asks for it
@@ -991,7 +986,7 @@ def build(week_spec: list[str], ae):
     Still deterministic, and still no model anywhere near it: the number arrives
     from the session as a number.
     """
-    items, index = load_items()
+    items, index = load_items(hh)
     week = []
     entries = []
     scales = []
@@ -1000,7 +995,7 @@ def build(week_spec: list[str], ae):
         raise ValueError(f"{len(per_meal)} servings for {len(week_spec)} meals")
     for spec, meal_ae in zip(week_spec, per_meal):
         slug, _, variant_name = spec.partition(":")
-        recipe = load_recipe(slug.strip())
+        recipe = load_recipe(hh, slug.strip())
         ingredients, variant = resolve(recipe, variant_name.strip() or None)
         mult, why = scale(recipe, meal_ae)
         scales.append((slug, why))
@@ -1019,13 +1014,13 @@ def build(week_spec: list[str], ae):
     return week, lines, unknown, merges, links, scales, items
 
 
-def audit():
-    items, index = load_items()
+def audit(hh: Household):
+    items, index = load_items(hh)
     misses = defaultdict(list)
     failures = []
     total = 0
-    for path in sorted(RECIPES.glob("*.md")):
-        recipe = load_recipe(path.stem)
+    for path in sorted(hh.recipes.glob("*.md")):
+        recipe = load_recipe(hh, path.stem)
         ingredients, _ = resolve(recipe, None)
         for v in recipe.variants:
             ingredients = ingredients + v.adds
@@ -1038,7 +1033,7 @@ def audit():
                 continue
             if normalize(ing, index) is None:
                 misses[ing.item.lower()].append(path.stem)
-    print(f"{len(list(RECIPES.glob('*.md')))} recipes, {total} ingredient lines")
+    print(f"{len(list(hh.recipes.glob('*.md')))} recipes, {total} ingredient lines")
     print(f"{len(failures)} unparseable, {sum(len(v) for v in misses.values())} lines "
           f"with no items.md row ({len(misses)} distinct names)")
     print()
@@ -1061,18 +1056,17 @@ def main(argv=None):
     ap.add_argument("--root", type=Path, help="read recipes/ and items.md from here")
     args = ap.parse_args(argv)
 
-    if args.root:
-        configure(args.root)
+    hh = here(args.root)
 
     if args.audit:
-        audit()
+        audit(hh)
         return 0
     if not args.week:
         ap.error("--week is required (or --audit)")
 
     ae = args.ae + args.guests
     specs = [s.strip() for s in args.week.split(",") if s.strip()]
-    week, lines, unknown, merges, links, scales, items = build(specs, ae)
+    week, lines, unknown, merges, links, scales, items = build(hh, specs, ae)
 
     if args.json:
         print(json.dumps({

@@ -26,14 +26,35 @@ import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
+import household
 import pantry
 import planner
 import review
 import shop
+from household import Household
 
 ROOT = Path(__file__).resolve().parent
 WEB = ROOT / "web"
 DEMO: Path | None = None
+
+# **Which household a request is about, resolved once per request.**
+#
+# This used to be eight module-level paths in `pantry` that this file reassigned
+# inside a request handler - on a `ThreadingHTTPServer`, which has been
+# concurrent since the day it was written. One household made it safe; two would
+# have made it a silent data-crossing bug. `household.py` has the full account.
+#
+# `SERVING` is assigned once at startup and never again, and `serving()` is the
+# seam identity lands on: step 4 of `docs/multi-tenancy.md` makes it read a
+# session cookie instead of returning the one household this process was
+# started for. Every route below already takes the household as an argument, so
+# that change is confined to this function.
+SERVING: Household = household.here()
+
+
+def serving(request=None) -> Household:
+    """The household this request is about. One today, by construction."""
+    return SERVING
 
 
 # --------------------------------------------------------------------------- #
@@ -71,26 +92,18 @@ def start_demo() -> Path:
     since the invented one can have the cooking history the real one has not
     accumulated yet.
     """
-    global DEMO
+    global DEMO, SERVING
     DEMO = Path(tempfile.mkdtemp(prefix="pantry-demo-"))
-    # Repoint *before* populating. Seeding the demo's first week while pantry
-    # still points at the repo writes the demo's data into the real household -
-    # which it did, once, and which is the whole failure this mode exists to
-    # prevent.
-    pantry.ROOT = DEMO
-    pantry.CORPUS = DEMO / "corpus.md"
-    pantry.CANDIDATES = DEMO / "candidates.md"
-    pantry.SIDES = DEMO / "sides.md"
-    pantry.PROFILE = DEMO / "profile.md"
-    pantry.WEEKS = DEMO / "weeks"
-    pantry.CACHE = DEMO / ".cache"
-    pantry.DECISIONS = DEMO / "decisions.jsonl"
-    pantry._FILE_INDEX = None
-    reset_demo()
+    # Swap the household *before* populating. Seeding the demo's first week
+    # while this process is still serving the repo writes the demo's data into
+    # the real household - which it did, once, and which is the whole failure
+    # this mode exists to prevent.
+    SERVING = Household(root=DEMO, id="demo")
+    reset_demo(SERVING)
     return DEMO
 
 
-def reset_demo() -> None:
+def reset_demo(hh: Household) -> None:
     if DEMO is None:
         return
     for name in DEMO_FILES:
@@ -104,11 +117,11 @@ def reset_demo() -> None:
     shutil.rmtree(DEMO / ".cache", ignore_errors=True)
     if (ROOT / ".cache").exists():
         shutil.copytree(ROOT / ".cache", DEMO / ".cache")
-    pantry._FILE_INDEX = None
-    seed_last_week()          # last, or the rmtree above deletes it
+    hh.forget()
+    seed_last_week(hh)        # last, or the rmtree above deletes it
 
 
-def seed_last_week():
+def seed_last_week(hh: Household):
     """Give the demo a week to give feedback on.
 
     The first stage of a session is *what happened last week*, and with no
@@ -119,7 +132,7 @@ def seed_last_week():
     """
     import datetime as _dt
     last = (_dt.date.fromisoformat(pantry.monday()) - _dt.timedelta(days=7)).isoformat()
-    if pantry.read_week(last):
+    if pantry.read_week(hh, last):
         return
 
     # Named rather than re-proposed. Running the ranker for last week returns
@@ -129,8 +142,8 @@ def seed_last_week():
     # inside that window, so the seed agrees with the history rather than
     # inventing a second one. Three proven to confirm, one candidate to promote.
     want = ["blt", "chili", "tacos", "chicken-and-dumplings"]
-    index = {r["slug"]: r for r in pantry.load_corpus() + pantry.load_candidates()}
-    proven = {r["slug"] for r in pantry.load_corpus()}
+    index = {r["slug"]: r for r in pantry.load_corpus(hh) + pantry.load_candidates(hh)}
+    proven = {r["slug"] for r in pantry.load_corpus(hh)}
 
     w = pantry.Week(date=last, nights=4, status="planning")
     for sl in want:
@@ -141,45 +154,45 @@ def seed_last_week():
             slug=sl, title=row["recipe"], protein=row.get("protein", ""),
             cuisine=row.get("cuisine", ""), yield_=row.get("yield", ""),
             active=(row.get("active") or "").lower(), passive=row.get("passive", ""),
-            variants=pantry.variants_for(sl), candidate=sl not in proven,
+            variants=pantry.variants_for(hh, sl), candidate=sl not in proven,
             reason="planned last week"))
-    pantry.write_week(w)
-    pantry.DECISIONS.unlink(missing_ok=True)   # the seed is not a real decision
+    pantry.write_week(hh, w)
+    hh.decisions.unlink(missing_ok=True)   # the seed is not a real decision
 
 
 # --------------------------------------------------------------------------- #
 # State
 # --------------------------------------------------------------------------- #
 
-def current_week() -> pantry.Week:
+def current_week(hh: Household) -> pantry.Week:
     date = pantry.monday()
-    week = pantry.read_week(date)
+    week = pantry.read_week(hh, date)
     if week is None:
         week = pantry.Week(date=date)
-        week.meals = pantry.propose(week.nights, week.guests, week.risk,
+        week.meals = pantry.propose(hh, week.nights, week.guests, week.risk,
                                     week=week.date)
-        pantry.write_week(week)
+        pantry.write_week(hh, week)
     return week
 
 
-def state() -> dict:
-    week = current_week()
-    prev = pantry.previous_week(week.date)
-    corpus = pantry.load_corpus()
+def state(hh: Household) -> dict:
+    week = current_week(hh)
+    prev = pantry.previous_week(hh, week.date)
+    corpus = pantry.load_corpus(hh)
     return {
-        "week": week.to_json(),
-        "previous": prev.to_json() if prev else None,
-        "briefing": pantry.briefing(),
-        "members": pantry.load_members(),
-        "counts": {"corpus": len(corpus), "candidates": len(pantry.load_candidates()),
-                   "sides": len(pantry.load_sides())},
-        "metrics": metrics(),
-        "planner": planner_state(),
+        "week": week.to_json(hh),
+        "previous": prev.to_json(hh) if prev else None,
+        "briefing": pantry.briefing(hh),
+        "members": pantry.load_members(hh),
+        "counts": {"corpus": len(corpus), "candidates": len(pantry.load_candidates(hh)),
+                   "sides": len(pantry.load_sides(hh))},
+        "metrics": metrics(hh),
+        "planner": planner_state(hh),
         "demo": DEMO is not None,
     }
 
 
-def planner_state() -> dict:
+def planner_state(hh: Household) -> dict:
     """Which planner produced the week on the board, and what it had to say.
 
     This used to be the string `"ranker"`, hardcoded, which was true and stopped
@@ -193,7 +206,7 @@ def planner_state() -> dict:
     difference is exactly what someone evaluating whether this works needs to
     see.
     """
-    last = pantry.last_proposal() or {}
+    last = pantry.last_proposal(hh) or {}
     return {
         "used": last.get("planner", "ranker"),
         "asked": last.get("asked", ""),
@@ -209,7 +222,7 @@ def planner_state() -> dict:
     }
 
 
-def metrics() -> dict:
+def metrics(hh: Household) -> dict:
     """The product claim, as numbers. It says the gap between the recipes you
     reach for and the ones you like *is* the product - so the honest measures are
     how much of the corpus is still dormant and how much of it gets cooked.
@@ -217,14 +230,14 @@ def metrics() -> dict:
     Read off the decision log and the corpus. Zeroes are correct at week one and
     are shown as zeroes rather than hidden.
     """
-    corpus = pantry.load_corpus()
+    corpus = pantry.load_corpus(hh)
     cooked = {r["slug"] for r in corpus if (r.get("last cooked") or "").strip()}
-    applied = pantry.decisions({"feedback_applied"})
-    proposed = pantry.decisions({"proposed"})
+    applied = pantry.decisions(hh, {"feedback_applied"})
+    proposed = pantry.decisions(hh, {"proposed"})
     surfaced = {a["recipe"] for d in proposed for a in d.get("added", [])}
-    drops = len(pantry.decisions({"drop"}))
+    drops = len(pantry.decisions(hh, {"drop"}))
     offered = sum(len(d.get("added", [])) for d in proposed)
-    weeks = review.breadth()
+    weeks = review.breadth(hh)
     return {
         "corpus": len(corpus),
         "cooked_ever": len(cooked),
@@ -232,13 +245,13 @@ def metrics() -> dict:
         "surfaced_ever": len(surfaced),
         "kept": sum(1 for d in applied if d.get("outcome", "").startswith("kept")),
         "accept_rate": None if not offered else round(100 * (offered - drops) / offered),
-        "weeks": len(pantry.list_weeks()),
+        "weeks": len(pantry.list_weeks(hh)),
         # §7: the five numbers above are read off the corpus and describe what
         # the household owns. These are read off `decisions.jsonl` and describe
         # what the tool did, which is the only thing that can answer *is it any
         # good* for someone who did not build it.
         "behaviour": {
-            "reasons": review.reasons()[:6],
+            "reasons": review.reasons(hh)[:6],
             "trend": weeks[-6:],
             "widening": (len(weeks) > 1
                          and weeks[-1]["distinct_so_far"] > weeks[0]["distinct_so_far"]),
@@ -246,19 +259,19 @@ def metrics() -> dict:
     }
 
 
-def refill(week: pantry.Week) -> pantry.Week:
+def refill(hh: Household, week: pantry.Week) -> pantry.Week:
     """Fill up to `nights`, leaving everything already on the board alone.
 
     This is the gap-filling the session is built around: dropping one meal and
     asking for another must not re-roll the four the household already accepted.
     """
-    week.meals = pantry.propose(week.nights, week.guests, week.risk, keep=week.meals,
+    week.meals = pantry.propose(hh, week.nights, week.guests, week.risk, keep=week.meals,
                                 avoid=set(week.declined), week=week.date)
-    pantry.write_week(week)
+    pantry.write_week(hh, week)
     return week
 
 
-def grocery_list(week: pantry.Week) -> dict:
+def grocery_list(hh: Household, week: pantry.Week) -> dict:
     """Step 2, called in process.
 
     This used to shell out to `shop.py`. It doesn't any more, for a reason worth
@@ -266,28 +279,28 @@ def grocery_list(week: pantry.Week) -> dict:
     directly is what lets one implementation serve both, rather than a second
     copy of the pipeline that has to be kept honest against the first.
     """
-    missing = [m.title for m in week.meals if not m.has_file]
-    have = [m for m in week.meals if m.has_file]
-    specs = [m.file + (f":{m.variant}" if m.variant else "") for m in have]
+    missing = [m.title for m in week.meals if not m.has_file(hh)]
+    have = [m for m in week.meals if m.has_file(hh)]
+    specs = [m.file(hh) + (f":{m.variant}" if m.variant else "") for m in have]
     # Sides go through the same pipeline as everything else - same parser, same
     # aggregation, same consolidation - so a side sharing an onion with a main
     # merges into one line rather than appearing twice. That is the whole reason
     # they are captured as recipe files instead of as a list of words.
-    sides = [r for r in pantry.load_sides()
-             if r["slug"] in week.sides and pantry.recipe_file(r["slug"]).exists()]
-    side_missing = [r.get("side") or r["recipe"] for r in pantry.load_sides()
-                    if r["slug"] in week.sides and not pantry.recipe_file(r["slug"]).exists()]
-    specs += [pantry.file_index().get(r["slug"], r["slug"]) for r in sides]
+    sides = [r for r in pantry.load_sides(hh)
+             if r["slug"] in week.sides and pantry.recipe_file(hh, r["slug"]).exists()]
+    side_missing = [r.get("side") or r["recipe"] for r in pantry.load_sides(hh)
+                    if r["slug"] in week.sides
+                    and not pantry.recipe_file(hh, r["slug"]).exists()]
+    specs += [pantry.file_index(hh).get(r["slug"], r["slug"]) for r in sides]
     if not specs:
         return {"ok": True, "markdown": "_Nothing planned yet._"}
 
-    shop.configure(pantry.ROOT)
     ae = pantry.BASE_AE + week.guests
     # One number per meal, so guests on Thursday scale Thursday and not the
     # week. Meals with no override get the week's number, so a week nobody has
     # touched produces exactly the list it did before.
     try:
-        built = shop.build(specs, [m.ae(ae) for m in have] + [ae] * len(sides))
+        built = shop.build(hh, specs, [m.ae(ae) for m in have] + [ae] * len(sides))
     except (FileNotFoundError, SystemExit) as exc:
         return {"ok": False, "markdown": f"```\n{exc}\n```"}
     meals, lines, unknown, merges, links, scales, items = built
@@ -312,44 +325,44 @@ def grocery_list(week: pantry.Week) -> dict:
 # Routes
 # --------------------------------------------------------------------------- #
 
-def post_dials(body):
-    week = current_week()
+def post_dials(hh: Household, body):
+    week = current_week(hh)
     before = {"nights": week.nights, "guests": week.guests, "risk": week.risk}
     week.nights = max(1, min(14, int(body.get("nights", week.nights))))
     week.guests = max(0.0, float(body.get("guests", week.guests)))
     week.risk = body.get("risk", week.risk)
     week.meals = week.meals[:week.nights]
-    pantry.log("dials", week=week.date, before=before,
+    pantry.log(hh, "dials", week=week.date, before=before,
                after={"nights": week.nights, "guests": week.guests, "risk": week.risk})
-    refill(week)
-    return state()
+    refill(hh, week)
+    return state(hh)
 
 
-def post_drop(body):
-    week = current_week()
+def post_drop(hh: Household, body):
+    week = current_week(hh)
     meal = next((m for m in week.meals if m.slug == body["slug"]), None)
     week.meals = [m for m in week.meals if m.slug != body["slug"]]
     if body["slug"] not in week.declined:
         week.declined.append(body["slug"])
-    pantry.write_week(week)
+    pantry.write_week(hh, week)
     # The most useful signal in the session: offered, and turned down.
-    pantry.log("drop", week=week.date, recipe=body["slug"],
+    pantry.log(hh, "drop", week=week.date, recipe=body["slug"],
                reason_shown=meal.reason if meal else "",
-               reason_kind=review.kind_of(body["slug"]),
+               reason_kind=review.kind_of(hh, body["slug"]),
                candidate=bool(meal and meal.candidate))
-    return state()
+    return state(hh)
 
 
-def post_lock(body):
-    week = current_week()
+def post_lock(hh: Household, body):
+    week = current_week(hh)
     for m in week.meals:
         if m.slug == body["slug"]:
             m.locked = bool(body.get("locked"))
-    pantry.write_week(week)
-    return state()
+    pantry.write_week(hh, week)
+    return state(hh)
 
 
-def post_servings(body):
+def post_servings(hh: Household, body):
     """Servings for one meal, rather than for the week.
 
     `profile.md` asks for this outright: guests are frequent and come on
@@ -361,17 +374,17 @@ def post_servings(body):
     Zero clears it and the meal goes back to the week's number, which is why the
     override is `0` rather than `None` - the session sends a number either way.
     """
-    week = current_week()
+    week = current_week(hh)
     for m in week.meals:
         if m.slug == body["slug"]:
             m.ae_override = max(0.0, float(body.get("ae") or 0))
-    pantry.write_week(week)
-    pantry.log("servings", week=week.date, recipe=body["slug"],
+    pantry.write_week(hh, week)
+    pantry.log(hh, "servings", week=week.date, recipe=body["slug"],
                ae=float(body.get("ae") or 0))
-    return state()
+    return state(hh)
 
 
-def post_swap(body):
+def post_swap(hh: Household, body):
     """Replace one meal with another, rather than dropping and refilling.
 
     Two clicks became one, and the difference is not only convenience: a drop
@@ -382,28 +395,28 @@ def post_swap(body):
     The dropped meal still goes to `declined`, so gap-filling cannot hand back
     the thing that was just turned down.
     """
-    week = current_week()
+    week = current_week(hh)
     meal = next((m for m in week.meals if m.slug == body["slug"]), None)
     if meal is None:
-        return state()
+        return state(hh)
     if meal.locked:
-        return dict(state(), error=f"{meal.title} is locked.")
+        return dict(state(hh), error=f"{meal.title} is locked.")
     week.meals = [m for m in week.meals if m.slug != body["slug"]]
     if body["slug"] not in week.declined:
         week.declined.append(body["slug"])
-    week.meals = pantry.propose(week.nights, week.guests, week.risk,
+    week.meals = pantry.propose(hh, week.nights, week.guests, week.risk,
                                 keep=week.meals, avoid=set(week.declined),
                                 week=week.date)
-    pantry.write_week(week)
+    pantry.write_week(hh, week)
     added = [m.slug for m in week.meals if m.slug not in
              {*week.declined, *(x.slug for x in week.meals[:-1])}]
-    pantry.log("swap", week=week.date, out=body["slug"],
-               reason_kind=review.kind_of(body["slug"]),
+    pantry.log(hh, "swap", week=week.date, out=body["slug"],
+               reason_kind=review.kind_of(hh, body["slug"]),
                into=added[-1] if added else "")
-    return state()
+    return state(hh)
 
 
-def post_reshuffle(body):
+def post_reshuffle(hh: Household, body):
     """Re-roll everything that is not locked.
 
     What makes the lock mean anything. Until now `refill` kept every meal already
@@ -411,7 +424,7 @@ def post_reshuffle(body):
     and the field was decoration. Locking is the household saying *this one is
     settled* - and that is only a statement if something else can move.
     """
-    week = current_week()
+    week = current_week(hh)
     locked = [m for m in week.meals if m.locked]
     moved = [m.slug for m in week.meals if not m.locked]
     # **The re-rolled meals are declined, not merely re-proposed.** The ranker is
@@ -428,44 +441,44 @@ def post_reshuffle(body):
     for slug in moved:
         if slug not in week.declined:
             week.declined.append(slug)
-    week.meals = pantry.propose(week.nights, week.guests, week.risk, keep=locked,
+    week.meals = pantry.propose(hh, week.nights, week.guests, week.risk, keep=locked,
                                 avoid=set(week.declined), week=week.date)
-    pantry.write_week(week)
-    pantry.log("reshuffle", week=week.date, kept=[m.slug for m in locked],
+    pantry.write_week(hh, week)
+    pantry.log(hh, "reshuffle", week=week.date, kept=[m.slug for m in locked],
                rerolled=moved)
-    return state()
+    return state(hh)
 
 
-def get_recipe(slug: str) -> dict:
+def get_recipe(hh: Household, slug: str) -> dict:
     """The recipe, to read without leaving the session.
 
     Served as its own markdown rather than rendered into something prettier. The
     file is the store, it is what the household edits when the tool is wrong, and
     showing anything else here would put a second version of the truth on screen.
     """
-    path = pantry.recipe_file(slug)
+    path = pantry.recipe_file(hh, slug)
     if not path.exists():
         return {"ok": False, "slug": slug,
                 "markdown": "_No capture on file for this one yet._"}
     return {"ok": True, "slug": slug, "markdown": path.read_text(encoding="utf-8")}
 
 
-def post_variant(body):
-    week = current_week()
+def post_variant(hh: Household, body):
+    week = current_week(hh)
     for m in week.meals:
         if m.slug == body["slug"]:
             m.variant = body.get("variant", "")
-    pantry.write_week(week)
-    pantry.log("variant", week=week.date, recipe=body["slug"], variant=body.get("variant", ""))
-    return state()
+    pantry.write_week(hh, week)
+    pantry.log(hh, "variant", week=week.date, recipe=body["slug"], variant=body.get("variant", ""))
+    return state(hh)
 
 
-def post_fill(body):
-    refill(current_week())
-    return state()
+def post_fill(hh: Household, body):
+    refill(hh, current_week(hh))
+    return state(hh)
 
 
-def post_acquire(body):
+def post_acquire(hh: Household, body):
     """Go and find a recipe nobody had bookmarked, for a gap in this week.
 
     **The one route that touches the open web**, and it takes the same posture
@@ -479,16 +492,16 @@ def post_acquire(body):
     has to win a slot from the planner like any other, because membership is
     earned and being newly acquired is not a claim about this household.
     """
-    week = current_week()
+    week = current_week(hh)
     notes: list[str] = []
     try:
         import acquire        # deferred, and inside the guard: see the docstring
-        found = acquire.acquire(week.meals, want=int(body.get("want", 1)),
+        found = acquire.acquire(hh, week.meals, want=int(body.get("want", 1)),
                                 log=notes.append)
     except Exception as exc:                       # never take the session down
         found = []
         notes.append(f"acquisition failed: {type(exc).__name__}: {exc}")
-    out = state()
+    out = state(hh)
     out["acquired"] = [{"title": f.rec["title"], "source": f.rec["source"],
                         "reason": f.reason(),
                         "ingredients": len(f.rec["ingredients"]),
@@ -497,7 +510,7 @@ def post_acquire(body):
     return out
 
 
-def post_onboard(body):
+def post_onboard(hh: Household, body):
     """Paste a URL, get a captured recipe in candidates.
 
     `docs/brief-next.md` §3: adding a recipe meant running a CLI with a URL, and
@@ -512,16 +525,16 @@ def post_onboard(body):
     """
     url = (body.get("url") or "").strip()
     if not url.startswith(("http://", "https://")):
-        return dict(state(), onboarded=None,
+        return dict(state(hh), onboarded=None,
                     onboard_error="That does not look like a link. Paste the "
                                   "address of a recipe page.")
     try:
         import acquire
-        found = acquire.from_url(url)
+        found = acquire.from_url(hh, url)
     except Exception as exc:
         reason = str(exc) or type(exc).__name__
-        return dict(state(), onboarded=None, onboard_error=reason)
-    return dict(state(), onboard_error="", onboarded={
+        return dict(state(hh), onboarded=None, onboard_error=reason)
+    return dict(state(hh), onboard_error="", onboarded={
         "title": found.rec["title"], "source": found.rec["source"],
         "ingredients": len(found.rec["ingredients"]),
         "yield": found.rec.get("yield") or "unknown",
@@ -529,7 +542,7 @@ def post_onboard(body):
     })
 
 
-def suggest_sides(week, want: int = 2) -> list[str]:
+def suggest_sides(hh: Household, week, want: int = 2) -> list[str]:
     """Pick sides for the week. Deterministic, and small on purpose.
 
     Least-recently-served first, then anything whose `Goes with` is already
@@ -542,7 +555,7 @@ def suggest_sides(week, want: int = 2) -> list[str]:
     rather than the diet; the honest response is an empty suggestion and a
     grocery list that keeps saying it is short, not a plausible vegetable.
     """
-    rows = [r for r in pantry.load_sides() if r["slug"] not in week.sides]
+    rows = [r for r in pantry.load_sides(hh) if r["slug"] not in week.sides]
     if not rows:
         return []
     proteins = {(m.protein or "").lower() for m in week.meals}
@@ -567,25 +580,25 @@ def suggest_sides(week, want: int = 2) -> list[str]:
     return picked
 
 
-def post_side(body):
+def post_side(hh: Household, body):
     """Add or remove one side from the week, or fill it from `sides.md`."""
-    week = current_week()
+    week = current_week(hh)
     if body.get("suggest"):
-        for slug in suggest_sides(week, int(body.get("want", 2))):
+        for slug in suggest_sides(hh, week, int(body.get("want", 2))):
             if slug not in week.sides:
                 week.sides.append(slug)
     elif body.get("remove"):
         week.sides = [s for s in week.sides if s != body["remove"]]
     elif body.get("slug"):
-        known = {r["slug"] for r in pantry.load_sides()}
+        known = {r["slug"] for r in pantry.load_sides(hh)}
         if body["slug"] in known and body["slug"] not in week.sides:
             week.sides.append(body["slug"])
-    pantry.write_week(week)
-    pantry.log("sides", week=week.date, sides=list(week.sides))
-    return state()
+    pantry.write_week(hh, week)
+    pantry.log(hh, "sides", week=week.date, sides=list(week.sides))
+    return state(hh)
 
 
-def post_add_side(body):
+def post_add_side(hh: Household, body):
     """Capture a side from a link, or take one by name.
 
     Two routes because sides arrive two ways and both are real. A link goes
@@ -601,24 +614,24 @@ def post_add_side(body):
     try:
         if url:
             import acquire
-            rec = onboard_capture(url)
-            pantry.add_side(rec["title"], source=url,
+            rec = onboard_capture(hh, url)
+            pantry.add_side(hh, rec["title"], source=url,
                             active=body.get("active", ""),
                             passive=rec.get("passive") or "",
                             goes_with=body.get("goes_with", ""),
                             season=body.get("season", ""))
-            return dict(state(), side_added=rec["title"], side_error="")
+            return dict(state(hh), side_added=rec["title"], side_error="")
         if not name:
-            return dict(state(), side_error="Give a link or a name.")
-        pantry.add_side(name, goes_with=body.get("goes_with", ""),
+            return dict(state(hh), side_error="Give a link or a name.")
+        pantry.add_side(hh, name, goes_with=body.get("goes_with", ""),
                         season=body.get("season", ""), active=body.get("active", ""),
                         notes="typed in")
-        return dict(state(), side_added=name, side_error="")
+        return dict(state(hh), side_added=name, side_error="")
     except Exception as exc:
-        return dict(state(), side_error=str(exc) or type(exc).__name__)
+        return dict(state(hh), side_error=str(exc) or type(exc).__name__)
 
 
-def onboard_capture(url: str) -> dict:
+def onboard_capture(hh: Household, url: str) -> dict:
     """Capture a page as a recipe file, without the candidate row.
 
     A side is not a candidate: `candidates.md` exists so an unproven *dinner*
@@ -630,14 +643,14 @@ def onboard_capture(url: str) -> dict:
     if rec.get("status") != "complete" or not rec.get("ingredients"):
         raise ValueError("the page carries no machine-readable recipe")
     rec["slug"] = pantry.slug(rec["title"])
-    (pantry.ROOT / "recipes").mkdir(parents=True, exist_ok=True)
-    pantry.recipe_file(rec["slug"]).write_text(onboard.render_recipe(rec),
-                                               encoding="utf-8")
-    pantry._FILE_INDEX = None
+    hh.recipes.mkdir(parents=True, exist_ok=True)
+    pantry.recipe_file(hh, rec["slug"]).write_text(onboard.render_recipe(rec),
+                                                   encoding="utf-8")
+    hh.forget()
     return rec
 
 
-def get_cart() -> dict:
+def get_cart(hh: Household) -> dict:
     """What would go in the cart, and what would not. **Never submitted.**
 
     Runs the same `shop.build` the grocery list does and then matches each line
@@ -650,19 +663,18 @@ def get_cart() -> dict:
     from adapters import match as skus
     import adapters as store_mod
 
-    week = current_week()
-    have = [m for m in week.meals if m.has_file]
-    specs = [m.file + (f":{m.variant}" if m.variant else "") for m in have]
-    sides = [r for r in pantry.load_sides()
-             if r["slug"] in week.sides and pantry.recipe_file(r["slug"]).exists()]
-    specs += [pantry.file_index().get(r["slug"], r["slug"]) for r in sides]
+    week = current_week(hh)
+    have = [m for m in week.meals if m.has_file(hh)]
+    specs = [m.file(hh) + (f":{m.variant}" if m.variant else "") for m in have]
+    sides = [r for r in pantry.load_sides(hh)
+             if r["slug"] in week.sides and pantry.recipe_file(hh, r["slug"]).exists()]
+    specs += [pantry.file_index(hh).get(r["slug"], r["slug"]) for r in sides]
     if not specs:
         return {"ok": True, "markdown": "_Nothing planned yet._"}
 
-    shop.configure(pantry.ROOT)
     ae = pantry.BASE_AE + week.guests
     try:
-        built = shop.build(specs, [m.ae(ae) for m in have] + [ae] * len(sides))
+        built = shop.build(hh, specs, [m.ae(ae) for m in have] + [ae] * len(sides))
     except (FileNotFoundError, SystemExit) as exc:
         return {"ok": False, "markdown": f"```\n{exc}\n```"}
     lines = built[1]
@@ -675,14 +687,14 @@ def get_cart() -> dict:
 
     store = store_mod.store()
     cart = skus.plan_cart(wanted, lambda term: store.search(term), store.name)
-    pantry.log("cart_planned", week=week.date, store=store.name,
+    pantry.log(hh, "cart_planned", week=week.date, store=store.name,
                matched=len(cart.lines), unmatched=len(cart.unmatched),
                total=round(cart.total, 2))
     return {"ok": True, "markdown": skus.report(cart), "store": store.name,
             "matched": len(cart.lines), "unmatched": len(cart.unmatched)}
 
 
-def post_profile(body):
+def post_profile(hh: Household, body):
     """Edit `profile.md` from the session.
 
     `profile.md` opens by saying that correcting the file **is** the trust
@@ -704,53 +716,53 @@ def post_profile(body):
     """
     text = body.get("text") or ""
     if not text.strip():
-        return dict(state(), profile_error="Refusing to save an empty profile.")
-    before = pantry.PROFILE.read_text(encoding="utf-8") if pantry.PROFILE.exists() else ""
-    pantry.PROFILE.write_text(text, encoding="utf-8")
-    if before and not pantry.load_members():
-        pantry.PROFILE.write_text(before, encoding="utf-8")
-        return dict(state(), profile_error=(
+        return dict(state(hh), profile_error="Refusing to save an empty profile.")
+    before = hh.profile.read_text(encoding="utf-8") if hh.profile.exists() else ""
+    hh.profile.write_text(text, encoding="utf-8")
+    if before and not pantry.load_members(hh):
+        hh.profile.write_text(before, encoding="utf-8")
+        return dict(state(hh), profile_error=(
             "That would have left no Members section, so nothing was saved. "
             "Keep a `## Members` heading with a name under it."))
-    pantry.log("profile_edited", bytes_before=len(before), bytes_after=len(text))
-    return dict(state(), profile_error="", profile_saved=True)
+    pantry.log(hh, "profile_edited", bytes_before=len(before), bytes_after=len(text))
+    return dict(state(hh), profile_error="", profile_saved=True)
 
 
-def post_feedback(body):
-    week = pantry.previous_week(pantry.monday())
+def post_feedback(hh: Household, body):
+    week = pantry.previous_week(hh, pantry.monday())
     if week is None:
-        return state()
+        return state(hh)
     week.feedback[body["slug"]] = {"outcome": body["outcome"], "by": body.get("by", "")}
-    pantry.write_week(week)
-    return state()
+    pantry.write_week(hh, week)
+    return state(hh)
 
 
-def post_apply(body):
-    week = pantry.previous_week(pantry.monday())
+def post_apply(hh: Household, body):
+    week = pantry.previous_week(hh, pantry.monday())
     if week is None:
-        return {"applied": [], **state()}
+        return {"applied": [], **state(hh)}
     try:
-        applied = pantry.apply_feedback(week)
+        applied = pantry.apply_feedback(hh, week)
     except pantry.RuleViolation as exc:
-        return {"applied": [], "refused": str(exc), **state()}
+        return {"applied": [], "refused": str(exc), **state(hh)}
     week.status = "cooked"
-    pantry.write_week(week)
-    return {"applied": applied, **state()}
+    pantry.write_week(hh, week)
+    return {"applied": applied, **state(hh)}
 
 
-def post_order(body):
-    week = current_week()
+def post_order(hh: Household, body):
+    week = current_week(hh)
     week.status = "ordered"
-    pantry.write_week(week)
-    pantry.log("ordered", week=week.date,
+    pantry.write_week(hh, week)
+    pantry.log(hh, "ordered", week=week.date,
                meals=[{"recipe": m.slug, "variant": m.variant} for m in week.meals],
                ae=week.ae)
-    return state()
+    return state(hh)
 
 
-def post_reset(body):
-    reset_demo()
-    return state()
+def post_reset(hh: Household, body):
+    reset_demo(hh)
+    return state(hh)
 
 
 ROUTES = {
@@ -774,32 +786,37 @@ ROUTES = {
 }
 
 
-def handle(path: str, body: dict | None = None) -> tuple[int, dict]:
+def handle(path: str, body: dict | None = None, request=None) -> tuple[int, dict]:
     """Route one request. **The only place routing lives.**
 
     Two front doors call this: the HTTP server below, and the browser build,
     where there is no server at all and the page's `fetch` is shimmed to call
     straight into Python. Keeping them on one function is what stops the hosted
     version drifting from the local one.
+
+    **Which household is resolved here, once, and passed down explicitly.** It
+    is the same one every time today. When it stops being, this is the only
+    line that has to learn how to tell them apart.
     """
+    hh = serving(request)
     if body is None:
         if path == "/api/state":
-            return 200, state()
+            return 200, state(hh)
         if path == "/api/list":
-            return 200, grocery_list(current_week())
+            return 200, grocery_list(hh, current_week(hh))
         if path == "/api/cart":
-            return 200, get_cart()
+            return 200, get_cart(hh)
         if path == "/api/profile":
-            return 200, {"text": pantry.PROFILE.read_text(encoding="utf-8")
-                                 if pantry.PROFILE.exists() else ""}
+            return 200, {"text": hh.profile.read_text(encoding="utf-8")
+                                 if hh.profile.exists() else ""}
         if path.startswith("/api/recipe/"):
-            return 200, get_recipe(path[len("/api/recipe/"):])
+            return 200, get_recipe(hh, path[len("/api/recipe/"):])
         return 404, {"error": "not found"}
     fn = ROUTES.get(path)
     if fn is None:
         return 404, {"error": "not found"}
     try:
-        return 200, fn(body)
+        return 200, fn(hh, body)
     except Exception as exc:                       # surfaced, never swallowed
         return 500, {"error": f"{type(exc).__name__}: {exc}"}
 
@@ -820,13 +837,13 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path in ("/", "/index.html"):
             return self._send(200, (WEB / "index.html").read_bytes(), "text/html; charset=utf-8")
-        code, payload = handle(self.path)
+        code, payload = handle(self.path, request=self)
         self._send(code, json.dumps(payload))
 
     def do_POST(self):
         length = int(self.headers.get("Content-Length") or 0)
         body = json.loads(self.rfile.read(length) or b"{}")
-        code, payload = handle(self.path, body)
+        code, payload = handle(self.path, body, request=self)
         self._send(code, json.dumps(payload))
 
 
@@ -854,7 +871,8 @@ def main():
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     url = f"http://{'127.0.0.1' if args.host == '0.0.0.0' else args.host}:{args.port}"
     print(f"Pantry Router — {url}{'  [demo: writes go to a scratch copy]' if args.demo else ''}")
-    print(f"  corpus {len(pantry.load_corpus())} · candidates {len(pantry.load_candidates())} "
+    print(f"  corpus {len(pantry.load_corpus(SERVING))} · candidates "
+          f"{len(pantry.load_candidates(SERVING))} "
           f"· week {pantry.monday()}")
     if not args.no_open and args.host == "127.0.0.1":
         threading.Timer(0.4, lambda: webbrowser.open(url)).start()

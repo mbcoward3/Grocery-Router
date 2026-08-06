@@ -1379,7 +1379,9 @@ def main():
         # A side is not a candidate. `candidates.md` exists so an unproven
         # *dinner* carries its gamble visibly; green beans have no gamble. Same
         # capture, different store.
+        import household
         import pantry
+        hh = household.here()
         rec = from_url(args.url) if args.url else from_text(args.text)
         if rec["status"] != "complete" or not rec["ingredients"]:
             print(f"no machine-readable recipe at {args.url or args.text}", file=sys.stderr)
@@ -1387,7 +1389,7 @@ def main():
         rec["slug"] = slugify(rec["title"])
         Path(args.recipes).mkdir(parents=True, exist_ok=True)
         (Path(args.recipes) / f"{rec['slug']}.md").write_text(render_recipe(rec))
-        added = pantry.add_side(rec["title"], source=rec.get("source", ""),
+        added = pantry.add_side(hh, rec["title"], source=rec.get("source", ""),
                                 passive=rec.get("passive") or "")
         print(f"{'added' if added else 'already there'}  {rec['title']}  "
               f"({len(rec['ingredients'])} ingredients)")

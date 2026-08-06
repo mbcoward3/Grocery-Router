@@ -102,11 +102,14 @@ def print_week(args):
     three picks to validation looks identical to a week the model planned
     outright, and those are very different facts.
     """
+    import household
     import pantry
 
-    meals = pantry.propose(nights=args.nights, risk=args.risk, planner=args.planner,
+    hh = household.here()
+
+    meals = pantry.propose(hh, nights=args.nights, risk=args.risk, planner=args.planner,
                            client=None)
-    last = pantry.last_proposal() or {}
+    last = pantry.last_proposal(hh) or {}
 
     used = last.get("planner", "ranker")
     if used == "model":

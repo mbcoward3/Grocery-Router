@@ -25,6 +25,7 @@ import unittest
 from pathlib import Path
 
 import pantry
+from household import Household
 import planner
 from planner import constraints
 from planner import model as model_planner
@@ -63,28 +64,20 @@ class Isolated(unittest.TestCase):
         for name in ("corpus.md", "candidates.md", "sides.md", "profile.md"):
             shutil.copy(REAL / name, self.tmp / name)
         shutil.copytree(REAL / "recipes", self.tmp / "recipes")
-        self._saved = {k: getattr(pantry, k) for k in
-                       ("ROOT", "CORPUS", "CANDIDATES", "SIDES", "PROFILE", "WEEKS", "CACHE",
-                        "DECISIONS")}
-        pantry.ROOT = self.tmp
-        pantry.CORPUS = self.tmp / "corpus.md"
-        pantry.CANDIDATES = self.tmp / "candidates.md"
-        pantry.SIDES = self.tmp / "sides.md"
-        pantry.PROFILE = self.tmp / "profile.md"
-        pantry.WEEKS = self.tmp / "weeks"
-        pantry.CACHE = self.tmp / ".cache"
-        pantry.DECISIONS = self.tmp / "decisions.jsonl"
-        pantry._FILE_INDEX = None
+        # One household, rooted in the scratch copy. The harness used to
+        # save and reassign eight module globals in `pantry`; the household
+        # is an argument now, so isolation is a value rather than a ritual
+        # every new test file had to remember to repeat. Four of them once
+        # forgot, and the suite wrote into the real `sides.md`.
+        self.hh = Household(root=self.tmp, id="test")
 
     def tearDown(self):
-        for k, v in self._saved.items():
-            setattr(pantry, k, v)
         for k, v in self._env.items():
             if v is None:
                 os.environ.pop(k, None)
             else:
                 os.environ[k] = v
-        pantry._FILE_INDEX = None
+        self.hh.forget()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     # -- fixtures the scratch copy makes cheap ------------------------------- #
@@ -93,7 +86,7 @@ class Isolated(unittest.TestCase):
         """Rewrite one capture's recorded verdict. Nothing in the real corpus
         contains peanut - `profile.md` says so - so the constraint can only be
         tested against a household that has one."""
-        path = pantry.recipe_file(slug)
+        path = pantry.recipe_file(self.hh, slug)
         text = path.read_text().replace("peanut:   none seen", "peanut:   CONTAINS PEANUT")
         path.write_text(text)
         return slug
@@ -101,17 +94,17 @@ class Isolated(unittest.TestCase):
     def make_high_active(self, n=4):
         """Flip the first `n` med rows to high. The corpus has no high-active
         row at all, which is why the ceiling has never been able to bite."""
-        lines = pantry.CORPUS.read_text().splitlines()
+        lines = self.hh.corpus.read_text().splitlines()
         flipped = 0
         for i, line in enumerate(lines):
             if flipped < n and "| med |" in line:
                 lines[i] = line.replace("| med |", "| high |", 1)
                 flipped += 1
-        pantry.CORPUS.write_text("\n".join(lines) + "\n")
-        return [r["slug"] for r in pantry.load_corpus() if r.get("active") == "high"]
+        self.hh.corpus.write_text("\n".join(lines) + "\n")
+        return [r["slug"] for r in pantry.load_corpus(self.hh) if r.get("active") == "high"]
 
     def slugs(self, n=5):
-        return [r["slug"] for r in pantry.load_corpus()][:n]
+        return [r["slug"] for r in pantry.load_corpus(self.hh)][:n]
 
 
 # --------------------------------------------------------------------------- #
@@ -172,14 +165,14 @@ class TestWhatTheModelIsGiven(Isolated):
     it was give it only what the corpus contains."""
 
     def test_the_catalogue_carries_no_ingredients(self):
-        text = model_planner.catalogue(pantry.load_corpus(), dt.date(2026, 8, 6))
+        text = model_planner.catalogue(pantry.load_corpus(self.hh), dt.date(2026, 8, 6))
         for line in text.splitlines():
             self.assertNotIn("lb ", line)
             self.assertNotIn("tsp", line)
             self.assertNotIn("clove", line)
 
     def test_a_missing_date_reads_unknown_not_blank_and_not_zero(self):
-        text = model_planner.catalogue(pantry.load_corpus(), dt.date(2026, 8, 6))
+        text = model_planner.catalogue(pantry.load_corpus(self.hh), dt.date(2026, 8, 6))
         rows = [l for l in text.splitlines() if l.startswith("| ") and "---" not in l][1:]
         self.assertTrue(rows)
         for row in rows:
@@ -188,15 +181,15 @@ class TestWhatTheModelIsGiven(Isolated):
     def test_a_date_is_turned_into_a_number_here_not_there(self):
         """Date arithmetic is not asked for. The column is computed so that a
         recency claim can be checked against something real."""
-        pantry.record_cooked("chili", "2026-06-06")
-        text = model_planner.catalogue(pantry.load_corpus(), dt.date(2026, 8, 6))
+        pantry.record_cooked(self.hh, "chili", "2026-06-06")
+        text = model_planner.catalogue(pantry.load_corpus(self.hh), dt.date(2026, 8, 6))
         line = [l for l in text.splitlines() if l.startswith("| chili |")][0]
         self.assertTrue(line.rstrip().endswith("| 61 |"), line)
 
     def test_the_prompt_carries_the_profile_and_both_catalogues(self):
         prompt = model_planner.build_prompt(
-            pantry.load_corpus(), pantry.load_candidates(),
-            pantry.PROFILE.read_text(), 5, 0.0, "normal", [], set(),
+            pantry.load_corpus(self.hh), pantry.load_candidates(self.hh),
+            self.hh.profile.read_text(), 5, 0.0, "normal", [], set(),
             dt.date(2026, 8, 6))
         self.assertIn("Catalogue — corpus", prompt)
         self.assertIn("Catalogue — candidates", prompt)
@@ -209,7 +202,7 @@ class TestTheModelMayNotInvent(Isolated):
     value where there should have been a gap."""
 
     def plan(self, meals, **kw):
-        return model_planner.plan(client=lambda p: reply(meals), **kw)
+        return model_planner.plan(self.hh, client=lambda p: reply(meals), **kw)
 
     def test_a_recipe_that_does_not_exist_is_dropped(self):
         """`1 lb chicken breast because soup usually has chicken` is the failure
@@ -232,8 +225,8 @@ class TestTheModelMayNotInvent(Isolated):
         self.assertIn("recency", " ".join(got.dropped))
 
     def test_the_same_claim_is_fine_once_a_date_supports_it(self):
-        pantry.record_cooked("chili", "2025-03-04")
-        got = model_planner.plan(today=dt.date(2026, 8, 6),
+        pantry.record_cooked(self.hh, "chili", "2025-03-04")
+        got = model_planner.plan(self.hh, today=dt.date(2026, 8, 6),
                                  client=lambda p: reply(
                                      [pick("chili", "you haven't made this since March")]))
         self.assertEqual([m.slug for m in got.meals], ["chili"])
@@ -246,7 +239,7 @@ class TestTheModelMayNotInvent(Isolated):
         self.assertIn("no reason", " ".join(got.dropped))
 
     def test_facts_come_off_the_corpus_row_not_the_reply(self):
-        got = model_planner.plan(client=lambda p: reply(
+        got = model_planner.plan(self.hh, client=lambda p: reply(
             [{"slug": "chili", "reason": "the only beef this week",
               "protein": "tofu", "yield": "40 AE", "active": "high"}]))
         meal = got.meals[0]
@@ -257,15 +250,15 @@ class TestTheModelMayNotInvent(Isolated):
     def test_membership_is_read_here_never_claimed_there(self):
         """A candidate inherited a corpus recipe's reason once and claimed
         membership it did not have. The flag is not the model's to set."""
-        cand = pantry.load_candidates()[0]["slug"]
-        got = model_planner.plan(client=lambda p: reply(
+        cand = pantry.load_candidates(self.hh)[0]["slug"]
+        got = model_planner.plan(self.hh, client=lambda p: reply(
             [{"slug": cand, "reason": "worth a try", "candidate": False}]))
         self.assertTrue(got.meals[0].candidate)
 
     def test_a_flopped_candidate_is_not_in_the_catalogue_at_all(self):
-        cand = pantry.load_candidates()[0]["slug"]
-        pantry.record_flop(cand, "2026-08-01", "nobody ate it")
-        got = model_planner.plan(client=lambda p: reply([pick(cand)]))
+        cand = pantry.load_candidates(self.hh)[0]["slug"]
+        pantry.record_flop(self.hh, cand, "2026-08-01", "nobody ate it")
+        got = model_planner.plan(self.hh, client=lambda p: reply([pick(cand)]))
         self.assertEqual(got.meals, [])
 
 
@@ -275,23 +268,23 @@ class TestHardConstraints(Isolated):
 
     def test_a_peanut_recipe_never_reaches_the_week(self):
         self.make_peanut("chili")
-        got = model_planner.plan(client=lambda p: reply([pick("chili")]))
+        got = model_planner.plan(self.hh, client=lambda p: reply([pick("chili")]))
         self.assertEqual(got.meals, [])
         self.assertIn("peanut", " ".join(got.dropped))
 
     def test_the_check_reads_the_capture_rather_than_scanning_again(self):
-        self.assertEqual(constraints.peanut_verdict("chili"), "none seen")
+        self.assertEqual(constraints.peanut_verdict(self.hh, "chili"), "none seen")
         self.make_peanut("chili")
-        self.assertEqual(constraints.peanut_verdict("chili"), "contains peanut")
+        self.assertEqual(constraints.peanut_verdict(self.hh, "chili"), "contains peanut")
 
     def test_check_label_is_not_a_violation(self):
         """The profile is explicit: trace risk and shared facilities are
         acceptable, and this filters the recipe rather than the pantry. The
         teriyaki is in the corpus because this household has eaten it."""
-        path = pantry.recipe_file("3-ingredient-teriyaki-chicken")
+        path = pantry.recipe_file(self.hh, "3-ingredient-teriyaki-chicken")
         path.write_text(path.read_text().replace("peanut:   none seen",
                                                  "peanut:   check label"))
-        got = model_planner.plan(client=lambda p: reply(
+        got = model_planner.plan(self.hh, client=lambda p: reply(
             [pick("3-ingredient-teriyaki-chicken")]))
         self.assertEqual(len(got.meals), 1)
 
@@ -303,24 +296,24 @@ class TestHardConstraints(Isolated):
         borrow `sausage-and-peppers`, which was one of four captures with no
         recorded verdict — until `./onboard.py --rescan-peanut` closed all four.
         A test whose premise a fix can delete is testing the fixture."""
-        path = pantry.recipe_file("sausage-and-peppers")
+        path = pantry.recipe_file(self.hh, "sausage-and-peppers")
         path.write_text("\n".join(l for l in path.read_text().splitlines()
                                   if not l.startswith("peanut:")))
-        self.assertEqual(constraints.peanut_verdict("sausage-and-peppers"), "")
-        got = model_planner.plan(client=lambda p: reply([pick("sausage-and-peppers")]))
+        self.assertEqual(constraints.peanut_verdict(self.hh, "sausage-and-peppers"), "")
+        got = model_planner.plan(self.hh, client=lambda p: reply([pick("sausage-and-peppers")]))
         self.assertEqual(len(got.meals), 1)
         self.assertIn("no peanut scan on record", " ".join(got.warnings))
 
     def test_too_many_high_active_cooks_is_surfaced(self):
         highs = self.make_high_active(4)
-        got = model_planner.plan(nights=4, client=lambda p: reply(
+        got = model_planner.plan(self.hh, nights=4, client=lambda p: reply(
             [pick(s, "a reason") for s in highs]))
         self.assertEqual(len(got.meals), 4)
         self.assertIn("weeknight ceiling", " ".join(got.warnings))
 
     def test_two_high_active_cooks_is_the_weekend_and_is_fine(self):
         highs = self.make_high_active(2)
-        got = model_planner.plan(nights=5, client=lambda p: reply(
+        got = model_planner.plan(self.hh, nights=5, client=lambda p: reply(
             [pick(s, "a reason") for s in highs]))
         self.assertEqual(constraints.check_week(got.meals), [])
 
@@ -329,7 +322,7 @@ class TestHardConstraints(Isolated):
         call. Dropping the fourth silently would hide that the week is
         unrunnable, which is the more expensive failure."""
         highs = self.make_high_active(4)
-        got = model_planner.plan(nights=4, client=lambda p: reply(
+        got = model_planner.plan(self.hh, nights=4, client=lambda p: reply(
             [pick(s, "a reason") for s in highs]))
         self.assertEqual(len(got.meals), len(highs))
 
@@ -338,7 +331,7 @@ class TestTheWeekIsAlwaysWhole(Isolated):
     """Dropping a bad pick costs a good reason. It must never cost a dinner."""
 
     def use(self, client, **kw):
-        return pantry.propose(planner="model", client=client, **kw)
+        return pantry.propose(self.hh, planner="model", client=client, **kw)
 
     def test_picks_lost_to_validation_are_made_up_by_the_ranker(self):
         """The top-up's actual job: a refused pick costs a good reason, never a
@@ -347,7 +340,7 @@ class TestTheWeekIsAlwaysWhole(Isolated):
                                         pick("thai-peanut-noodles"),
                                         pick("kung-pao-anything")]), nights=5)
         self.assertEqual(len(got), 3)          # 1 kept + 2 made up for the drops
-        last = pantry.last_proposal()
+        last = pantry.last_proposal(self.hh)
         self.assertEqual(len(last["dropped"]), 2)
         self.assertEqual(len(last["topped_up"]), 2)
 
@@ -360,7 +353,7 @@ class TestTheWeekIsAlwaysWhole(Isolated):
         got = self.use(lambda p: reply([pick(s, "a reason") for s in self.slugs(4)]),
                        nights=5)
         self.assertEqual(len(got), 4)
-        last = pantry.last_proposal()
+        last = pantry.last_proposal(self.hh)
         self.assertEqual(last["topped_up"], [])
         self.assertEqual(last["planned_short"], 1)
 
@@ -370,12 +363,12 @@ class TestTheWeekIsAlwaysWhole(Isolated):
         got = self.use(lambda p: reply([pick(self.slugs()[0]), pick(self.slugs()[1]),
                                         pick("invented-noodles")]), nights=5)
         self.assertEqual(len(got), 3)
-        last = pantry.last_proposal()
+        last = pantry.last_proposal(self.hh)
         self.assertEqual(len(last["topped_up"]), 1)
         self.assertEqual(last["planned_short"], 2)
 
     def test_kept_meals_are_left_alone(self):
-        first = pantry.rank(3, 0, "normal")
+        first = pantry.rank(self.hh, 3, 0, "normal")
         got = self.use(lambda p: reply([pick(self.slugs(6)[5])]), nights=5, keep=first)
         self.assertEqual([m.slug for m in got[:3]], [m.slug for m in first])
 
@@ -386,12 +379,12 @@ class TestTheWeekIsAlwaysWhole(Isolated):
         self.assertNotIn(dropped, [m.slug for m in got])
 
     def test_more_picks_than_nights_are_truncated(self):
-        got = model_planner.plan(nights=2, client=lambda p: reply(
+        got = model_planner.plan(self.hh, nights=2, client=lambda p: reply(
             [pick(s, "a reason") for s in self.slugs(5)]))
         self.assertEqual(len(got.meals), 2)
 
     def test_the_same_slug_twice_lands_once(self):
-        got = model_planner.plan(nights=3, client=lambda p: reply(
+        got = model_planner.plan(self.hh, nights=3, client=lambda p: reply(
             [pick("chili"), pick("chili"), pick(self.slugs()[0])]))
         self.assertEqual(len([m for m in got.meals if m.slug == "chili"]), 1)
 
@@ -401,9 +394,9 @@ class TestFallingBackIsNeverSilent(Isolated):
     not happen is that it ends quietly."""
 
     def fails(self, client, nights=5):
-        got = pantry.propose(nights, planner="model", client=client)
+        got = pantry.propose(self.hh, nights, planner="model", client=client)
         self.assertEqual(len(got), nights)
-        return pantry.last_proposal()
+        return pantry.last_proposal(self.hh)
 
     def test_no_key_falls_back_and_says_so(self):
         os.environ.pop("ANTHROPIC_API_KEY", None)
@@ -439,8 +432,8 @@ class TestFallingBackIsNeverSilent(Isolated):
         self.assertEqual(len(last["dropped"]), 2)
 
     def test_the_ranker_path_logs_no_apology(self):
-        got = pantry.propose(5, planner="ranker")
-        last = pantry.last_proposal()
+        got = pantry.propose(self.hh, 5, planner="ranker")
+        last = pantry.last_proposal(self.hh)
         self.assertEqual(len(got), 5)
         self.assertEqual(last["planner"], "ranker")
         self.assertNotIn("fallback", last)
@@ -450,7 +443,7 @@ class TestFallingBackIsNeverSilent(Isolated):
         blocks. The last one is the week."""
         text = ("```json\n{\"meals\": [{\"slug\": \"<slug>\", \"reason\": \"<why>\"}]}\n```\n"
                 + reply([pick("chili")]))
-        got = model_planner.plan(client=lambda p: text)
+        got = model_planner.plan(self.hh, client=lambda p: text)
         self.assertEqual([m.slug for m in got.meals], ["chili"])
 
 
@@ -460,19 +453,19 @@ class TestTheDecisionLog(Isolated):
     would have broken that."""
 
     def test_the_log_records_which_planner_produced_the_week(self):
-        pantry.propose(3, planner="model", client=lambda p: reply(
+        pantry.propose(self.hh, 3, planner="model", client=lambda p: reply(
             [pick(s, "a reason") for s in self.slugs(3)]))
-        last = pantry.last_proposal()
+        last = pantry.last_proposal(self.hh)
         self.assertEqual(last["planner"], "model")
         self.assertEqual(len(last["added"]), 3)
 
     def test_the_models_own_notes_survive_into_the_log(self):
-        pantry.propose(3, planner="model", client=lambda p: reply(
+        pantry.propose(self.hh, 3, planner="model", client=lambda p: reply(
             [pick(s, "a reason") for s in self.slugs(3)],
             note="0 candidates: the corpus is wide enough this week",
             coupling="the stew and the pot roast share the carrots",
             gaps="no last-cooked dates, so nothing is surfaced on recency"))
-        last = pantry.last_proposal()
+        last = pantry.last_proposal(self.hh)
         self.assertIn("0 candidates", last["note"])
         self.assertIn("carrots", last["coupling"])
         self.assertIn("last-cooked", last["gaps"])
@@ -481,8 +474,8 @@ class TestTheDecisionLog(Isolated):
         """`rank()` deliberately does not log. Two entries for one proposal
         would corrupt every count read back off the log - including the accept
         rate on the session's metrics strip."""
-        pantry.propose(5, planner="model", client=lambda p: reply([pick("chili")]))
-        self.assertEqual(len(pantry.decisions({"proposed"})), 1)
+        pantry.propose(self.hh, 5, planner="model", client=lambda p: reply([pick("chili")]))
+        self.assertEqual(len(pantry.decisions(self.hh, {"proposed"})), 1)
 
 
 if __name__ == "__main__":

@@ -12,9 +12,12 @@ where it lives.
 
 ---
 
-## The thing that is actually in the way
+## The thing that is actually in the way — **fixed**
 
-Not the database. **A data-crossing bug that already exists in the code.**
+*Step 1 of the sequence is done. `household.py` is the module, `test_household.py` is the
+proof, and the account below is left as written because it is why the work happened.*
+
+Not the database. **A data-crossing bug that already existed in the code.**
 
 `app.py` is a `ThreadingHTTPServer`, so it is already concurrent. And which household it
 reads is a set of module-level globals:
@@ -51,6 +54,41 @@ Worth stating so the refactor does not over-reach:
 The pattern: **tenant state must be threaded, host state must be shared.** Getting that
 backwards in either direction is a bug — one leaks data, the other turns the tool into a
 scraper.
+
+### How it was fixed, and what it cost
+
+`household.Household` holds one household's root and derives every path off it. It is a
+**required first argument** with no default on everything that touches household data —
+about forty functions across `pantry`, `shop`, `acquire`, `planner`, `prep` and `review` —
+and `app.handle()` resolves it once per request and passes it down.
+
+Three alternatives were available and all were rejected for the same reason:
+
+- **A context variable or a thread-local.** Fixes the concurrency and keeps the property
+  that caused it: a function reading a household does not say so. Worse, forgetting to set
+  one does not fail — it silently uses whatever was there.
+- **A global with a setter.** That is what `shop.configure()` already was.
+- **A default of `here()` on each function.** The implicit global returning one call site
+  at a time.
+
+All three fail the way the original failed: **not at all, until it is somebody else's
+data.** A missing argument is a `TypeError` at the call, which is the gap this project's
+own list of traps keeps asking for — *the failure is always a plausible value where there
+should have been a gap.*
+
+**The cost, stated honestly:** a wide diff across seven modules and six test files for zero
+new behaviour, and one small ugliness — `Meal.file` and `Meal.has_file` were properties and
+are now methods taking a household, because a property has nowhere to put the argument.
+
+What it bought is checkable rather than asserted. `test_household.py` runs two households
+with disjoint corpora planning, writing and re-reading weeks concurrently, and
+`TheGlobalsStayGone` fails the build if any of the nine names comes back. Putting the old
+indirection back behind the new signatures makes the concurrency test fail exactly as
+predicted — *`alpha: ['Bravo bake', 'Bravo pie', 'Bravo stew'] is not this household's`*.
+
+`app.serving()` is where identity lands in step 4. It returns the one household this
+process was started for; making it read a session instead is a change to one function,
+because every route below it already takes the household as an argument.
 
 ---
 
@@ -131,7 +169,7 @@ household.py          The tenant context. Carries an id, a Repository, and
 `pantry.py` keeps its function names and loses its module paths — `load_corpus()` becomes
 `load_corpus(household)`, and every write door (`promote`, `add_candidate`, `add_side`,
 `add_profile_claim`, `log`) takes the same first argument. That is a wide diff and a
-shallow one, and 317 tests will say immediately if it is wrong.
+shallow one, and 331 tests will say immediately if it is wrong.
 
 ### Why row-level security and not just discipline
 
@@ -239,8 +277,9 @@ real job *"triggered by a button in v1 and a scheduler later"*, and later is now
 
 Ordered by what is unsafe to do out of order.
 
-1. **Kill the globals.** `household.py`, thread it through, 317 tests stay green. No
-   behaviour change and no new dependency. **Nothing else may start before this.**
+1. ~~**Kill the globals.**~~ **Done.** `household.py`, threaded through seven modules. The
+   317 tests stayed green and 14 joined them, including a two-household concurrency test
+   that fails if the module state ever comes back. No behaviour change, no new dependency.
 2. **`store/` with the files implementation.** Still no dependency, still no behaviour
    change; the interface exists and the current code is one implementation of it.
 3. **`store/postgres.py` + schema + RLS**, and the same suite run against both. This is

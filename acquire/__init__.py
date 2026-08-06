@@ -66,6 +66,7 @@ import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
 
+import household
 import onboard
 import pantry
 
@@ -97,7 +98,7 @@ DOMAIN = re.compile(r"\b((?:[a-z0-9-]+\.)+(?:com|net|org|co|us|kitchen|recipes))
 NOT_A_SOURCE = {"schema.org", "example.com"}
 
 
-def sources() -> list[str]:
+def sources(hh) -> list[str]:
     """The domains this household already cooks from, most-used first.
 
     Deliberately not a constant. A hardcoded list would go stale the first time
@@ -106,7 +107,7 @@ def sources() -> list[str]:
     already making better.
     """
     counts: dict[str, int] = {}
-    for path in (pantry.CORPUS, pantry.CANDIDATES):
+    for path in (hh.corpus, hh.candidates):
         if not path.exists():
             continue
         for host in DOMAIN.findall(path.read_text(encoding="utf-8")):
@@ -159,7 +160,7 @@ def searchable(term: str) -> str:
     return term.replace("-", " ").strip()
 
 
-def gaps(meals: list, corpus: list[dict] | None = None) -> list[Gap]:
+def gaps(hh, meals: list, corpus: list[dict] | None = None) -> list[Gap]:
     """Read the week for what is missing, best-first.
 
     Deterministic, and computed off the same fields the ranker scores on, so
@@ -172,7 +173,7 @@ def gaps(meals: list, corpus: list[dict] | None = None) -> list[Gap]:
     that nobody has yet called a problem - so widening it is offered last and
     never on its own initiative.
     """
-    corpus = corpus if corpus is not None else pantry.load_corpus()
+    corpus = corpus if corpus is not None else pantry.load_corpus(hh)
     have_protein = {(m.protein or "").lower() for m in meals if m.protein}
     have_cuisine = {(m.cuisine or "").lower() for m in meals if m.cuisine}
     known_protein = {(r.get("protein") or "").lower() for r in corpus if r.get("protein")}
@@ -435,7 +436,7 @@ def look(gap: Gap, hosts: list[str], known: set[str], budget: list[int],
     return out
 
 
-def land(rec: dict, verdict: "Verdict", found_by: str = "acquire") -> bool:
+def land(hh, rec: dict, verdict: "Verdict", found_by: str = "acquire") -> bool:
     """Write the capture and the candidate row. **The one place either happens.**
 
     Two callers now - the search pipeline below, and pasting a URL into the
@@ -450,18 +451,18 @@ def land(rec: dict, verdict: "Verdict", found_by: str = "acquire") -> bool:
     """
     title = rec["title"]
     rec["slug"] = pantry.slug(title)
-    (pantry.ROOT / "recipes").mkdir(parents=True, exist_ok=True)
-    pantry.recipe_file(rec["slug"]).write_text(
+    hh.recipes.mkdir(parents=True, exist_ok=True)
+    pantry.recipe_file(hh, rec["slug"]).write_text(
         onboard.render_recipe(rec), encoding="utf-8")
-    pantry._FILE_INDEX = None
+    hh.forget()
     return pantry.add_candidate(
-        title, source=rec["source"], protein=verdict.protein,
+        hh, title, source=rec["source"], protein=verdict.protein,
         cuisine=verdict.cuisine, yield_=rec.get("yield") or "unknown",
         active=verdict.active, passive=rec.get("passive") or "—",
         proposed=f"wk of {pantry.monday()}", found_by=found_by)
 
 
-def from_url(url: str, log=lambda *_: None) -> "Found":
+def from_url(hh, url: str, log=lambda *_: None) -> "Found":
     """Capture one page somebody chose, judge it, and land it.
 
     §3 of `docs/brief-next.md`: adding a recipe meant running a CLI with a URL,
@@ -479,15 +480,15 @@ def from_url(url: str, log=lambda *_: None) -> "Found":
     Raises `Unavailable` with a sentence a person can act on.
     """
     rec = onboard.from_url(url)
-    known = {r["slug"] for r in pantry.load_corpus()} | \
-            {r["slug"] for r in pantry.load_candidates()}
+    known = {r["slug"] for r in pantry.load_corpus(hh)} | \
+            {r["slug"] for r in pantry.load_candidates(hh)}
     verdict = assess(rec, None, known)
     if not verdict.ok:
         raise Unavailable(verdict.refusals[0])
     gap = Gap("chosen", "", "you added this one")
     found = Found(rec, verdict, gap, {"title": rec["title"], "url": url,
                                       "host": ""})
-    if not land(rec, verdict, found_by="paste"):
+    if not land(hh, rec, verdict, found_by="paste"):
         raise Unavailable(f"{rec['title']} is already known here")
     log(f"added {rec['title']}")
     return found
@@ -497,7 +498,7 @@ SIDE_QUERIES = ["roasted vegetables", "green beans", "side salad", "roasted pota
                 "steamed broccoli", "rice pilaf"]
 
 
-def acquire_sides(want: int = 2, dry_run: bool = False,
+def acquire_sides(hh, want: int = 2, dry_run: bool = False,
                   log=lambda *_: None) -> list["Found"]:
     """Go looking for sides, against the same sources as everything else.
 
@@ -511,8 +512,8 @@ def acquire_sides(want: int = 2, dry_run: bool = False,
     protein gate that keeps cake out of dinner is skipped here, since a side has
     no protein by definition and applying it would refuse every single result.
     """
-    hosts = sources()
-    known = {r["slug"] for r in pantry.load_sides()}
+    hosts = sources(hh)
+    known = {r["slug"] for r in pantry.load_sides(hh)}
     budget = [MAX_FETCHES]
     landed: list[Found] = []
     for query in SIDE_QUERIES:
@@ -543,11 +544,11 @@ def acquire_sides(want: int = 2, dry_run: bool = False,
                 log(f"    {hit['title'][:48]:50} ok")
                 if not dry_run:
                     rec["slug"] = pantry.slug(rec["title"])
-                    (pantry.ROOT / "recipes").mkdir(parents=True, exist_ok=True)
-                    pantry.recipe_file(rec["slug"]).write_text(
+                    hh.recipes.mkdir(parents=True, exist_ok=True)
+                    pantry.recipe_file(hh, rec["slug"]).write_text(
                         onboard.render_recipe(rec), encoding="utf-8")
-                    pantry._FILE_INDEX = None
-                    pantry.add_side(rec["title"], source=rec["source"],
+                    hh.forget()
+                    pantry.add_side(hh, rec["title"], source=rec["source"],
                                     active=verdict.active,
                                     passive=rec.get("passive") or "")
                 known.add(pantry.slug(rec["title"]))
@@ -555,7 +556,7 @@ def acquire_sides(want: int = 2, dry_run: bool = False,
     return landed
 
 
-def acquire(week_meals: list, want: int = 1, gap_filter: str | None = None,
+def acquire(hh, week_meals: list, want: int = 1, gap_filter: str | None = None,
             dry_run: bool = False, log=lambda *_: None) -> list[Found]:
     """Fill this week's gaps with recipes nobody had bookmarked.
 
@@ -563,14 +564,14 @@ def acquire(week_meals: list, want: int = 1, gap_filter: str | None = None,
     `candidates.md` and which refuses a candidate with no source. Returns what
     was landed, best first.
     """
-    hosts = sources()
+    hosts = sources(hh)
     if not hosts:
         log("no sources: the corpus names no domains to search")
         return []
-    known = {r["slug"] for r in pantry.load_corpus()} | \
-            {r["slug"] for r in pantry.load_candidates()}
+    known = {r["slug"] for r in pantry.load_corpus(hh)} | \
+            {r["slug"] for r in pantry.load_candidates(hh)}
 
-    wanted = gaps(week_meals)
+    wanted = gaps(hh, week_meals)
     if gap_filter:
         wanted = [g for g in wanted if g.query == gap_filter.lower()] or \
                  [Gap("protein", gap_filter.lower(), f"asked for {gap_filter}")]
@@ -596,7 +597,7 @@ def acquire(week_meals: list, want: int = 1, gap_filter: str | None = None,
                 landed.append(cand)
                 known.add(pantry.slug(title))
                 continue
-            added = land(cand.rec, cand.verdict, found_by="acquire")
+            added = land(hh, cand.rec, cand.verdict, found_by="acquire")
             if added:
                 log(f"  added: {title}  ({cand.rec['source']})")
                 landed.append(cand)
@@ -619,12 +620,13 @@ def main():
     p.add_argument("--no-scraping", action="store_true",
                    help="use only routes a site published for programs")
     args = p.parse_args()
+    hh = household.here()
 
     global ALLOW_SCRAPING
     ALLOW_SCRAPING = not args.no_scraping
 
     if args.sources:
-        for host in sources():
+        for host in sources(hh):
             if args.probe:
                 try:
                     search("chicken", host, limit=1)
@@ -636,7 +638,7 @@ def main():
         return 0
 
     if args.sides:
-        found = acquire_sides(want=args.want, dry_run=args.dry_run,
+        found = acquire_sides(hh, want=args.want, dry_run=args.dry_run,
                               log=lambda s="": print(s, file=sys.stderr))
         for f in found:
             print(f"{f.rec['title']}\n  source:  {f.rec['source']}")
@@ -645,13 +647,13 @@ def main():
             return 1
         return 0
 
-    week = pantry.read_week(pantry.monday())
+    week = pantry.read_week(hh, pantry.monday())
     meals = week.meals if week else []
     if not meals:
         print("note: no week planned yet — searching against an empty week, so every "
               "protein in the corpus reads as a gap\n", file=sys.stderr)
 
-    found = acquire(meals, want=args.want, gap_filter=args.protein,
+    found = acquire(hh, meals, want=args.want, gap_filter=args.protein,
                     dry_run=args.dry_run, log=lambda s="": print(s, file=sys.stderr))
     if not found:
         print("\nnothing landed.", file=sys.stderr)

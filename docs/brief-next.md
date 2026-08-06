@@ -28,7 +28,7 @@ important line in it.
   under Pyodide, not a port.
 - **The model planner.** `planner/`, two implementations behind `pantry.propose()`. See
   §1 below and `docs/model-planner-findings.md`.
-- 317 tests, standard library only.
+- 331 tests, standard library only.
 
 **Written but never run:** `.github/workflows/*`. CI has never executed; the deploy has
 never fired. The Space was pushed by hand.
@@ -208,10 +208,14 @@ Every one of these was a real bug in this repo. They rhyme, and the rhyme is wor
 
 Multi-tenancy. `docs/multi-tenancy.md` is the design.
 
-The first item there is not the database — it is a **data-crossing bug that already
-exists.** `app.py` is a `ThreadingHTTPServer` and which household it reads is a set of
-module-level globals in `pantry` and `shop`. One household is why that is safe today. Two
-is a stranger's allergy in somebody else's kitchen, shipped silently.
+The first item there was not the database — it was a **data-crossing bug that already
+existed.** `app.py` is a `ThreadingHTTPServer` and which household it read was a set of
+module-level globals in `pantry` and `shop`. One household was why that was safe. Two would
+have been a stranger's allergy in somebody else's kitchen, shipped silently.
+
+**That one is fixed.** `household.py` makes the household a required first argument with no
+default, and `test_household.py` runs two of them concurrently to prove it. Steps 2 through
+6 — the `store/` interface, Postgres and RLS, identity, the cluster, billing — are open.
 
 ## Report
 

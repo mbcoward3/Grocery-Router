@@ -10,6 +10,7 @@ week of 2 August, which is the acceptance fixture. Standard library only.
 
 import unittest
 
+import household
 import shop
 from shop import (
     Ingredient,
@@ -25,7 +26,11 @@ from shop import (
     split_compound,
 )
 
-ITEMS, INDEX = load_items()
+# These tests run against the real household's files on purpose: the point of
+# most of them is that all 27 captures parse and every ingredient line resolves.
+HH = household.here()
+
+ITEMS, INDEX = load_items(HH)
 
 
 def p(line):
@@ -110,8 +115,8 @@ class TestGrammar(unittest.TestCase):
         """265 lines across 27 files. A line that cannot be read must be surfaced,
         so an unparsed line is a bug rather than a shrug."""
         bad = []
-        for path in sorted(shop.RECIPES.glob("*.md")):
-            recipe = load_recipe(path.stem)
+        for path in sorted(HH.recipes.glob("*.md")):
+            recipe = load_recipe(HH, path.stem)
             for ing in recipe.ingredients + [a for v in recipe.variants for a in v.adds]:
                 if not ing.parsed:
                     bad.append(f"{path.stem}: {ing.raw}")
@@ -145,8 +150,8 @@ class TestNormalize(unittest.TestCase):
         """items.md is complete for the current corpus. This is allowed to fail
         when a recipe is added - the fix is a row, and ./shop.py --audit names it."""
         misses = []
-        for path in sorted(shop.RECIPES.glob("*.md")):
-            recipe = load_recipe(path.stem)
+        for path in sorted(HH.recipes.glob("*.md")):
+            recipe = load_recipe(HH, path.stem)
             for ing in recipe.ingredients + [a for v in recipe.variants for a in v.adds]:
                 if split_compound(ing, INDEX):
                     continue
@@ -173,56 +178,56 @@ class TestScale(unittest.TestCase):
     """The four yield shapes of §2.5."""
 
     def test_ae_yield_scales_in_whole_batches(self):
-        salmon = load_recipe("parchment-garlic-butter-salmon")
+        salmon = load_recipe(HH, "parchment-garlic-butter-salmon")
         self.assertEqual(scale(salmon, 2.5)[0], 3.0, "serves 1, week needs 2.5")
-        beef = load_recipe("crock-pot-italian-beef")
+        beef = load_recipe(HH, "crock-pot-italian-beef")
         self.assertEqual(scale(beef, 2.5)[0], 1.0, "serves 8 already; never scale down")
 
     def test_portion_count_without_a_rate_is_not_scaled_and_says_so(self):
-        mult, why = scale(load_recipe("sliders"), 2.5)
+        mult, why = scale(load_recipe(HH, "sliders"), 2.5)
         self.assertEqual(mult, 1.0)
         self.assertIn("how many", why)
 
     def test_per_portion_is_not_a_batch(self):
-        mult, why = scale(load_recipe("blt"), 2.5)
+        mult, why = scale(load_recipe(HH, "blt"), 2.5)
         self.assertEqual(mult, 1.0)
         self.assertIn("headcount", why)
 
     def test_unknown_yield_scales_by_one_and_flags(self):
-        mult, why = scale(load_recipe("chicken-chili"), 2.5)
+        mult, why = scale(load_recipe(HH, "chicken-chili"), 2.5)
         self.assertEqual(mult, 1.0)
         self.assertIn("unknown", why)
 
     def test_guests_push_a_recipe_to_a_second_batch(self):
-        self.assertEqual(scale(load_recipe("sausage-and-peppers"), 4.0)[0], 1.0)
-        self.assertEqual(scale(load_recipe("sausage-and-peppers"), 5.0)[0], 2.0)
+        self.assertEqual(scale(load_recipe(HH, "sausage-and-peppers"), 4.0)[0], 1.0)
+        self.assertEqual(scale(load_recipe(HH, "sausage-and-peppers"), 5.0)[0], 2.0)
 
 
 class TestVariants(unittest.TestCase):
     def test_first_variant_is_the_default(self):
-        soup = load_recipe("chicken-noodle-soup")
+        soup = load_recipe(HH, "chicken-noodle-soup")
         _, chosen = resolve(soup, None)
         self.assertEqual(chosen.name, "Rotisserie")
 
     def test_adds_land_on_the_list(self):
-        ings, _ = resolve(load_recipe("chicken-noodle-soup"), "rotisserie")
+        ings, _ = resolve(load_recipe(HH, "chicken-noodle-soup"), "rotisserie")
         self.assertIn("rotisserie_chicken", [normalize(i, INDEX) for i in ings])
 
     def test_replaces_removes_the_base_line(self):
-        ings, _ = resolve(load_recipe("chicken-noodle-soup"), "whole-young-chicken")
+        ings, _ = resolve(load_recipe(HH, "chicken-noodle-soup"), "whole-young-chicken")
         got = [normalize(i, INDEX) for i in ings]
         self.assertIn("whole_chicken", got)
         self.assertNotIn("chicken_broth", got, "the bird is boiled for its stock")
 
     def test_a_recipe_without_variants_passes_through_unchanged(self):
-        recipe = load_recipe("meatloaf")
+        recipe = load_recipe(HH, "meatloaf")
         ings, chosen = resolve(recipe, None)
         self.assertIsNone(chosen)
         self.assertEqual(len(ings), len(recipe.ingredients))
 
     def test_unknown_variant_name_is_an_error_not_a_silent_default(self):
         with self.assertRaises(SystemExit):
-            resolve(load_recipe("chicken-noodle-soup"), "sous-vide")
+            resolve(load_recipe(HH, "chicken-noodle-soup"), "sous-vide")
 
 
 class TestAggregate(unittest.TestCase):
@@ -295,7 +300,7 @@ class TestConsolidate(unittest.TestCase):
 class TestLink(unittest.TestCase):
     def test_a_produced_item_is_noted_and_still_bought(self):
         from shop import link, Line
-        soup = load_recipe("chicken-noodle-soup")
+        soup = load_recipe(HH, "chicken-noodle-soup")
         _, whole = resolve(soup, "whole-young-chicken")
         line = Line(canonical="chicken_broth", qty=6, unit="cup",
                     from_produce="chicken noodle soup, whole-bird variant")
@@ -307,14 +312,14 @@ class TestLink(unittest.TestCase):
     def test_no_producer_in_the_week_means_no_note(self):
         from shop import link, Line
         line = Line(canonical="chicken_broth", qty=6, unit="cup", from_produce="something else")
-        self.assertEqual(link([line], [(load_recipe("meatloaf"), None)]), [])
+        self.assertEqual(link([line], [(load_recipe(HH, "meatloaf"), None)]), [])
 
     def test_the_corpus_has_exactly_one_producer(self):
         """§2.4 first claimed three pairs and two were invented. This pins the
         real number so the claim cannot drift back."""
         producers = []
-        for path in sorted(shop.RECIPES.glob("*.md")):
-            recipe = load_recipe(path.stem)
+        for path in sorted(HH.recipes.glob("*.md")):
+            recipe = load_recipe(HH, path.stem)
             for v in recipe.variants:
                 producers.extend((path.stem, t) for t in v.produces)
             producers.extend((path.stem, t) for t in recipe.produces
@@ -346,7 +351,7 @@ class TestAugustFixture(unittest.TestCase):
 
     def setUp(self):
         self.week, self.lines, self.unknown, self.merges, self.links, self.scales, self.items = \
-            build(self.WEEK, 2.5)
+            build(HH, self.WEEK, 2.5)
         self.by_item = {l.canonical: l for l in self.lines}
 
     def test_quantities(self):

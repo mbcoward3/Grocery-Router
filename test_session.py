@@ -15,6 +15,7 @@ from pathlib import Path
 
 import app
 import pantry
+from household import Household
 import shop
 
 
@@ -27,25 +28,21 @@ class Session(unittest.TestCase):
         for name in ("corpus.md", "candidates.md", "sides.md", "profile.md", "items.md"):
             shutil.copy(REAL / name, self.tmp / name)
         shutil.copytree(REAL / "recipes", self.tmp / "recipes")
-        self._saved = {k: getattr(pantry, k) for k in
-                       ("ROOT", "CORPUS", "CANDIDATES", "SIDES", "PROFILE", "WEEKS", "CACHE",
-                        "DECISIONS")}
-        pantry.ROOT = self.tmp
-        pantry.CORPUS = self.tmp / "corpus.md"
-        pantry.CANDIDATES = self.tmp / "candidates.md"
-        pantry.SIDES = self.tmp / "sides.md"
-        pantry.PROFILE = self.tmp / "profile.md"
-        pantry.WEEKS = self.tmp / "weeks"
-        pantry.CACHE = self.tmp / ".cache"
-        pantry.DECISIONS = self.tmp / "decisions.jsonl"
-        pantry._FILE_INDEX = None
-        shop.configure(self.tmp)
+        # One household, rooted in the scratch copy. The harness used to
+        # save and reassign eight module globals in `pantry`; the household
+        # is an argument now, so isolation is a value rather than a ritual
+        # every new test file had to remember to repeat. Four of them once
+        # forgot, and the suite wrote into the real `sides.md`.
+        self.hh = Household(root=self.tmp, id="test")
+        # `app.handle` resolves the household through `app.serving()`, so this
+        # is what points the whole session at the scratch copy. Pointing the
+        # *resolver* rather than the modules underneath means these tests
+        # exercise the real path a request takes.
+        self._serving = app.SERVING
+        app.SERVING = self.hh
 
     def tearDown(self):
-        for k, v in self._saved.items():
-            setattr(pantry, k, v)
-        pantry._FILE_INDEX = None
-        shop.configure(self._saved["ROOT"])
+        app.SERVING = self._serving
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def get(self, path):
@@ -87,17 +84,17 @@ class TestServings(Session):
         """The field existed before and the week file had nowhere to put it."""
         slug = self.first()
         self.post("/api/servings", slug=slug, ae=5.5)
-        self.assertEqual(pantry.read_week(pantry.monday()).meals[0].ae_override, 5.5)
+        self.assertEqual(pantry.read_week(self.hh, pantry.monday()).meals[0].ae_override, 5.5)
 
     def test_it_reaches_the_shopping_list(self):
         """The point of the feature. A dial that changes no output is the bug
         this project has already shipped once."""
         week = pantry.Week(date=pantry.monday())
-        row = next(r for r in pantry.load_corpus() if r["slug"] == "chili")
+        row = next(r for r in pantry.load_corpus(self.hh) if r["slug"] == "chili")
         week.meals = [pantry.Meal(slug="chili", title=row["recipe"],
                                   yield_=row["yield"], active=row["active"],
                                   reason="test")]
-        pantry.write_week(week)
+        pantry.write_week(self.hh, week)
         before = self.get("/api/list")["markdown"]
         self.post("/api/servings", slug="chili", ae=9)
         after = self.get("/api/list")["markdown"]
@@ -108,12 +105,12 @@ class TestServings(Session):
         """Guests on Thursday are a fact about Thursday. Scaling the week to them
         buys four dinners nobody eats."""
         week = pantry.Week(date=pantry.monday())
-        rows = {r["slug"]: r for r in pantry.load_corpus()}
+        rows = {r["slug"]: r for r in pantry.load_corpus(self.hh)}
         week.meals = [pantry.Meal(slug=s, title=rows[s]["recipe"],
                                   yield_=rows[s]["yield"], active=rows[s]["active"],
                                   reason="t")
                       for s in ("chili", "meatloaf")]
-        pantry.write_week(week)
+        pantry.write_week(self.hh, week)
         before = self.get("/api/list")["markdown"]
         self.post("/api/servings", slug="chili", ae=9)
         after = self.get("/api/list")["markdown"]
@@ -148,8 +145,8 @@ class TestSwap(Session):
         `review.py` would read the swap as a rejection and the replacement as an
         unrelated offer."""
         self.post("/api/swap", slug=self.first())
-        self.assertEqual(len(pantry.decisions({"swap"})), 1)
-        self.assertEqual(len(pantry.decisions({"drop"})), 0)
+        self.assertEqual(len(pantry.decisions(self.hh, {"swap"})), 1)
+        self.assertEqual(len(pantry.decisions(self.hh, {"drop"})), 0)
 
     def test_a_locked_meal_cannot_be_swapped(self):
         slug = self.first()
@@ -165,7 +162,7 @@ class TestLock(Session):
     def test_a_lock_survives_a_reload(self):
         slug = self.first()
         self.post("/api/lock", slug=slug, locked=True)
-        self.assertTrue(pantry.read_week(pantry.monday()).meals[0].locked)
+        self.assertTrue(pantry.read_week(self.hh, pantry.monday()).meals[0].locked)
 
     def test_reshuffle_keeps_what_is_locked_and_moves_the_rest(self):
         """The ranker is deterministic, so re-running it returns the same week.
@@ -218,25 +215,25 @@ class TestEditingTheProfile(Session):
         text = self.get("/api/profile")["text"]
         self.assertIn("## Members", text)
         self.post("/api/profile", text=text + "\n- **Test line.** *Because so.*\n")
-        self.assertIn("Test line", pantry.PROFILE.read_text())
+        self.assertIn("Test line", self.hh.profile.read_text())
 
     def test_an_empty_profile_is_refused(self):
-        before = pantry.PROFILE.read_text()
+        before = self.hh.profile.read_text()
         out = self.post("/api/profile", text="   ")
         self.assertIn("empty", out["profile_error"])
-        self.assertEqual(pantry.PROFILE.read_text(), before)
+        self.assertEqual(self.hh.profile.read_text(), before)
 
     def test_a_profile_that_stops_parsing_is_rolled_back(self):
         """Losing the Members section is how attribution silently stops working,
         and it would be found weeks later by a planner with no constraints."""
-        before = pantry.PROFILE.read_text()
+        before = self.hh.profile.read_text()
         out = self.post("/api/profile", text="# Just a heading, nothing else")
         self.assertIn("Members", out["profile_error"])
-        self.assertEqual(pantry.PROFILE.read_text(), before)
+        self.assertEqual(self.hh.profile.read_text(), before)
 
     def test_the_edit_is_recorded(self):
         self.post("/api/profile", text=self.get("/api/profile")["text"] + "\n")
-        self.assertEqual(len(pantry.decisions({"profile_edited"})), 1)
+        self.assertEqual(len(pantry.decisions(self.hh, {"profile_edited"})), 1)
 
     def test_the_planner_sees_the_edit(self):
         """The write is only worth anything if the next proposal reads it."""
@@ -252,17 +249,17 @@ class TestSides(Session):
         """A side with a real capture behind it."""
         import onboard
         slug = pantry.slug(name)
-        pantry.recipe_file(slug).write_text(
+        pantry.recipe_file(self.hh, slug).write_text(
             f"# {name}\n\nsource:   {source}\nyield:    4 AE\n"
             f"peanut:   none seen\nstatus:   complete\n\n## Ingredients\n\n"
             + "\n".join(f"- {r}" for r in raw) + "\n")
-        pantry._FILE_INDEX = None
-        return pantry.add_side(name, source=source, active="low")
+        self.hh.forget()
+        return pantry.add_side(self.hh, name, source=source, active="low")
 
     def test_it_starts_empty_and_that_is_the_point(self):
         """Seeding it would be inventing what this household eats, which is the
         one thing this project refuses to do anywhere else."""
-        self.assertEqual(pantry.load_sides(), [])
+        self.assertEqual(pantry.load_sides(self.hh), [])
         self.assertEqual(self.get("/api/state")["counts"]["sides"], 0)
 
     def test_the_list_says_it_is_short_while_there_are_none(self):
@@ -280,10 +277,10 @@ class TestSides(Session):
         """The reason sides are captured as recipe files rather than as a list of
         words: same parser, same aggregation, one line for one onion."""
         week = pantry.Week(date=pantry.monday())
-        row = next(r for r in pantry.load_corpus() if r["slug"] == "chili")
+        row = next(r for r in pantry.load_corpus(self.hh) if r["slug"] == "chili")
         week.meals = [pantry.Meal(slug="chili", title=row["recipe"],
                                   yield_=row["yield"], active=row["active"], reason="t")]
-        pantry.write_week(week)
+        pantry.write_week(self.hh, week)
         self.add("Onion salad", "1 onion", "1 tbsp vinegar")
         self.post("/api/side", slug="onion-salad")
         out = self.get("/api/list")["markdown"]
@@ -320,7 +317,7 @@ class TestSides(Session):
     def test_a_side_survives_a_reload(self):
         self.add("Roasted carrots", "2 lb carrots")
         self.post("/api/side", slug="roasted-carrots")
-        self.assertEqual(pantry.read_week(pantry.monday()).sides, ["roasted-carrots"])
+        self.assertEqual(pantry.read_week(self.hh, pantry.monday()).sides, ["roasted-carrots"])
 
     def test_a_side_can_be_removed(self):
         self.add("Roasted carrots", "2 lb carrots")
@@ -342,19 +339,19 @@ class TestSides(Session):
     def test_the_same_side_is_not_added_twice(self):
         self.add("Roasted carrots", "2 lb carrots")
         self.assertFalse(self.add("Roasted carrots", "2 lb carrots"))
-        self.assertEqual(len(pantry.load_sides()), 1)
+        self.assertEqual(len(pantry.load_sides(self.hh)), 1)
 
     def test_a_side_never_reaches_the_corpus_or_the_candidates(self):
         """Different store, different bar. A side is not a proven dinner and it
         is not an unproven one either."""
-        before = (len(pantry.load_corpus()), len(pantry.load_candidates()))
+        before = (len(pantry.load_corpus(self.hh)), len(pantry.load_candidates(self.hh)))
         self.add("Roasted carrots", "2 lb carrots")
-        self.assertEqual((len(pantry.load_corpus()), len(pantry.load_candidates())),
+        self.assertEqual((len(pantry.load_corpus(self.hh)), len(pantry.load_candidates(self.hh))),
                          before)
 
     def test_a_side_with_no_name_is_refused(self):
         with self.assertRaises(pantry.RuleViolation):
-            pantry.add_side("")
+            pantry.add_side(self.hh, "")
 
 
 if __name__ == "__main__":

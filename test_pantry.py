@@ -16,7 +16,9 @@ import tempfile
 import unittest
 from pathlib import Path
 
+import household
 import pantry
+from household import Household
 
 REAL = Path(__file__).resolve().parent
 
@@ -39,27 +41,20 @@ class Isolated(unittest.TestCase):
         for name in ("corpus.md", "candidates.md", "sides.md", "profile.md"):
             shutil.copy(REAL / name, self.tmp / name)
         shutil.copytree(REAL / "recipes", self.tmp / "recipes")
-        self._saved = {k: getattr(pantry, k) for k in
-                       ("ROOT", "CORPUS", "CANDIDATES", "SIDES", "PROFILE", "WEEKS", "CACHE", "DECISIONS")}
-        pantry.ROOT = self.tmp
-        pantry.CORPUS = self.tmp / "corpus.md"
-        pantry.CANDIDATES = self.tmp / "candidates.md"
-        pantry.SIDES = self.tmp / "sides.md"
-        pantry.PROFILE = self.tmp / "profile.md"
-        pantry.WEEKS = self.tmp / "weeks"
-        pantry.CACHE = self.tmp / ".cache"
-        pantry.DECISIONS = self.tmp / "decisions.jsonl"
-        pantry._FILE_INDEX = None
+        # One household, rooted in the scratch copy. The harness used to
+        # save and reassign eight module globals in `pantry`; the household
+        # is an argument now, so isolation is a value rather than a ritual
+        # every new test file had to remember to repeat. Four of them once
+        # forgot, and the suite wrote into the real `sides.md`.
+        self.hh = Household(root=self.tmp, id="test")
 
     def tearDown(self):
-        for k, v in self._saved.items():
-            setattr(pantry, k, v)
         for k, v in self._env.items():
             if v is None:
                 os.environ.pop(k, None)
             else:
                 os.environ[k] = v
-        pantry._FILE_INDEX = None
+        self.hh.forget()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
 
@@ -70,27 +65,27 @@ class TestMembershipIsEarned(Isolated):
     locations, enforced nowhere, and the one writer violated it."""
 
     def test_promote_is_the_only_door(self):
-        before = len(pantry.load_corpus())
-        pantry.promote("sheet-pan-chicken-fajitas", "2026-08-03", "kept")
-        self.assertEqual(len(pantry.load_corpus()), before + 1)
+        before = len(pantry.load_corpus(self.hh))
+        pantry.promote(self.hh, "sheet-pan-chicken-fajitas", "2026-08-03", "kept")
+        self.assertEqual(len(pantry.load_corpus(self.hh)), before + 1)
 
     def test_a_flop_may_not_be_promoted(self):
         with self.assertRaises(pantry.RuleViolation):
-            pantry.promote("sheet-pan-chicken-fajitas", "2026-08-03", "flopped")
+            pantry.promote(self.hh, "sheet-pan-chicken-fajitas", "2026-08-03", "flopped")
 
     def test_a_recipe_that_was_never_a_candidate_may_not_be_promoted(self):
         with self.assertRaises(pantry.RuleViolation):
-            pantry.promote("duck-a-l-orange", "2026-08-03", "kept")
+            pantry.promote(self.hh, "duck-a-l-orange", "2026-08-03", "kept")
 
     def test_promotion_is_idempotent(self):
-        pantry.promote("sheet-pan-chicken-fajitas", "2026-08-03", "kept")
-        n = len(pantry.load_corpus())
-        self.assertFalse(pantry.promote("sheet-pan-chicken-fajitas", "2026-08-10", "kept"))
-        self.assertEqual(len(pantry.load_corpus()), n, "no duplicate row")
+        pantry.promote(self.hh, "sheet-pan-chicken-fajitas", "2026-08-03", "kept")
+        n = len(pantry.load_corpus(self.hh))
+        self.assertFalse(pantry.promote(self.hh, "sheet-pan-chicken-fajitas", "2026-08-10", "kept"))
+        self.assertEqual(len(pantry.load_corpus(self.hh)), n, "no duplicate row")
 
     def test_a_flop_is_never_deleted(self):
-        pantry.record_flop("parchment-garlic-butter-salmon", "2026-08-03", "too fiddly")
-        row = next(r for r in pantry.load_candidates()
+        pantry.record_flop(self.hh, "parchment-garlic-butter-salmon", "2026-08-03", "too fiddly")
+        row = next(r for r in pantry.load_candidates(self.hh)
                    if r["slug"] == "parchment-garlic-butter-salmon")
         self.assertIn("flopped", row["outcome"])
         self.assertIn("too fiddly", row["outcome"])
@@ -99,11 +94,11 @@ class TestMembershipIsEarned(Isolated):
 class TestNoClaimWithoutATrace(Isolated):
     def test_evidence_is_required(self):
         with self.assertRaises(pantry.RuleViolation):
-            pantry.add_profile_claim("Taste", "Loves fennel", "")
+            pantry.add_profile_claim(self.hh, "Taste", "Loves fennel", "")
 
     def test_a_claim_with_evidence_lands_with_its_trace_attached(self):
-        pantry.add_profile_claim("Taste", "Reaches for acid", "four corpus recipes use lemon", "Sam")
-        text = pantry.PROFILE.read_text()
+        pantry.add_profile_claim(self.hh, "Taste", "Reaches for acid", "four corpus recipes use lemon", "Sam")
+        text = self.hh.profile.read_text()
         self.assertIn("Reaches for acid", text)
         self.assertIn("Because four corpus recipes use lemon", text)
         self.assertIn("Sam", text)
@@ -111,13 +106,13 @@ class TestNoClaimWithoutATrace(Isolated):
 
 class TestNoOverwritingAHumanValue(Isolated):
     def test_a_populated_cell_is_left_alone(self):
-        self.assertFalse(pantry._set_cell(pantry.CORPUS, "meatloaf", "protein", "pork"))
-        row = next(r for r in pantry.load_corpus() if r["slug"] == "meatloaf")
+        self.assertFalse(pantry._set_cell(self.hh.corpus, "meatloaf", "protein", "pork"))
+        row = next(r for r in pantry.load_corpus(self.hh) if r["slug"] == "meatloaf")
         self.assertEqual(row["protein"], "beef")
 
     def test_last_cooked_is_the_one_field_the_tool_owns(self):
-        self.assertTrue(pantry.record_cooked("meatloaf", "2026-08-03"))
-        row = next(r for r in pantry.load_corpus() if r["slug"] == "meatloaf")
+        self.assertTrue(pantry.record_cooked(self.hh, "meatloaf", "2026-08-03"))
+        row = next(r for r in pantry.load_corpus(self.hh) if r["slug"] == "meatloaf")
         self.assertEqual(row["last cooked"], "2026-08-03")
 
 
@@ -126,11 +121,11 @@ class TestNoOverwritingAHumanValue(Isolated):
 class TestWeek(Isolated):
     def test_a_week_survives_a_round_trip(self):
         w = pantry.Week(date="2026-08-03", nights=4, guests=1.5, risk="high")
-        w.meals = pantry.propose(4, 1.5, "high")
+        w.meals = pantry.propose(self.hh, 4, 1.5, "high")
         w.declined = ["chili"]
         w.feedback = {"meatloaf": {"outcome": "kept", "by": "Sam"}}
-        pantry.write_week(w)
-        back = pantry.read_week("2026-08-03")
+        pantry.write_week(self.hh, w)
+        back = pantry.read_week(self.hh, "2026-08-03")
         self.assertEqual(back.nights, 4)
         self.assertEqual(back.guests, 1.5)
         self.assertEqual(back.risk, "high")
@@ -142,8 +137,8 @@ class TestWeek(Isolated):
         w = pantry.Week(date="2026-08-03")
         w.meals = [pantry.Meal(slug="chicken-noodle-soup", title="Chicken noodle soup",
                                variant="Whole young chicken", reason="x")]
-        pantry.write_week(w)
-        self.assertEqual(pantry.read_week("2026-08-03").meals[0].variant, "Whole young chicken")
+        pantry.write_week(self.hh, w)
+        self.assertEqual(pantry.read_week(self.hh, "2026-08-03").meals[0].variant, "Whole young chicken")
 
 
 class TestFeedbackLoop(Isolated):
@@ -162,104 +157,105 @@ class TestFeedbackLoop(Isolated):
 
     def test_a_cooked_corpus_recipe_gets_its_date(self):
         self.w.feedback = {"meatloaf": {"outcome": "kept", "by": "Michael"}}
-        pantry.apply_feedback(self.w)
-        row = next(r for r in pantry.load_corpus() if r["slug"] == "meatloaf")
+        pantry.apply_feedback(self.hh, self.w)
+        row = next(r for r in pantry.load_corpus(self.hh) if r["slug"] == "meatloaf")
         self.assertEqual(row["last cooked"], "2026-07-27")
 
     def test_a_kept_candidate_is_promoted(self):
         self.w.feedback = {"sheet-pan-chicken-fajitas": {"outcome": "kept", "by": "Sam"}}
-        pantry.apply_feedback(self.w)
-        self.assertIn("sheet-pan-chicken-fajitas", {r["slug"] for r in pantry.load_corpus()})
+        pantry.apply_feedback(self.hh, self.w)
+        self.assertIn("sheet-pan-chicken-fajitas", {r["slug"] for r in pantry.load_corpus(self.hh)})
 
     def test_not_cooked_writes_nothing(self):
         self.w.feedback = {"chili": {"outcome": "not cooked", "by": ""}}
-        pantry.apply_feedback(self.w)
-        row = next(r for r in pantry.load_corpus() if r["slug"] == "chili")
+        pantry.apply_feedback(self.hh, self.w)
+        row = next(r for r in pantry.load_corpus(self.hh) if r["slug"] == "chili")
         self.assertEqual(row["last cooked"].strip(), "")
 
     def test_attribution_reaches_the_log(self):
         self.w.feedback = {"meatloaf": {"outcome": "kept", "by": "Sam"}}
-        pantry.apply_feedback(self.w)
-        rec = pantry.decisions({"feedback_applied"})[-1]
+        pantry.apply_feedback(self.hh, self.w)
+        rec = pantry.decisions(self.hh, {"feedback_applied"})[-1]
         self.assertEqual(rec["by"], "Sam")
 
 
 class TestDecisionLog(Isolated):
     def test_a_proposal_records_its_reasons(self):
-        pantry.propose(3, 0, "normal")
-        rec = pantry.decisions({"proposed"})[-1]
+        pantry.propose(self.hh, 3, 0, "normal")
+        rec = pantry.decisions(self.hh, {"proposed"})[-1]
         self.assertEqual(len(rec["added"]), 3)
         self.assertTrue(all(a["reason"] for a in rec["added"]))
 
     def test_gap_filling_distinguishes_kept_from_added(self):
-        first = pantry.propose(3, 0, "normal")
-        pantry.propose(4, 0, "normal", keep=first)
-        rec = pantry.decisions({"proposed"})[-1]
+        first = pantry.propose(self.hh, 3, 0, "normal")
+        pantry.propose(self.hh, 4, 0, "normal", keep=first)
+        rec = pantry.decisions(self.hh, {"proposed"})[-1]
         self.assertEqual(len(rec["kept"]), 3)
         self.assertEqual(len(rec["added"]), 1)
 
     def test_logging_never_breaks_a_session(self):
-        pantry.DECISIONS = self.tmp / "nope" / "decisions.jsonl"
-        pantry.log("proposed", x=1)          # must not raise
+        # A household rooted somewhere that does not exist, so the append
+        # fails at the filesystem. The log is evidence, not a dependency.
+        pantry.log(Household(root=self.tmp / "nope"), "proposed", x=1)
 
 
 # --------------------------------------------------------------------------- #
 
 class TestRanker(Isolated):
     def test_it_fills_the_week(self):
-        self.assertEqual(len(pantry.propose(5, 0, "normal")), 5)
+        self.assertEqual(len(pantry.propose(self.hh, 5, 0, "normal")), 5)
 
     def test_kept_meals_are_never_re_rolled(self):
-        first = pantry.propose(4, 0, "normal")
-        again = pantry.propose(5, 0, "normal", keep=first)
+        first = pantry.propose(self.hh, 4, 0, "normal")
+        again = pantry.propose(self.hh, 5, 0, "normal", keep=first)
         self.assertEqual([m.slug for m in again[:4]], [m.slug for m in first])
 
     def test_a_declined_meal_does_not_come_back(self):
-        week = pantry.propose(5, 0, "normal")
+        week = pantry.propose(self.hh, 5, 0, "normal")
         dropped = week[2].slug
         kept = [m for m in week if m.slug != dropped]
-        again = pantry.propose(5, 0, "normal", keep=kept, avoid={dropped})
+        again = pantry.propose(self.hh, 5, 0, "normal", keep=kept, avoid={dropped})
         self.assertNotIn(dropped, [m.slug for m in again])
 
     def test_the_risk_dial_reserves_candidate_slots(self):
         """Candidates lose every head-to-head by design, so a score nudge leaves
         the dial doing nothing at all."""
-        counts = {r: sum(1 for m in pantry.propose(5, 0, r) if m.candidate)
+        counts = {r: sum(1 for m in pantry.propose(self.hh, 5, 0, r) if m.candidate)
                   for r in ("low", "normal", "high")}
         self.assertEqual(counts["low"], 0)
         self.assertEqual(counts["normal"], 1)
         self.assertEqual(counts["high"], 2)
 
     def test_reasons_are_not_all_the_same_sentence(self):
-        reasons = [m.reason for m in pantry.propose(5, 0, "normal")]
+        reasons = [m.reason for m in pantry.propose(self.hh, 5, 0, "normal")]
         self.assertEqual(len(set(reasons)), 5,
                          "five true sentences that are all the same sentence are no reasons")
 
     def test_no_recency_is_claimed_without_a_date(self):
         """The corpus has no last-cooked dates. Saying 'not cooked since March'
         anyway is the invention this project exists to avoid."""
-        for m in pantry.propose(6, 0, "high"):
+        for m in pantry.propose(self.hh, 6, 0, "high"):
             self.assertNotRegex(m.reason, r"\b(months?|days) ago|not cooked in")
 
     def test_staleness_is_used_once_a_date_exists(self):
         old = (dt.date.today() - dt.timedelta(days=200)).isoformat()
-        pantry.record_cooked("tuna-melt", old)
-        reasons = {m.slug: m.reason for m in pantry.propose(8, 0, "low")}
+        pantry.record_cooked(self.hh, "tuna-melt", old)
+        reasons = {m.slug: m.reason for m in pantry.propose(self.hh, 8, 0, "low")}
         self.assertIn("months", reasons.get("tuna-melt", ""))
 
     def test_a_candidate_never_claims_corpus_membership(self):
-        for m in pantry.propose(6, 0, "high"):
+        for m in pantry.propose(self.hh, 6, 0, "high"):
             if m.candidate:
                 self.assertTrue(m.reason.startswith("new here"))
                 self.assertNotIn("in the corpus", m.reason)
 
     def test_the_week_gets_enough_low_active_nights(self):
-        meals = pantry.propose(5, 0, "normal")
+        meals = pantry.propose(self.hh, 5, 0, "normal")
         self.assertGreaterEqual(sum(1 for m in meals if m.active == "low"), 2)
 
     def test_a_flopped_candidate_is_not_proposed_again(self):
-        pantry.record_flop("sheet-pan-chicken-fajitas", "2026-07-27")
-        slugs = [m.slug for m in pantry.propose(8, 0, "high")]
+        pantry.record_flop(self.hh, "sheet-pan-chicken-fajitas", "2026-07-27")
+        slugs = [m.slug for m in pantry.propose(self.hh, 8, 0, "high")]
         self.assertNotIn("sheet-pan-chicken-fajitas", slugs)
 
 
@@ -268,18 +264,18 @@ class TestFileIndex(Isolated):
         """`corpus.md` says *Crock pot Italian beef sandwiches*; the file is
         `crock-pot-italian-beef.md`. Resolved by each file's own title."""
         m = pantry.Meal(slug="crock-pot-italian-beef-sandwiches", title="x")
-        self.assertEqual(m.file, "crock-pot-italian-beef")
-        self.assertTrue(m.has_file)
+        self.assertEqual(m.file(self.hh), "crock-pot-italian-beef")
+        self.assertTrue(m.has_file(self.hh))
 
     def test_every_planned_meal_can_find_its_ingredients(self):
-        missing = [r["recipe"] for r in pantry.load_corpus() + pantry.load_candidates()
-                   if not pantry.recipe_file(r["slug"]).exists()]
+        missing = [r["recipe"] for r in pantry.load_corpus(self.hh) + pantry.load_candidates(self.hh)
+                   if not pantry.recipe_file(self.hh, r["slug"]).exists()]
         self.assertEqual(missing, [])
 
 
 class TestMembers(Isolated):
     def test_members_come_off_the_profile(self):
-        self.assertEqual(pantry.load_members(), ["Michael", "Sam"])
+        self.assertEqual(pantry.load_members(self.hh), ["Michael", "Sam"])
 
 
 class TestDemoIsolation(unittest.TestCase):
@@ -303,7 +299,7 @@ class TestDemoIsolation(unittest.TestCase):
 
     def test_no_household_identity_reaches_the_demo_profile(self):
         text = (REAL / "demo" / "profile.md").read_text()
-        real_members = pantry.load_members()
+        real_members = pantry.load_members(household.here())
         self.assertTrue(real_members, "the real profile should name its members")
         for name in real_members:
             self.assertNotRegex(text, rf"\b{name}\b")

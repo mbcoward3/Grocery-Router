@@ -32,14 +32,12 @@ import re
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
-CORPUS = ROOT / "corpus.md"
-CANDIDATES = ROOT / "candidates.md"
-SIDES = ROOT / "sides.md"
-PROFILE = ROOT / "profile.md"
-WEEKS = ROOT / "weeks"
-CACHE = ROOT / ".cache"
-DECISIONS = ROOT / "decisions.jsonl"
+from household import Household
+
+# **There are no module-level paths here any more.** Which household this call
+# is about arrives as the first argument, every time, and `household.py` says at
+# length why: these were globals, `app.py` reassigned them per request, and the
+# server has always been threaded. See `docs/multi-tenancy.md`.
 
 # From profile.md: 2 adults, a 3-year-old, a 1-year-old.
 BASE_AE = 2.5
@@ -49,10 +47,10 @@ BASE_AE = 2.5
 # The decision log
 # --------------------------------------------------------------------------- #
 
-def log(event: str, **payload) -> None:
-    """Append one decision to `decisions.jsonl`.
+def log(hh: Household, event: str, **payload) -> None:
+    """Append one decision to this household's `decisions.jsonl`.
 
-    The first argument is `event` rather than `kind` so that `kind=` in a payload
+    The event is named `event` rather than `kind` so that `kind=` in a payload
     is a normal keyword and hits the guard below instead of colliding with the
     parameter. Every caller passes it positionally.
 
@@ -78,17 +76,17 @@ def log(event: str, **payload) -> None:
             raise ValueError(f"log payload may not use reserved key(s): "
                              f"{', '.join(sorted(clash))}")
         rec.update(payload)
-        with DECISIONS.open("a", encoding="utf-8") as fh:
+        with hh.decisions.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(rec, sort_keys=True) + "\n")
     except OSError:
         pass
 
 
-def decisions(kinds: set[str] | None = None) -> list[dict]:
-    if not DECISIONS.exists():
+def decisions(hh: Household, kinds: set[str] | None = None) -> list[dict]:
+    if not hh.decisions.exists():
         return []
     out = []
-    for line in DECISIONS.read_text(encoding="utf-8").splitlines():
+    for line in hh.decisions.read_text(encoding="utf-8").splitlines():
         if not line.strip():
             continue
         try:
@@ -155,23 +153,23 @@ def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
 
 
-def load_corpus() -> list[dict]:
-    _, rows, _ = _rows(CORPUS)
+def load_corpus(hh: Household) -> list[dict]:
+    _, rows, _ = _rows(hh.corpus)
     for r in rows:
         r["slug"] = slug(r["recipe"])
         r["proven"] = True
     return rows
 
 
-def load_candidates() -> list[dict]:
-    _, rows, _ = _rows(CANDIDATES)
+def load_candidates(hh: Household) -> list[dict]:
+    _, rows, _ = _rows(hh.candidates)
     for r in rows:
         r["slug"] = slug(r["recipe"])
         r["proven"] = False
     return rows
 
 
-def load_sides() -> list[dict]:
+def load_sides(hh: Household) -> list[dict]:
     """The sides this household serves. Empty is a supported state and the
     current one.
 
@@ -181,15 +179,16 @@ def load_sides() -> list[dict]:
     what this household eats, which is the one thing this project refuses to do
     anywhere else.
     """
-    _, rows, _ = _rows(SIDES)
+    _, rows, _ = _rows(hh.sides)
     for r in rows:
         r["slug"] = slug(r.get("side") or r.get("recipe") or "")
         r["is_side"] = True
     return [r for r in rows if r["slug"]]
 
 
-def add_side(name: str, *, source: str = "", goes_with: str = "", season: str = "",
-             active: str = "", passive: str = "", notes: str = "") -> bool:
+def add_side(hh: Household, name: str, *, source: str = "", goes_with: str = "",
+             season: str = "", active: str = "", passive: str = "",
+             notes: str = "") -> bool:
     """The only door into `sides.md`. Returns `False` if it is already there.
 
     Looser than `add_candidate`, and deliberately: a side is not a gamble. The
@@ -203,13 +202,13 @@ def add_side(name: str, *, source: str = "", goes_with: str = "", season: str = 
     if not name:
         raise RuleViolation("a side needs a name")
     sl = slug(name)
-    if any(r["slug"] == sl for r in load_sides()):
+    if any(r["slug"] == sl for r in load_sides(hh)):
         return False
-    if not SIDES.exists():
-        SIDES.write_text(
+    if not hh.sides.exists():
+        hh.sides.write_text(
             "# Sides\n\n| Side | Goes with | Season | Active | Passive | "
             "Last served | Notes |\n|---|---|---|---|---|---|---|\n", encoding="utf-8")
-    table = _rows(SIDES)
+    table = _rows(hh.sides)
     lines, where, header = table.lines, table.where, table.header
     values = {"side": name, "goes with": goes_with, "season": season,
               "active": active, "passive": passive, "last served": "",
@@ -217,12 +216,12 @@ def add_side(name: str, *, source: str = "", goes_with: str = "", season: str = 
     cells = [values.get(col, "") for col in header]
     at = (where[-1] if where else table.header_i + 1) + 1
     lines.insert(at, "| " + " | ".join(cells) + " |")
-    SIDES.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    log("side_added", side=sl, source=source)
+    hh.sides.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    log(hh, "side_added", side=sl, source=source)
     return True
 
 
-def load_members() -> list[str]:
+def load_members(hh: Household) -> list[str]:
     """Who lives here, read off `profile.md`.
 
     Attribution, not accounts. `profile.md` records that a stated preference
@@ -230,10 +229,10 @@ def load_members() -> list[str]:
     name on a claim, not a login. Auth arrives with hosting, against data that
     already knows who said what.
     """
-    if not PROFILE.exists():
+    if not hh.profile.exists():
         return []
     members, inside = [], False
-    for line in PROFILE.read_text(encoding="utf-8").splitlines():
+    for line in hh.profile.read_text(encoding="utf-8").splitlines():
         s = line.strip()
         if s.startswith("## "):
             inside = s[3:].strip().lower() == "members"
@@ -244,35 +243,37 @@ def load_members() -> list[str]:
     return members
 
 
-_FILE_INDEX: dict[str, str] | None = None
-
-
-def file_index() -> dict[str, str]:
+def file_index(hh: Household) -> dict[str, str]:
     """Map a recipe identity onto the file that holds its ingredients.
 
     The index and the store are separate on purpose, so their names can drift -
     `corpus.md` says *Crock pot Italian beef sandwiches* and the file is
     `crock-pot-italian-beef.md`. Indexing by each file's own `# Title` as well as
     its stem catches that without renaming anything or hand-maintaining a map.
+
+    Cached on the household rather than on this module. As a module global it
+    was four separate `_FILE_INDEX = None` resets that every writer had to
+    remember — and under two households it would have handed one of them the
+    other's filenames.
     """
-    global _FILE_INDEX
-    if _FILE_INDEX is None:
-        _FILE_INDEX = {}
-        for path in sorted((ROOT / "recipes").glob("*.md")):
-            _FILE_INDEX.setdefault(path.stem, path.stem)
+    if hh.index is None:
+        index: dict[str, str] = {}
+        for path in sorted(hh.recipes.glob("*.md")):
+            index.setdefault(path.stem, path.stem)
             for line in path.read_text(encoding="utf-8").splitlines():
                 if line.startswith("# "):
-                    _FILE_INDEX.setdefault(slug(line[2:]), path.stem)
+                    index.setdefault(slug(line[2:]), path.stem)
                     break
-    return _FILE_INDEX
+        hh.index = index
+    return hh.index
 
 
-def recipe_file(sl: str) -> Path:
-    return ROOT / "recipes" / f"{file_index().get(sl, sl)}.md"
+def recipe_file(hh: Household, sl: str) -> Path:
+    return hh.recipes / f"{file_index(hh).get(sl, sl)}.md"
 
 
-def variants_for(sl: str) -> list[str]:
-    path = recipe_file(sl)
+def variants_for(hh: Household, sl: str) -> list[str]:
+    path = recipe_file(hh, sl)
     if not path.exists():
         return []
     out, inside = [], False
@@ -348,23 +349,24 @@ class Meal:
     # eats. 0 means "use the week's number".
     ae_override: float = 0.0
 
-    @property
-    def file(self) -> str:
+    # `file` and `has_file` were properties and are methods now, because both
+    # answers depend on which household is asking and a property has nowhere to
+    # take that. `asdict()` is unaffected: neither was ever a field.
+    def file(self, hh: Household) -> str:
         """The recipe file this meal's ingredients live in — not always its slug."""
-        return file_index().get(self.slug, self.slug)
+        return file_index(hh).get(self.slug, self.slug)
 
-    @property
-    def has_file(self) -> bool:
-        return recipe_file(self.slug).exists()
+    def has_file(self, hh: Household) -> bool:
+        return recipe_file(hh, self.slug).exists()
 
     def ae(self, week_ae: float) -> float:
         return self.ae_override or week_ae
 
-    def to_json(self):
+    def to_json(self, hh: Household):
         d = asdict(self)
         d["yield"] = d.pop("yield_")
-        d["file"] = self.file
-        d["has_file"] = self.has_file
+        d["file"] = self.file(hh)
+        d["has_file"] = self.has_file(hh)
         return d
 
 
@@ -453,7 +455,7 @@ def _pick_reason(row, gap, picked, ae, used_kinds: set, used_texts: set,
     return options[-1]
 
 
-def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
+def rank(hh: Household, nights: int = 5, guests: float = 0.0, risk: str = "normal",
          keep: list[Meal] | None = None, today: dt.date | None = None,
          avoid: set[str] | None = None) -> list[Meal]:
     """Deterministic ranker. Fills the week up to `nights`, leaving `keep` alone.
@@ -479,8 +481,8 @@ def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     taken = {m.slug for m in keep} | set(avoid or ())
     ae = BASE_AE + guests
 
-    pool = [r for r in load_corpus() if r["slug"] not in taken]
-    cands = [r for r in load_candidates()
+    pool = [r for r in load_corpus(hh) if r["slug"] not in taken]
+    cands = [r for r in load_candidates(hh)
              if r["slug"] not in taken and "flopped" not in (r.get("outcome") or "")]
     want_cands = {"low": 0, "normal": 1, "high": 2}.get(risk, 1)
 
@@ -540,7 +542,7 @@ def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
                 best, best_row, best_gap, best_cand = s, row, gap, candidate
         if best_row is None:
             break
-        vs = variants_for(best_row["slug"])
+        vs = variants_for(hh, best_row["slug"])
         picked.append(Meal(
             slug=best_row["slug"], title=best_row["recipe"],
             protein=best_row.get("protein", ""), cuisine=best_row.get("cuisine", ""),
@@ -556,9 +558,9 @@ def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     return picked
 
 
-def _log_proposal(picked: list[Meal], keep: list[Meal], nights: int, guests: float,
-                  risk: str, week: str = "", **extra) -> None:
-    log("proposed", nights=nights, guests=guests, risk=risk, week=week or monday(),
+def _log_proposal(hh: Household, picked: list[Meal], keep: list[Meal], nights: int,
+                  guests: float, risk: str, week: str = "", **extra) -> None:
+    log(hh, "proposed", nights=nights, guests=guests, risk=risk, week=week or monday(),
         kept=[m.slug for m in keep],
         added=[{"recipe": m.slug, "reason": m.reason, "candidate": m.candidate,
                 "kind": m.reason_kind, "protein": m.protein, "cuisine": m.cuisine}
@@ -566,7 +568,7 @@ def _log_proposal(picked: list[Meal], keep: list[Meal], nights: int, guests: flo
         **extra)
 
 
-def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
+def propose(hh: Household, nights: int = 5, guests: float = 0.0, risk: str = "normal",
             keep: list[Meal] | None = None, today: dt.date | None = None,
             avoid: set[str] | None = None, planner: str | None = None,
             client=None, week: str = "") -> list[Meal]:
@@ -599,18 +601,18 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     keep = list(keep or [])
     which = planners.which(planner)
     if which != planners.MODEL:
-        picked = rank(nights, guests, risk, keep, today, avoid)
-        _log_proposal(picked, keep, nights, guests, risk, week, planner="ranker")
+        picked = rank(hh, nights, guests, risk, keep, today, avoid)
+        _log_proposal(hh, picked, keep, nights, guests, risk, week, planner="ranker")
         return picked
 
     from planner import model as model_planner
 
     try:
-        result = model_planner.plan(nights=nights, guests=guests, risk=risk, keep=keep,
-                                    today=today, avoid=avoid, client=client)
+        result = model_planner.plan(hh, nights=nights, guests=guests, risk=risk,
+                                    keep=keep, today=today, avoid=avoid, client=client)
     except model_planner.PlannerUnavailable as exc:
-        picked = rank(nights, guests, risk, keep, today, avoid)
-        _log_proposal(picked, keep, nights, guests, risk, week,
+        picked = rank(hh, nights, guests, risk, keep, today, avoid)
+        _log_proposal(hh, picked, keep, nights, guests, risk, week,
                       planner="ranker", asked="model", fallback=str(exc))
         return picked
 
@@ -638,10 +640,10 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
                else min(nights - len(picked), len(result.dropped)))
     topped_up = []
     if make_up > 0:
-        picked = rank(len(picked) + make_up, guests, risk, picked, today, avoid)
+        picked = rank(hh, len(picked) + make_up, guests, risk, picked, today, avoid)
         topped_up = [m.slug for m in picked[len(keep) + len(result.meals):]]
 
-    _log_proposal(picked, keep, nights, guests, risk, week,
+    _log_proposal(hh, picked, keep, nights, guests, risk, week,
                   planner="model" if result.meals else "ranker",
                   asked="model", model=result.model,
                   note=result.note, coupling=result.coupling, gaps=result.gaps,
@@ -652,7 +654,7 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     return picked
 
 
-def last_proposal() -> dict | None:
+def last_proposal(hh: Household) -> dict | None:
     """The most recent `proposed` record, or `None`.
 
     How the session finds out which planner ran and what it had to say. The
@@ -662,7 +664,7 @@ def last_proposal() -> dict | None:
     anybody looked. It also means the answer survives a restart, which is the
     same argument the log was built on.
     """
-    records = decisions({"proposed"})
+    records = decisions(hh, {"proposed"})
     return records[-1] if records else None
 
 
@@ -700,16 +702,16 @@ class Week:
     def ae(self) -> float:
         return BASE_AE + self.guests
 
-    def path(self) -> Path:
-        return WEEKS / f"{self.date}.md"
+    def path(self, hh: Household) -> Path:
+        return hh.weeks / f"{self.date}.md"
 
-    def to_json(self):
+    def to_json(self, hh: Household):
         return {"date": self.date, "nights": self.nights, "guests": self.guests,
                 "risk": self.risk, "status": self.status, "ae": self.ae,
-                "meals": [m.to_json() for m in self.meals], "declined": self.declined,
+                "meals": [m.to_json(hh) for m in self.meals], "declined": self.declined,
                 "feedback": self.feedback, "effort": effort_mix(self.meals),
-                "sides": [dict(r, has_file=recipe_file(r["slug"]).exists())
-                          for r in load_sides() if r["slug"] in self.sides]}
+                "sides": [dict(r, has_file=recipe_file(hh, r["slug"]).exists())
+                          for r in load_sides(hh) if r["slug"] in self.sides]}
 
 
 # Optional labelled segments sit between the variant and the reason, and the
@@ -724,8 +726,8 @@ MEAL_LINE = re.compile(
     r" \| (?P<reason>.*)$")
 
 
-def read_week(date: str) -> Week | None:
-    path = WEEKS / f"{date}.md"
+def read_week(hh: Household, date: str) -> Week | None:
+    path = hh.weeks / f"{date}.md"
     if not path.exists():
         return None
     w = Week(date=date)
@@ -756,7 +758,7 @@ def read_week(date: str) -> Week | None:
                 w.meals.append(Meal(slug=sl, title=title, yield_=g["yield"],
                                     active=g["active"],
                                     variant="" if g["variant"] == "—" else g["variant"],
-                                    variants=variants_for(sl), reason=g["reason"],
+                                    variants=variants_for(hh, sl), reason=g["reason"],
                                     candidate=cand, locked=bool(g["locked"]),
                                     ae_override=float(g["ae"] or 0)))
         if section == "declined" and s.startswith("- "):
@@ -768,7 +770,7 @@ def read_week(date: str) -> Week | None:
             if rest:
                 outcome, _, by = rest.strip().partition(" — ")
                 w.feedback[slug(name)] = {"outcome": outcome.strip(), "by": by.strip()}
-    index = {r["slug"]: r for r in load_corpus() + load_candidates()}
+    index = {r["slug"]: r for r in load_corpus(hh) + load_candidates(hh)}
     for meal in w.meals:
         row = index.get(meal.slug)
         if row:
@@ -777,10 +779,10 @@ def read_week(date: str) -> Week | None:
     return w
 
 
-def write_week(w: Week) -> Path:
+def write_week(hh: Household, w: Week) -> Path:
     """Written whole, every time. A week is small and a rewrite keeps the file
     honest; patching lines in place is how these files drift."""
-    WEEKS.mkdir(exist_ok=True)
+    hh.weeks.mkdir(parents=True, exist_ok=True)
     out = [f"# Week of {w.date}", "",
            "*Written by `app.py`. Edit it by hand if it is wrong — that is still the "
            "correction mechanism.*", "",
@@ -793,7 +795,7 @@ def write_week(w: Week) -> Path:
         out.append(f"- {m.title}{tag} | {m.yield_ or 'unknown'} | {m.active or 'med'} "
                    f"active | variant: {m.variant or '—'}{extra} | {m.reason}")
     if w.sides:
-        index = {r["slug"]: r.get("side") or r["recipe"] for r in load_sides()}
+        index = {r["slug"]: r.get("side") or r["recipe"] for r in load_sides(hh)}
         out += ["", "## Sides", "",
                 "*Served alongside. Not cooks, and not counted as nights.*", ""]
         out += [f"- {index.get(s, s.replace('-', ' '))}" for s in w.sides]
@@ -809,18 +811,18 @@ def write_week(w: Week) -> Path:
             by = f" — {fb['by']}" if fb.get("by") else ""
             out.append(f"- {index.get(sl, sl)}: {fb['outcome']}{by}")
     out.append("")
-    w.path().write_text("\n".join(out), encoding="utf-8")
-    return w.path()
+    w.path(hh).write_text("\n".join(out), encoding="utf-8")
+    return w.path(hh)
 
 
-def list_weeks() -> list[str]:
-    WEEKS.mkdir(exist_ok=True)
-    return sorted(p.stem for p in WEEKS.glob("*.md"))
+def list_weeks(hh: Household) -> list[str]:
+    hh.weeks.mkdir(parents=True, exist_ok=True)
+    return sorted(p.stem for p in hh.weeks.glob("*.md"))
 
 
-def previous_week(before: str) -> Week | None:
-    earlier = [d for d in list_weeks() if d < before]
-    return read_week(earlier[-1]) if earlier else None
+def previous_week(hh: Household, before: str) -> Week | None:
+    earlier = [d for d in list_weeks(hh) if d < before]
+    return read_week(hh, earlier[-1]) if earlier else None
 
 
 def monday(today: dt.date | None = None) -> str:
@@ -856,10 +858,10 @@ def _set_cell(path: Path, target_slug: str, column: str, value: str,
     return False
 
 
-def record_cooked(target_slug: str, when: str) -> bool:
+def record_cooked(hh: Household, target_slug: str, when: str) -> bool:
     """Stamp `Last cooked`. This is the write that makes retrieval possible at
     all - without it every corpus row looks equally forgotten forever."""
-    return _set_cell(CORPUS, target_slug, "last cooked", when, overwrite=True)
+    return _set_cell(hh.corpus, target_slug, "last cooked", when, overwrite=True)
 
 
 class RuleViolation(Exception):
@@ -867,7 +869,7 @@ class RuleViolation(Exception):
     how the corpus quietly stops meaning what it says."""
 
 
-def promote(target_slug: str, when: str, outcome: str = "kept") -> bool:
+def promote(hh: Household, target_slug: str, when: str, outcome: str = "kept") -> bool:
     """Move a candidate into the corpus. **The only function in this project that
     may add a row to `corpus.md`**, and it requires a recorded cook that was
     kept.
@@ -881,17 +883,17 @@ def promote(target_slug: str, when: str, outcome: str = "kept") -> bool:
             f"{target_slug}: a candidate enters the corpus only on a cook that was "
             f"kept, and this one is {outcome!r}. Membership is earned."
         )
-    cands = {r["slug"]: r for r in load_candidates()}
+    cands = {r["slug"]: r for r in load_candidates(hh)}
     row = cands.get(target_slug)
     if row is None:
         raise RuleViolation(
             f"{target_slug}: not a candidate. Nothing may enter the corpus without "
             f"passing through candidates first — that path is what records the cook."
         )
-    if any(r["slug"] == target_slug for r in load_corpus()):
+    if any(r["slug"] == target_slug for r in load_corpus(hh)):
         return False
 
-    table = _rows(CORPUS)
+    table = _rows(hh.corpus)
     lines, where, header = table.lines, table.where, table.header
     cells = [row.get(col, "") for col in header]
     if "last cooked" in header:
@@ -900,15 +902,15 @@ def promote(target_slug: str, when: str, outcome: str = "kept") -> bool:
         note = row.get("notes", "")
         cells[header.index("notes")] = (note + "; " if note else "") + "promoted from candidates"
     lines.insert(where[-1] + 1, "| " + " | ".join(cells) + " |")
-    CORPUS.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    hh.corpus.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
-    _set_cell(CANDIDATES, target_slug, "outcome", f"cooked and kept {when} → corpus",
+    _set_cell(hh.candidates, target_slug, "outcome", f"cooked and kept {when} → corpus",
               overwrite=True)
-    log("promote", recipe=target_slug, when=when)
+    log(hh, "promote", recipe=target_slug, when=when)
     return True
 
 
-def _ensure_column(table: Table, name: str) -> tuple[Table, int]:
+def _ensure_column(hh: Household, table: Table, name: str) -> tuple[Table, int]:
     """Make sure a column exists, adding it to the header and padding every row.
 
     Same move `onboard.ensure_yield_column` makes on the corpus. These files are
@@ -940,14 +942,14 @@ def _ensure_column(table: Table, name: str) -> tuple[Table, int]:
         lines[sep] = widen(lines[sep], "---", pad)
     for i in table.where:
         lines[i] = widen(lines[i], "", " ")
-    CANDIDATES.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    table = _rows(CANDIDATES)
+    hh.candidates.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    table = _rows(hh.candidates)
     return table, table.header.index(name)
 
 
-def add_candidate(title: str, *, source: str, protein: str = "", cuisine: str = "",
-                  yield_: str = "", active: str = "", passive: str = "",
-                  proposed: str = "", found_by: str = "") -> bool:
+def add_candidate(hh: Household, title: str, *, source: str, protein: str = "",
+                  cuisine: str = "", yield_: str = "", active: str = "",
+                  passive: str = "", proposed: str = "", found_by: str = "") -> bool:
     """Add a never-cooked recipe to `candidates.md`. Returns `False` if it is
     already known, raises `RuleViolation` if it does not belong here at all.
 
@@ -975,16 +977,16 @@ def add_candidate(title: str, *, source: str, protein: str = "", cuisine: str = 
             f"is not an acquisition, it is an invention."
         )
     sl = slug(title)
-    if any(r["slug"] == sl for r in load_corpus()):
+    if any(r["slug"] == sl for r in load_corpus(hh)):
         raise RuleViolation(
             f"{sl}: already in the corpus, where it is proven. A candidate carries the "
             f"gamble and this recipe has stopped being one."
         )
-    if any(r["slug"] == sl for r in load_candidates()):
+    if any(r["slug"] == sl for r in load_candidates(hh)):
         return False
 
-    table = _rows(CANDIDATES)
-    table, _ = _ensure_column(table, "source")
+    table = _rows(hh.candidates)
+    table, _ = _ensure_column(hh, table, "source")
     lines, where, header = table.lines, table.where, table.header
     values = {"recipe": title, "protein": protein, "cuisine": cuisine,
               "yield": yield_, "active": active, "passive": passive,
@@ -992,12 +994,13 @@ def add_candidate(title: str, *, source: str, protein: str = "", cuisine: str = 
     cells = [values.get(col, "") for col in header]
     at = (where[-1] if where else table.header_i + 1) + 1
     lines.insert(at, "| " + " | ".join(cells) + " |")
-    CANDIDATES.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    log("acquired", recipe=sl, source=source, found_by=found_by)
+    hh.candidates.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    log(hh, "acquired", recipe=sl, source=source, found_by=found_by)
     return True
 
 
-def add_profile_claim(section: str, text: str, evidence: str, by: str = "") -> None:
+def add_profile_claim(hh: Household, section: str, text: str, evidence: str,
+                      by: str = "") -> None:
     """Append a claim to `profile.md`, **refusing one with no evidence.**
 
     The rule `profile.md` opens with: no claim without a trace. It was stated in
@@ -1010,7 +1013,7 @@ def add_profile_claim(section: str, text: str, evidence: str, by: str = "") -> N
             f"ungrounded assertions poisons every week downstream — if you cannot "
             f"say why you believe it, it does not go in."
         )
-    lines = PROFILE.read_text(encoding="utf-8").splitlines()
+    lines = hh.profile.read_text(encoding="utf-8").splitlines()
     want = section.strip().lower()
     at = None
     for i, line in enumerate(lines):
@@ -1025,19 +1028,19 @@ def add_profile_claim(section: str, text: str, evidence: str, by: str = "") -> N
     who = f" *— {by}*" if by else ""
     lines.insert(end, f"- {text} *Because {evidence.rstrip('.')}.*{who}")
     lines.insert(end + 1, "")
-    PROFILE.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    log("profile_claim", section=section, text=text, evidence=evidence, by=by)
+    hh.profile.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    log(hh, "profile_claim", section=section, text=text, evidence=evidence, by=by)
 
 
-def record_flop(target_slug: str, when: str, note: str = "") -> bool:
+def record_flop(hh: Household, target_slug: str, when: str, note: str = "") -> bool:
     """A candidate that was cooked and did not land. It stays in `candidates.md`
     with the reason, because at this corpus size that is the most informative
     signal the system gets all week and deleting it throws it away."""
     text = f"flopped {when}" + (f" — {note}" if note else "")
-    return _set_cell(CANDIDATES, target_slug, "outcome", text, overwrite=True)
+    return _set_cell(hh.candidates, target_slug, "outcome", text, overwrite=True)
 
 
-def apply_feedback(w: Week) -> list[str]:
+def apply_feedback(hh: Household, w: Week) -> list[str]:
     """Turn a week's feedback into corpus writes. Idempotent.
 
     This is the write that makes the whole thing work. Without it every recipe
@@ -1049,7 +1052,7 @@ def apply_feedback(w: Week) -> list[str]:
         by = fb.get("by", "") if isinstance(fb, dict) else ""
         o = outcome.lower()
         if o.startswith("not"):
-            log("feedback_applied", recipe=sl, outcome=outcome, by=by, week=w.date,
+            log(hh, "feedback_applied", recipe=sl, outcome=outcome, by=by, week=w.date,
                 effect="none — not cooked")
             continue
         meal = next((m for m in w.meals if m.slug == sl), None)
@@ -1058,18 +1061,18 @@ def apply_feedback(w: Week) -> list[str]:
         effect = ""
         if meal.candidate:
             if o.startswith("kept"):
-                if promote(sl, w.date, outcome):
+                if promote(hh, sl, w.date, outcome):
                     effect = "promoted to corpus"
                     done.append(f"{meal.title} → corpus")
-            elif o.startswith("flop") and record_flop(sl, w.date):
+            elif o.startswith("flop") and record_flop(hh, sl, w.date):
                 # Never deleted. At this corpus size a flop is the most
                 # informative signal the system gets all week.
                 effect = "flopped, kept in candidates"
                 done.append(f"{meal.title} → flopped, stays in candidates with the reason")
-        elif record_cooked(sl, w.date):
+        elif record_cooked(hh, sl, w.date):
             effect = f"last cooked {w.date}"
             done.append(f"{meal.title} → last cooked {w.date}")
-        log("feedback_applied", recipe=sl, outcome=outcome, by=by, week=w.date,
+        log(hh, "feedback_applied", recipe=sl, outcome=outcome, by=by, week=w.date,
             candidate=meal.candidate, effect=effect)
     return done
 
@@ -1078,10 +1081,10 @@ def apply_feedback(w: Week) -> list[str]:
 # Step 0: the briefing the prep job leaves behind
 # --------------------------------------------------------------------------- #
 
-def briefing() -> dict:
+def briefing(hh: Household) -> dict:
     """Read whatever the prep job cached. **Degrades, never blocks** - a session
     with no briefing is a normal session with one less card."""
-    path = CACHE / "briefing.md"
+    path = hh.cache / "briefing.md"
     if not path.exists():
         return {"available": False, "lines": [], "generated": "",
                 "note": "No prep run yet. Run ./prep.py before a session."}

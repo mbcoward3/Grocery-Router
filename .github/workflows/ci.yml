@@ -30,6 +30,7 @@ jobs:
 
       - name: Tests
         run: |
+          python3 test_household.py
           python3 test_pantry.py
           python3 test_shop.py
           python3 test_onboard.py

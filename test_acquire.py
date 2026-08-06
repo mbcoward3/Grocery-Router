@@ -23,6 +23,7 @@ from pathlib import Path
 import acquire
 import onboard
 import pantry
+from household import Household
 
 REAL = Path(__file__).resolve().parent
 
@@ -67,23 +68,15 @@ class Isolated(unittest.TestCase):
         for name in ("corpus.md", "candidates.md", "sides.md", "profile.md"):
             shutil.copy(REAL / name, self.tmp / name)
         shutil.copytree(REAL / "recipes", self.tmp / "recipes")
-        self._saved = {k: getattr(pantry, k) for k in
-                       ("ROOT", "CORPUS", "CANDIDATES", "SIDES", "PROFILE", "WEEKS", "CACHE",
-                        "DECISIONS")}
-        pantry.ROOT = self.tmp
-        pantry.CORPUS = self.tmp / "corpus.md"
-        pantry.CANDIDATES = self.tmp / "candidates.md"
-        pantry.SIDES = self.tmp / "sides.md"
-        pantry.PROFILE = self.tmp / "profile.md"
-        pantry.WEEKS = self.tmp / "weeks"
-        pantry.CACHE = self.tmp / ".cache"
-        pantry.DECISIONS = self.tmp / "decisions.jsonl"
-        pantry._FILE_INDEX = None
+        # One household, rooted in the scratch copy. The harness used to
+        # save and reassign eight module globals in `pantry`; the household
+        # is an argument now, so isolation is a value rather than a ritual
+        # every new test file had to remember to repeat. Four of them once
+        # forgot, and the suite wrote into the real `sides.md`.
+        self.hh = Household(root=self.tmp, id="test")
 
     def tearDown(self):
-        for k, v in self._saved.items():
-            setattr(pantry, k, v)
-        pantry._FILE_INDEX = None
+        self.hh.forget()
         shutil.rmtree(self.tmp, ignore_errors=True)
 
     def stub(self, hits, pages):
@@ -117,22 +110,22 @@ class TestWhereItLooks(Isolated):
     def test_the_sources_are_read_off_the_corpus(self):
         """Not a constant. A hardcoded list would be me deciding whose food this
         household likes, which the corpus already decides better."""
-        hosts = acquire.sources()
+        hosts = acquire.sources(self.hh)
         self.assertIn("thecountrycook.net", hosts)
         self.assertIn("natashaskitchen.com", hosts)
 
     def test_promoting_from_a_new_site_widens_the_search_surface(self):
-        self.assertNotIn("example-kitchen.com", acquire.sources())
-        pantry.CORPUS.write_text(
-            pantry.CORPUS.read_text().replace("julieseatsandtreats.com",
+        self.assertNotIn("example-kitchen.com", acquire.sources(self.hh))
+        self.hh.corpus.write_text(
+            self.hh.corpus.read_text().replace("julieseatsandtreats.com",
                                               "example-kitchen.com"))
-        self.assertIn("example-kitchen.com", acquire.sources())
+        self.assertIn("example-kitchen.com", acquire.sources(self.hh))
 
     def test_a_corpus_naming_no_domains_searches_nothing(self):
-        pantry.CORPUS.write_text("# Corpus\n\n| Recipe |\n| --- |\n| Chili |\n")
-        pantry.CANDIDATES.write_text("# Candidates\n\n| Recipe |\n| --- |\n")
-        self.assertEqual(acquire.sources(), [])
-        self.assertEqual(acquire.acquire([]), [])
+        self.hh.corpus.write_text("# Corpus\n\n| Recipe |\n| --- |\n| Chili |\n")
+        self.hh.candidates.write_text("# Candidates\n\n| Recipe |\n| --- |\n")
+        self.assertEqual(acquire.sources(self.hh), [])
+        self.assertEqual(acquire.acquire(self.hh, []), [])
 
 
 class TestTheQuery(unittest.TestCase):
@@ -159,17 +152,17 @@ class TestTheGap(Isolated):
                 for i, (p, a) in enumerate(specs)]
 
     def test_a_protein_the_corpus_has_and_the_week_does_not(self):
-        kinds = {(g.kind, g.query) for g in acquire.gaps(self.make(("beef", "low")))}
+        kinds = {(g.kind, g.query) for g in acquire.gaps(self.hh, self.make(("beef", "low")))}
         self.assertIn(("protein", "pork"), kinds)
         self.assertIn(("protein", "fish"), kinds)
 
     def test_it_never_asks_for_a_protein_the_household_has_never_bought(self):
-        queries = {g.query for g in acquire.gaps(self.make(("beef", "low")))}
+        queries = {g.query for g in acquire.gaps(self.hh, self.make(("beef", "low")))}
         self.assertNotIn("lamb", queries)
         self.assertNotIn("duck", queries)
 
     def test_a_thin_low_active_week_asks_for_a_slow_cooker(self):
-        gaps = acquire.gaps(self.make(("beef", "high"), ("pork", "high"),
+        gaps = acquire.gaps(self.hh, self.make(("beef", "high"), ("pork", "high"),
                                       ("chicken", "med"), ("fish", "med")))
         self.assertIn("effort", {g.kind for g in gaps})
 
@@ -177,7 +170,7 @@ class TestTheGap(Isolated):
         """The planner prompt is explicit that at this corpus size acquisition is
         part of the job every week, not an occasional flourish. A week that wants
         nothing is still a corpus that needs widening."""
-        gaps = acquire.gaps(self.make(("beef", "low"), ("pork", "low"),
+        gaps = acquire.gaps(self.hh, self.make(("beef", "low"), ("pork", "low"),
                                       ("chicken", "low"), ("fish", "low")))
         self.assertEqual(gaps[0].kind, "breadth")
         self.assertIn("thinnest protein", gaps[0].why)
@@ -186,15 +179,15 @@ class TestTheGap(Isolated):
         """`profile.md` records the cuisine narrowness as measured fact and then
         says nobody has been asked whether they want it widened. Acting on an
         unanswered question is the failure that profile is written to prevent."""
-        gaps = acquire.gaps(self.make(("beef", "low"), ("pork", "low"),
+        gaps = acquire.gaps(self.hh, self.make(("beef", "low"), ("pork", "low"),
                                       ("chicken", "low"), ("fish", "low")))
         self.assertNotEqual(gaps[0].kind, "cuisine")
 
 
 class TestJudgingOnePage(Isolated):
     def known(self):
-        return {r["slug"] for r in pantry.load_corpus()} | \
-               {r["slug"] for r in pantry.load_candidates()}
+        return {r["slug"] for r in pantry.load_corpus(self.hh)} | \
+               {r["slug"] for r in pantry.load_candidates(self.hh)}
 
     def test_a_peanut_recipe_is_refused(self):
         """Verbatim from a live run: nine sources were asked for `fish` and one
@@ -267,23 +260,23 @@ class TestTheRun(Isolated):
 
     def test_it_lands_a_recipe_nobody_had_bookmarked(self):
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        got = acquire.acquire(self.gap_week(), want=1)
+        got = acquire.acquire(self.hh, self.gap_week(), want=1)
         self.assertEqual(len(got), 1)
-        rows = {r["slug"]: r for r in pantry.load_candidates()}
+        rows = {r["slug"]: r for r in pantry.load_candidates(self.hh)}
         self.assertIn("cod-fish-in-tomato-sauce", rows)
 
     def test_the_candidate_says_where_it_came_from(self):
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        acquire.acquire(self.gap_week(), want=1)
-        row = {r["slug"]: r for r in pantry.load_candidates()}["cod-fish-in-tomato-sauce"]
+        acquire.acquire(self.hh, self.gap_week(), want=1)
+        row = {r["slug"]: r for r in pantry.load_candidates(self.hh)}["cod-fish-in-tomato-sauce"]
         self.assertEqual(row["source"], COD["source"])
 
     def test_the_capture_is_complete_enough_for_the_shopping_list(self):
         """`docs/brief-next.md` §2: done means the capture is complete enough for
         the list. An acquisition that cannot be shopped for is not one."""
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        acquire.acquire(self.gap_week(), want=1)
-        path = pantry.recipe_file("cod-fish-in-tomato-sauce")
+        acquire.acquire(self.hh, self.gap_week(), want=1)
+        path = pantry.recipe_file(self.hh, "cod-fish-in-tomato-sauce")
         self.assertTrue(path.exists())
         body = path.read_text()
         self.assertIn("cod fillets", body)
@@ -292,37 +285,37 @@ class TestTheRun(Isolated):
 
     def test_the_reason_says_why_it_reached(self):
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        got = acquire.acquire(self.gap_week(), want=1)
+        got = acquire.acquire(self.hh, self.gap_week(), want=1)
         reason = got[0].reason()
         self.assertTrue(reason.startswith("new here —"))
         self.assertIn("fish", reason)
 
     def test_a_candidate_never_claims_membership_it_does_not_have(self):
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        got = acquire.acquire(self.gap_week(), want=1)
+        got = acquire.acquire(self.hh, self.gap_week(), want=1)
         self.assertTrue(got[0].reason().startswith("new here"))
-        row = {r["slug"]: r for r in pantry.load_candidates()}["cod-fish-in-tomato-sauce"]
+        row = {r["slug"]: r for r in pantry.load_candidates(self.hh)}["cod-fish-in-tomato-sauce"]
         self.assertEqual(row["outcome"], "untested")
 
     def test_nothing_lands_in_the_corpus(self):
         """Membership is earned. Acquisition is the one path most likely to
         forget that, since it is the one that adds recipes."""
-        before = len(pantry.load_corpus())
+        before = len(pantry.load_corpus(self.hh))
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        acquire.acquire(self.gap_week(), want=1)
-        self.assertEqual(len(pantry.load_corpus()), before)
+        acquire.acquire(self.hh, self.gap_week(), want=1)
+        self.assertEqual(len(pantry.load_corpus(self.hh)), before)
 
     def test_a_dry_run_writes_nothing(self):
-        before = pantry.CANDIDATES.read_text()
+        before = self.hh.candidates.read_text()
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        got = acquire.acquire(self.gap_week(), want=1, dry_run=True)
+        got = acquire.acquire(self.hh, self.gap_week(), want=1, dry_run=True)
         self.assertEqual(len(got), 1)
-        self.assertEqual(pantry.CANDIDATES.read_text(), before)
+        self.assertEqual(self.hh.candidates.read_text(), before)
 
     def test_it_picks_the_better_of_two(self):
         self.stub({"thecountrycook.net": [COD, FUSSY]},
                   {COD["source"]: COD, FUSSY["source"]: FUSSY})
-        got = acquire.acquire(self.gap_week(), want=1)
+        got = acquire.acquire(self.hh, self.gap_week(), want=1)
         self.assertEqual(got[0].rec["title"], COD["title"])
 
     def test_a_source_with_no_search_api_is_skipped_not_scraped(self):
@@ -330,7 +323,7 @@ class TestTheRun(Isolated):
         a search API has not agreed to be searched by a program, and guessing its
         URL structure is the same move `onboard.from_url` already refuses when it
         declines to read a recipe off page prose."""
-        self.stub({h: [COD] for h in acquire.sources() if h != "tasty.co"},
+        self.stub({h: [COD] for h in acquire.sources(self.hh) if h != "tasty.co"},
                   {COD["source"]: COD})
         inner = acquire.search
 
@@ -339,20 +332,20 @@ class TestTheRun(Isolated):
                 raise acquire.Unavailable("HTTP 404")
             return inner(query, host, limit, **kw)
         acquire.search = search
-        self.assertEqual(len(acquire.acquire(self.gap_week(), want=1)), 1)
+        self.assertEqual(len(acquire.acquire(self.hh, self.gap_week(), want=1)), 1)
 
     def test_the_fetch_budget_is_capped(self):
         many = [recipe(f"Cod Number {i}", "1 lb cod fillets",
                        source=f"https://thecountrycook.net/{i}/") for i in range(40)]
         calls = self.stub({"thecountrycook.net": many},
                           {r["source"]: r for r in many})
-        acquire.acquire(self.gap_week(), want=1)
+        acquire.acquire(self.hh, self.gap_week(), want=1)
         self.assertLessEqual(len(calls["fetch"]), acquire.MAX_FETCHES)
 
     def test_the_run_is_recorded(self):
         self.stub({"thecountrycook.net": [COD]}, {COD["source"]: COD})
-        acquire.acquire(self.gap_week(), want=1)
-        got = pantry.decisions({"acquired"})
+        acquire.acquire(self.hh, self.gap_week(), want=1)
+        got = pantry.decisions(self.hh, {"acquired"})
         self.assertEqual(len(got), 1)
         self.assertEqual(got[0]["source"], COD["source"])
         self.assertEqual(got[0]["found_by"], "acquire")
@@ -369,33 +362,33 @@ class TestPastingALink(Isolated):
 
     def test_a_pasted_link_lands_a_candidate(self):
         self.page(COD)
-        found = acquire.from_url(COD["source"])
+        found = acquire.from_url(self.hh, COD["source"])
         self.assertEqual(found.rec["title"], COD["title"])
         self.assertIn("cod-fish-in-tomato-sauce",
-                      {r["slug"] for r in pantry.load_candidates()})
+                      {r["slug"] for r in pantry.load_candidates(self.hh)})
 
     def test_it_goes_through_the_same_door_acquisition_uses(self):
         """A recipe somebody pasted and a recipe the tool found are the same
         recipe and get the same row. Two write paths would drift."""
         self.page(COD)
-        acquire.from_url(COD["source"])
-        row = {r["slug"]: r for r in pantry.load_candidates()}["cod-fish-in-tomato-sauce"]
+        acquire.from_url(self.hh, COD["source"])
+        row = {r["slug"]: r for r in pantry.load_candidates(self.hh)}["cod-fish-in-tomato-sauce"]
         self.assertEqual(row["source"], COD["source"])
         self.assertEqual(row["outcome"], "untested")
-        self.assertTrue(pantry.recipe_file("cod-fish-in-tomato-sauce").exists())
+        self.assertTrue(pantry.recipe_file(self.hh, "cod-fish-in-tomato-sauce").exists())
 
     def test_a_hard_constraint_still_applies_to_a_recipe_a_person_chose(self):
         """An allergy is not a preference, and a human typing the URL is not
         evidence against it."""
         self.page(CURRY)
         with self.assertRaises(acquire.Unavailable) as e:
-            acquire.from_url(CURRY["source"])
+            acquire.from_url(self.hh, CURRY["source"])
         self.assertIn("peanut", str(e.exception))
 
     def test_a_page_with_no_recipe_data_is_refused_with_a_readable_reason(self):
         self.page(NO_DATA)
         with self.assertRaises(acquire.Unavailable) as e:
-            acquire.from_url(NO_DATA["source"])
+            acquire.from_url(self.hh, NO_DATA["source"])
         self.assertIn("no machine-readable recipe", str(e.exception))
 
     def test_relevance_is_not_applied_to_something_chosen(self):
@@ -406,22 +399,22 @@ class TestPastingALink(Isolated):
                      "8 oz mushrooms", "1 can vegetable broth",
                      source="https://lilluna.com/mushroom-barley-risotto/")
         self.page(veg)
-        found = acquire.from_url(veg["source"])
+        found = acquire.from_url(self.hh, veg["source"])
         self.assertEqual(found.rec["title"], veg["title"])
 
     def test_the_same_thing_twice_says_so(self):
         self.page(COD)
-        acquire.from_url(COD["source"])
+        acquire.from_url(self.hh, COD["source"])
         with self.assertRaises(acquire.Unavailable) as e:
-            acquire.from_url(COD["source"])
+            acquire.from_url(self.hh, COD["source"])
         self.assertIn("already", str(e.exception))
 
     def test_it_is_recorded_as_pasted_not_as_found(self):
         """The decision log has to be able to tell the two apart, or `how much of
         the corpus did the tool grow` stops being answerable."""
         self.page(COD)
-        acquire.from_url(COD["source"])
-        self.assertEqual(pantry.decisions({"acquired"})[0]["found_by"], "paste")
+        acquire.from_url(self.hh, COD["source"])
+        self.assertEqual(pantry.decisions(self.hh, {"acquired"})[0]["found_by"], "paste")
 
 
 class TestTheWriteDoor(Isolated):
@@ -429,25 +422,25 @@ class TestTheWriteDoor(Isolated):
 
     def test_a_candidate_with_no_source_is_refused(self):
         with self.assertRaises(pantry.RuleViolation) as e:
-            pantry.add_candidate("Something", source="")
+            pantry.add_candidate(self.hh, "Something", source="")
         self.assertIn("invention", str(e.exception))
 
     def test_a_corpus_recipe_may_not_be_re_added_as_a_gamble(self):
         with self.assertRaises(pantry.RuleViolation) as e:
-            pantry.add_candidate("Chili", source="https://example.org/x")
+            pantry.add_candidate(self.hh, "Chili", source="https://example.org/x")
         self.assertIn("already in the corpus", str(e.exception))
 
     def test_adding_the_same_thing_twice_is_a_no_op(self):
-        self.assertTrue(pantry.add_candidate("New Thing", source="https://x.test/a"))
-        self.assertFalse(pantry.add_candidate("New Thing", source="https://x.test/a"))
-        self.assertEqual(sum(1 for r in pantry.load_candidates()
+        self.assertTrue(pantry.add_candidate(self.hh, "New Thing", source="https://x.test/a"))
+        self.assertFalse(pantry.add_candidate(self.hh, "New Thing", source="https://x.test/a"))
+        self.assertEqual(sum(1 for r in pantry.load_candidates(self.hh)
                              if r["slug"] == "new-thing"), 1)
 
     def test_the_source_column_is_migrated_in_place(self):
         """These files are hand-edited and diffed by eye. A migration that
         reformats the table it touched is one nobody can review."""
-        pantry.add_candidate("New Thing", source="https://x.test/a")
-        rows = [l for l in pantry.CANDIDATES.read_text().splitlines()
+        pantry.add_candidate(self.hh, "New Thing", source="https://x.test/a")
+        rows = [l for l in self.hh.candidates.read_text().splitlines()
                 if l.startswith("|")]
         self.assertTrue(rows[0].rstrip().endswith("| Source |"))
         self.assertEqual(rows[1].count("|"), rows[0].count("|"))
@@ -455,9 +448,9 @@ class TestTheWriteDoor(Isolated):
             self.assertEqual(row.count("|"), rows[0].count("|"))
 
     def test_the_existing_rows_keep_their_values(self):
-        before = {r["slug"]: r.get("outcome") for r in pantry.load_candidates()}
-        pantry.add_candidate("New Thing", source="https://x.test/a")
-        after = {r["slug"]: r.get("outcome") for r in pantry.load_candidates()}
+        before = {r["slug"]: r.get("outcome") for r in pantry.load_candidates(self.hh)}
+        pantry.add_candidate(self.hh, "New Thing", source="https://x.test/a")
+        after = {r["slug"]: r.get("outcome") for r in pantry.load_candidates(self.hh)}
         for slug, outcome in before.items():
             self.assertEqual(after[slug], outcome)
 
