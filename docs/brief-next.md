@@ -18,40 +18,40 @@ This brief is ordered. The order is the recommendation.
 - **The write rules.** `pantry.py` refuses what the prose used to only assert.
 - **A hosted demo.** https://huggingface.co/spaces/MattCow/pantry-router — the real Python
   under Pyodide, not a port.
-- 129 tests, standard library only.
+- **The model planner.** `planner/`, two implementations behind `pantry.propose()`. See
+  §1 below and `docs/model-planner-findings.md`.
+- 171 tests, standard library only.
 
 **Written but never run:** `.github/workflows/*`. CI has never executed; the deploy has
 never fired. The Space was pushed by hand.
 
-**The honest headline: no model has ever run in this product.** `plan.py` prints a prompt
-to a terminal. `app.py` uses the deterministic ranker, and `state()` hardcodes
-`"planner": "ranker"`. Everything anyone has seen is staleness arithmetic over 24 rows.
-
 ---
 
-## 1. Put a model in the planner
+## 1. Put a model in the planner — **built**
 
-**The single biggest gap.** The ranker can say *not cooked in 11 months* and *the only beef
-this week*. It cannot say *you drifted away from Italian around March and this is the one
-you kept going back to before that* — and the proposal document is explicit that the reason
-**is** the product, because a forgotten recipe lands on the reason and not the suggestion.
+*Kept in place because the constraints are the interesting part and re-deriving them would
+be expensive. `docs/model-planner-findings.md` is the report.*
 
-**Shape:** a second implementation behind the same call. `pantry.propose()` already has the
-right signature; add `planner/model.py` beside the ranker and pick between them on whether
-a key is present. **The ranker is not a fallback to apologise for** — it is what runs in the
-demo and in CI, so it has to stay genuinely good and its output has to stay tested.
+**What it is.** `planner/` holds the choice, the prompt, the model implementation and the
+constraint checks; the ranker stayed in `pantry.py` as the now-public `pantry.rank()`.
+Selection is an explicit argument, then `PANTRY_PLANNER`, then whether a key is present.
+No key is a supported configuration, not a degraded one — it is what the demo and CI run,
+and CI asserts it.
 
-`plan.py`'s `PLANNER_PROMPT` is the starting point and it is not naive — it has survived a
-cold run and several corrections. Reuse it. Do not rewrite it from scratch.
+**The design line, and it is narrower than the brief implied:** *the model selects and
+explains; it does not state facts.* It gets the corpus with a slug column, a computed
+`days since` column and no ingredients, and returns slugs and reasons. Every other field is
+read off the corpus row, so an invented one has nowhere to land. A slug resolving to
+nothing is dropped and never nudged to its neighbour. A reason claiming recency about a row
+with no date is dropped. The ranker fills whatever was dropped, which is what makes
+refusing cheap: it costs a good reason, never a dinner.
 
-**Done means:** a week planned by a model, with reasons traceable to `profile.md` or the
-corpus, and a test that a model-planned week still respects the hard constraints (peanut,
-active-time ceiling, family-edible).
+**The hard constraints are code now** — `planner/constraints.py`, tested with no key and no
+network. Family-edible is the exception and is documented as one: there is no honest
+mechanical test, and corpus membership is the proxy.
 
-**The trap:** asked to reason about ingredient coupling from a corpus index that contains no
-ingredients, a model manufactured coupling and then *chose a candidate because of the
-coupling it had invented*. That is why coupling moved to Step 2. Any model in the planner
-must be given only what the corpus actually contains.
+**Still open here:** nobody has read a model-planned week and said whether the reasons land.
+That is question 1 in the findings and it is the whole product claim.
 
 ## 2. Acquisition — the tool cannot find a recipe
 
