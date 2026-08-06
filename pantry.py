@@ -48,8 +48,12 @@ BASE_AE = 2.5
 # The decision log
 # --------------------------------------------------------------------------- #
 
-def log(kind: str, **payload) -> None:
+def log(event: str, **payload) -> None:
     """Append one decision to `decisions.jsonl`.
+
+    The first argument is `event` rather than `kind` so that `kind=` in a payload
+    is a normal keyword and hits the guard below instead of colliding with the
+    parameter. Every caller passes it positionally.
 
     **A decision that was not recorded cannot be recovered.** That argument has
     nothing to do with where the data lives, which is why this survived the
@@ -62,7 +66,16 @@ def log(kind: str, **payload) -> None:
     evidence, not a dependency.
     """
     try:
-        rec = {"at": dt.datetime.now().isoformat(timespec="seconds"), "kind": kind}
+        rec = {"at": dt.datetime.now().isoformat(timespec="seconds"), "kind": event}
+        # A payload key of `at` or `kind` would overwrite the record's own, and
+        # `kind` is an easy one to reach for - the drop route wanted to record
+        # which *reason* kind a meal was turned down against, and calling it
+        # `kind` would have quietly replaced the decision type with it. The log
+        # is the one file that has to stay literally true, so this is loud.
+        clash = {"at", "kind"} & set(payload)
+        if clash:
+            raise ValueError(f"log payload may not use reserved key(s): "
+                             f"{', '.join(sorted(clash))}")
         rec.update(payload)
         with DECISIONS.open("a", encoding="utf-8") as fh:
             fh.write(json.dumps(rec, sort_keys=True) + "\n")
@@ -258,6 +271,13 @@ class Meal:
     variant: str = ""
     variants: list[str] = field(default_factory=list)
     reason: str = ""
+    # Which *kind* of reason surfaced this - `stale`, `protein`, `low`, `model`.
+    # Recorded because § 7 of the brief asks which reasons get accepted and which
+    # get dropped, and the sentence alone cannot answer that: two meals stale at
+    # different distances are two different sentences and one kind. Not persisted
+    # to the week file, which has a fixed line format; the decision log is where
+    # it needs to survive, and that is append-only.
+    reason_kind: str = ""
     candidate: bool = False
     locked: bool = False
 
@@ -339,8 +359,8 @@ def _reasons(row: dict, gap: int | None, picked: list[Meal], ae: float,
 
 
 def _pick_reason(row, gap, picked, ae, used_kinds: set, used_texts: set,
-                 candidate: bool = False) -> str:
-    """Prefer a reason nothing else in the week has already used. Five true
+                 candidate: bool = False) -> tuple[str, str]:
+    """The `(kind, text)` of the best reason nothing else in the week has used. Five true
     sentences that are all the same sentence do not help anyone choose.
 
     A kind may repeat if the sentence differs - two meals can both be stale at
@@ -355,12 +375,12 @@ def _pick_reason(row, gap, picked, ae, used_kinds: set, used_texts: set,
         if kind not in used_kinds:
             used_kinds.add(kind)
             used_texts.add(text)
-            return text
+            return kind, text
     for kind, text in real:
         if text not in used_texts:
             used_texts.add(text)
-            return text
-    return options[-1][1]
+            return kind, text
+    return options[-1]
 
 
 def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
@@ -456,10 +476,10 @@ def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
             protein=best_row.get("protein", ""), cuisine=best_row.get("cuisine", ""),
             yield_=best_row.get("yield", ""), active=(best_row.get("active") or "").lower(),
             passive=best_row.get("passive", ""), variant=vs[0] if vs else "", variants=vs,
-            reason=_pick_reason(best_row, best_gap, picked, ae, used_kinds, used_texts,
-                                best_cand),
             candidate=best_cand,
         ))
+        picked[-1].reason_kind, picked[-1].reason = _pick_reason(
+            best_row, best_gap, picked, ae, used_kinds, used_texts, best_cand)
         if best_cand:
             used_candidates += 1
 
@@ -467,10 +487,11 @@ def rank(nights: int = 5, guests: float = 0.0, risk: str = "normal",
 
 
 def _log_proposal(picked: list[Meal], keep: list[Meal], nights: int, guests: float,
-                  risk: str, **extra) -> None:
-    log("proposed", nights=nights, guests=guests, risk=risk,
+                  risk: str, week: str = "", **extra) -> None:
+    log("proposed", nights=nights, guests=guests, risk=risk, week=week or monday(),
         kept=[m.slug for m in keep],
-        added=[{"recipe": m.slug, "reason": m.reason, "candidate": m.candidate}
+        added=[{"recipe": m.slug, "reason": m.reason, "candidate": m.candidate,
+                "kind": m.reason_kind, "protein": m.protein, "cuisine": m.cuisine}
                for m in picked[len(keep):]],
         **extra)
 
@@ -478,7 +499,7 @@ def _log_proposal(picked: list[Meal], keep: list[Meal], nights: int, guests: flo
 def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
             keep: list[Meal] | None = None, today: dt.date | None = None,
             avoid: set[str] | None = None, planner: str | None = None,
-            client=None) -> list[Meal]:
+            client=None, week: str = "") -> list[Meal]:
     """Plan the week. **The one call, with two implementations behind it.**
 
     `planner/` decides which: `"ranker"` or `"model"`, from the argument, then
@@ -498,7 +519,10 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     the ranker for a month is a thing someone can find out.
 
     `client` is passed through to the model planner as its HTTP seam; tests use
-    it, nothing else does.
+    it, nothing else does. `week` is the Monday this proposal is *for*, which the
+    log needs and cannot infer - proposing next week on a Sunday is a normal
+    thing to do, and `review.py` grouping by wall clock would file it under the
+    wrong one.
     """
     import planner as planners            # deferred: the browser build has no planner/
 
@@ -506,7 +530,7 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
     which = planners.which(planner)
     if which != planners.MODEL:
         picked = rank(nights, guests, risk, keep, today, avoid)
-        _log_proposal(picked, keep, nights, guests, risk, planner="ranker")
+        _log_proposal(picked, keep, nights, guests, risk, week, planner="ranker")
         return picked
 
     from planner import model as model_planner
@@ -516,7 +540,7 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
                                     today=today, avoid=avoid, client=client)
     except model_planner.PlannerUnavailable as exc:
         picked = rank(nights, guests, risk, keep, today, avoid)
-        _log_proposal(picked, keep, nights, guests, risk,
+        _log_proposal(picked, keep, nights, guests, risk, week,
                       planner="ranker", asked="model", fallback=str(exc))
         return picked
 
@@ -547,7 +571,7 @@ def propose(nights: int = 5, guests: float = 0.0, risk: str = "normal",
         picked = rank(len(picked) + make_up, guests, risk, picked, today, avoid)
         topped_up = [m.slug for m in picked[len(keep) + len(result.meals):]]
 
-    _log_proposal(picked, keep, nights, guests, risk,
+    _log_proposal(picked, keep, nights, guests, risk, week,
                   planner="model" if result.meals else "ranker",
                   asked="model", model=result.model,
                   note=result.note, coupling=result.coupling, gaps=result.gaps,

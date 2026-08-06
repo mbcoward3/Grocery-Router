@@ -264,6 +264,12 @@ def _meal_from(row: dict, reason: str, candidate: bool):
         variants=pantry.variants_for(row["slug"]),
         variant=(pantry.variants_for(row["slug"]) or [""])[0],
         reason=(reason or "").strip(),
+        # One kind for everything a model wrote. The ranker's kinds describe
+        # *which rule* surfaced a meal, and a model's reason is not the output of
+        # a rule - claiming `stale` or `protein` for it would put a made-up
+        # provenance into the decision log, which is the one file that has to
+        # stay literally true.
+        reason_kind="model",
         candidate=candidate,
     )
 

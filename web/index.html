@@ -128,7 +128,19 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
 
 .foot { color: var(--muted); font-size: 13.5px; margin-top: 12px; }
 .empty { color: var(--muted); font-style: italic; }
+.behaviour { margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px; }
+.behaviour b { display: block; font-size: 13px; margin: 14px 0 8px; }
+.behaviour table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.behaviour th { text-align: left; font-weight: 500; color: var(--muted);
+  padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); }
+.behaviour td { padding: 4px 8px 4px 0; border-bottom: 1px solid var(--line); }
+.behaviour td:not(:first-child), .behaviour th:not(:first-child) {
+  text-align: right; font-variant-numeric: tabular-nums; width: 1%; white-space: nowrap; }
 .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 16px; }
+input[type=url] { flex: 1 1 260px; min-width: 0; font: 400 13px/1 ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink); background: transparent; border: 1px solid var(--line);
+  border-radius: 9px; padding: 9px 12px; }
+input[type=url]:focus { outline: none; border-color: var(--accent); }
 .spin { opacity: .5; }
 </style>
 </head>
@@ -164,6 +176,13 @@ select { font: 500 13px ui-sans-serif, system-ui, sans-serif; color: var(--ink);
       <button id="acquireBtn">Find something new</button>
       <span class="foot" id="fillNote"></span>
     </div>
+    <div class="row">
+      <input id="onboardUrl" type="url" placeholder="…or paste a recipe link"
+             autocomplete="off" spellcheck="false">
+      <button id="onboardBtn">Add it</button>
+    </div>
+    <p class="foot" id="onboardNote">Adding a recipe used to mean a terminal.
+      Paste a link and it gets captured, checked and filed with the candidates.</p>
   </section>
 
   <section id="dials">
@@ -317,7 +336,35 @@ function renderMetrics(m) {
       <div><b>${m.weeks}</b><span>weeks planned</span></div>
     </div>
     <div class="foot">The claim this tool makes is that the gap between what you reach for
-    and what you like is the product. Dormant is that gap. Zeroes are honest at week one.</div>`;
+    and what you like is the product. Dormant is that gap. Zeroes are honest at week one.</div>
+    ${renderBehaviour(m.behaviour)}`;
+}
+
+// The five numbers above are read off the corpus and describe what you own.
+// These are read off the decision log and describe what the tool did — which is
+// the only thing that can answer "is it any good" for someone who didn't build it.
+function renderBehaviour(b) {
+  if (!b || !b.reasons || !b.reasons.length) return '';
+  const rows = b.reasons.map(r => `<tr><td>${esc(r.means || r.kind)}</td>` +
+    `<td>${r.offered}</td><td>${r.dropped}</td><td>${r.kept}</td>` +
+    `<td>${r.accept_rate}%</td></tr>`).join('');
+  const trend = (b.trend || []).map(w =>
+    `<tr><td>${esc(w.week)}</td><td>${w.offered}</td><td>${w.new}</td>` +
+    `<td>${w.distinct_so_far}</td></tr>`).join('');
+  return `
+    <div class="behaviour">
+      <b>Which reasons land</b>
+      <table><thead><tr><th>reason</th><th>offered</th><th>dropped</th><th>kept</th>
+        <th>accepted</th></tr></thead><tbody>${rows}</tbody></table>
+      <div class="foot">If every reason scores the same, the claim that the reason
+      is the product isn't doing any work.</div>
+      ${trend ? `<b>Breadth</b>
+      <table><thead><tr><th>week</th><th>offered</th><th>new</th>
+        <th>distinct so far</th></tr></thead><tbody>${trend}</tbody></table>
+      <div class="foot">The opponent is buying the same things again, so
+      <i>new</i> is the column that matters — <i>offered</i> can stay flat forever.
+      ${b.widening ? 'It is widening.' : ''}</div>` : ''}
+    </div>`;
 }
 
 // Which planner produced the week, said plainly under it.
@@ -449,6 +496,29 @@ document.addEventListener('click', async (e) => {
         ).join(' ')
       : 'Nothing new landed. Everything found was already known, off-target, or ' +
         'ruled out by a hard constraint.';
+    return;
+  }
+  if (t.id === 'onboardBtn') {
+    const box = $('#onboardUrl');
+    if (!box.value.trim()) { box.focus(); return; }
+    t.classList.add('spin');
+    $('#onboardNote').textContent = 'Reading the page…';
+    const r = await api('/api/onboard', {url: box.value.trim()});
+    t.classList.remove('spin');
+    S = r; render();
+    if (r.onboarded) {
+      box.value = '';
+      const a = r.onboarded;
+      // The questions matter as much as the success. A capture with no stated
+      // yield is not a failure, but the planner needs that number for leftovers
+      // and only the household can answer it.
+      $('#onboardNote').innerHTML =
+        `Added <b>${esc(a.title)}</b> — ${a.ingredients} ingredients, ` +
+        `yield ${esc(a.yield)}. It's a candidate now, so it has to earn its way in.` +
+        (a.questions || []).map(q => `<br>Still needs an answer: ${esc(q)}`).join('');
+    } else {
+      $('#onboardNote').textContent = "Didn't add it — " + (r.onboard_error || 'unknown reason') + '.';
+    }
     return;
   }
   if (t.id === 'applyBtn') {

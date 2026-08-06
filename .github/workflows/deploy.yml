@@ -43,6 +43,7 @@ jobs:
           python3 test_planner.py
           python3 test_acquire.py
           python3 test_adapters.py
+          python3 test_review.py
 
       - name: Build
         run: python3 build_static.py

@@ -357,6 +357,72 @@ class TestTheRun(Isolated):
         self.assertEqual(got[0]["found_by"], "acquire")
 
 
+class TestPastingALink(Isolated):
+    """§3: adding a recipe meant running a CLI with a URL, which for a tool whose
+    thesis is closing the gap between the 15 you reach for and the 60 you like is
+    close to fatal."""
+
+    def page(self, rec):
+        self.addCleanup(setattr, onboard, "from_url", onboard.from_url)
+        onboard.from_url = lambda url, **kw: dict(rec)
+
+    def test_a_pasted_link_lands_a_candidate(self):
+        self.page(COD)
+        found = acquire.from_url(COD["source"])
+        self.assertEqual(found.rec["title"], COD["title"])
+        self.assertIn("cod-fish-in-tomato-sauce",
+                      {r["slug"] for r in pantry.load_candidates()})
+
+    def test_it_goes_through_the_same_door_acquisition_uses(self):
+        """A recipe somebody pasted and a recipe the tool found are the same
+        recipe and get the same row. Two write paths would drift."""
+        self.page(COD)
+        acquire.from_url(COD["source"])
+        row = {r["slug"]: r for r in pantry.load_candidates()}["cod-fish-in-tomato-sauce"]
+        self.assertEqual(row["source"], COD["source"])
+        self.assertEqual(row["outcome"], "untested")
+        self.assertTrue(pantry.recipe_file("cod-fish-in-tomato-sauce").exists())
+
+    def test_a_hard_constraint_still_applies_to_a_recipe_a_person_chose(self):
+        """An allergy is not a preference, and a human typing the URL is not
+        evidence against it."""
+        self.page(CURRY)
+        with self.assertRaises(acquire.Unavailable) as e:
+            acquire.from_url(CURRY["source"])
+        self.assertIn("peanut", str(e.exception))
+
+    def test_a_page_with_no_recipe_data_is_refused_with_a_readable_reason(self):
+        self.page(NO_DATA)
+        with self.assertRaises(acquire.Unavailable) as e:
+            acquire.from_url(NO_DATA["source"])
+        self.assertIn("no machine-readable recipe", str(e.exception))
+
+    def test_relevance_is_not_applied_to_something_chosen(self):
+        """The muffin filter exists because full-text search is noisy. A person
+        pasting a link is not noise, and applying it there would refuse a
+        vegetarian main somebody deliberately went and found."""
+        veg = recipe("Mushroom Barley Risotto", "1 cup pearl barley",
+                     "8 oz mushrooms", "1 can vegetable broth",
+                     source="https://lilluna.com/mushroom-barley-risotto/")
+        self.page(veg)
+        found = acquire.from_url(veg["source"])
+        self.assertEqual(found.rec["title"], veg["title"])
+
+    def test_the_same_thing_twice_says_so(self):
+        self.page(COD)
+        acquire.from_url(COD["source"])
+        with self.assertRaises(acquire.Unavailable) as e:
+            acquire.from_url(COD["source"])
+        self.assertIn("already", str(e.exception))
+
+    def test_it_is_recorded_as_pasted_not_as_found(self):
+        """The decision log has to be able to tell the two apart, or `how much of
+        the corpus did the tool grow` stops being answerable."""
+        self.page(COD)
+        acquire.from_url(COD["source"])
+        self.assertEqual(pantry.decisions({"acquired"})[0]["found_by"], "paste")
+
+
 class TestTheWriteDoor(Isolated):
     """`pantry.add_candidate` — what `upsert_corpus` refuses to be."""
 

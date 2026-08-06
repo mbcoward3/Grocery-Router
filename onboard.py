@@ -1124,6 +1124,63 @@ def sync_existing(recipes_dir, corpus_path, dry_run=False):
     return results
 
 
+def read_ingredients(text):
+    """The `## Ingredients` block of a recipe file, parsed.
+
+    Recipe files are the capture's output and also a thing people hand-write, so
+    reading one back is a real operation and not only a round trip. Group
+    headings (`### For the sauce`) and blank lines are skipped; every `- ` line
+    is an ingredient.
+    """
+    out, inside = [], False
+    for line in text.splitlines():
+        s = line.strip()
+        if s.startswith("## "):
+            inside = s[3:].strip().lower() == "ingredients"
+            continue
+        if inside and s.startswith("- "):
+            out.append(parse_ingredient(s[2:]))
+    return out
+
+
+def backfill_peanut(recipes_dir, dry_run=False):
+    """Write a `peanut:` verdict into every capture that has none.
+
+    Four recipe files predate the header, and three of them are proposed
+    regularly. `planner/constraints.py` reads that header to enforce a hard
+    allergy constraint and treats a missing one as *unknown* rather than as
+    unsafe - which is the right reading of an absence, and a bad thing to leave
+    sitting there when the ingredients are on disk and the scan is free.
+
+    Only fills a gap. A file that already carries a verdict is left alone, human
+    edit or not, because no writer here overwrites a value a person put there.
+    """
+    results = []
+    for path in sorted(Path(recipes_dir).glob("*.md")):
+        text = path.read_text()
+        if re.search(r"^peanut:", text, re.M):
+            continue
+        ings = read_ingredients(text)
+        if not ings:
+            results.append((path.name, "no ingredients on file - left alone"))
+            continue
+        verdict, evidence = scan_peanut(ings)
+        line = f"peanut:   {verdict}" + (f" - {evidence[0]}" if evidence else "")
+        # Goes with the other headers, immediately before `status:` where the
+        # renderer puts it, so a backfilled file and a fresh capture read the
+        # same. Falls back to the end of the header block if there is no status.
+        lines = text.splitlines()
+        at = next((i for i, l in enumerate(lines) if l.startswith("status:")), None)
+        if at is None:
+            at = next((i for i, l in enumerate(lines)
+                       if l.startswith("## ")), len(lines))
+        lines.insert(at, line)
+        if not dry_run:
+            path.write_text("\n".join(lines) + "\n")
+        results.append((path.name, f"{verdict} ({len(ings)} ingredients scanned)"))
+    return results
+
+
 def run_batch(directory, recipes_dir, corpus_path, dry_run=False):
     """Process a directory of inputs: urls.tsv, text/*.txt, transcripts/*.md."""
     directory = Path(directory)
@@ -1289,6 +1346,8 @@ def main():
     src.add_argument("--batch", type=Path, help="a directory of inputs")
     src.add_argument("--sync", action="store_true",
                      help="copy yields out of existing recipes/ files into the corpus")
+    src.add_argument("--rescan-peanut", action="store_true",
+                     help="write a peanut verdict into every capture that has none")
     p.add_argument("--corpus-row", help="the title of the corpus row this belongs to")
     p.add_argument("--title", help="override the recipe title")
     p.add_argument("--recipes", type=Path, default=ROOT / "recipes")
@@ -1298,6 +1357,14 @@ def main():
                    help="parse and report, write nothing")
     p.add_argument("--json", action="store_true", help="print the result as JSON")
     args = p.parse_args()
+
+    if args.rescan_peanut:
+        found = backfill_peanut(args.recipes, args.dry_run)
+        for name, outcome in found:
+            print(f"{name:44} {outcome}")
+        if not found:
+            print("every capture already carries a peanut verdict")
+        return
 
     if args.sync:
         for name, title, y, action in sync_existing(args.recipes, args.corpus,

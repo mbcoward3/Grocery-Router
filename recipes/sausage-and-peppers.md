@@ -5,6 +5,7 @@ yield:   4 AE
 active:  med
 passive: 1 hr cooling after steaming
 
+peanut:   none seen
 ## Ingredients
 
 - 2 large Italian sausages

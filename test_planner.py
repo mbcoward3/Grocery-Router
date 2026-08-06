@@ -296,7 +296,15 @@ class TestHardConstraints(Isolated):
 
     def test_an_unscanned_recipe_is_reported_rather_than_blocked(self):
         """Unknown is not the extreme. A recipe with no last-cooked date once
-        scored as maximally stale for exactly this reason."""
+        scored as maximally stale for exactly this reason.
+
+        The gap is made here rather than borrowed from the corpus. It used to
+        borrow `sausage-and-peppers`, which was one of four captures with no
+        recorded verdict — until `./onboard.py --rescan-peanut` closed all four.
+        A test whose premise a fix can delete is testing the fixture."""
+        path = pantry.recipe_file("sausage-and-peppers")
+        path.write_text("\n".join(l for l in path.read_text().splitlines()
+                                  if not l.startswith("peanut:")))
         self.assertEqual(constraints.peanut_verdict("sausage-and-peppers"), "")
         got = model_planner.plan(client=lambda p: reply([pick("sausage-and-peppers")]))
         self.assertEqual(len(got.meals), 1)

@@ -5,6 +5,7 @@ yield:   8 AE
 active:  low
 passive: 10 hr slow cooker
 
+peanut:   none seen
 ## Ingredients
 
 - 3 lb chuck roast, trimmed of large pieces of fat then cut into large pieces

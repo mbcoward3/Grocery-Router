@@ -317,7 +317,14 @@ def assess(rec: dict, gap: Gap | None = None, known: set[str] | None = None) -> 
     # are a recording artifact rather than an absence - so a vegetarian dinner is
     # a real gap here, and it is `docs/brief-next.md` §6's to close, not
     # something to paper over by letting dessert through in the meantime.
-    if not v.protein:
+    #
+    # **Only when something was searched for.** A person who pasted a URL is not
+    # noise, and this filter exists entirely because full-text search is. Applied
+    # to a chosen recipe it would refuse a vegetarian main somebody deliberately
+    # went and found, which is the household overruled by a heuristic aimed at
+    # cake - and `profile.md` already says the missing vegetables are a recording
+    # artifact rather than a diet.
+    if not v.protein and gap is not None:
         v.refusals.append("no identifiable protein — reads as a side or a sweet, "
                           "and the corpus is mains-only")
         return v
@@ -428,6 +435,64 @@ def look(gap: Gap, hosts: list[str], known: set[str], budget: list[int],
     return out
 
 
+def land(rec: dict, verdict: "Verdict", found_by: str = "acquire") -> bool:
+    """Write the capture and the candidate row. **The one place either happens.**
+
+    Two callers now - the search pipeline below, and pasting a URL into the
+    session - and they must not become two implementations. This project has
+    measured that cost once already: `onboard.py` and `shop.py` both parse
+    ingredients and disagree about what the item *is* in three of twelve hard
+    cases. A recipe found by searching and a recipe someone pasted are the same
+    recipe and get the same row.
+
+    The row goes through `pantry.add_candidate`, which is the only door into
+    `candidates.md` and which refuses one with no source.
+    """
+    title = rec["title"]
+    rec["slug"] = pantry.slug(title)
+    (pantry.ROOT / "recipes").mkdir(parents=True, exist_ok=True)
+    pantry.recipe_file(rec["slug"]).write_text(
+        onboard.render_recipe(rec), encoding="utf-8")
+    pantry._FILE_INDEX = None
+    return pantry.add_candidate(
+        title, source=rec["source"], protein=verdict.protein,
+        cuisine=verdict.cuisine, yield_=rec.get("yield") or "unknown",
+        active=verdict.active, passive=rec.get("passive") or "—",
+        proposed=f"wk of {pantry.monday()}", found_by=found_by)
+
+
+def from_url(url: str, log=lambda *_: None) -> "Found":
+    """Capture one page somebody chose, judge it, and land it.
+
+    §3 of `docs/brief-next.md`: adding a recipe meant running a CLI with a URL,
+    and *"for a tool whose thesis is closing the gap between the 15 you reach for
+    and the 60 you like, the growth path being a terminal command is close to
+    fatal."*
+
+    **The hard constraints still apply to a recipe a person chose.** A page with
+    no machine-readable recipe is refused, and so is one with peanuts in it -
+    that is an allergy and not a preference, and a human typing the URL is not
+    evidence against it. What is *not* applied is relevance: there is no gap to
+    be off-target for, and somebody deciding they want this recipe is the whole
+    input. `assess` is called with no gap for exactly that reason.
+
+    Raises `Unavailable` with a sentence a person can act on.
+    """
+    rec = onboard.from_url(url)
+    known = {r["slug"] for r in pantry.load_corpus()} | \
+            {r["slug"] for r in pantry.load_candidates()}
+    verdict = assess(rec, None, known)
+    if not verdict.ok:
+        raise Unavailable(verdict.refusals[0])
+    gap = Gap("chosen", "", "you added this one")
+    found = Found(rec, verdict, gap, {"title": rec["title"], "url": url,
+                                      "host": ""})
+    if not land(rec, verdict, found_by="paste"):
+        raise Unavailable(f"{rec['title']} is already known here")
+    log(f"added {rec['title']}")
+    return found
+
+
 def acquire(week_meals: list, want: int = 1, gap_filter: str | None = None,
             dry_run: bool = False, log=lambda *_: None) -> list[Found]:
     """Fill this week's gaps with recipes nobody had bookmarked.
@@ -469,16 +534,7 @@ def acquire(week_meals: list, want: int = 1, gap_filter: str | None = None,
                 landed.append(cand)
                 known.add(pantry.slug(title))
                 continue
-            cand.rec["slug"] = pantry.slug(title)
-            (pantry.ROOT / "recipes").mkdir(parents=True, exist_ok=True)
-            pantry.recipe_file(cand.rec["slug"]).write_text(
-                onboard.render_recipe(cand.rec), encoding="utf-8")
-            pantry._FILE_INDEX = None
-            added = pantry.add_candidate(
-                title, source=cand.rec["source"], protein=cand.verdict.protein,
-                cuisine=cand.verdict.cuisine, yield_=cand.rec.get("yield") or "unknown",
-                active=cand.verdict.active, passive=cand.rec.get("passive") or "—",
-                proposed=f"wk of {pantry.monday()}", found_by="acquire")
+            added = land(cand.rec, cand.verdict, found_by="acquire")
             if added:
                 log(f"  added: {title}  ({cand.rec['source']})")
                 landed.append(cand)

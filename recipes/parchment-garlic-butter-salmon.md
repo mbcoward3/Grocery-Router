@@ -5,6 +5,7 @@ yield:   1 AE
 active:  low
 passive: 30 min oven
 
+peanut:   none seen
 ## Ingredients
 
 - 1 small white potato, thinly sliced

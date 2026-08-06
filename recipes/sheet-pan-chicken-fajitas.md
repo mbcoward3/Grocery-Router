@@ -5,6 +5,7 @@ yield:   4 AE
 active:  low
 passive: 30 min oven
 
+peanut:   none seen
 ## Ingredients
 
 - 1/4 cup vegetable oil

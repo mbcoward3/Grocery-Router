@@ -28,6 +28,7 @@ from pathlib import Path
 
 import pantry
 import planner
+import review
 import shop
 
 ROOT = Path(__file__).resolve().parent
@@ -154,7 +155,8 @@ def current_week() -> pantry.Week:
     week = pantry.read_week(date)
     if week is None:
         week = pantry.Week(date=date)
-        week.meals = pantry.propose(week.nights, week.guests, week.risk)
+        week.meals = pantry.propose(week.nights, week.guests, week.risk,
+                                    week=week.date)
         pantry.write_week(week)
     return week
 
@@ -220,6 +222,7 @@ def metrics() -> dict:
     surfaced = {a["recipe"] for d in proposed for a in d.get("added", [])}
     drops = len(pantry.decisions({"drop"}))
     offered = sum(len(d.get("added", [])) for d in proposed)
+    weeks = review.breadth()
     return {
         "corpus": len(corpus),
         "cooked_ever": len(cooked),
@@ -228,6 +231,16 @@ def metrics() -> dict:
         "kept": sum(1 for d in applied if d.get("outcome", "").startswith("kept")),
         "accept_rate": None if not offered else round(100 * (offered - drops) / offered),
         "weeks": len(pantry.list_weeks()),
+        # §7: the five numbers above are read off the corpus and describe what
+        # the household owns. These are read off `decisions.jsonl` and describe
+        # what the tool did, which is the only thing that can answer *is it any
+        # good* for someone who did not build it.
+        "behaviour": {
+            "reasons": review.reasons()[:6],
+            "trend": weeks[-6:],
+            "widening": (len(weeks) > 1
+                         and weeks[-1]["distinct_so_far"] > weeks[0]["distinct_so_far"]),
+        },
     }
 
 
@@ -238,7 +251,7 @@ def refill(week: pantry.Week) -> pantry.Week:
     asking for another must not re-roll the four the household already accepted.
     """
     week.meals = pantry.propose(week.nights, week.guests, week.risk, keep=week.meals,
-                                avoid=set(week.declined))
+                                avoid=set(week.declined), week=week.date)
     pantry.write_week(week)
     return week
 
@@ -301,7 +314,9 @@ def post_drop(body):
     pantry.write_week(week)
     # The most useful signal in the session: offered, and turned down.
     pantry.log("drop", week=week.date, recipe=body["slug"],
-               reason_shown=meal.reason if meal else "", candidate=bool(meal and meal.candidate))
+               reason_shown=meal.reason if meal else "",
+               reason_kind=review.kind_of(body["slug"]),
+               candidate=bool(meal and meal.candidate))
     return state()
 
 
@@ -361,6 +376,38 @@ def post_acquire(body):
     return out
 
 
+def post_onboard(body):
+    """Paste a URL, get a captured recipe in candidates.
+
+    `docs/brief-next.md` §3: adding a recipe meant running a CLI with a URL, and
+    for a tool whose whole thesis is closing the gap between the fifteen you
+    reach for and the sixty you like, the growth path being a terminal command is
+    close to fatal. It also broke the onboardability requirement outright.
+
+    Thin on purpose. `acquire.from_url` does the capture, the constraint check
+    and the write, and it is the same function and the same door acquisition
+    uses - a recipe somebody pasted and a recipe the tool found are the same
+    recipe and get the same row.
+    """
+    url = (body.get("url") or "").strip()
+    if not url.startswith(("http://", "https://")):
+        return dict(state(), onboarded=None,
+                    onboard_error="That does not look like a link. Paste the "
+                                  "address of a recipe page.")
+    try:
+        import acquire
+        found = acquire.from_url(url)
+    except Exception as exc:
+        reason = str(exc) or type(exc).__name__
+        return dict(state(), onboarded=None, onboard_error=reason)
+    return dict(state(), onboard_error="", onboarded={
+        "title": found.rec["title"], "source": found.rec["source"],
+        "ingredients": len(found.rec["ingredients"]),
+        "yield": found.rec.get("yield") or "unknown",
+        "questions": found.rec.get("questions", []),
+    })
+
+
 def post_feedback(body):
     week = pantry.previous_week(pantry.monday())
     if week is None:
@@ -406,6 +453,7 @@ ROUTES = {
     "/api/variant": post_variant,
     "/api/fill": post_fill,
     "/api/acquire": post_acquire,
+    "/api/onboard": post_onboard,
     "/api/feedback": post_feedback,
     "/api/apply": post_apply,
     "/api/order": post_order,
