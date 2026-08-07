@@ -10,6 +10,9 @@ Read `docs/architecture.md` first. Nothing here overturns the model boundary, th
 rules, or the reason-is-the-product claim. What changes is who the data belongs to and
 where it lives.
 
+`docs/onboarding.md` is the other half: how a household comes to exist at all, and the
+three single-household constants that a second family turns into defects.
+
 ---
 
 ## The thing that is actually in the way — **fixed**
@@ -104,6 +107,44 @@ because every route below it already takes the household as an argument.
 | 6 | **The app becomes stateless** | Nothing on disk means a plain `Deployment` and horizontal scale — but also that a lost database is a lost household, where before it was a git repo |
 | 7 | **Free tier is the ranker; the model planner is paid** | The cheap tier has to stay genuinely good, which it already had to be |
 | 8 | **Households own their data and can export it whole** | An export path to maintain, and it has to keep working |
+
+### Decisions 2 and 5, revisited: the backend is deferred, on purpose
+
+**CNPG is no longer a hard requirement**, and the reason is worth recording because it
+changes what step 3 is allowed to assume.
+
+CNPG itself is not the difficult part — the operator is one manifest and the `Cluster` CR
+is short, and it is what removes the failover, backup and minor-upgrade work rather than
+adding it. The difficulty on Talos sits underneath: **Talos ships no storage class**, so
+local-path, Longhorn, Rook or democratic-csi has to come first, plus an off-cluster bucket
+for backups. Both are needed for *any* stateful workload there.
+
+That prompted the honest question of whether Postgres is needed yet at all. Three rungs,
+and the product works on any of them:
+
+| Rung | Isolation | Dependency | Gives up |
+|---|---|---|---|
+| **Files, one directory per household** | a filesystem path | none | transactions; cross-household queries are a directory walk |
+| **SQLite, one database per household** | physical — no shared table, so no RLS policy to forget | none, `sqlite3` is stdlib | the app stops being stateless; one writer per household |
+| **Postgres via CNPG** | RLS policy on shared tables | a driver, and CI's rule | nothing — this is the top rung |
+
+The middle rung is the interesting one: it **keeps the standard-library property** decision
+5 was going to spend, and its isolation story is arguably stronger than decision 3's, since
+a database per household has no shared table to leak across. It costs decision 6 — a
+`ReadWriteOnce` volume means one writer and `Recreate` rollouts, not horizontal scale. At
+homelab scale that constraint does not bind. It is what eventually forces the top rung.
+
+One correction to an earlier claim in this document: the browser demo was said to be
+permanently unable to share a backend with production. With SQLite that stops being true —
+but not for free. Pyodide ships `sqlite3` as a loadable *package*, not in `python_stdlib.zip`,
+so it would mean vendoring one more wheel into a build that is deliberately CDN-free.
+
+**Nothing about this changes step 2.** `store/` is precisely what makes the choice cheap
+and late, which is why it comes before any backend. One design consequence is being taken
+now: the interface carries an **explicit transaction boundary** even though the files
+backend can only no-op it. Designing against files alone would bake in *no transactions*
+and make both database rungs awkward later — and that asymmetry is how two implementations
+become two behaviours.
 
 ### Decision 5, in full, because it is the one that hurts
 
@@ -296,10 +337,15 @@ Steps 1 and 2 are the ones that need care. 3 through 6 are ordinary work.
 
 ## Still open
 
-1. **Whose Anthropic key.** Decides margin, onboarding friction and whether cost is a
-   design driver again after `architecture.md` said it was not.
-2. **What a household is.** One kitchen with several members, or one account with several
-   kitchens? The corpus is per-kitchen; billing probably is not.
+1. ~~**Whose Anthropic key.**~~ **Answered: the platform's, with no cost constraints for
+   now.** So `architecture.md` stands — model cost is not a design driver. What that
+   re-opens is different and is recorded in `docs/onboarding.md`: onboarding now spends
+   tokens per signup, before a household has earned anything, and nothing caps it. "For
+   now" ends the first time somebody runs the interview a thousand times.
+2. ~~**What a household is.**~~ **Answered: one kitchen, one login, members stay
+   attribution.** No account layer above the household, so `Household.id` is the tenant
+   and billing keys on it. An account owning several kitchens stays possible later — it is
+   a layer above, not a change to what a household is.
 3. **Concurrency between two members**, which decision 5 in `architecture.md` accepted as
    "crude" under files. Postgres makes it fixable and therefore makes it a decision rather
    than an excuse — two people editing one week is now a product question.
