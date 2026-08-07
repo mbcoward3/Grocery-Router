@@ -6,3 +6,6 @@ __pycache__/
 
 # Built by build_static.py. The runtime it copies in lives in vendor/.
 dist/
+
+# Playwright MCP session snapshots.
+.playwright-mcp/
