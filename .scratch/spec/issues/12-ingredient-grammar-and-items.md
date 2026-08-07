@@ -14,7 +14,9 @@ it.** `shop.py` parses all 27 recipe files — 265 ingredient lines — with zer
 lines and zero unrecognised items. That result was earned over several passes and a
 rebuild from scratch will re-derive it badly, or silently, unless it is written down first.
 
-Do not delete or archive anything in this repository until this ticket is resolved.
+The code is no longer in the working tree. Read it at the `prototype` tag —
+`git show prototype:shop.py`, `git show prototype:test_shop.py`,
+`git show prototype:onboard.py`. `items.md` is still in the working tree, as data.
 
 Extract and record, as a specification rather than as code:
 

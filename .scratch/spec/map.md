@@ -21,12 +21,21 @@ likes. Closing that gap is the product.
 The existing repository is a prototype that taught the domain. **v1 is a rebuild.** The
 product thinking in `docs/` survives; the Python code does not.
 
-### Standing rule
+### Where the prototype went
 
-**Do not delete, archive or rewrite anything in this repository until ticket 12 is
-resolved.** "Rebuild from scratch" is a decision about the code, not a licence to lose the
-knowledge inside it. The ingredient grammar and the item table are the most expensive
-assets here and they exist nowhere else.
+The working tree now holds **data and this map only**. Every line of prototype code and all
+fifteen superseded documents live at the tag **`prototype`**, and nowhere else.
+
+```sh
+git show prototype:shop.py            # read one file
+git checkout prototype -- docs/       # bring something back
+git switch -c look-at-it prototype    # walk the whole thing
+```
+
+**Any file path named in a ticket refers to that tag**, not to the working tree. Ticket 12
+exists because the knowledge inside that code — the ingredient grammar and the item table —
+is the most expensive asset this project produced, and a rebuild will re-derive it badly
+unless it is written down as a specification first.
 
 ### Skills every session should consult
 
