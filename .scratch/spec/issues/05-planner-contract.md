@@ -2,7 +2,7 @@
 
 Type: grilling
 Status: open
-Blocked by: 01
+Blocked by: 01, 12
 
 ## Question
 
@@ -24,6 +24,9 @@ Settle:
 - **Reason kinds.** The old repo recorded a kind alongside the sentence, because *"which
   reasons get accepted"* cannot be answered from prose — two meals stale at different
   distances are two sentences and one kind. What is the set of kinds?
+- **The prediction inside a reason** (decision 23, ticket 12). *"Serves 8 — one cook, two
+  nights"* was false the first week it ran, and nothing scored it. Does a reason carry a
+  checkable claim beside its prose, and may the model author that claim or only the code?
 - **The constraint checks**, which are code and not prompt text:
   - A declared allergen never reaches the week.
   - A slug that resolves to nothing is dropped, never nudged to its nearest neighbour.

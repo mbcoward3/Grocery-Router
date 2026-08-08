@@ -2,7 +2,7 @@
 
 Type: task
 Status: open
-Blocked by: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10
+Blocked by: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 12
 
 ## Question
 
@@ -28,9 +28,12 @@ Required sections:
 8. **The schema** (04), stated as a first cut to iterate on.
 9. **The stack and the deployment** (09), including the generated-types rule from decision 4.
 10. **The rules, and what enforces each one.** A table: rule, mechanism, test.
-11. **The traps**, copied from the map. Every one was a real bug and re-deriving them costs
+11. **How it improves itself** (ticket 12) — the events it records, the tuning question each
+    one answers, and the list of quality questions that have no structural answer at all.
+    Decision 23.
+12. **The traps**, copied from the map. Every one was a real bug and re-deriving them costs
     more than reading them.
-12. **Done**, and how it is measured after it ships.
+13. **Done**, and how it is measured after it ships.
 
 Two standing requirements for the writing itself:
 

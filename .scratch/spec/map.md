@@ -72,6 +72,7 @@ is a regression.
 | 20 | **Every proposal, drop, dial change and outcome is logged** | A decision that was not recorded cannot be recovered |
 | 21 | **The reason is the product** | Five true sentences that are all the same sentence are no reasons at all |
 | 22 | **The name is Grocery Router** | Every existing doc says "Pantry Router" and must be updated |
+| 23 | **Self-improvement is a first-class feature.** Every proposal carries a falsifiable prediction, every guessed value names the observation that would replace it, and scoring runs off the log with no interview | Reasons get a machine-checked half, which constrains the prose decision 21 calls the product. The cost lands in v1; the payoff arrives after many weeks of data |
 
 ### Traps the old repo already fell into
 
@@ -90,6 +91,9 @@ should have been a gap.**
   it "a real, distinctive pattern". The household said *"just happens to be so."*
 - **A model invented ingredient coupling** from a corpus index containing no ingredients,
   then picked a recipe because the invention justified it. This is decision 9's receipt.
+- **A fact the household stated, that no code reads.** `profile.md` says leftovers go to
+  lunches *and* second dinners. The planner claimed a second dinner off yield alone and was
+  wrong the first week it ran. Ticket 10, finding 2.
 
 ### Definition of done for v1
 
@@ -99,6 +103,12 @@ process**. Sustained weekly use is the success measure that follows, not the gat
 ## Decisions so far
 
 <!-- one line per closed ticket -->
+
+- **01 — domain model.** Every noun v1 has, with its type, its invariants, and what it is
+  deliberately not a synonym for: `.scratch/spec/domain-model.md`. Glossary at `CONTEXT.md`.
+  Ten term clusters resolved; `candidate`, `bank recipe`, `pack`, `family`, `outcome` and
+  single-scalar `effort` are retired words. New nouns: **Retirement**, **Repeat**, **Verdict**,
+  **Gap**. Ticket 10 findings 2 and 5 closed.
 
 ## Not yet specified
 
@@ -112,8 +122,9 @@ process**. Sustained weekly use is the success measure that follows, not the gat
   prep job, the planner and acquisition, and never for the session itself.
 - **How TypeScript types get generated from Go**, and what fails the build when they drift.
   Depends on the shape of the API the frontend tickets settle.
-- **Whether the corpus needs an archived state**, or whether provenance plus outcomes is
-  enough to stop surfacing a recipe.
+- **Where a hard constraint is stored.** Ticket 01 established that a `Constraint` is not a
+  profile `Claim` — it needs no evidence and is enforced in code. Which record holds it is a
+  schema question and ticket 04 owns it.
 
 ## Out of scope
 
