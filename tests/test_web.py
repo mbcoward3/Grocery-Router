@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT))
 from gr import planner as PL  # noqa: E402
 from gr import repo as R  # noqa: E402
 from gr import session as SE  # noqa: E402
+from gr import storage as ST  # noqa: E402
 from gr import web  # noqa: E402
 from gr import weekfile as W  # noqa: E402
 
@@ -86,6 +87,29 @@ class TestWebApp(unittest.TestCase):
 
             reloaded = urlopen(base + "/list", timeout=2).read().decode()
             self.assertIn(f'data-list-key="{key}" checked', reloaded)
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_storage_readiness_failure_does_not_claim_healthy_or_fall_back(self):
+        store = ST.FileStore(self.root)
+
+        def unavailable():
+            raise OSError("store unavailable")
+
+        store.ping = unavailable
+        server = web.ThreadingHTTPServer(
+            ("127.0.0.1", 0), web.make_handler(self.root, store)
+        )
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        try:
+            self.assertEqual(urlopen(base + "/health/live", timeout=2).status, 200)
+            with self.assertRaises(HTTPError) as error:
+                urlopen(base + "/health/ready", timeout=2)
+            self.assertEqual(error.exception.code, 503)
         finally:
             server.shutdown()
             server.server_close()

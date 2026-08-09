@@ -1,11 +1,8 @@
-"""`weeks/<sunday>.md` — the week and its shopping list, in one file.
+"""Render and parse one generated week as reviewable markdown.
 
-**This file is the state.** There is no database. The ticks a shopper makes in an aisle
-are `- [x]` in this markdown, which is why they survive a page reload, and why the
-household can open the file and correct anything the tool got wrong.
-
-The week is named by its Sunday. Sunday to Saturday, because shopping is a weekend event
-and the week the shopping serves starts when the shopping does.
+Local development stores this document at ``weeks/<sunday>.md``. Production stores the
+same deterministic representation behind ``gr.storage`` and keeps list ticks in durable
+rows. A week is Sunday to Saturday and is named by its Sunday.
 """
 
 from __future__ import annotations
@@ -199,10 +196,11 @@ def toggle_tick(path: Path, key: str) -> bool:
     return new_state
 
 
-def log_decision(root: Path, sunday: date, meals: list[MealPlan], nights: int,
-                 guests: int, planner_source: str, dropped: list[tuple[str, str]]) -> None:
-    """Append to `decisions.jsonl`. Nothing that was decided is lost."""
-    record = {
+def decision_record(sunday: date, meals: list[MealPlan], nights: int,
+                    guests: int, planner_source: str,
+                    dropped: list[tuple[str, str]]) -> dict:
+    """Build the append-only event saved by either persistence backend."""
+    return {
         "at": datetime.now().replace(microsecond=0).isoformat(),
         "kind": "proposed",
         "week": sunday.isoformat(),
@@ -218,5 +216,11 @@ def log_decision(root: Path, sunday: date, meals: list[MealPlan], nights: int,
         ],
         "dropped": [{"recipe": what, "why": why} for what, why in dropped],
     }
+
+
+def log_decision(root: Path, sunday: date, meals: list[MealPlan], nights: int,
+                 guests: int, planner_source: str, dropped: list[tuple[str, str]]) -> None:
+    """Compatibility helper for callers using the local markdown backend directly."""
+    record = decision_record(sunday, meals, nights, guests, planner_source, dropped)
     with open(Path(root) / "decisions.jsonl", "a", encoding="utf-8") as fh:
         fh.write(json.dumps(record, ensure_ascii=False) + "\n")

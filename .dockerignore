@@ -1,0 +1,17 @@
+.git
+.github
+.scratch
+.cache
+.playwright-mcp
+.local
+__pycache__
+*.py[cod]
+*.png
+sources
+tests
+docs
+deploy
+clusters
+scripts
+.env
+*.secret.yaml

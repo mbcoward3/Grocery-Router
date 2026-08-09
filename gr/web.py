@@ -1,8 +1,8 @@
-"""The local web interface for Grocery Router.
+"""The Grocery Router web interface.
 
-Run with ``python3 -m gr.web``. The server binds to the home network; the markdown
-files remain the only state. The planner chooses meals, then ``gr.shoplist`` builds every
-line shown here without consulting a model.
+The planner chooses meals, then ``gr.shoplist`` builds every displayed line without
+consulting a model. Local development may persist generated state in markdown; production
+uses the configured database store.
 """
 
 from __future__ import annotations
@@ -22,6 +22,7 @@ from urllib.parse import parse_qs, quote, unquote, urlparse
 
 from . import repo as R
 from . import session as SE
+from . import storage as ST
 from . import weekfile as W
 from .notices import Notice
 
@@ -215,16 +216,17 @@ def _list_summary(week: SE.Week) -> str:
 </section>"""
 
 
-def render_plan(root: Path) -> str:
+def render_plan(root: Path, store: ST.Store | None = None) -> str:
     repo = R.load(root)
-    week = SE.load_existing(root)
+    backend = store or ST.from_environment(root)
+    week = SE.load_existing(root, store=backend)
     content = _header(week) + '<main class="page">' + _notices(week, repo) + _controls(week)
     if week:
         content += _pool(repo, week) + _list_summary(week)
     content += """
 <section class="trust-note">
   <div class="eyebrow">The profile</div>
-  <p>Correcting the markdown files is the trust mechanism. There is no account, database, or hidden copy of the household.</p>
+  <p>Catalogue and household inputs stay reviewable markdown. Generated plans and list ticks use the configured durable store.</p>
 </section>
 </main>"""
     return _page("Planning", content, "plan-page")
@@ -246,13 +248,14 @@ def _checkbox_row(key: str, checked: bool, title: str, quantity: str,
 </label>"""
 
 
-def render_list(root: Path) -> str:
-    week = SE.load_existing(root)
+def render_list(root: Path, store: ST.Store | None = None) -> str:
+    backend = store or ST.from_environment(root)
+    week = SE.load_existing(root, store=backend)
     if week is None:
         body = _header(None, list_view=True) + '<main class="phone-page"><div class="callout"><h2>No list yet</h2><p>Plan the week on the laptop first.</p><a class="button primary" href="/">Plan the week</a></div></main>'
         return _page("Shopping list", body, "list-page")
 
-    ticks = W.read_ticks(week.path)
+    ticks = backend.read_ticks(week.sunday)
     sections = []
     for aisle, lines in week.shopping.by_aisle().items():
         rows = []
@@ -290,7 +293,7 @@ def render_list(root: Path) -> str:
     <strong><span data-done>{done}</span> of {total}</strong><span>checked</span>
   </div>
   <div class="callout compact"><strong>{_e(sides_notice)}</strong></div>
-  <p class="list-rule">Every quantity below comes from recipe files and deterministic code. Tap a row to check it off; ticks are written into <code>{_e(week.path.relative_to(root))}</code>.</p>
+  <p class="list-rule">Every quantity below comes from recipe files and deterministic code. Tap a row to check it off; ticks are saved in <code>{_e(week.state_ref)}</code>.</p>
   {''.join(sections)}
   <div class="list-finish">
     <strong>Cooked anything this week that isn't in corpus.md?</strong>
@@ -330,8 +333,9 @@ def _local_ip() -> str:
         sock.close()
 
 
-def make_handler(root: Path):
+def make_handler(root: Path, store: ST.Store | None = None):
     root = root.resolve()
+    backend = store or ST.from_environment(root)
     static_root = (root / "static").resolve()
 
     class Handler(BaseHTTPRequestHandler):
@@ -372,12 +376,22 @@ def make_handler(root: Path):
             parsed = urlparse(self.path)
             path = parsed.path
             if path == "/":
-                self._send(render_plan(root))
+                self._send(render_plan(root, backend))
                 return
             if path == "/list":
-                self._send(render_list(root))
+                self._send(render_list(root, backend))
                 return
-            if path == "/health":
+            if path == "/health/live":
+                self._send("ok\n", content_type="text/plain; charset=utf-8")
+                return
+            if path in {"/health", "/health/ready"}:
+                try:
+                    backend.ping()
+                except Exception as exc:
+                    print(f"readiness check failed: {type(exc).__name__}")
+                    self._send("not ready\n", HTTPStatus.SERVICE_UNAVAILABLE,
+                               "text/plain; charset=utf-8")
+                    return
                 self._send("ok\n", content_type="text/plain; charset=utf-8")
                 return
             if path.startswith("/recipe/"):
@@ -403,13 +417,13 @@ def make_handler(root: Path):
                 nights = self._number(form.get("nights"), 5, 1, 7)
                 guests = self._number(form.get("guests"), 0, 0, 12)
                 with _WRITE_LOCK:
-                    SE.plan_week(root, nights=nights, guests=guests)
+                    SE.plan_week(root, nights=nights, guests=guests, store=backend)
                 self._redirect("/")
                 return
             if path == "/swap":
                 form = self._form()
                 with _WRITE_LOCK:
-                    week = SE.load_existing(root)
+                    week = SE.load_existing(root, store=backend)
                     if week:
                         SE.swap(R.load(root), week, form.get("slug", ""),
                                 form.get("replacement") or None)
@@ -419,12 +433,12 @@ def make_handler(root: Path):
                 form = self._form()
                 key = form.get("key", "")
                 with _WRITE_LOCK:
-                    week = SE.load_existing(root)
+                    week = SE.load_existing(root, store=backend)
                     if not week or not key or len(key) > 300:
                         self._send(json.dumps({"error": "unknown list row"}),
                                    HTTPStatus.BAD_REQUEST, "application/json")
                         return
-                    state = W.toggle_tick(week.path, key)
+                    state = backend.toggle_tick(week.sunday, key)
                 self._send(json.dumps({"checked": state}), content_type="application/json")
                 return
             self._send("Not found", HTTPStatus.NOT_FOUND, "text/plain; charset=utf-8")
@@ -434,7 +448,8 @@ def make_handler(root: Path):
 
 def serve(root: Path | str = ".", host: str = DEFAULT_HOST, port: int = DEFAULT_PORT):
     root = Path(root).resolve()
-    server = ThreadingHTTPServer((host, port), make_handler(root))
+    store = ST.from_environment(root)
+    server = ThreadingHTTPServer((host, port), make_handler(root, store))
     actual_port = server.server_address[1]
     lan = _local_ip()
     print("Grocery Router is ready.", flush=True)

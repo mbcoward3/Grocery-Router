@@ -1,8 +1,8 @@
-"""Reading the household's markdown files.
+"""Read the household, catalogue, item table, and recipes from markdown.
 
-**The markdown files are the state.** There is no database and no hidden cache. The
-household corrects a file and the next run reads the correction — `profile.md` calls that
-the trust mechanism, and it only works if nothing here keeps a second copy of anything.
+These domain inputs remain the source for deterministic calculations and are loaded fresh;
+``gr.storage`` persists only generated plans, list ticks, and decision events. Correcting
+an input file therefore changes the next calculation without a hidden ingredient cache.
 """
 
 from __future__ import annotations

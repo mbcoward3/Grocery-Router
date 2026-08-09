@@ -18,10 +18,12 @@ Three real bugs this prevents are recorded at `.scratch/spec/map.md:79-96` and
 
 ## Where the truth lives
 
-The markdown files **are** the state. No database, no cache. `profile.md:3-4` calls
-correcting them the trust mechanism, which only works if nothing keeps a second copy.
-`weeks/<sunday>.md` holds the week, its shopping list and the shopper's `- [x]` ticks in one
-file. A week is Sunday to Saturday, named by its Sunday.
+Household, catalogue, item and recipe markdown stays the source for every deterministic
+calculation; never copy ingredient data into persistence. Generated runtime state crosses
+`gr/storage.py`: local development keeps the original `weeks/<sunday>.md` plus
+`decisions.jsonl`, while production requires CockroachDB for plans, ticks and events.
+Production must fail rather than fall back to files. See `migrations/` and
+`docs/architecture.md` for the exact split. A week is Sunday to Saturday, named by Sunday.
 
 The `Slug` column in `corpus.md` and `candidates.md` is the join to `recipes/<slug>.md`.
 It is data because deriving it from the title fails silently on
@@ -30,9 +32,13 @@ It is data because deriving it from the title fails silently on
 ## Commands
 
 ```sh
-python3 -m unittest discover -s tests    # no dependencies; Python 3.12 stdlib only
+python3 -m unittest discover -s tests    # local tests need only Python 3.12 stdlib
 python3 -m gr.audit                      # every ingredient line with no items.md row
+./scripts/validate-manifests.sh          # every Kustomize base/overlay renders
 ```
+
+Production dependencies are hash-locked in `requirements.lock`. Database migrations run
+with `python3 -m gr.migrate` and require production-safe `DATABASE_URL` configuration.
 
 `tests/test_core.py::TestSixteenRegressions` is sixteen cases off the `items.md:150-182`
 notes, one per bug this project already paid for. Treat a failure there as a reintroduced
@@ -58,6 +64,11 @@ bug, not a stale test.
 - **Driving the `claude` CLI:** capture stdout alone (stderr corrupts the JSON), redirect
   stdin from `/dev/null`, read `structured_output`, and trust the exit code and `is_error` —
   never `subtype`, which has been observed saying `success` alongside a 404.
+- **Delivery credentials stay separated:** CI can publish GHCR but has no cluster/database
+  credential. Flux reconciles Git. `docs/platform.md` is the operator source for Talos,
+  secret bootstrap, migration and rollback; never commit `DATABASE_URL`.
+- **A new migration must also bump `gr.storage.EXPECTED_SCHEMA_VERSION`.** Readiness checks
+  that exact ledger row so an app never claims readiness against an older schema.
 
 ## Maintaining this file
 

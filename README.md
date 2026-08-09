@@ -8,7 +8,7 @@ the product.
 
 ## Run the local web app
 
-Python 3.12, no dependencies. From the repository root:
+Python 3.12; the local file-backed path has no third-party dependencies. From the repository root:
 
 ```sh
 python3 -m gr.web
@@ -20,8 +20,9 @@ the same network, and keep the laptop awake while shopping. To choose a differen
 `python3 -m gr.web --port 9000`.
 
 The planning screen sets nights and guests, generates or regenerates a pool, and swaps one
-meal without moving the others. The separate phone list has large checkboxes. Every tick is
-written into `weeks/<sunday>.md`, so it survives a page reload and a server restart.
+meal without moving the others. The separate phone list has large checkboxes. Local ticks
+are written into `weeks/<sunday>.md`; production plans and ticks use the configured durable
+store, so both survive a page reload and a restart.
 
 The planner needs the `claude` CLI on `PATH`; without it the week is still planned by code
 and the screen says so. A planner call usually takes about a minute.
@@ -39,15 +40,21 @@ so it has no file access and physically cannot open a recipe file. Its prompt ca
 ingredient list. Every quantity, conversion, merge and aisle on the list is arithmetic in
 `gr/`, checkable line by line against the recipe files.
 
-### Validate it
+### Validate and containerize it
 
 ```sh
-python3 -m unittest discover -s tests    # core, planner-boundary, week-file and web tests
+python3 -m unittest discover -s tests    # core, persistence, planner-boundary and web tests
 python3 -m gr.audit                      # parse every recipe, print every unresolved line
+
+docker build --pull -t grocery-router:dev .
+docker run --rm -e APP_ENV=development -e GROCERY_ROUTER_STORAGE=file \
+  -p 8765:8765 grocery-router:dev
 ```
 
-One planner call costs roughly $0.15–$0.30. The model only selects meals; every list line
-is built by deterministic Python from `recipes/` and `items.md`.
+The image is digest-pinned, runs as non-root UID 10001, installs the PostgreSQL driver from
+`requirements.lock` with hashes, and contains no runtime credentials. One planner call costs
+roughly $0.15–$0.30. The model only selects meals; every list line is built by deterministic
+Python from `recipes/` and `items.md`.
 
 ### What lives where
 
@@ -58,9 +65,10 @@ is built by deterministic Python from `recipes/` and `items.md`.
 | `gr/recipes.py` | Recipe files, the four yield shapes, and the multiplier each one earns |
 | `gr/shoplist.py` | Aggregation, unit reconciliation, staple routing, the unknown channel |
 | `gr/planner.py` | The one model call, and every check that refuses to trust it |
-| `gr/weekfile.py` | `weeks/<sunday>.md` — the week, the list, and the ticks, in one file |
-| `gr/session.py` | Plan, build, write. The seam the web app calls |
-| `gr/web.py` | Local-network planning and phone-list surfaces; Python stdlib only |
+| `gr/weekfile.py` | The reviewable generated-week representation and local file helpers |
+| `gr/storage.py` | File development store and CockroachDB/PostgreSQL production boundary |
+| `gr/session.py` | Plan, build, persist. The seam the web app calls |
+| `gr/web.py` | Planning, phone-list, liveness and database-aware readiness surfaces |
 | `static/` | The supplied design tokens, locally vendored fonts, CSS and small browser script |
 | `gr/notices.py` | The five gaps `profile.md` names, computed from live data |
 | `gr/audit.py` | `python3 -m gr.audit` — every ingredient line with no `items.md` row |
@@ -80,9 +88,23 @@ malformed source line. A refused line is printed on the list in full, never drop
 | `candidates.md` | Found, not yet cooked |
 | `sides.md` | Empty on purpose. Seeding it would invent what this household eats |
 | `sources/` | The original inputs the corpus was read out of |
-| `decisions.jsonl` | Every proposal, drop and outcome. Cannot be backfilled at any price |
-| `weeks/` | Planned weeks |
+| `decisions.jsonl` | Local-development proposal history; production events are durable rows |
+| `weeks/` | Local-development generated weeks; production uses CockroachDB |
+| `migrations/` | Explicit, numbered PostgreSQL-compatible schema migrations |
+| `deploy/`, `clusters/` | Reusable Kubernetes resources and Flux cluster overlays |
+| `docs/platform.md` | Provision, secret, migrate, deploy, observe, rollback and promotion runbook |
 | `.scratch/spec/` | The map and its tickets |
+
+## Deployment foundation
+
+GitHub Actions tests and audits every change, builds the container, and on `main` publishes
+immutable `sha-<commit>` images to GHCR. It holds no kubeconfig. Flux reconciles the desired
+Kustomize overlay from Git. Production requires `DATABASE_URL` with `sslmode=verify-full`;
+missing or unavailable storage never falls back to container files. The model-unavailable
+fallback remains deterministic and separate from database availability.
+
+See **[`docs/platform.md`](docs/platform.md)** for the complete local Talos Docker and Flux
+operator path. Exact prerequisite pins are in `scripts/platform-versions.env`.
 
 ## Where the prototype went
 
