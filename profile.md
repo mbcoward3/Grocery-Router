@@ -41,6 +41,23 @@ no login. A name on a claim is what lets this profile stop saying "may be half-t
   the stove, not elapsed time — see the effort note under Patterns.
 - **Store / pickup:** Kroger, `[... location]`
 
+## Portion conversions
+
+*How many of a countable portion make one adult. **The household states these, and no source
+ever can** — a serving is what a source prints, an adult-equivalent is what an adult eats
+here. One sentence closes a noun forever, for every recipe measured in it.*
+
+*Answer a row and the tool starts scaling that recipe. Leave it blank and the recipe goes on
+the list unscaled, and the list says so. Blank is honest; a guess is not.*
+
+| Portion noun | Per adult | Stated by |
+|---|---|---|
+| enchilada |  |  |
+| slider |  |  |
+
+Two rows, both open. `enchiladas` and `sliders` are the only recipes in the corpus measured
+in portions rather than adult-equivalents, and each needs exactly one number.
+
 ## Taste
 
 *What this household likes. Each claim carries its trace.*

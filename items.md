@@ -38,7 +38,7 @@ and the merge becomes visible and reversible.
 | potato | produce | no | | small white potato, white potato, white boiling potatoes |
 | yukon_gold_potato | produce | no | | yukon gold potatoes |
 | russet_potato | produce | no | | russet potatoes |
-| carrot | produce | no | 1 ea = 2.5 oz | carrots, sliced carrots |
+| carrot | produce | no | 1 ea = 2.5 oz | carrots |
 | celery | produce | no | 1 head = 10 ribs | rib celery, celery ribs |
 | lettuce | produce | no | | |
 | tomato | produce | no | | tomatoes |
@@ -59,6 +59,7 @@ and the merge becomes visible and reversible.
 | rotisserie_chicken | meat | no | | |
 | cooked_chicken | meat | no | | cooked and shredded chicken, canned chicken |
 | italian_sausage | meat | no | | italian sausages, large italian sausages |
+| ground_italian_sausage | meat | no | | ground mild italian sausage, ground italian sausage, mild italian sausage, ground sweet italian sausage |
 | sausage_tube | meat | no | | sausage tube spicy or regular, breakfast sausage |
 | bacon | meat | no | | |
 | pork_loin | meat | no | | |
@@ -85,6 +86,8 @@ and the merge becomes visible and reversible.
 | panko | bread | no | | panko breadcrumbs, seasoned bread crumbs, bread crumbs, gluten-free bread crumbs |
 | frozen_meatballs | frozen | no | | |
 | peas | frozen | no | | frozen peas |
+| frozen_peas_and_carrots | frozen | no | | peas and carrots, frozen peas and carrots |
+| canned_carrot | pantry | no | 1 can = 14.5 oz | sliced carrots, canned carrots, canned sliced carrots |
 | beef_broth | pantry | no | 1 can = 14.5 oz; 1 oz = 1 floz | canned beef broth |
 | chicken_broth | pantry | no | 1 can = 14.5 oz; 1 oz = 1 floz | canned chicken broth |
 | cream_of_chicken_soup | pantry | no | 1 can = 10.5 oz | |
@@ -144,7 +147,7 @@ and the merge becomes visible and reversible.
 | onion_powder | pantry | yes | | |
 | crushed_red_pepper | pantry | yes | | red pepper flakes |
 | salt | pantry | yes | | kosher salt |
-| pepper | pantry | yes | | black pepper, coarse ground black pepper |
+| pepper | pantry | yes | | black pepper, coarse ground black pepper, ground black pepper, freshly ground black pepper |
 | water | pantry | yes | | cold water |
 
 ## Notes on the rows that earned their place
@@ -179,3 +182,19 @@ stopword list, and every real pair gets two rows.
 
 **`pickles`** absorbs `pickle juice` deliberately: the juice comes out of the jar you were
 already buying, so one line is right and two would be wrong.
+
+**`canned_carrot`** is the same bug found a third time, and it was live in the data until
+today. `sliced carrots` sat in the `carrot` row's synonyms, so
+`recipes/chicken-and-dumplings.md`'s `1 14.5 oz can sliced carrots` came out as
+`1 can carrot — produce`. A canned carrot is not a fresh carrot and it is not in that aisle.
+`sliced carrots` now belongs to `canned_carrot` and to nothing else. The pattern is exactly
+`onion powder` and `dried thyme`: a word that names which aisle you walk to is never noise.
+
+**`frozen_peas_and_carrots`** and **`ground_italian_sausage`** were the two real misses left
+by the last audit — `recipes/chicken-and-biscuits-casserole.md` and `recipes/zuppa-toscana.md`
+each asked for one and got an unknown line. The unknown line is the mechanism working; a row
+is the fix.
+
+**`pepper`** gained `ground black pepper` and `freshly ground black pepper` because the beef
+stew and the meatloaf write it that way. `ground` stays out of the noise list on purpose —
+it separates `ground beef` from a cut of beef — so the fix is a synonym, never a stopword.

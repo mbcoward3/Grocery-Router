@@ -13,11 +13,14 @@ Mixing the two would quietly destroy the guarantee that makes the corpus worth h
 corpus that is the most informative signal the system gets all week, and it must never be
 silently dropped. Never cooked, it just waits.
 
-| Recipe | Protein | Cuisine | Yield | Active | Passive | Proposed | Outcome |
-|---|---|---|---|---|---|---|---|
-| Chicken and dumplings | chicken | American | 6 AE | low | simmer | — | untested |
-| Sheet pan chicken fajitas | chicken | Tex-Mex | 4 AE | low | 30m oven | wk of 2 Aug | untested |
-| Parchment garlic butter salmon | fish | American | 1 AE | low | 30m oven | wk of 2 Aug | untested |
+**`Slug` names the file in `recipes/` that carries the ingredient list**, for the same reason
+`corpus.md` carries one: the join is data, never a guess off the title.
+
+| Recipe | Slug | Protein | Cuisine | Yield | Active | Passive | Proposed | Outcome |
+|---|---|---|---|---|---|---|---|---|
+| Chicken and dumplings | chicken-and-dumplings | chicken | American | 6 AE | low | simmer | — | untested |
+| Sheet pan chicken fajitas | sheet-pan-chicken-fajitas | chicken | Tex-Mex | 4 AE | low | 30m oven | wk of 2 Aug | untested |
+| Parchment garlic butter salmon | parchment-garlic-butter-salmon | fish | American | 1 AE | low | 30m oven | wk of 2 Aug | untested |
 
 ## Notes
 
