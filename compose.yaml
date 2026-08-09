@@ -1,0 +1,40 @@
+name: grocery-router
+
+services:
+  app:
+    image: grocery-router:dev
+    build:
+      context: .
+      pull: true
+    environment:
+      APP_ENV: development
+      GROCERY_ROUTER_STORAGE: file
+      GROCERY_ROUTER_FILE_ROOT: /var/lib/grocery-router
+    ports:
+      - "127.0.0.1:${GROCERY_ROUTER_PORT:-8765}:8765"
+    volumes:
+      - grocery-router-state:/var/lib/grocery-router
+    restart: unless-stopped
+    init: true
+    read_only: true
+    user: "10001:10001"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health/ready', timeout=2).read()"]
+      interval: 15s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    cpus: 1.0
+    mem_limit: 512m
+    mem_reservation: 64m
+    pids_limit: 128
+    stop_grace_period: 15s
+
+volumes:
+  grocery-router-state:

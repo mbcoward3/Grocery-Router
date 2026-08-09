@@ -1,0 +1,3 @@
+# Safe default while the authentication seam is under review.
+# `respond` is ordered before `reverse_proxy`, so no application request is forwarded.
+respond "Grocery Router authentication is not configured." 503

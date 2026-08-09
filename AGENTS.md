@@ -34,7 +34,8 @@ It is data because deriving it from the title fails silently on
 ```sh
 python3 -m unittest discover -s tests    # local tests need only Python 3.12 stdlib
 python3 -m gr.audit                      # every ingredient line with no items.md row
-./scripts/validate-manifests.sh          # every Kustomize base/overlay renders
+docker compose config --quiet            # default local deployment definition
+./scripts/validate-manifests.sh          # optional Kustomize base/overlay path renders
 ```
 
 Production dependencies are hash-locked in `requirements.lock`. Database migrations run
@@ -64,9 +65,11 @@ bug, not a stale test.
 - **Driving the `claude` CLI:** capture stdout alone (stderr corrupts the JSON), redirect
   stdin from `/dev/null`, read `structured_output`, and trust the exit code and `is_error` —
   never `subtype`, which has been observed saying `success` alongside a 404.
-- **Delivery credentials stay separated:** CI can publish GHCR but has no cluster/database
-  credential. Flux reconciles Git. `docs/platform.md` is the operator source for Talos,
-  secret bootstrap, migration and rollback; never commit `DATABASE_URL`.
+- **Delivery credentials stay separated:** CI publishes GHCR but has no VPS, cluster, or
+  database credential. Compose is the current local/VPS path; `docs/platform.md` owns its
+  exact release and hardening commands. The Caddy auth seam denies all traffic until the
+  separate auth review approves a mechanism. Talos/Flux is preserved but optional in
+  `docs/platform-kubernetes.md`. Never commit `DATABASE_URL`.
 - **A new migration must also bump `gr.storage.EXPECTED_SCHEMA_VERSION`.** Readiness checks
   that exact ledger row so an app never claims readiness against an older schema.
 

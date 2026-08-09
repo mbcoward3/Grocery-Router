@@ -1,0 +1,25 @@
+{
+	email {$GROCERY_ROUTER_ACME_EMAIL}
+	http_port 8080
+	https_port 8443
+	admin 127.0.0.1:2019
+}
+
+{$GROCERY_ROUTER_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "same-origin"
+		-Server
+	}
+
+	# This imported file must authenticate every request before proxying. The
+	# committed default denies all access; replace it only with the option approved
+	# by the authentication review. Never use an empty or reverse-proxy-only file.
+	import /etc/caddy/auth.caddy
+
+	reverse_proxy app:8765
+}

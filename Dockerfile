@@ -11,7 +11,8 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 RUN groupadd --gid 10001 grocery-router \
-    && useradd --uid 10001 --gid grocery-router --no-create-home --shell /usr/sbin/nologin grocery-router
+    && useradd --uid 10001 --gid grocery-router --no-create-home --shell /usr/sbin/nologin grocery-router \
+    && install -d -o grocery-router -g grocery-router -m 0700 /var/lib/grocery-router
 
 COPY requirements.lock ./
 RUN python -m pip install --no-cache-dir --no-compile --require-hashes -r requirements.lock

@@ -5,30 +5,26 @@ Observed on the task host on 2026-08-09:
 | Check | Result |
 |---|---|
 | Python | 3.12.3 |
-| Unit/integration-boundary tests | 98 passed (core, planner fallback, storage, migration, web health) |
+| Unit/integration-boundary tests | 101 passed (core, planner fallback, storage, migration, web health) |
 | Ingredient audit | 250/254 resolved; four known correct refusals |
-| Locked dependencies | psycopg/psycopg-binary 3.3.4 installed with required hashes into an isolated target |
-| Kustomize | base, both overlays, and both cluster paths rendered with kubectl v1.36.3 / Kustomize v5.8.1 |
-| Workflow | YAML parsed; Prettier 3.6.2 check passed |
-| Flux client on host | v2.5.1 (below repository pin v2.9.4) |
-| Talos client on host | v1.10.0 (below repository pin v1.13.8) |
-| Docker client | 29.7.2 |
-| Docker daemon as task user | unavailable: selected Desktop daemon not running; system socket permission denied |
-| Existing Kubernetes endpoint | unrelated endpoint unreachable; no apply attempted |
+| Compose | Docker Compose v2.27.0 validated `compose.yaml` and `compose.vps.yaml` |
+| Local image | Built successfully from the digest-pinned Python base with hash-locked dependencies |
+| Local runtime | Healthy as UID/GID 10001, read-only root, all capabilities dropped, 512 MiB/PID limits enforced |
+| Local HTTP | `/health/ready` returned `200 ok` through loopback port 18765 |
+| Failure gates | Missing VPS variables, missing production database configuration, and URL without `sslmode=verify-full` all failed before serving |
+| Caddy | Pinned `caddy:2.10.0-alpine` digest pulled; Caddyfile plus deny-all auth seam validated with Caddy 2.10.0 |
+| Kustomize | Base, both overlays, and both preserved cluster paths rendered successfully |
 
-`./scripts/talos-local-up.sh` stopped at its version safety check with:
+Port 8765 was already in use by another task on the shared host, so the documented
+`GROCERY_ROUTER_PORT` override used 18765 for the runtime check. The first image build
+exceeded a five-minute command timeout while Docker Desktop slowly extracted its base; the
+same build completed successfully on retry and the container then became healthy. The test
+container and network were removed afterward; its named development-state volume was
+preserved as `docker compose down` promises.
 
-```text
-talosctl v1.13.8 is required; found v1.10.0
-```
-
-The authorized local cluster therefore was **not created**: current prerequisites do not
-permit it, and no Docker container, network, cluster, kubeconfig, credential, or host
-setting was created/deleted/changed. A container build also could not reach the selected
-Docker daemon. The repository pins current clients, image base digest and dependencies and
-records copy/pasteable installation/provisioning commands in `docs/platform.md`.
-
-No CockroachDB account or connection credential was available or created. Database tests
-exercise the production store's parameterized SQL contract, atomic tick behavior,
-configuration/TLS gate, migration ledger/idempotence, serialization retry boundary, and
-no-fallback failure path without making an external account.
+No CockroachDB account/credential, public DNS name, VPS, or approved authentication option
+was available or created. Consequently the production stack was not connected to the
+internet or a live database. Database tests exercise the production store's SQL contract,
+migrations, TLS/configuration gates, serialization retry, and no-fallback path. Caddy's
+configuration was validated in its pinned image, and the committed authentication seam
+remains deny-all until the separate review approves a mechanism.

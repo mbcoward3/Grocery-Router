@@ -103,6 +103,16 @@ class TestProductionConfiguration(unittest.TestCase):
                 "APP_ENV": "production", "GROCERY_ROUTER_STORAGE": "file"
             })
 
+    def test_development_file_state_can_be_separate_from_catalogue_root(self):
+        with tempfile.TemporaryDirectory() as directory:
+            store = ST.from_environment(ROOT, {
+                "APP_ENV": "development",
+                "GROCERY_ROUTER_STORAGE": "file",
+                "GROCERY_ROUTER_FILE_ROOT": directory,
+            })
+            self.assertIsInstance(store, ST.FileStore)
+            self.assertEqual(store.root, Path(directory))
+
     def test_production_requires_full_tls_verification(self):
         with self.assertRaisesRegex(ST.ConfigurationError, "sslmode=verify-full"):
             ST.from_environment(ROOT, {
@@ -119,6 +129,27 @@ class TestProductionConfiguration(unittest.TestCase):
             ),
         })
         self.assertIsInstance(store, ST.DatabaseStore)
+
+    def test_database_url_can_come_from_a_container_secret_file(self):
+        with tempfile.TemporaryDirectory() as directory:
+            secret = Path(directory) / "database-url"
+            secret.write_text(
+                "postgresql://user:secret@example.test:26257/defaultdb"
+                "?sslmode=verify-full\n",
+                encoding="utf-8",
+            )
+            store = ST.from_environment(ROOT, {
+                "APP_ENV": "production", "DATABASE_URL_FILE": str(secret)
+            })
+            self.assertIsInstance(store, ST.DatabaseStore)
+
+    def test_database_url_and_file_are_mutually_exclusive(self):
+        with self.assertRaisesRegex(ST.ConfigurationError, "only one"):
+            ST.from_environment(ROOT, {
+                "APP_ENV": "production",
+                "DATABASE_URL": "postgresql://example.test/db?sslmode=verify-full",
+                "DATABASE_URL_FILE": "/run/secrets/database-url",
+            })
 
     def test_unavailable_database_raises_and_never_creates_file_state(self):
         with tempfile.TemporaryDirectory() as directory:

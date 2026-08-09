@@ -1,230 +1,174 @@
-# Platform operator guide
+# Compose operator guide (current default)
 
-CI publishes an image; Git records the desired image; Flux pulls Git and reconciles
-Kubernetes. CI never receives a kubeconfig. CockroachDB Serverless (the Cockroach Cloud
-Basic/free offering) holds generated plans, shopping ticks, and decision events through a
-PostgreSQL-compatible `DATABASE_URL`; catalogue/profile/recipe markdown remains image input.
+Docker Compose is the current local and single-VPS deployment path. Kubernetes, Talos, and
+Flux remain available as an optional future path in
+[`platform-kubernetes.md`](platform-kubernetes.md); none is required for routine use.
+GitHub Actions only tests, audits, builds, and publishes GHCR images. A VPS operator pulls
+and restarts an explicitly selected immutable image.
 
-## Pinned prerequisites
+## Local Compose
 
-Versions were reviewed on 2026-08-09. `scripts/platform-versions.env` is the single pin.
-
-| Tool | Pin / requirement |
-|---|---|
-| Talos / `talosctl` | v1.13.8 |
-| Kubernetes / `kubectl` | v1.36.3 |
-| Flux | v2.9.4 |
-| Docker | 18.03+ (Talos' documented minimum) |
-| Python | 3.12 |
-
-Install tools without changing host-wide configuration (Linux amd64 shown):
-
-```sh
-mkdir -p .local/bin
-curl -fL https://github.com/siderolabs/talos/releases/download/v1.13.8/talosctl-linux-amd64 -o .local/bin/talosctl
-curl -fL https://dl.k8s.io/release/v1.36.3/bin/linux/amd64/kubectl -o .local/bin/kubectl
-curl -fL https://github.com/fluxcd/flux2/releases/download/v2.9.4/flux_2.9.4_linux_amd64.tar.gz -o .local/flux.tgz
-tar -xzf .local/flux.tgz -C .local/bin flux
-chmod +x .local/bin/talosctl .local/bin/kubectl .local/bin/flux
-export PATH="$PWD/.local/bin:$PATH"
-```
-
-References used for version-sensitive choices:
-
-- [Talos v1.13 Docker platform guide](https://docs.siderolabs.com/talos/v1.13/platform-specific-installations/local-platforms/docker)
-- [Talos v1.13.8 release](https://github.com/siderolabs/talos/releases/tag/v1.13.8)
-- [Flux GitHub bootstrap](https://fluxcd.io/flux/installation/bootstrap/github/)
-- [Kubernetes Kustomize guide](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/kustomization/)
-- [CockroachDB connection strings](https://www.cockroachlabs.com/docs/stable/connect-to-the-database.html)
-- [Cockroach Cloud Basic cluster](https://www.cockroachlabs.com/docs/cockroachcloud/create-a-basic-cluster)
-- [GitHub's GHCR Actions guide](https://docs.github.com/en/actions/use-cases-and-examples/publishing-packages/publishing-docker-images)
-
-## 1. Validate and run locally
-
-The development default deliberately remains reviewable file storage. Production can never
-select it: `APP_ENV=production` without a TLS-verified `DATABASE_URL` exits with a
-configuration error.
+Prerequisites are Python 3.12 for repository tests and a supported Docker Engine or Docker
+Desktop with the Compose v2 plugin. From the repository root:
 
 ```sh
 python3 -m unittest discover -s tests
 python3 -m gr.audit
-./scripts/validate-manifests.sh
-
-docker build --pull -t grocery-router:dev .
-docker run --rm --name grocery-router-dev-app \
-  -e APP_ENV=development \
-  -e GROCERY_ROUTER_STORAGE=file \
-  -p 8765:8765 \
-  grocery-router:dev
-# In another shell:
+docker compose up --build -d
+docker compose ps
 curl --fail http://127.0.0.1:8765/health/ready
 ```
 
-The image runs as UID/GID 10001, installs only hash-locked dependencies, contains no
-credentials, and receives all environment-specific configuration at runtime.
-
-## 2. Provision the named local Talos cluster
-
-The official path is `talosctl cluster create docker`. The wrapper adds a unique name,
-CIDR, isolated task-local Talos/kubeconfig files, and only the NodePort used by this app:
+Open <http://127.0.0.1:8765>. The app is non-root, has no Linux capabilities, has a
+read-only root filesystem and bounded CPU, memory, and PIDs. Mutable development plans,
+ticks, and events live in the `grocery-router-state` Docker volume. Direct
+`python3 -m gr.web` runs retain the repository-backed `weeks/` and `decisions.jsonl`
+workflow. To inspect or stop Compose:
 
 ```sh
-./scripts/talos-local-up.sh
+docker compose logs -f --tail=100 app
+docker compose down                 # preserves grocery-router-state
 ```
 
-It creates exactly `grocery-router-dev` on `10.77.0.0/24`, waits for its one control plane
-and one worker, checks both APIs, runs `flux check --pre`, and client-validates the local
-overlay. If task-managed state already exists it validates rather than replacing it. If a
-same-named Docker object exists without that state, it refuses to adopt or alter it.
+The local port is loopback-only. Override it with `GROCERY_ROUTER_PORT=9000 docker compose
+up --build -d`; do not publish this development service to the internet.
 
-Useful checks:
-
-```sh
-export TALOSCONFIG="$PWD/.local/talos/talosconfig"
-export KUBECONFIG="$PWD/.local/talos/kubeconfig"
-talosctl --context grocery-router-dev version
-kubectl --context admin@grocery-router-dev get nodes -o wide
-```
-
-Cleanup is never automatic. It requires the exact cluster name and calls only Talos'
-scoped destroy command:
-
-```sh
-./scripts/talos-local-down.sh --confirm grocery-router-dev
-```
-
-## 3. Select an immutable desired image
-
-A push to `main` publishes two tags for one digest:
+## VPS architecture and authentication boundary
 
 ```text
-ghcr.io/mbcoward3/grocery-router:sha-<40-character-commit>
-ghcr.io/mbcoward3/grocery-router:main-<run-number>-sha-<40-character-commit>
+internet :80/:443 -> Caddy (automatic TLS + authentication seam)
+                         |
+                         +-> private Compose network -> app :8765 -> CockroachDB TLS
 ```
 
-The workflow summary prints `tag@sha256:digest`. It does not contact Kubernetes. Ensure
-the GHCR package is readable by the cluster, then replace the all-zero `newTag` in
-`deploy/overlays/local/kustomization.yaml` with the published `sha-...` tag in a reviewed
-PR. Promote to a real cluster by changing only that cluster's overlay.
+Only Caddy publishes host ports. The app and one-shot migration service are non-root,
+read-only, capability-free, resource-bounded containers on a private bridge. Caddy runs as
+the unprivileged VPS operator UID on internal ports 8080/8443, while Docker maps public
+80/443; it also has no capabilities. Caddy data stays in owner-only host directories.
 
-## 4. Bootstrap the database secret and migrate
+**The committed authentication seam denies every request with 503.** This is intentional:
+the app must never be reachable from the internet unauthenticated. A parallel review will
+choose the smallest suitable authentication mechanism. Only then should an operator set
+`GROCERY_ROUTER_AUTH_CADDYFILE` to an owner-readable Caddy snippet that authenticates every
+request. Do not use an empty snippet or one that only proxies. This guide does not choose
+Basic Auth, Tailscale, Cloudflare Access, or application OIDC ahead of that review. TLS can
+be provisioned and the stack/database validated while the deny-all guard remains active,
+but internet use remains closed until an approved authentication snippet is installed.
 
-Do not create an account or cluster from automation. In the Cockroach Cloud console,
-create/select the approved Serverless/Basic cluster and SQL user, copy its PostgreSQL URL,
-and ensure it contains `sslmode=verify-full`. Never commit it.
+## Hetzner VPS prerequisites and hardening boundary
 
-For a direct local process, put only the URL in an ignored, owner-readable file:
+Use a currently supported x86-64 Debian or Ubuntu release and install current Docker Engine
+plus the Compose v2 plugin from Docker's official repository. Apply security updates and
+reboot when the kernel requires it. The operator assumptions are deliberately narrow:
+
+- one unprivileged SSH user with key-only login, no direct root login, and tightly limited
+  sudo; membership in the `docker` group is root-equivalent and must be treated that way;
+- repository and `.local/` files owned by that operator, with `.env.vps`, the database URL
+  file, and private auth material mode `0600`, and Caddy state directories mode `0700`;
+- Hetzner Cloud Firewall (and a host firewall that accounts for Docker's forwarding rules)
+  allowing TCP 80/443 globally, UDP 443 if QUIC is desired, and TCP 22 only from approved
+  operator source addresses; no rule for 8765;
+- outbound DNS, HTTPS, and CockroachDB connectivity (normally TCP 26257). If the Cockroach
+  Cloud cluster uses an IP allowlist, add the VPS's stable egress address;
+- an operator-owned domain with A and, only when IPv6 is configured, AAAA records pointing
+  at the VPS before Caddy starts. This repository neither invents nor provisions a domain;
+- an existing CockroachDB Serverless/Basic database and SQL user. Its PostgreSQL URL must
+  use `sslmode=verify-full`; URL-encode credential special characters.
+
+CockroachDB is the durable production state. Confirm the Cockroach Cloud backup/retention
+policy meets the household's recovery objective and periodically test the provider's
+restore/export procedure. The VPS has no database volume to back up. Separately protect
+the database URL in an approved secret/password manager and back up Caddy's `.local` state
+if avoiding certificate reissuance matters. Never put database or auth credentials in
+Git, an image, a ticket, or CI.
+
+Docker and the host OS are the operator's patching boundary. Compose does not configure
+SSH, firewall policy, unattended upgrades, DNS, Hetzner resources, Cockroach accounts, or
+external credentials.
+
+## First VPS deploy
+
+Clone a reviewed release of this repository as the unprivileged operator. Obtain the full
+`tag@sha256:digest` reference from the successful `main` workflow summary; do not use
+`latest`, `main`, or an unqualified mutable tag.
 
 ```sh
-mkdir -p .local
+git clone https://github.com/mbcoward3/Grocery-Router.git
+cd Grocery-Router
+cp .env.vps.example .env.vps
+chmod 600 .env.vps
+install -d -m 700 .local/caddy/data .local/caddy/config .local/secrets
 umask 077
 read -rsp 'CockroachDB DATABASE_URL: ' DATABASE_URL && echo
-printf '%s\n' "$DATABASE_URL" > .local/database-url
-export APP_ENV=production GROCERY_ROUTER_STORAGE=database
-export DATABASE_URL="$(cat .local/database-url)"
-python3 -m pip install --target .local/python --require-hashes -r requirements.lock
-PYTHONPATH="$PWD/.local/python" python3 -m gr.migrate
-PYTHONPATH="$PWD/.local/python" python3 -m gr.web
+printf '%s\n' "$DATABASE_URL" > .local/secrets/database-url
 unset DATABASE_URL
+chmod 600 .local/secrets/database-url
+id -u; id -g                    # put these exact numbers in .env.vps
+$EDITOR .env.vps                # set image@digest, domain, email, UID/GID, and secret path
 ```
 
-For Kubernetes, bootstrap the namespace and Secret imperatively. The secret value is read
-without placing it in shell history or Git:
+Leave `GROCERY_ROUTER_AUTH_CADDYFILE` unset for the safe deny-all posture. After the auth
+review approves a mechanism, write its Caddy snippet under `.local/secrets/`, `chmod 600`
+it, and set the path in `.env.vps`. Validate required substitutions without printing the
+rendered configuration, pull, migrate, and start:
 
 ```sh
-export KUBECONFIG="$PWD/.local/talos/kubeconfig"
-kubectl apply -f deploy/base/namespace.yaml
-read -rsp 'CockroachDB DATABASE_URL: ' DATABASE_URL && echo
-kubectl -n grocery-router create secret generic grocery-router-secrets \
-  --from-literal=database-url="$DATABASE_URL" \
-  --dry-run=client -o yaml | kubectl apply -f -
-unset DATABASE_URL
+test "$(stat -c %a .env.vps)" = 600
+test "$(stat -c %a .local/secrets/database-url)" = 600
+IMAGE_REF="$(grep '^GROCERY_ROUTER_IMAGE=' .env.vps | cut -d= -f2-)"
+printf '%s\n' "$IMAGE_REF" | grep -Eq '^ghcr\.io/mbcoward3/grocery-router:sha-[0-9a-f]{40}@sha256:[0-9a-f]{64}$'
+unset IMAGE_REF
+docker compose --env-file .env.vps -f compose.vps.yaml config --quiet
+docker compose --env-file .env.vps -f compose.vps.yaml pull
+docker compose --env-file .env.vps -f compose.vps.yaml run --rm migrate
+docker compose --env-file .env.vps -f compose.vps.yaml up -d app caddy
 ```
 
-`grocery-router-secrets/database-url` is the contract every overlay uses. The Deployment's
-non-root, read-only init container runs `python -m gr.migrate` before the app. Migrations
-are numbered SQL in `migrations/`, tracked in `schema_migrations`, idempotent, and retried
-on CockroachDB serialization conflicts. To inspect migration completion:
+Compose rejects missing image, domain, email, UID/GID, or database-secret path before
+startup. The application reads the URL from the read-only container secret and independently
+rejects a missing/unreadable file, non-PostgreSQL URL, production file storage, or any
+production URL without `sslmode=verify-full`; it never falls back to JSON files. Migration
+or database failure prevents the app becoming healthy and therefore prevents Caddy from
+starting.
+
+## Verify, observe, and stop
 
 ```sh
-kubectl -n grocery-router logs deployment/grocery-router -c migrate
+docker compose --env-file .env.vps -f compose.vps.yaml ps
+docker compose --env-file .env.vps -f compose.vps.yaml exec app \
+  python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/health/ready', timeout=3).read(); print('ready')"
+docker compose --env-file .env.vps -f compose.vps.yaml logs --tail=100 app caddy
+curl -sS -o /dev/null -w 'HTTPS status: %{http_code}\n' "https://$(grep '^GROCERY_ROUTER_DOMAIN=' .env.vps | cut -d= -f2-)/"
 ```
 
-For long-lived clusters, replace imperative secret bootstrap with SOPS-encrypted Git and
-[Flux SOPS decryption](https://fluxcd.io/flux/guides/mozilla-sops/). Commit only ciphertext;
-keep the age private key in the cluster bootstrap secret, never in this repository.
-
-## 5. Bootstrap Flux (requires explicit authorization)
-
-This repository is public, but official GitHub bootstrap still pushes Flux manifests and
-requires a GitHub credential. Do **not** run this until the captain authorizes both a
-fine-grained PAT and the bootstrap commit to `main`. Use HTTPS token auth so bootstrap
-does not create a deploy key. Flux documents these existing-repository PAT permissions:
-Administration read, Contents read/write, and Metadata read.
+An unauthenticated external request must never return the app (`200`). The committed guard
+returns `503`; an approved authentication layer will normally return a challenge or
+redirect. Verify an authenticated browser session separately after that layer is chosen.
+For ongoing logs or a clean stop (without deleting Caddy state):
 
 ```sh
-export KUBECONFIG="$PWD/.local/talos/kubeconfig"
-read -rsp 'GitHub bootstrap PAT: ' GITHUB_TOKEN && export GITHUB_TOKEN && echo
-flux check --pre
-flux bootstrap github \
-  --token-auth \
-  --owner=mbcoward3 \
-  --repository=Grocery-Router \
-  --branch=main \
-  --path=clusters/local
-unset GITHUB_TOKEN
+docker compose --env-file .env.vps -f compose.vps.yaml logs -f --tail=100 app caddy
+docker compose --env-file .env.vps -f compose.vps.yaml down
 ```
 
-Bootstrap adds `clusters/local/flux-system/`; review that commit like any other change.
-Afterward, all application delivery is GitOps:
+## Update and rollback
+
+Record the current `GROCERY_ROUTER_IMAGE`, replace it in `.env.vps` with the new successful
+`main` workflow's complete `tag@digest`, then run the explicit release step:
 
 ```sh
-flux reconcile source git flux-system
-flux reconcile kustomization flux-system --with-source
-flux get all -A
+chmod 600 .env.vps
+IMAGE_REF="$(grep '^GROCERY_ROUTER_IMAGE=' .env.vps | cut -d= -f2-)"
+printf '%s\n' "$IMAGE_REF" | grep -Eq '^ghcr\.io/mbcoward3/grocery-router:sha-[0-9a-f]{40}@sha256:[0-9a-f]{64}$'
+unset IMAGE_REF
+docker compose --env-file .env.vps -f compose.vps.yaml config --quiet
+docker compose --env-file .env.vps -f compose.vps.yaml pull
+docker compose --env-file .env.vps -f compose.vps.yaml run --rm migrate
+docker compose --env-file .env.vps -f compose.vps.yaml up -d app caddy
+docker compose --env-file .env.vps -f compose.vps.yaml ps
 ```
 
-## 6. Deploy, observe, and roll back
-
-Once the Secret exists and the desired image tag is real, Flux applies the namespace,
-ConfigMap, migration init container, Deployment, and Service:
-
-```sh
-kubectl -n grocery-router rollout status deployment/grocery-router --timeout=3m
-kubectl -n grocery-router get deploy,pod,service
-kubectl -n grocery-router logs deployment/grocery-router --tail=100
-curl --fail http://127.0.0.1:30080/health/ready
-```
-
-`/health/live` checks the process; `/health/ready` checks the configured store. Database
-failure makes readiness fail and requests error—production never silently writes to a
-container directory. Missing model CLI/API access is different: deterministic code still
-chooses a valid meal pool and records the planner error.
-
-Rollback is a Git revert, not a CI command with cluster credentials:
-
-```sh
-git revert <the-image-promotion-commit>
-git push origin <review-branch>
-# Merge the rollback PR, then optionally accelerate reconciliation:
-flux reconcile kustomization flux-system --with-source
-```
-
-Migration `001_initial.sql` is additive and compatible with the previous image. Keep future
-changes expand/contract and backward-compatible before rollout; never try to undo durable
-shopping state as part of an image rollback.
-
-## 7. Move to a real Talos cluster
-
-`deploy/base` is cluster-independent. `deploy/overlays/local` adds only Docker Talos'
-NodePort. For a real cluster:
-
-1. Copy `deploy/overlays/production` to a named overlay and add only ingress, sizing, and
-   topology configuration.
-2. Copy `clusters/production` to `clusters/<real-name>` and point it at that overlay.
-3. Bootstrap the same `grocery-router-secrets/database-url` contract (or SOPS ciphertext).
-4. Bootstrap Flux to that path after separately authorizing Git credentials.
-5. Promote the same immutable `sha-...` image by PR.
-
-The PostgreSQL URL and secret encryption/bootstrap change; no CI workflow, image, storage
-API, migration command, or reusable Kubernetes resource needs redesign.
+Rollback changes only `GROCERY_ROUTER_IMAGE` back to the recorded previous digest and
+re-runs `pull` and `up -d`. Do not reverse durable data migrations during image rollback;
+keep schema changes expand/contract and backward-compatible. There is intentionally no CI
+SSH deploy, cluster credential, webhook control plane, or required auto-updater.

@@ -8,16 +8,21 @@ the product.
 
 ## Run the local web app
 
-Python 3.12; the local file-backed path has no third-party dependencies. From the repository root:
+Docker Compose is the default local path:
 
 ```sh
-python3 -m gr.web
+docker compose up --build -d
+curl --fail http://127.0.0.1:8765/health/ready
 ```
 
-The app binds to `0.0.0.0:8765` and prints two exact URLs: one for this laptop and one for
-the iPhone shopping list. Open the phone URL in Safari while the phone and laptop are on
-the same network, and keep the laptop awake while shopping. To choose a different port, run
-`python3 -m gr.web --port 9000`.
+Open <http://127.0.0.1:8765>. Compose builds the local image, binds only to loopback, runs
+non-root with bounded resources, and keeps generated development state in a named volume.
+See [`docs/platform.md`](docs/platform.md) for logs, stop, VPS deployment, and rollback.
+
+Python 3.12 remains a lightweight direct-development alternative with no third-party
+runtime dependencies: run `python3 -m gr.web`. It binds to `0.0.0.0:8765` and prints laptop
+and LAN phone URLs; use `--port 9000` to choose another port. Direct runs persist to
+`weeks/` and `decisions.jsonl`.
 
 The planning screen sets nights and guests, generates or regenerates a pool, and swaps one
 meal without moving the others. The separate phone list has large checkboxes. Local ticks
@@ -46,9 +51,9 @@ ingredient list. Every quantity, conversion, merge and aisle on the list is arit
 python3 -m unittest discover -s tests    # core, persistence, planner-boundary and web tests
 python3 -m gr.audit                      # parse every recipe, print every unresolved line
 
-docker build --pull -t grocery-router:dev .
-docker run --rm -e APP_ENV=development -e GROCERY_ROUTER_STORAGE=file \
-  -p 8765:8765 grocery-router:dev
+docker compose config --quiet
+docker compose up --build -d
+curl --fail http://127.0.0.1:8765/health/ready
 ```
 
 The image is digest-pinned, runs as non-root UID 10001, installs the PostgreSQL driver from
@@ -91,20 +96,30 @@ malformed source line. A refused line is printed on the list in full, never drop
 | `decisions.jsonl` | Local-development proposal history; production events are durable rows |
 | `weeks/` | Local-development generated weeks; production uses CockroachDB |
 | `migrations/` | Explicit, numbered PostgreSQL-compatible schema migrations |
-| `deploy/`, `clusters/` | Reusable Kubernetes resources and Flux cluster overlays |
-| `docs/platform.md` | Provision, secret, migrate, deploy, observe, rollback and promotion runbook |
+| `compose.yaml`, `compose.vps.yaml` | Default local build and hardened single-VPS runtime |
+| `deploy/compose/` | Caddy TLS entrypoint and deny-by-default authentication seam |
+| `deploy/`, `clusters/` | Optional future Kubernetes resources and Flux cluster overlays |
+| `docs/platform.md` | Current Compose deploy, update, health, logs, rollback and hardening runbook |
+| `docs/platform-kubernetes.md` | Preserved optional Talos/Kubernetes/Flux path |
 | `.scratch/spec/` | The map and its tickets |
 
 ## Deployment foundation
 
 GitHub Actions tests and audits every change, builds the container, and on `main` publishes
-immutable `sha-<commit>` images to GHCR. It holds no kubeconfig. Flux reconciles the desired
-Kustomize overlay from Git. Production requires `DATABASE_URL` with `sslmode=verify-full`;
-missing or unavailable storage never falls back to container files. The model-unavailable
-fallback remains deterministic and separate from database availability.
+immutable `sha-<commit>` images plus a `tag@digest` reference to GHCR. It has no VPS SSH,
+database, kubeconfig, or broad deployment credential. The current production path is an
+explicit operator `docker compose pull`, migration, and restart on one VPS.
 
-See **[`docs/platform.md`](docs/platform.md)** for the complete local Talos Docker and Flux
-operator path. Exact prerequisite pins are in `scripts/platform-versions.env`.
+Caddy is the only internet-facing container and obtains TLS automatically. The app has no
+published host port, and the committed authentication seam denies all traffic until the
+separate auth review approves a mechanism—Grocery Router must never be exposed
+unauthenticated. Production requires CockroachDB through `DATABASE_URL` with
+`sslmode=verify-full`; missing or unavailable storage never falls back to container files.
+
+See **[`docs/platform.md`](docs/platform.md)** for exact local and VPS commands. The
+already-landed Talos/Kubernetes/Flux assets remain an optional future path documented in
+[`docs/platform-kubernetes.md`](docs/platform-kubernetes.md); they are not required for
+routine use.
 
 ## Where the prototype went
 

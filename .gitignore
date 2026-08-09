@@ -10,7 +10,9 @@ dist/
 # Playwright MCP session snapshots.
 .playwright-mcp/
 
-# Task-local Talos credentials/state and uncommitted runtime secrets.
+# Task-local platform credentials/state and uncommitted runtime secrets.
 .local/
 .env
+.env.*
+!.env.vps.example
 *.secret.yaml

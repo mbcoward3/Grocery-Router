@@ -252,6 +252,18 @@ def from_environment(root: Path | str = ".", environ: dict[str, str] | None = No
         )
     production = app_env == "production"
     database_url = env.get("DATABASE_URL", "").strip()
+    database_url_file = env.get("DATABASE_URL_FILE", "").strip()
+    if database_url and database_url_file:
+        raise ConfigurationError(
+            "set only one of DATABASE_URL or DATABASE_URL_FILE"
+        )
+    if database_url_file:
+        try:
+            database_url = Path(database_url_file).read_text(encoding="utf-8").strip()
+        except OSError as exc:
+            raise ConfigurationError("DATABASE_URL_FILE cannot be read") from exc
+        if not database_url:
+            raise ConfigurationError("DATABASE_URL_FILE is empty")
     backend = env.get("GROCERY_ROUTER_STORAGE", "").strip().lower()
     if not backend:
         backend = "database" if database_url or production else "file"
@@ -267,7 +279,11 @@ def from_environment(root: Path | str = ".", environ: dict[str, str] | None = No
             raise ConfigurationError(
                 "file storage is development-only; production requires DATABASE_URL"
             )
-        return FileStore(root)
+        # Containers can keep mutable development state on a dedicated volume while
+        # loading catalogue inputs from the immutable application root. Direct local
+        # runs retain the original repository-backed behavior when this is unset.
+        file_root = env.get("GROCERY_ROUTER_FILE_ROOT", "").strip()
+        return FileStore(file_root or root)
     raise ConfigurationError(
         "GROCERY_ROUTER_STORAGE must be either 'database' or 'file'"
     )

@@ -38,6 +38,17 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Buildx
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+      - name: Validate Compose definitions
+        env:
+          GROCERY_ROUTER_IMAGE: ghcr.io/mbcoward3/grocery-router:sha-0000000000000000000000000000000000000000@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          GROCERY_ROUTER_DOMAIN: router.example.invalid
+          GROCERY_ROUTER_ACME_EMAIL: operator@example.invalid
+          GROCERY_ROUTER_RUNTIME_UID: "1000"
+          GROCERY_ROUTER_RUNTIME_GID: "1000"
+          GROCERY_ROUTER_DATABASE_URL_FILE: /tmp/grocery-router-ci-database-url
+        run: |
+          docker compose -f compose.yaml config --quiet
+          docker compose -f compose.vps.yaml config --quiet
       - name: Build production image
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
@@ -87,5 +98,6 @@ jobs:
             echo '```text'
             echo "${{ steps.image.outputs.name }}:sha-${{ github.sha }}@${{ steps.push.outputs.digest }}"
             echo '```'
-            echo "Open a PR changing the overlay image tag to sha-${{ github.sha }}; Flux performs deployment."
+            echo "VPS release: set GROCERY_ROUTER_IMAGE to the reference above, then run the documented Compose pull, migration, and restart."
+            echo "Optional cluster promotion remains a reviewed overlay image-tag PR; Flux is not required for routine deployment."
           } >> "$GITHUB_STEP_SUMMARY"
