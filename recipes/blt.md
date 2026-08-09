@@ -3,6 +3,7 @@
 source:   household notes, sources/Recipes.pdf page 10-11 (typed)
 modality: text
 yield:    per portion — no batch exists (see Open questions)
+scaling:  unscaled — no per-person amount is stated; see Open questions
 active:   not stated in source
 passive:  not stated in source
 peanut:   none seen
