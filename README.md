@@ -6,11 +6,25 @@ The household cooks a fraction of what it enjoys. Roughly 32 recipes have been t
 liked; under the stress of picking a week, about 15 surface. The gap between 15 and 32 is
 the product.
 
-## Status: the deterministic core runs. The interface is not built yet.
+## Run the local web app
 
-`gr/` holds the working half of the tool: it plans a week, builds a real shopping list from
-the recipe files, and writes both into `weeks/<sunday>.md`. There is no user interface yet —
-the web app is designed separately and lands on top of this.
+Python 3.12, no dependencies. From the repository root:
+
+```sh
+python3 -m gr.web
+```
+
+The app binds to `0.0.0.0:8765` and prints two exact URLs: one for this laptop and one for
+the iPhone shopping list. Open the phone URL in Safari while the phone and laptop are on
+the same network, and keep the laptop awake while shopping. To choose a different port, run
+`python3 -m gr.web --port 9000`.
+
+The planning screen sets nights and guests, generates or regenerates a pool, and swaps one
+meal without moving the others. The separate phone list has large checkboxes. Every tick is
+written into `weeks/<sunday>.md`, so it survives a page reload and a server restart.
+
+The planner needs the `claude` CLI on `PATH`; without it the week is still planned by code
+and the screen says so. A planner call usually takes about a minute.
 
 **Start at [`.scratch/spec/map.md`](.scratch/spec/map.md)** — the destination, the settled
 decisions with their costs, the traps this project already paid for, and the open tickets.
@@ -25,24 +39,15 @@ so it has no file access and physically cannot open a recipe file. Its prompt ca
 ingredient list. Every quantity, conversion, merge and aisle on the list is arithmetic in
 `gr/`, checkable line by line against the recipe files.
 
-### Running it
-
-Python 3.12, no dependencies. The planner needs the `claude` CLI on `PATH`; without it the
-week is still planned, by code, and the week file says so.
+### Validate it
 
 ```sh
-python3 -m unittest discover -s tests    # 81 tests, including the sixteen regressions
+python3 -m unittest discover -s tests    # core, planner-boundary, week-file and web tests
 python3 -m gr.audit                      # parse every recipe, print every unresolved line
 ```
 
-To plan a week from Python:
-
-```python
-from gr import session
-week = session.plan_week(nights=5, guests=0)   # writes weeks/<sunday>.md
-```
-
-One planner call costs roughly $0.15–$0.30 and takes about a minute.
+One planner call costs roughly $0.15–$0.30. The model only selects meals; every list line
+is built by deterministic Python from `recipes/` and `items.md`.
 
 ### What lives where
 
@@ -54,7 +59,9 @@ One planner call costs roughly $0.15–$0.30 and takes about a minute.
 | `gr/shoplist.py` | Aggregation, unit reconciliation, staple routing, the unknown channel |
 | `gr/planner.py` | The one model call, and every check that refuses to trust it |
 | `gr/weekfile.py` | `weeks/<sunday>.md` — the week, the list, and the ticks, in one file |
-| `gr/session.py` | Plan, build, write. The seam an interface sits on |
+| `gr/session.py` | Plan, build, write. The seam the web app calls |
+| `gr/web.py` | Local-network planning and phone-list surfaces; Python stdlib only |
+| `static/` | The supplied design tokens, locally vendored fonts, CSS and small browser script |
 | `gr/notices.py` | The five gaps `profile.md` names, computed from live data |
 | `gr/audit.py` | `python3 -m gr.audit` — every ingredient line with no `items.md` row |
 
