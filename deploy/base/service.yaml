@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grocery-router
+  labels:
+    app.kubernetes.io/name: grocery-router
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: grocery-router
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      protocol: TCP

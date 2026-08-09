@@ -1,8 +1,8 @@
-"""One planning session: pick the meals, build the list, write the week file.
+"""One planning session: pick meals, build the list, and persist the result.
 
-This is the seam the interface sits on. It holds no state of its own — it reads the
-markdown files, does the work, writes the week file back, and returns what it built.
-Anything that needs to survive a restart is in the files.
+The catalogue remains markdown input. Generated plans and shopping state cross the
+``gr.storage`` boundary so local development can use files while production uses
+CockroachDB without changing any deterministic planning or list arithmetic.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from pathlib import Path
 from . import planner as PL
 from . import repo as R
 from . import shoplist as S
+from . import storage as ST
 from . import weekfile as W
 from .notices import Notice, open_questions, week_notices
 
@@ -33,28 +34,29 @@ class Week:
     dropped: list[tuple[str, str]] = field(default_factory=list)
     cost_usd: float | None = None
     path: Path | None = None
+    state_ref: str = ""
+    store: ST.Store | None = field(default=None, repr=False)
     target_ae: float = 0.0
 
 
-def last_week_text(repo: R.Repo, before: date) -> str:
-    """The most recent week file, for the planner to read as context."""
-    directory = repo.root / "weeks"
-    if not directory.exists():
-        return ""
-    files = sorted(p for p in directory.glob("*.md") if p.stem < before.isoformat())
-    return files[-1].read_text(encoding="utf-8") if files else ""
+def last_week_text(repo: R.Repo, before: date, store: ST.Store | None = None) -> str:
+    """The most recent persisted week, for the planner to read as context."""
+    backend = store or ST.from_environment(repo.root)
+    return backend.previous_week(before)
 
 
 def assemble(repo: R.Repo, meals: list[S.MealPlan], sunday: date, nights: int,
              guests: int, planner_source: str, planner_error: str = "",
              planner_notes: list[str] | None = None,
              dropped: list[tuple[str, str]] | None = None,
-             cost_usd: float | None = None, write: bool = True) -> Week:
+             cost_usd: float | None = None, write: bool = True,
+             store: ST.Store | None = None) -> Week:
     """Build the list for a set of meals and write the week file.
 
     `S.build` sets each meal's scale as it goes, so the meals passed in come back with
     their multipliers filled in.
     """
+    backend = store or ST.from_environment(repo.root)
     shopping = S.build(repo, meals, guests=guests)
     week = Week(
         sunday=sunday, nights=nights, guests=guests, meals=meals, shopping=shopping,
@@ -64,30 +66,37 @@ def assemble(repo: R.Repo, meals: list[S.MealPlan], sunday: date, nights: int,
         target_ae=repo.target_ae(guests),
     )
 
-    path = W.week_path(repo.root, sunday)
     if write:
-        ticks = W.read_ticks(path)
+        ticks = backend.read_ticks(sunday)
         text = W.render(repo, sunday, meals, shopping, nights, guests,
                         planner_source, planner_error, week.planner_notes, ticks)
-        W.write(path, text)
-        W.log_decision(repo.root, sunday, meals, nights, guests, planner_source,
-                       week.dropped)
-    week.path = path
+        backend.save_week(sunday, text)
+        backend.record_decision(W.decision_record(
+            sunday, meals, nights, guests, planner_source, week.dropped
+        ))
+    week.store = backend
+    week.state_ref = backend.state_ref(sunday)
+    week.path = (W.week_path(repo.root, sunday)
+                 if isinstance(backend, ST.FileStore) else None)
     return week
 
 
 def plan_week(root: Path | str = ".", nights: int = 5, guests: int = 0,
               sunday: date | None = None, avoid: list[str] | None = None,
-              model: str = PL.MODEL, write: bool = True) -> Week:
+              model: str = PL.MODEL, write: bool = True,
+              store: ST.Store | None = None) -> Week:
     """The whole session: one planner call, every check, the list, the file."""
     repo = R.load(root)
     sunday = sunday or W.sunday_of()
+    backend = store or ST.from_environment(repo.root)
     result = PL.plan(repo, nights=nights, guests=guests,
-                     last_week=last_week_text(repo, sunday), avoid=avoid, model=model)
+                     last_week=last_week_text(repo, sunday, backend),
+                     avoid=avoid, model=model)
     return assemble(repo, result.meals, sunday, nights, guests,
                     planner_source=(result.source if result.source == "code" else model),
                     planner_error=result.error, planner_notes=result.notes,
-                    dropped=result.dropped, cost_usd=result.cost_usd, write=write)
+                    dropped=result.dropped, cost_usd=result.cost_usd, write=write,
+                    store=backend)
 
 
 def swap(repo: R.Repo, week: Week, slug: str, replacement: str | None = None) -> Week:
@@ -132,23 +141,24 @@ def swap(repo: R.Repo, week: Week, slug: str, replacement: str | None = None) ->
     return assemble(repo, meals, week.sunday, week.nights, week.guests,
                     planner_source=week.planner_source,
                     planner_error=week.planner_error,
-                    planner_notes=week.planner_notes, dropped=week.dropped)
+                    planner_notes=week.planner_notes, dropped=week.dropped,
+                    store=week.store)
 
 
-def load_existing(root: Path | str = ".", sunday: date | None = None) -> Week | None:
-    """Rebuild a Week from a week file that already exists on disk.
+def load_existing(root: Path | str = ".", sunday: date | None = None,
+                  store: ST.Store | None = None) -> Week | None:
+    """Rebuild a Week from its durable generated document.
 
-    The meals come from the file, so a week survives a restart. The list is recomputed
-    from the recipe files rather than read back, because the recipe files are the truth
-    and a stale number in a rendered list must never outlive them.
+    Meals come from the persisted plan so a week survives restarts. The list is still
+    recomputed from recipe files: deterministic source changes must not leave stale
+    quantities alive in a rendered plan.
     """
     repo = R.load(root)
     sunday = sunday or W.sunday_of()
-    path = W.week_path(repo.root, sunday)
-    if not path.exists():
+    backend = store or ST.from_environment(repo.root)
+    text = backend.load_week(sunday)
+    if text is None:
         return None
-
-    text = path.read_text(encoding="utf-8")
     nights, guests, source = 5, 0, "planner"
     meals: list[S.MealPlan] = []
     in_meals = False
@@ -186,7 +196,5 @@ def load_existing(root: Path | str = ".", sunday: date | None = None) -> Week | 
     if not meals:
         return None
 
-    week = assemble(repo, meals, sunday, nights, guests, planner_source=source,
-                    write=False)
-    week.path = path
-    return week
+    return assemble(repo, meals, sunday, nights, guests, planner_source=source,
+                    write=False, store=backend)
