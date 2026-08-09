@@ -3,6 +3,7 @@
 source:   household notes, sources/Recipes.pdf page 9-10 (typed)
 modality: text
 yield:    per portion — the 1 lb of beef is a convenience, not a batch (see Open questions)
+scaling:  unscaled — no per-person amount is stated; see Open questions
 active:   not stated in source
 passive:  not stated in source
 peanut:   none seen
