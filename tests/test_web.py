@@ -66,6 +66,43 @@ class TestWebApp(unittest.TestCase):
         self.assertNotIn("name=\"ingredient", page)
         self.assertIn('action="/plan"', page)
 
+    def test_must_include_control_lists_only_known_recipes_and_explains_replacement(self):
+        page = web.render_plan(self.root)
+        self.assertIn('action="/include"', page)
+        self.assertIn('<label for="include-recipe">Incoming recipe to include', page)
+        self.assertIn('<label for="include-outgoing">Current meal to replace', page)
+        self.assertIn('value="hamburgers"', page)
+        self.assertNotIn('value="not-a-recipe"', page)
+        self.assertIn("Choose the incoming recipe and the current meal it should replace", page)
+        self.assertIn("already included", page)
+
+    def test_must_include_post_persists_the_meal_and_updated_shopping_list(self):
+        self.assertNotIn("hamburgers", [meal.slug for meal in self.week.meals])
+        server = web.ThreadingHTTPServer(("127.0.0.1", 0), web.make_handler(self.root))
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base = f"http://127.0.0.1:{server.server_address[1]}"
+        try:
+            request = Request(base + "/include",
+                              data=urlencode({"recipe": "hamburgers",
+                                              "outgoing": self.week.meals[-1].slug}).encode(),
+                              method="POST")
+            response = urlopen(request, timeout=2)
+            self.assertEqual(response.status, 200)
+            page = response.read().decode()
+            self.assertIn("Hamburgers", page)
+
+            stored = SE.load_existing(self.root)
+            self.assertEqual(len(stored.meals), 4)
+            self.assertEqual([meal.slug for meal in stored.meals].count("hamburgers"), 1)
+            self.assertIn("buns", [line.item for line in stored.shopping.buy])
+            list_page = urlopen(base + "/list", timeout=2).read().decode()
+            self.assertIn("buns", list_page)
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
     def test_http_startup_surface_and_tick_persistence(self):
         server = web.ThreadingHTTPServer(("127.0.0.1", 0), web.make_handler(self.root))
         thread = threading.Thread(target=server.serve_forever, daemon=True)

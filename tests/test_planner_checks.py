@@ -339,6 +339,79 @@ class TestWeekFile(unittest.TestCase):
         self.assertEqual(after[0], before[0])
         self.assertEqual(after[2:], before[2:])
 
+    def test_must_include_explicitly_restores_beef_dip_over_beef_pot_roast(self):
+        week = self._week()
+        original = [m.slug for m in week.meals]
+        self.assertIn("beef-dip-sammies", original)
+        self.assertIn("beef-pot-roast", original)
+
+        accidental = SE.swap(self.repo, week, "beef-dip-sammies")
+        accidental_slugs = [m.slug for m in accidental.meals]
+        self.assertNotIn("beef-dip-sammies", accidental_slugs)
+        displaced_index = original.index("beef-dip-sammies")
+        roast_index = accidental_slugs.index("beef-pot-roast")
+
+        restored = SE.include_recipe(
+            self.repo, accidental, "beef-dip-sammies", outgoing="beef-pot-roast"
+        )
+        after = [m.slug for m in restored.meals]
+        self.assertEqual(after[roast_index], "beef-dip-sammies")
+        self.assertEqual(after[displaced_index], accidental_slugs[displaced_index])
+        self.assertEqual(after.count("beef-dip-sammies"), 1)
+        self.assertNotIn("beef-pot-roast", after)
+        self.assertEqual(len(after), len(original))
+
+    def test_must_include_replaces_only_the_final_meal_and_updates_the_list(self):
+        week = self._week()
+        before = [m.slug for m in week.meals]
+        self.assertNotIn("hamburgers", before)
+        self.assertNotIn("ground_beef", [line.item for line in week.shopping.buy])
+
+        included = SE.include_recipe(self.repo, week, "hamburgers")
+        after = [m.slug for m in included.meals]
+
+        self.assertEqual(len(after), len(before))
+        self.assertEqual(after[:-1], before[:-1])
+        self.assertEqual(after[-1], "hamburgers")
+        self.assertEqual(after.count("hamburgers"), 1)
+        self.assertIn("buns", [line.item for line in included.shopping.buy])
+        reloaded = SE.load_existing(self.root, date(2026, 8, 9))
+        self.assertEqual([m.slug for m in reloaded.meals], after)
+        self.assertIn("buns", [line.item for line in reloaded.shopping.buy])
+
+    def test_must_include_is_a_no_op_when_already_present_or_invalid(self):
+        week = self._week()
+        original = week.path.read_text(encoding="utf-8")
+        existing = week.meals[0].slug
+
+        self.assertIs(SE.include_recipe(self.repo, week, existing), week)
+        self.assertIs(SE.include_recipe(self.repo, week, "not-a-recipe"), week)
+        self.assertIs(SE.include_recipe(self.repo, week, ""), week)
+        self.assertIs(SE.include_recipe(self.repo, week, "hamburgers",
+                                        outgoing="not-in-the-week"), week)
+        self.assertEqual(week.path.read_text(encoding="utf-8"), original)
+        self.assertEqual([m.slug for m in week.meals].count(existing), 1)
+
+    def test_must_include_preserves_the_unknown_yield_cap(self):
+        slugs = ["cheesy-pasta", "chicken-chili", "hamburgers", "tacos"]
+        meals = [PL.MealPlan(slug=slug, title=self.repo.row(slug).title,
+                             reason_kind="plain", reason="chosen for test",
+                             yield_raw=self.repo.row(slug).yield_raw, scale=None,
+                             untried=False)
+                 for slug in slugs]
+        week = SE.assemble(self.repo, meals, date(2026, 8, 9), 4, 0,
+                           planner_source="code")
+
+        included = SE.include_recipe(self.repo, week, "zuppa-toscana")
+        after = [m.slug for m in included.meals]
+        unknowns = [slug for slug in after
+                    if self.repo.row(slug).yield_.shape == "unknown"]
+        self.assertEqual(len(after), 4)
+        self.assertEqual(len(set(after)), 4)
+        self.assertIn("zuppa-toscana", after)
+        self.assertLessEqual(len(unknowns), 2)
+        self.assertEqual(after[2:], slugs[2:])
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
