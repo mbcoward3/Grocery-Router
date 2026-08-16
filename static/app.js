@@ -11,6 +11,23 @@ document.addEventListener('submit', (event) => {
 });
 
 document.addEventListener('change', async (event) => {
+  const incoming = event.target.closest('[data-include-form] [name="recipe"]');
+  if (incoming) {
+    const form = incoming.closest('[data-include-form]');
+    const outgoing = form.querySelector('[name="outgoing"]');
+    const atUnknownCap = Number(form.dataset.unknownCount) >= 2;
+    const incomingIsUnknown = incoming.selectedOptions[0]?.dataset.unknown === 'true';
+    for (const option of outgoing.options) {
+      option.disabled = atUnknownCap && incomingIsUnknown
+        && option.dataset.unknown !== 'true';
+    }
+    if (outgoing.selectedOptions[0]?.disabled) {
+      const allowed = Array.from(outgoing.options).filter(option => !option.disabled);
+      if (allowed.length) outgoing.value = allowed[allowed.length - 1].value;
+    }
+    return;
+  }
+
   const input = event.target.closest('[data-list-key]');
   if (!input) return;
   const row = input.closest('.list-row');

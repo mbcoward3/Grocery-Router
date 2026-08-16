@@ -180,6 +180,47 @@ def _meal_card(repo: R.Repo, meal) -> str:
 </article>"""
 
 
+def _include_control(repo: R.Repo, week: SE.Week) -> str:
+    included = {meal.slug for meal in week.meals}
+    rows = sorted(
+        (row for row in repo.all_rows if row.slug in repo.recipes),
+        key=lambda row: (row.title.casefold(), row.slug),
+    )
+    options = ['<option value="">Choose a recipe</option>']
+    options.extend(
+        f'<option value="{_e(row.slug)}" data-unknown="'
+        f'{str(row.yield_.shape == "unknown").lower()}">{_e(row.title)}'
+        f'{" — already included" if row.slug in included else ""}</option>'
+        for row in rows
+    )
+    outgoing = "".join(
+        f'<option value="{_e(meal.slug)}" data-unknown="'
+        f'{str(repo.row(meal.slug).yield_.shape == "unknown").lower()}"'
+        f'{" selected" if index == len(week.meals) - 1 else ""}>'
+        f'{_e(meal.label)}</option>'
+        for index, meal in enumerate(week.meals)
+    )
+    return f"""
+<div class="card include-control">
+  <div>
+    <h3>Must include this week</h3>
+    <p>Choose the incoming recipe and the current meal it should replace. Code changes
+    only that slot without another planner call. Choosing a recipe already here changes
+    nothing. At the two unknown-yield safety cap, an unknown incoming recipe can replace
+    only an unknown-yield meal.</p>
+  </div>
+  <form method="post" action="/include" data-include-form data-unknown-count="{sum(1 for meal in week.meals if repo.row(meal.slug).yield_.shape == 'unknown')}">
+    <label for="include-recipe">Incoming recipe to include
+      <select id="include-recipe" name="recipe" required>{''.join(options)}</select>
+    </label>
+    <label for="include-outgoing">Current meal to replace
+      <select id="include-outgoing" name="outgoing" required>{outgoing}</select>
+    </label>
+    <button class="button secondary" type="submit">Replace meal</button>
+  </form>
+</div>"""
+
+
 def _pool(repo: R.Repo, week: SE.Week) -> str:
     meals = "".join(_meal_card(repo, meal) for meal in week.meals)
     planner = (
@@ -195,6 +236,7 @@ def _pool(repo: R.Repo, week: SE.Week) -> str:
   <div class="section-heading"><span>2</span><h2>This week's pool</h2></div>
   {_pool_counts(repo, week)}
   {error}{changed}
+  {_include_control(repo, week)}
   <div class="meal-pool">{meals}</div>
   <div class="side-card"><strong>Sides</strong><p>Nothing written down yet — so every list is short on vegetables and starches, and says so.</p></div>
   <p class="planner-source">{planner}</p>
@@ -427,6 +469,15 @@ def make_handler(root: Path, store: ST.Store | None = None):
                     if week:
                         SE.swap(R.load(root), week, form.get("slug", ""),
                                 form.get("replacement") or None)
+                self._redirect("/")
+                return
+            if path == "/include":
+                form = self._form()
+                with _WRITE_LOCK:
+                    week = SE.load_existing(root, store=backend)
+                    if week:
+                        SE.include_recipe(R.load(root), week, form.get("recipe", ""),
+                                          form.get("outgoing", ""))
                 self._redirect("/")
                 return
             if path == "/api/toggle":

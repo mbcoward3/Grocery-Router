@@ -20,9 +20,12 @@ the same network, and keep the laptop awake while shopping. To choose a differen
 `python3 -m gr.web --port 9000`.
 
 The planning screen sets nights and guests, generates or regenerates a pool, and swaps one
-meal without moving the others. The separate phone list has large checkboxes. Local ticks
-are written into `weeks/<sunday>.md`; production plans and ticks use the configured durable
-store, so both survive a page reload and a restart.
+meal without moving the others. **Must include this week** adds an explicit known recipe
+without another model call; choose both the incoming recipe and the current meal it should
+replace so the change is explicit. An existing pick is left alone. The persisted week and
+shopping list update immediately. The separate phone list has large checkboxes. Local ticks
+are written into `weeks/<sunday>.md`; production plans and ticks use
+the configured durable store, so both survive a page reload and a restart.
 
 The planner needs the `claude` CLI on `PATH`; without it the week is still planned by code
 and the screen says so. A planner call usually takes about a minute.

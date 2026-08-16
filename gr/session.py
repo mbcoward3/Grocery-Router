@@ -129,7 +129,7 @@ def swap(repo: R.Repo, week: Week, slug: str, replacement: str | None = None) ->
         row = candidates[0]
     else:
         row = repo.row(replacement)
-        if row is None or row.slug not in repo.recipes:
+        if row is None or row.slug not in repo.recipes or row.slug in chosen:
             return week
 
     meals[index] = S.MealPlan(
@@ -143,6 +143,38 @@ def swap(repo: R.Repo, week: Week, slug: str, replacement: str | None = None) ->
                     planner_error=week.planner_error,
                     planner_notes=week.planner_notes, dropped=week.dropped,
                     store=week.store)
+
+
+def include_recipe(repo: R.Repo, week: Week, replacement: str,
+                   outgoing: str | None = None) -> Week:
+    """Guarantee one known recipe is in the pool without re-planning the week.
+
+    An existing recipe is an idempotent no-op. Otherwise this uses the targeted swap
+    path. Callers may explicitly name the outgoing meal; the deterministic default is
+    the final meal. The one exception preserves the planner's two-unknown-yield cap:
+    an incompatible explicit replacement is rejected, while the default replaces the
+    final unknown-yield meal when necessary.
+    """
+    row = repo.row(replacement)
+    if (not week.meals or row is None or row.slug not in repo.recipes
+            or any(meal.slug == row.slug for meal in week.meals)):
+        return week
+
+    victim = week.meals[-1]
+    if outgoing is not None:
+        victim = next((meal for meal in week.meals if meal.slug == outgoing), None)
+        if victim is None:
+            return week
+
+    if row.yield_.shape == "unknown":
+        unknowns = [meal for meal in week.meals
+                    if (repo.row(meal.slug) is not None
+                        and repo.row(meal.slug).yield_.shape == "unknown")]
+        if len(unknowns) >= 2 and victim not in unknowns:
+            if outgoing is not None:
+                return week
+            victim = unknowns[-1]
+    return swap(repo, week, victim.slug, row.slug)
 
 
 def load_existing(root: Path | str = ".", sunday: date | None = None,

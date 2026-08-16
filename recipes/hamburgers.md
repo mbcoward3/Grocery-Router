@@ -28,3 +28,5 @@ status:   complete
   much a batch makes. See `docs/step2-design.md` §2.5.
 - What is left is the same real question the BLT has: **how much beef per patty** —
   a quarter pound is the usual answer and this household has not stated one.
+- The household's typed source does not mention cheese, so the shopping list correctly
+  cannot add it. **Which cheese, and how much per burger, does this household use?**

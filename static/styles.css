@@ -8,8 +8,8 @@ html { color: var(--text-primary); background: var(--bg-page); font-family: var(
 body { margin: 0; background: var(--bg-page); color: var(--text-primary); font: var(--type-body); }
 a { color: var(--link, var(--accent)); text-underline-offset: 3px; }
 a:hover { color: var(--accent-hover); }
-button, input { font: inherit; }
-button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+button, input, select { font: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 .site-header { max-width: 980px; margin: 0 auto; padding: var(--space-12) var(--space-6) var(--space-8); display: flex; align-items: end; justify-content: space-between; gap: var(--space-6); }
 .site-header h1 { font: var(--type-display-xl); margin: var(--space-1) 0; letter-spacing: -.025em; }
 .site-header p { color: var(--text-secondary); margin: 0; }
@@ -43,6 +43,12 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .pool-counts strong { display: block; font: var(--type-display-md); }
 .pool-counts span { display: block; color: var(--text-secondary); font: var(--type-body-sm); margin-top: var(--space-1); }
 .count-caveat { font: var(--type-body-sm); }
+.include-control { display: flex; align-items: end; justify-content: space-between; gap: var(--space-6); margin-top: var(--space-5); }
+.include-control h3 { font: 600 19px/1.3 var(--font-display); margin: 0; }
+.include-control p { color: var(--text-secondary); font: var(--type-body-sm); margin: var(--space-2) 0 0; max-width: 540px; }
+.include-control form { display: grid; grid-template-columns: repeat(2, minmax(170px, 1fr)) auto; align-items: end; gap: var(--space-2); flex: 1 0 540px; }
+.include-control label { display: grid; gap: var(--space-2); font: var(--type-eyebrow); letter-spacing: var(--tracking-eyebrow); text-transform: uppercase; color: var(--text-secondary); }
+.include-control select { min-height: 42px; min-width: 0; padding: 8px 12px; border-radius: var(--radius-md); border: 1px solid var(--border-card); color: var(--text-primary); background: var(--bg-card); }
 .meal-pool { display: grid; gap: var(--space-3); margin-top: var(--space-5); }
 .meal-card { padding: var(--space-5); }
 .meal-main { display: flex; justify-content: space-between; gap: var(--space-5); align-items: flex-start; }
@@ -106,6 +112,8 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
   .controls input { width: 100%; min-height: 48px; }
   .controls .button, .form-status { grid-column: 1 / -1; }
   .pool-counts { grid-template-columns: 1fr; }
+  .include-control { display: block; }
+  .include-control form { grid-template-columns: 1fr; margin-top: var(--space-4); }
   .meal-main { display: block; }
   .meal-actions { justify-content: flex-end; margin-top: var(--space-3); }
   .reason { font: var(--type-body); }
