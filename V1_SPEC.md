@@ -826,8 +826,6 @@ in focused companion documents:
 
 - [`TRUE_UP_PLAN.md`](TRUE_UP_PLAN.md) — corpus inventory, one-at-a-time review, migration,
   audit, and snapshot plan.
-- [`REPO_CLEANUP_PLAN.md`](REPO_CLEANUP_PLAN.md) — branch preservation, active-tree cleanup,
-  scaffold, and consolidation plan.
 - [`UP_NEXT.md`](UP_NEXT.md) — all interview “not yets,” explicitly outside v1.
 - [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — durable rationale and revisit conditions.
 - [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md) —
@@ -844,7 +842,7 @@ Grocery Router v1 is done when:
 
 1. the active repository contains one coherent Go/React/SQLite application and current documentation;
 2. a fresh clone contains no contradictory prototype, deployment, or superseded-spec instructions;
-3. obsolete PRs and work branches have been closed or archived according to `REPO_CLEANUP_PLAN.md`;
+3. obsolete PRs and work branches have been closed or archived;
 4. Goose can create the schema from an empty SQLite database;
 5. sqlc provides typed access for application queries;
 6. the PDF inventory ledger gives every canonical recipe an explicit disposition;

@@ -6,9 +6,8 @@ Read in this order:
 
 1. `V1_SPEC.md`
 2. `TRUE_UP_PLAN.md`
-3. `REPO_CLEANUP_PLAN.md`
-4. `UP_NEXT.md`
-5. `PRODUCT_DECISIONS.md` for rationale
+3. `UP_NEXT.md`
+4. `PRODUCT_DECISIONS.md` for rationale
 
 `archive/interviews/v1-scope-interview.md` is historical and non-authoritative. Do not load it
 as routine context; consult it only to recover nuance not settled by the current documents.

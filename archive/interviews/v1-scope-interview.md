@@ -2,8 +2,8 @@
 
 > **Historical and non-authoritative.** This is the user-visible interview transcript,
 > excluding hidden reasoning, tool calls, and tool output. Decisions were distilled into
-> `V1_SPEC.md`, `PRODUCT_DECISIONS.md`, `TRUE_UP_PLAN.md`, `REPO_CLEANUP_PLAN.md`, and
-> `UP_NEXT.md`. Those documents govern when this transcript differs or contains ambiguity.
+> `V1_SPEC.md`, `PRODUCT_DECISIONS.md`, `TRUE_UP_PLAN.md`, and `UP_NEXT.md`. Those active
+> documents govern when this transcript differs or contains ambiguity.
 
 Session: `01a00d39-a2cc-733c-a8e3-081542d51454`  
 Started at the v1 scope-reset interview.

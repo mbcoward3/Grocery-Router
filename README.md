@@ -13,9 +13,8 @@ the clean Go/React/SQLite rebuild.
 
 1. [`V1_SPEC.md`](V1_SPEC.md) — product, behavior, data model, architecture, and acceptance
 2. [`TRUE_UP_PLAN.md`](TRUE_UP_PLAN.md) — recipe inventory, review, migration, and audit
-3. [`REPO_CLEANUP_PLAN.md`](REPO_CLEANUP_PLAN.md) — preservation and consolidation record
-4. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
-5. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
+3. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
+4. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
 
 The raw interview is archived at
 [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md). It is

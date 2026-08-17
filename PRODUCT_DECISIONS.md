@@ -11,7 +11,7 @@ and exists only to recover nuance.
 ## Authority order
 
 1. `V1_SPEC.md` — product and implementation contract.
-2. `TRUE_UP_PLAN.md` and `REPO_CLEANUP_PLAN.md` — execution contracts.
+2. `TRUE_UP_PLAN.md` — corpus migration execution contract.
 3. `UP_NEXT.md` — explicitly deferred scope.
 4. This record — rationale and revisit conditions.
 5. Raw interview archive — historical evidence only.
