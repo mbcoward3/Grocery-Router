@@ -1,6 +1,6 @@
 # Grocery Router v1 — Repository Cleanup Plan
 
-Status: **required before implementation consolidation**  
+Status: **completed 17 August 2026**  
 Product authority: [`V1_SPEC.md`](V1_SPEC.md)  
 Corpus migration: [`TRUE_UP_PLAN.md`](TRUE_UP_PLAN.md)
 
@@ -130,9 +130,29 @@ After the clean application line passes its initial migration and scaffold tests
 
 ---
 
-## 8. Cleanup completion checklist
+## 8. Execution record
+
+Completed on 17 August 2026:
+
+- pre-cleanup dirty work preserved at `archive/pre-v1-cleanup-2026-08-17`;
+- superseded Python branch preserved at `archive/python-v1-rebuild`;
+- superseded Compose PR branch preserved at `archive/compose-pr5`;
+- active repository reset on `main` at cleanup commit `219cdad`;
+- PR #5 closed as superseded;
+- remote branches `fm/gr-compose-e1`, `v1-rebuild`, and `main-uqunaf` deleted;
+- `main` left as the only local and remote branch;
+- canonical PDF and supporting source evidence preserved under `sources/`;
+- preserved evidence checksummed in `SOURCE_MANIFEST.sha256`; and
+- obsolete code, deployment assets, derived recipe stores, screenshots, and specifications
+  removed from the active tree.
+
+The archive references are historical recovery points, not active product context.
+
+## 9. Cleanup completion checklist
 
 Cleanup is complete when a fresh clone has one active product direction, the raw corpus is
 preserved, obsolete work is reachable only through history/archive references, current run
 commands are accurate, and no open PR or active branch can be mistaken for the v1 integration
 line.
+
+All checklist conditions were satisfied on 17 August 2026.
