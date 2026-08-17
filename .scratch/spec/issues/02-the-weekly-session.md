@@ -4,6 +4,12 @@ Type: prototype
 Status: open
 Blocked by: —
 
+> **Four things ticket 12 hands this ticket to draw** (`.scratch/spec/signals.md`):
+> a **"cooked something else?"** row over a corpus picker in the feedback step (§ 3); a
+> ***this week*** screen with the same affordances as that step, open all week, one component
+> and two entry points (§ 1); a quiet **`Gap` list** that never nags (§ 8); and the **scoring
+> strip** of four numbers, showing counts below ten offers per kind (§ 6, § 7).
+
 ## Question
 
 What does the one weekly session actually look like, step by step, on a phone and on a

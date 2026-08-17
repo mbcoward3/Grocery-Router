@@ -1,8 +1,17 @@
 # Self-improvement, and the observable signal set
 
 Type: grilling
-Status: open
+Status: **closed** — 8 August 2026. Output: `.scratch/spec/signals.md`
 Blocked by: — (ticket 01 names the nouns; the questions below do not wait on it)
+
+> **Closed 8 August 2026.** Ten decisions came out of a three-round grilling; four were adopted
+> from the recommendation without a round and are marked *adopted, not grilled* in the output.
+> The headline: **the off-plan rate — `Cook`s with no `Meal` — is the recall gap measured
+> directly**, and it is the only metric v1 has that measures the thing the product exists to
+> fix. Two capture surfaces, with the Session guaranteed. Four signals added: the off-plan cook,
+> a coarse effort three-state, the Step 2 defect count, and origin marking on every guessable
+> field. The scoring run reports and never acts. Section 9 of the output is the unmeasurable
+> list, and *did the prose land* is on it.
 
 ## Question
 

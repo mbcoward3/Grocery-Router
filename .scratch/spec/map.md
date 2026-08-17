@@ -109,13 +109,26 @@ process**. Sustained weekly use is the success measure that follows, not the gat
   Ten term clusters resolved; `candidate`, `bank recipe`, `pack`, `family`, `outcome` and
   single-scalar `effort` are retired words. New nouns: **Retirement**, **Repeat**, **Verdict**,
   **Gap**. Ticket 10 findings 2 and 5 closed.
+- **12 — self-improvement and signals.** The closed event set, the scoring run, and the list of
+  what v1 can never measure: `.scratch/spec/signals.md`. **The off-plan rate — `Cook`s with no
+  `Meal` — is the recall gap measured directly**, and it is the only metric that measures the
+  product's reason for existing. Two capture surfaces, and the Session is the guaranteed one.
+  Four signals added: the off-plan cook, a coarse effort three-state, the Step 2 defect count,
+  and an `origin` marker on every guessable field. The scoring run reports and never acts.
+  Ticket 10 finding 4 closed. Four of the fourteen decisions are marked *adopted, not grilled*.
 
 ## Not yet specified
 
 - **How the list reaches the person in the aisle.** Decision 4 has no offline story, so
   ticking items off is a server round-trip. Whether that is acceptable is unresolved.
-- **How "improves that process" gets measured** once v1 ships. The old repo proposed
-  distinct-recipes-per-quarter and cognitive-load counts; neither has a baseline.
+  The device is known: **an iPhone, in Safari.** The household owns no iPad and no Mac, so a
+  native iOS app is not buildable here and was **considered and rejected on 8 August 2026**.
+  The standing candidate is an **installed PWA** — a home-screen icon, full screen, and a
+  service worker that holds the list offline. It keeps decision 4 exactly as written. Ticket
+  02 or 03 chooses it or does not.
+- **Whether a hard-won accept rate ever arrives.** Ticket 12 settled *how* v1 measures itself,
+  and the arithmetic says the average reason kind needs about six months to reach a readable
+  rate. Nothing shortens that, and no decision depends on it.
 - **What the CLI subcommands read.** They need either database access or an export path,
   and that choice depends on the schema.
 - **The degradation posture for a half-finished session.** The old repo stated it for the

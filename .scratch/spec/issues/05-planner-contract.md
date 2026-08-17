@@ -2,7 +2,7 @@
 
 Type: grilling
 Status: open
-Blocked by: 01, 12
+Blocked by: 01 ✓, 12-self-improvement ✓, 12-ingredient-grammar
 
 ## Question
 
@@ -24,9 +24,11 @@ Settle:
 - **Reason kinds.** The old repo recorded a kind alongside the sentence, because *"which
   reasons get accepted"* cannot be answered from prose — two meals stale at different
   distances are two sentences and one kind. What is the set of kinds?
-- **The prediction inside a reason** (decision 23, ticket 12). *"Serves 8 — one cook, two
-  nights"* was false the first week it ran, and nothing scored it. Does a reason carry a
-  checkable claim beside its prose, and may the model author that claim or only the code?
+- ~~**The prediction inside a reason.**~~ **Settled — no.** Ticket 01 ruled it out and ticket 12
+  designed against it. A `Reason` is a kind plus prose and carries no structured claim. Two
+  further rules land here from `signals.md` § 8: **the prompt never carries an accept rate**,
+  and **code checks the kinds that data can check** — `stale` needs a supporting date, `never`
+  needs no `Cook`. `plain`, `low` and `passive` stay unverifiable, and v1 accepts that.
 - **The constraint checks**, which are code and not prompt text:
   - A declared allergen never reaches the week.
   - A slug that resolves to nothing is dropped, never nudged to its nearest neighbour.

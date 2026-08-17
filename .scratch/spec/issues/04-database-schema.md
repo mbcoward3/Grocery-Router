@@ -2,7 +2,12 @@
 
 Type: grilling
 Status: open
-Blocked by: 01
+Blocked by: 01 ✓, 12-self-improvement ✓
+
+> **Inputs now waiting.** `.scratch/spec/signals.md` § 2 gives the closed `Event` set and the
+> rule that state tables and the log never overlap. § 5 adds an `origin` column
+> (`stated | observed | system-guess`) to every guessable field. Both are marked *adopted, not
+> grilled* and are cheap to re-open.
 
 ## Question
 

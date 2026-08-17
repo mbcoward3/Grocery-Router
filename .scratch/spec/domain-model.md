@@ -590,11 +590,13 @@ What collapsed, and why.
 Named rather than left to be discovered.
 
 - **Where a `Constraint` is stored.** Ticket 04.
-- **The closed set of `Event`s.** Ticket 12 (self-improvement).
+- ~~**The closed set of `Event`s.**~~ Settled 8 August 2026: `.scratch/spec/signals.md` § 2.
 - **The exact ingredient grammar and mis-merge rule**, as a specification. Ticket 12
   (ingredient grammar).
 - **Whether `Reason.kind` gains entries** for a model planner that notices something the
   ranker could not. Ticket 05.
 - **Whether a second-night claim is ever checkable.** It is not, in v1, by decision. §2.
-- **What replaces a `system-guess` effort value.** No observation exists today. Ticket 12.
+- ~~**What replaces a `system-guess` effort value.**~~ Settled 8 August 2026: a coarse
+  `faster | as stated | slower` on a `Cook`. Direction only, never minutes. `signals.md` § 4.3.
+  The **passive** range keeps no replacement and stays a guess for good.
 - **Whether `aisle` ever stops being a guess.** Not in v1 — Kroger is out of scope.

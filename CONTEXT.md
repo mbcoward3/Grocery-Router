@@ -145,5 +145,26 @@ the product; the kind is the only part that can be scored.
 _Avoid_: explanation, justification, rationale
 
 **Event**:
-A row of the decision log. Nothing that was decided is lost.
+A row of the decision log, and only for what no state table holds. Nothing that was decided is
+lost.
 _Avoid_: log entry, record, audit
+
+**off-plan cook**:
+A Cook with no Meal. The household reached past the plan. The rate of these is the recall gap
+measured directly, and it is v1's primary self-measurement.
+_Avoid_: unplanned meal, substitution
+
+**incomplete**:
+Derived: a Recipe with no IngredientLine. The planner may never propose one. How a retrospective
+off-plan cook of an unknown dish enters the corpus.
+_Avoid_: draft, stub, partial
+
+**Origin**:
+Where a field's value came from — `stated`, `observed` or `system-guess`. Every guessable field
+carries one, so a guess can never pass as a fact.
+_Avoid_: source, confidence, quality
+
+**Scoring run**:
+A replay over the log that answers *is the planner any good* with nobody in the loop. It reports
+and it never acts.
+_Avoid_: review, report, metrics, analytics

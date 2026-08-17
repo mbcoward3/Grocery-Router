@@ -97,6 +97,13 @@ did not propose them, and the household cooked them anyway.
 There is no way to record *"I cooked something else."* It is the highest-value signal the
 week produced and the system is blind to it. Ticket 12 owns this.
 
+> **Closed by ticket 12, 8 August 2026.** A `Cook` needs no `Meal`, and the feedback step
+> carries one **"cooked something else?"** row over a corpus picker — two taps, date optional.
+> **The off-plan rate is now v1's primary self-measurement**: `Cook`s with no `Meal` as a
+> fraction of all cooks. If the dish is not in the corpus, it enters at once as a Recipe with a
+> name, `provenance: proven-here` and no ingredient lines. See `.scratch/spec/signals.md` § 3.
+> The cost, recorded: the count conflates *the planner missed it* with *we simply wanted tacos*.
+
 ### 5. The week the file names is not the week that was cooked
 
 The file says `Week of 2026-08-03`, `nights: 5`, which reads Monday to Friday. The cooking
