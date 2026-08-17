@@ -1,2 +1,0 @@
-# Runtime database driver. Resolve deliberately; production installs requirements.lock.
-psycopg[binary]==3.3.4

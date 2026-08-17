@@ -1,16 +1,21 @@
-__pycache__/
-*.pyc
+# Local databases and runtime state
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+data/
 
-# Cached by the prep job. Regenerated on demand, never the source of truth.
-.cache/
+# Go
+/bin/
+coverage.out
 
-# Built by build_static.py. The runtime it copies in lives in vendor/.
+# Frontend
+node_modules/
 dist/
 
-# Playwright MCP session snapshots.
-.playwright-mcp/
-
-# Task-local Talos credentials/state and uncommitted runtime secrets.
-.local/
-.env
-*.secret.yaml
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp

@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: grocery-router-config
-data:
-  APP_ENV: production
-  GROCERY_ROUTER_STORAGE: database
