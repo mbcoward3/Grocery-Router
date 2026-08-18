@@ -253,14 +253,15 @@ func ingredientParams(
 		return store.CreateRecipeIngredientParams{}, err
 	}
 	params := store.CreateRecipeIngredientParams{
-		SectionID:     sectionID,
-		GroceryItemID: sql.NullInt64{Int64: itemID, Valid: true},
-		Position:      position,
-		SourceText:    ingredient.SourceText,
-		QuantityKind:  ingredient.Quantity.Kind,
-		Preparation:   nullString(ingredient.Preparation),
-		IsOptional:    boolInt(ingredient.Optional),
-		DisplayNote:   nullString(ingredient.Note),
+		SectionID:            sectionID,
+		GroceryItemID:        sql.NullInt64{Int64: itemID, Valid: true},
+		Position:             position,
+		SourceText:           ingredient.SourceText,
+		QuantityKind:         ingredient.Quantity.Kind,
+		Preparation:          nullString(ingredient.Preparation),
+		IsOptional:           boolInt(ingredient.Optional),
+		IncludeOnGroceryList: boolInt(!ingredient.NonShopping),
+		DisplayNote:          nullString(ingredient.Note),
 	}
 	if rationals.Minimum != nil {
 		params.AmountMinNumerator, params.AmountMinDenominator, err = nullRational(rationals.Minimum)

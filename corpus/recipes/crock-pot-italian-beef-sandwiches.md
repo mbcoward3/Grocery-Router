@@ -58,7 +58,7 @@ ingredient_sections:
           key: beef-broth
           name: Beef Broth
           store_section: {key: pantry, name: Pantry}
-          shopping_mode: counted
+          shopping_mode: measured
         quantity:
           kind: exact
           amount: "1"

@@ -33,7 +33,11 @@ func RenderBody(document Document) string {
 		fmt.Fprintf(&out, "\n### %s\n\n", section.Name)
 		for _, ingredient := range section.Ingredients {
 			fmt.Fprintf(&out, "- %s\n", ingredient.SourceText)
-			fmt.Fprintf(&out, "  - Shopping: %s — %s\n", formatShoppingRequirement(ingredient), ingredient.GroceryItem.StoreSection.Name)
+			if ingredient.NonShopping {
+				fmt.Fprintf(&out, "  - Recipe only: %s — not added to the grocery list\n", formatShoppingRequirement(ingredient))
+			} else {
+				fmt.Fprintf(&out, "  - Shopping: %s — %s\n", formatShoppingRequirement(ingredient), ingredient.GroceryItem.StoreSection.Name)
+			}
 			if ingredient.Preparation != "" {
 				fmt.Fprintf(&out, "  - Preparation: %s\n", ingredient.Preparation)
 			}
@@ -58,6 +62,9 @@ func RenderBody(document Document) string {
 	bySection := make(map[string][]Ingredient)
 	for _, section := range document.IngredientSections {
 		for _, ingredient := range section.Ingredients {
+			if ingredient.NonShopping {
+				continue
+			}
 			name := ingredient.GroceryItem.StoreSection.Name
 			bySection[name] = append(bySection[name], ingredient)
 		}

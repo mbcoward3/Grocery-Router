@@ -53,6 +53,7 @@ type RecipeIngredient struct {
 	Preparation            sql.NullString `db:"preparation" json:"preparation"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
+	IncludeOnGroceryList   int64          `db:"include_on_grocery_list" json:"include_on_grocery_list"`
 }
 
 type RecipeIngredientSection struct {

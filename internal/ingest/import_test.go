@@ -112,6 +112,19 @@ func TestImportApprovedCorpus(t *testing.T) {
 		t.Fatalf("cooked chicken = %q, %q, %q, %q", item, section, mode, note)
 	}
 
+	var waterShopping int
+	if err := db.QueryRow(`
+		SELECT ri.include_on_grocery_list
+		FROM recipe_ingredients ri
+		JOIN grocery_items gi ON gi.id = ri.grocery_item_id
+		WHERE gi.key = 'water'
+	`).Scan(&waterShopping); err != nil {
+		t.Fatal(err)
+	}
+	if waterShopping != 0 {
+		t.Fatalf("water include_on_grocery_list = %d, want 0", waterShopping)
+	}
+
 	if err := ingest.Import(context.Background(), db, documents); err == nil {
 		t.Fatal("second import unexpectedly succeeded")
 	}

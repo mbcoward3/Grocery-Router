@@ -429,3 +429,18 @@ satisfy it.
 change aggregation identity or quantity.
 
 **Revisit when:** First-class substitutions and alternatives move into scope.
+
+## D033 — Non-purchased inputs remain explicit
+
+**Decision:** Retain non-purchased recipe inputs such as tap water in the structured recipe,
+but mark them explicitly as non-shopping so grocery generation excludes them.
+
+**Why:** Dropping water would make the recipe incomplete, while putting `2 cups Water` on every
+grocery list would misrepresent an ordinary cooking input. This is a reviewed source mapping,
+not pantry inference.
+
+**Consequence:** Recipe ingredients store an `include_on_grocery_list` decision. Ingestion
+requires that decision to be explicit in the approved Markdown; runtime week generation never
+infers it.
+
+**Revisit when:** Household inventory or configurable staple policies enter scope.

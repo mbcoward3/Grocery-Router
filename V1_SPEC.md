@@ -54,7 +54,10 @@ A source ingredient is mapped to its canonical shoppable grocery item during ing
 
 ### 2.3 Do not infer inventory
 
-Every recipe requirement appears on the grocery list. v1 has no pantry, staple, “probably have,” or inventory-subtraction behavior.
+Every shoppable recipe requirement appears on the grocery list. v1 has no pantry, staple,
+“probably have,” or inventory-subtraction behavior. A non-purchased input such as tap water is
+retained as a recipe ingredient but may be explicitly marked non-shopping during approved
+ingestion; this is never inferred at week-generation time.
 
 ### 2.4 Do not invent purchase advice
 

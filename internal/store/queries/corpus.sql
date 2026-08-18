@@ -96,8 +96,8 @@ INSERT INTO recipe_ingredients (
     amount_max_numerator, amount_max_denominator,
     unit_id, package_type,
     package_size_numerator, package_size_denominator, package_size_unit_id,
-    preparation, is_optional, display_note
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    preparation, is_optional, include_on_grocery_list, display_note
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: ListRecipeIngredients :many

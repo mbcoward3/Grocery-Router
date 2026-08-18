@@ -56,6 +56,7 @@ type Ingredient struct {
 	Quantity    Quantity    `yaml:"quantity"`
 	Preparation string      `yaml:"preparation,omitempty"`
 	Optional    bool        `yaml:"optional,omitempty"`
+	NonShopping bool        `yaml:"non_shopping,omitempty"`
 	Note        string      `yaml:"note,omitempty"`
 }
 
