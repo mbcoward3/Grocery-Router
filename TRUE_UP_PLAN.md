@@ -14,10 +14,11 @@ means. This plan defines how the work is executed, reviewed, tracked, and closed
 - **Gate 7 in progress:** the Goose schema models sources, exact quantities, packages,
   canonical grocery items, instructions, review flags, and verification guards. The strict
   Markdown parser and transactional importer are working.
-- **Eleven recipes verified:** Chicken and Biscuits Casserole, Hamburgers, Sausage and Peppers,
+- **Twelve recipes verified:** Chicken and Biscuits Casserole, Hamburgers, Sausage and Peppers,
   3-Ingredient Teriyaki Chicken, Chicken Veggie Stir Fry, Crock Pot Italian Beef Sandwiches,
-  Meatloaf, Beef Stew with Carrots and Potatoes, Easy Salmon Dinner, Chili, and Enchiladas are
-  approved under `corpus/recipes/` and import successfully into a fresh migrated database.
+  Meatloaf, Beef Stew with Carrots and Potatoes, Easy Salmon Dinner, Chili, Enchiladas, and
+  Chicken Noodle Soup are approved under `corpus/recipes/` and import successfully into a
+  fresh migrated database.
 - **Readable bootstrap enforced:** `corpus-render` generates recipe details, ingredients,
   instructions, grocery preview, and approved decisions from strict front matter;
   `corpus-audit` rejects any drift.
