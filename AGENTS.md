@@ -18,7 +18,7 @@ The old application and contradictory context were intentionally removed. There 
 web v1 yet. Do not recover the Python prototype or prior deployment infrastructure as a base.
 
 The corpus foundation is Go, SQLite, Goose, and sqlc. `trueup/recipes.csv` inventories all 25
-PDF recipes. Approved bootstrap recipes live under `corpus/recipes/`; one is verified and 24
+PDF recipes. Approved bootstrap recipes live under `corpus/recipes/`; two are verified and 23
 remain. The frontend direction is React/TypeScript.
 Runtime AI, Docker, hosting, authentication, pantry inference, scaling, and recipe discovery
 are out of v1.
@@ -41,6 +41,7 @@ are out of v1.
 go test ./...
 go tool sqlc generate
 go run ./cmd/grocery-router trueup-inventory
+go run ./cmd/grocery-router corpus-render
 go run ./cmd/grocery-router corpus-audit
 go run ./cmd/grocery-router corpus-ingest
 go run ./cmd/grocery-router migrate

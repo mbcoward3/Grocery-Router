@@ -56,10 +56,26 @@ func TestStrictFrontMatterRejectsUnknownField(t *testing.T) {
 	}
 }
 
+func TestReadableBodyCannotDrift(t *testing.T) {
+	path := filepath.Join("..", "..", "corpus", "recipes", "hamburgers.md")
+	contents, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	contents = []byte(strings.Replace(string(contents), "1 Onion — Produce", "2 Onions — Produce", 1))
+	_, err = ingest.ParseDocument(strings.NewReader(string(contents)))
+	if err == nil || !strings.Contains(err.Error(), "readable Markdown does not match") {
+		t.Fatalf("error = %v, want body drift failure", err)
+	}
+}
+
 func TestImportApprovedCorpus(t *testing.T) {
 	db := openMigratedDB(t)
-	document := approvedDocument(t)
-	if err := ingest.Import(context.Background(), db, []ingest.Document{document}); err != nil {
+	documents, err := ingest.ReadDirectory(filepath.Join("..", "..", "corpus", "recipes"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ingest.Import(context.Background(), db, documents); err != nil {
 		t.Fatal(err)
 	}
 
@@ -68,7 +84,7 @@ func TestImportApprovedCorpus(t *testing.T) {
 	mustCount(t, db, "SELECT count(*) FROM recipe_ingredients", &ingredients)
 	mustCount(t, db, "SELECT count(*) FROM recipe_steps", &steps)
 	mustCount(t, db, "SELECT count(*) FROM recipe_review_flags WHERE approved = 0", &unapproved)
-	if recipes != 1 || ingredients != 10 || steps != 6 || unapproved != 0 {
+	if recipes != 2 || ingredients != 20 || steps != 12 || unapproved != 0 {
 		t.Fatalf("import counts: recipes=%d ingredients=%d steps=%d unapproved=%d", recipes, ingredients, steps, unapproved)
 	}
 
@@ -86,7 +102,7 @@ func TestImportApprovedCorpus(t *testing.T) {
 		t.Fatalf("cooked chicken = %q, %q, %q, %q", item, section, mode, note)
 	}
 
-	if err := ingest.Import(context.Background(), db, []ingest.Document{document}); err == nil {
+	if err := ingest.Import(context.Background(), db, documents); err == nil {
 		t.Fatal("second import unexpectedly succeeded")
 	}
 }

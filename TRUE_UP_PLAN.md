@@ -14,10 +14,13 @@ means. This plan defines how the work is executed, reviewed, tracked, and closed
 - **Gate 7 in progress:** the Goose schema models sources, exact quantities, packages,
   canonical grocery items, instructions, review flags, and verification guards. The strict
   Markdown parser and transactional importer are working.
-- **First recipe verified:** Chicken and Biscuits Casserole is approved at
-  `corpus/recipes/chicken-and-biscuits-casserole.md` and imports successfully into a fresh
-  migrated database.
-- **Next:** exercise the remaining difficult pilot cases before bulk one-at-a-time true-up.
+- **Two recipes verified:** Chicken and Biscuits Casserole and Hamburgers are approved under
+  `corpus/recipes/` and import successfully into a fresh migrated database.
+- **Readable bootstrap enforced:** `corpus-render` generates recipe details, ingredients,
+  instructions, grocery preview, and approved decisions from strict front matter;
+  `corpus-audit` rejects any drift.
+- **Next:** true up linked recipes directly from authoritative website recipe data, asking the
+  household only about material ambiguities or backfilled choices.
 
 ## 1. Execution gates
 
@@ -61,13 +64,17 @@ filenames may help identify entries but may not define membership.
 For each inventoried recipe:
 
 1. Open and inspect the PDF entry.
-2. If it has a link, retrieve and inspect the linked recipe.
+2. If it has a link, retrieve and inspect the linked recipe. Prefer machine-readable
+   schema.org Recipe data, and verify it against the visible recipe card before drafting.
 3. Record the URL and the date on which it was checked.
 4. Compare available typed inputs, transcripts, and legacy recipe data for useful
    household-specific evidence.
 5. If the link is unavailable or the recipe has no link, search for a credible reference
    recipe and label the result `adapted-from`.
-6. Bring genuine ambiguity to the user instead of choosing silently.
+6. Transcribe authoritative linked facts without asking the household to restate them.
+7. Bring only material ambiguity to the user: source conflicts, missing quantities,
+   alternatives that v1 must resolve, uncertain purchased form, or genuinely backfilled
+   household choices.
 
 Raw website HTML does not need to become a permanent second recipe store. The approved
 source URL, relationship, source ingredient lines, and review record are the durable

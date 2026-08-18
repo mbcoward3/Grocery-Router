@@ -11,7 +11,7 @@ chili,Chili,1-5,,sources/Recipes.pdf;sources/inputs/transcripts/chili.md,Chili,s
 enchiladas,Enchiladas,5-7,,sources/Recipes.pdf;sources/inputs/transcripts/enchiladas.md,Enchiladas,source,inventoried,,PDF screenshot; exact source URL not captured
 chicken-noodle-soup,Chicken noodle soup,7-9,,sources/Recipes.pdf;sources/inputs/transcripts/chicken-noodle-soup.md,Chicken Noodle Soup,source,inventoried,,PDF screenshot; temporary source URL is no longer useful
 tacos,Tacos,9-10,,sources/Recipes.pdf;sources/inputs/text/tacos.txt,Tacos,source,inventoried,,Typed household recipe in PDF
-hamburgers,Hamburgers,10,,sources/Recipes.pdf;sources/inputs/text/hamburgers.txt,Hamburgers,source,inventoried,,Typed household recipe in PDF
+hamburgers,Hamburgers,10,,sources/Recipes.pdf;sources/inputs/text/hamburgers.txt,Hamburgers,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/hamburgers.md
 pork-loin-and-rice,Pork loin and rice,10,,sources/Recipes.pdf;sources/inputs/text/pork-loin-and-rice.txt,Pork Loin and Rice,source,inventoried,,Typed household recipe in PDF
 cheesy-pasta,Cheesy pasta,10,,sources/Recipes.pdf;sources/inputs/text/cheesy-pasta.txt,Cheesy Pasta,source,inventoried,,Typed household recipe in PDF
 biscuits-and-gravy,Biscuits and gravy,10,,sources/Recipes.pdf;sources/inputs/text/biscuits-and-gravy.txt,Biscuits and Gravy,source,inventoried,,Typed household recipe in PDF

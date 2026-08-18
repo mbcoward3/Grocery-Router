@@ -21,7 +21,7 @@ func main() {
 
 func run(args []string) error {
 	if len(args) == 0 {
-		return fmt.Errorf("usage: grocery-router <corpus-audit|corpus-ingest|migrate|trueup-inventory>")
+		return fmt.Errorf("usage: grocery-router <corpus-audit|corpus-ingest|corpus-render|migrate|trueup-inventory>")
 	}
 
 	switch args[0] {
@@ -44,6 +44,13 @@ func run(args []string) error {
 			return err
 		}
 		return ingestCorpus(*databasePath, *root, *corpusPath, *inventoryPath)
+	case "corpus-render":
+		flags := flag.NewFlagSet("corpus-render", flag.ContinueOnError)
+		corpusPath := flags.String("corpus", "corpus/recipes", "approved Markdown corpus directory")
+		if err := flags.Parse(args[1:]); err != nil {
+			return err
+		}
+		return renderCorpus(*corpusPath)
 	case "migrate":
 		flags := flag.NewFlagSet("migrate", flag.ContinueOnError)
 		databasePath := flags.String("database", "data/grocery-router.db", "SQLite database path")
@@ -60,7 +67,7 @@ func run(args []string) error {
 		}
 		return auditInventory(*root, *inventoryPath)
 	default:
-		return fmt.Errorf("unknown command %q; usage: grocery-router <corpus-audit|corpus-ingest|migrate|trueup-inventory>", args[0])
+		return fmt.Errorf("unknown command %q; usage: grocery-router <corpus-audit|corpus-ingest|corpus-render|migrate|trueup-inventory>", args[0])
 	}
 }
 
@@ -90,6 +97,35 @@ func ingestCorpus(databasePath, root, corpusPath, inventoryPath string) error {
 		return err
 	}
 	fmt.Printf("ingested %d approved recipes into %s\n", len(documents), databasePath)
+	return nil
+}
+
+func renderCorpus(path string) error {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return fmt.Errorf("read corpus directory: %w", err)
+	}
+	count := 0
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".md" {
+			continue
+		}
+		filePath := filepath.Join(path, entry.Name())
+		file, err := os.Open(filePath)
+		if err != nil {
+			return err
+		}
+		rendered, renderErr := ingest.RewriteReadableBody(file)
+		file.Close()
+		if renderErr != nil {
+			return fmt.Errorf("render %s: %w", entry.Name(), renderErr)
+		}
+		if err := os.WriteFile(filePath, rendered, 0o644); err != nil {
+			return fmt.Errorf("write %s: %w", entry.Name(), err)
+		}
+		count++
+	}
+	fmt.Printf("rendered %d approved recipes\n", count)
 	return nil
 }
 

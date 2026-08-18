@@ -128,15 +128,66 @@ review:
 
 # Chicken and Biscuits Casserole
 
-This is an approved bootstrap recipe. The YAML front matter is ingested into SQLite; this
-Markdown body is a human review aid and is not read by the application.
+> Approved bootstrap recipe. YAML front matter is ingested into SQLite; the sections below
+> are the checked human-readable view.
 
-## Grocery preview
+## Recipe details
+
+- Source: [The Country Cook](https://www.thecountrycook.net/chicken-and-biscuits-casserole/) (`source`)
+- Source checked: 2026-08-17
+- Yield: 6 servings
+- Hands-on: 15 minutes
+- Unattended: 35–45 minutes
+
+## Ingredients
+
+### Ingredients
+
+- 2 (10.5 ounce) cans cream of chicken soup
+  - Shopping: 2 × 10.5 oz cans Cream of Chicken Soup — Pantry
+- 1 cup milk
+  - Shopping: 1 cup Milk — Dairy
+- 1 teaspoon garlic powder
+  - Shopping: Garlic Powder — Spices
+- 1/2 teaspoon rotisserie seasoning
+  - Shopping: Rotisserie Seasoning — Spices
+- 1/2 teaspoon black pepper
+  - Shopping: Black Pepper — Spices
+- 12 ounce can refrigerated biscuits (or two smaller 6 ounce cans)
+  - Shopping: 1 × 12 oz can Refrigerated Biscuits — `v1 default: one 12 ounce can` — Dairy
+  - Note: v1 default: one 12 ounce can
+- 1 cup frozen peas and carrots (allow to thaw slightly)
+  - Shopping: 1 cup Frozen Peas and Carrots — Frozen
+  - Preparation: allow to thaw slightly
+- 1 cup shredded cheddar cheese
+  - Shopping: 1 cup Shredded Cheddar Cheese — Dairy
+  - Preparation: shredded
+- 2 cups cooked chicken (shredded or diced)
+  - Shopping: 2 cup Cooked Chicken — `suggestion: rotisserie chicken` — Meat
+  - Preparation: shredded or diced
+  - Note: suggestion: rotisserie chicken
+- 1/4 cup sliced green onion (optional)
+  - Shopping: 1/4 cup Green Onion — optional — Produce
+  - Preparation: sliced
+  - Optional: yes
+
+## Instructions
+
+### Method
+
+1. Heat the oven to 375°F and coat a 9×13-inch baking dish with nonstick cooking spray.
+2. Whisk the cream of chicken soup, milk, garlic powder, rotisserie seasoning, and black pepper until mostly smooth.
+3. Separate the biscuits, cut each into quarters, and stir them into the soup mixture.
+4. Fold in the peas and carrots, cheddar, and chicken, then spread the mixture in the prepared dish.
+5. Bake uncovered on the middle rack for 35–45 minutes, until the biscuits are golden and the filling bubbles at the edges.
+6. If the center needs more time, cover the top with foil and continue baking. Cool briefly, top with optional green onion, and serve.
+
+## One-batch grocery preview
 
 ### Dairy
 
 - 1 cup Milk
-- 1 × 12 oz can Refrigerated Biscuits
+- 1 × 12 oz can Refrigerated Biscuits — `v1 default: one 12 ounce can`
 - 1 cup Shredded Cheddar Cheese
 
 ### Frozen
@@ -145,7 +196,7 @@ Markdown body is a human review aid and is not read by the application.
 
 ### Meat
 
-- 2 cups Cooked Chicken — `suggestion: rotisserie chicken`
+- 2 cup Cooked Chicken — `suggestion: rotisserie chicken`
 
 ### Pantry
 
@@ -160,3 +211,9 @@ Markdown body is a human review aid and is not read by the application.
 - Garlic Powder
 - Rotisserie Seasoning
 - Black Pepper
+
+## Approved true-up decisions
+
+- `ingredient_sections[0].ingredients[5]` — **conflict-resolved:** Selected the source-listed 12 ounce biscuit can instead of two 6 ounce cans.
+- `ingredient_sections[0].ingredients[8].note` — **rewritten:** Kept 2 cups cooked chicken and condensed the recommendation to suggestion colon rotisserie chicken.
+- `instruction_sections` — **rewritten:** Condensed the source instructions without changing the method.

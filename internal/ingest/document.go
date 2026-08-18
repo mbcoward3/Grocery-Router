@@ -97,32 +97,63 @@ type ReviewDecision struct {
 	Approved bool   `yaml:"approved"`
 }
 
-// ParseDocument reads strict YAML front matter and retains the Markdown body for review tools.
+// ParseDocument reads strict YAML front matter and requires the readable Markdown body to be
+// the exact checked rendering of that structured data.
 func ParseDocument(input io.Reader) (Document, error) {
 	contents, err := io.ReadAll(input)
 	if err != nil {
 		return Document{}, fmt.Errorf("read recipe document: %w", err)
 	}
+	document, _, err := decodeDocument(contents)
+	if err != nil {
+		return Document{}, err
+	}
+	expectedBody := RenderBody(document)
+	if strings.TrimSpace(document.Body) != strings.TrimSpace(expectedBody) {
+		return Document{}, fmt.Errorf("recipe %q: readable Markdown does not match structured front matter", document.Key)
+	}
+	return document, nil
+}
+
+// RewriteReadableBody preserves strict front matter and replaces the Markdown body with its
+// deterministic human-readable rendering.
+func RewriteReadableBody(input io.Reader) ([]byte, error) {
+	contents, err := io.ReadAll(input)
+	if err != nil {
+		return nil, fmt.Errorf("read recipe document: %w", err)
+	}
+	document, frontMatterEnd, err := decodeDocument(contents)
+	if err != nil {
+		return nil, err
+	}
+	result := append([]byte(nil), bytes.TrimPrefix(contents, []byte("\xef\xbb\xbf"))[:frontMatterEnd]...)
+	result = append(result, '\n')
+	result = append(result, RenderBody(document)...)
+	return result, nil
+}
+
+func decodeDocument(contents []byte) (Document, int, error) {
 	contents = bytes.TrimPrefix(contents, []byte("\xef\xbb\xbf"))
 	if !bytes.HasPrefix(contents, []byte("---\n")) {
-		return Document{}, fmt.Errorf("recipe document must start with YAML front matter")
+		return Document{}, 0, fmt.Errorf("recipe document must start with YAML front matter")
 	}
 	end := bytes.Index(contents[4:], []byte("\n---\n"))
 	if end < 0 {
-		return Document{}, fmt.Errorf("recipe document has no closing front matter delimiter")
+		return Document{}, 0, fmt.Errorf("recipe document has no closing front matter delimiter")
 	}
 	end += 4
 	var document Document
 	decoder := yaml.NewDecoder(bytes.NewReader(contents[4:end]))
 	decoder.KnownFields(true)
 	if err := decoder.Decode(&document); err != nil {
-		return Document{}, fmt.Errorf("decode recipe front matter: %w", err)
+		return Document{}, 0, fmt.Errorf("decode recipe front matter: %w", err)
 	}
-	document.Body = strings.TrimSpace(string(contents[end+5:]))
+	frontMatterEnd := end + 5
+	document.Body = strings.TrimSpace(string(contents[frontMatterEnd:]))
 	if err := document.Validate(); err != nil {
-		return Document{}, err
+		return Document{}, 0, err
 	}
-	return document, nil
+	return document, frontMatterEnd, nil
 }
 
 // Validate enforces file-level completeness before any database transaction starts.
