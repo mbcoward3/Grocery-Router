@@ -10,7 +10,7 @@ easy-salmon-dinner,Easy salmon dinner,1,https://tasty.co/recipe/easy-salmon-dinn
 chili,Chili,1-5,https://www.julieseatsandtreats.com/easy-chili-recipe/,sources/Recipes.pdf;sources/inputs/transcripts/chili.md,Chili,source,verified,2026-08-17,Exact source URL recovered and matched; approved bootstrap recipe: corpus/recipes/chili.md
 enchiladas,Enchiladas,5-7,https://southernbite.com/5-ingredient-beef-enchiladas/,sources/Recipes.pdf;sources/inputs/transcripts/enchiladas.md,Enchiladas,source,verified,2026-08-17,Exact source URL recovered and matched; approved bootstrap recipe: corpus/recipes/enchiladas.md
 chicken-noodle-soup,Chicken noodle soup,7-9,,sources/Recipes.pdf;sources/inputs/transcripts/chicken-noodle-soup.md,Chicken Noodle Soup,source,verified,2026-08-17,Incomplete temporary source reconstructed and approved: corpus/recipes/chicken-noodle-soup.md
-tacos,Tacos,9-10,,sources/Recipes.pdf;sources/inputs/text/tacos.txt,Tacos,source,inventoried,,Typed household recipe in PDF
+tacos,Tacos,9-10,,sources/Recipes.pdf;sources/inputs/text/tacos.txt,Tacos,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/tacos.md
 hamburgers,Hamburgers,10,,sources/Recipes.pdf;sources/inputs/text/hamburgers.txt,Hamburgers,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/hamburgers.md
 pork-loin-and-rice,Pork loin and rice,10,,sources/Recipes.pdf;sources/inputs/text/pork-loin-and-rice.txt,Pork Loin and Rice,source,inventoried,,Typed household recipe in PDF
 cheesy-pasta,Cheesy pasta,10,,sources/Recipes.pdf;sources/inputs/text/cheesy-pasta.txt,Cheesy Pasta,source,inventoried,,Typed household recipe in PDF

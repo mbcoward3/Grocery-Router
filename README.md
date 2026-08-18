@@ -7,8 +7,8 @@ recipe pool and a deterministic grocery checklist.
 
 **The previous prototype has been removed from the active tree.** The Go/SQLite corpus
 foundation is now in place; the web application has not been built. The PDF-controlled ledger
-contains 25 recipes. Twelve have been individually approved in the strict Markdown bootstrap
-format; 13 remain to true up.
+contains 25 recipes. Thirteen have been individually approved in the strict Markdown bootstrap
+format; 12 remain to true up.
 
 ## Start here
 
