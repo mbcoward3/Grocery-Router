@@ -47,14 +47,14 @@ ingredient_sections:
           key: mayonnaise
           name: Mayonnaise
           store_section: {key: condiments, name: Condiments}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
       - source_text: Mustard
         grocery_item:
           key: mustard
           name: Mustard
           store_section: {key: condiments, name: Condiments}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
       - source_text: Ketchup
         grocery_item:

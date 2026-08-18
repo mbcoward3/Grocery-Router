@@ -278,13 +278,16 @@ through versioned ingestion migrations.
 
 ## D021 — True up recipes one at a time
 
-**Decision:** Present and approve one completed recipe per review.
+**Decision:** Present and approve one completed recipe per review by default. The household may
+explicitly delegate a completion pass, but every recipe is still reviewed independently and
+all non-obvious calls are written to a named re-review queue.
 
 **Why:** Ingredient mapping, backfilled facts, packages, and instructions require focused human
 judgment. Batch approval would hide mistakes.
 
 **Consequence:** The true-up ledger tracks each recipe through inventory, drafting, review, and
-verification.
+verification. Delegation changes the interaction cadence, not the requirement for per-recipe
+review evidence or visible conflict decisions.
 
 **Revisit when:** Future onboarding may streamline low-risk fields but must preserve explicit
 recipe verification.

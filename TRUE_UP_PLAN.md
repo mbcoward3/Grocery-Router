@@ -14,16 +14,16 @@ means. This plan defines how the work is executed, reviewed, tracked, and closed
 - **Gate 7 in progress:** the Goose schema models sources, exact quantities, packages,
   canonical grocery items, instructions, review flags, and verification guards. The strict
   Markdown parser and transactional importer are working.
-- **Fifteen recipes verified:** Chicken and Biscuits Casserole, Hamburgers, Sausage and
-  Peppers, 3-Ingredient Teriyaki Chicken, Chicken Veggie Stir Fry, Crock Pot Italian Beef
-  Sandwiches, Meatloaf, Beef Stew with Carrots and Potatoes, Easy Salmon Dinner, Chili,
-  Enchiladas, Chicken Noodle Soup, Tacos, Pork Loin and Rice, and Cheesy Pasta are approved
-  under `corpus/recipes/` and import successfully into a fresh migrated database.
+- **All 25 recipes verified:** every PDF member has one strict file under `corpus/recipes/`,
+  and the complete corpus imports successfully into a fresh migrated database.
+- **Delegated final pass logged:** the household explicitly delegated the final ten completion
+  calls on 2026-08-17. Every non-obvious default is queued in
+  `trueup/CONTROVERSIAL_CALLS.md` for re-review rather than hidden.
 - **Readable bootstrap enforced:** `corpus-render` generates recipe details, ingredients,
   instructions, grocery preview, and approved decisions from strict front matter;
   `corpus-audit` rejects any drift.
-- **Next:** true up linked recipes directly from authoritative website recipe data, asking the
-  household only about material ambiguities or backfilled choices.
+- **Next:** re-review the logged controversial calls, apply any corrections by returning those
+  recipes to draft, and then close the corpus gates with a final fresh-database audit.
 
 ## 1. Execution gates
 
@@ -151,9 +151,11 @@ Recipes are reviewed **one at a time**. Each review packet must show:
 8. all backfilled, inferred, rewritten, or conflict-resolved fields; and
 9. a preview of the grocery list produced by one baseline batch.
 
-The user may approve, request changes, or explicitly exclude the recipe. Approval is
-recorded in the ledger and promotes the recipe to `verified` transactionally. Requested
-changes return it to draft/reviewable state.
+The user may approve, request changes, explicitly delegate a completion pass, or explicitly
+exclude the recipe. Approval is recorded in the ledger and promotes the recipe to `verified`
+transactionally. A delegated pass still reviews each recipe independently and records every
+non-obvious call in a named re-review queue. Requested changes return it to draft/reviewable
+state.
 
 ### Gate 7 — Pilot before bulk migration
 
