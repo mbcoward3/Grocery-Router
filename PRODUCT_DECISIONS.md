@@ -261,15 +261,20 @@ current truth rather than a complete correction history.
 
 ## D020 — SQLite is the sole runtime recipe truth
 
-**Decision:** Do not keep recipe Markdown synchronized with SQLite.
+**Decision:** Keep one strict, approved Markdown file per recipe as the Git/bootstrap corpus,
+then ingest it one-way into SQLite. The running application reads only SQLite and never writes
+back to Markdown.
 
-**Why:** Two active representations drift. The prior Markdown conversion was itself considered
-sloppy and must not remain an equal authority.
+**Why:** The prior loose Markdown conversion was sloppy, but one-file-at-a-time human review is
+valuable and Git needs a readable way to recreate the corpus. A strict importer avoids making
+Markdown a second runtime store.
 
-**Consequence:** Runtime and future agents use database queries or exports. Goose owns schema;
-sqlc owns typed query access.
+**Consequence:** Approved Markdown is validated bootstrap input; SQLite is runtime truth.
+Runtime agents use database queries or exports. Goose owns schema and sqlc owns typed query
+access.
 
-**Revisit when:** Never for synchronized Markdown. Add controlled exports if needed.
+**Revisit when:** Never for bidirectional synchronization. The bootstrap format may evolve
+through versioned ingestion migrations.
 
 ## D021 — True up recipes one at a time
 
@@ -383,16 +388,18 @@ available.
 
 **Revisit when:** Hosting or offline shopping becomes an explicit phase.
 
-## D030 — Keep a manual injectable corpus snapshot
+## D030 — Keep an injectable, approved Markdown corpus
 
-**Decision:** Commit migrations and a manually refreshed SQL corpus snapshot, not the live
-SQLite database.
+**Decision:** Commit Goose migrations and one strictly structured approved Markdown file per
+recipe, not the live SQLite database or a hand-maintained SQL dump.
 
-**Why:** The runtime database should remain local while the verified starting corpus remains
-recoverable and reviewable enough for this phase.
+**Why:** Recipe-by-recipe Markdown is readable during true-up and can remain the durable Git
+bootstrap. Hand-writing the same recipe again as SQL would add a second transcription step and
+another place for mistakes.
 
-**Consequence:** Snapshot refresh is an intentional true-up closeout action. Automatic export,
-backup, and synchronization are deferred.
+**Consequence:** A Go command validates all approved files and ingests them transactionally
+into an empty migrated SQLite database. Automatic export, backup, and bidirectional
+synchronization are deferred.
 
 **Revisit when:** Formal backup/export or release automation is scoped.
 

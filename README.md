@@ -7,8 +7,8 @@ recipe pool and a deterministic grocery checklist.
 
 **The previous prototype has been removed from the active tree.** The Go/SQLite corpus
 foundation is now in place; the web application has not been built. The PDF-controlled ledger
-contains 25 inventoried recipes, and true-up will proceed one recipe at a time after the pilot
-schema is exercised.
+contains 25 recipes. One has been individually approved in the strict Markdown bootstrap
+format; 24 remain to true up.
 
 ## Start here
 
@@ -34,10 +34,12 @@ historical and non-authoritative; routine work should use the documents above.
 Requires Go 1.25. The repository pins sqlc as a Go tool.
 
 ```sh
-go test ./...                                      # schema and inventory invariants
+go test ./...                                      # schema, ingestion, and inventory invariants
 go tool sqlc generate                              # regenerate typed query code
 go run ./cmd/grocery-router trueup-inventory       # validate all 25 PDF inventory rows
-go run ./cmd/grocery-router migrate                # create/update data/grocery-router.db
+go run ./cmd/grocery-router corpus-audit           # validate approved Markdown recipes
+go run ./cmd/grocery-router corpus-ingest          # migrate and load an empty local SQLite DB
+go run ./cmd/grocery-router migrate                # migrate without loading the corpus
 ```
 
 There is currently no web application to run. The next work is the difficult-recipe schema

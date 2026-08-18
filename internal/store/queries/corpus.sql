@@ -49,6 +49,9 @@ SELECT * FROM recipe_sources WHERE recipe_id = ? ORDER BY position;
 INSERT INTO store_sections (key, name) VALUES (?, ?)
 RETURNING *;
 
+-- name: GetStoreSectionByKey :one
+SELECT * FROM store_sections WHERE key = ?;
+
 -- name: ListStoreSections :many
 SELECT * FROM store_sections ORDER BY name;
 
@@ -57,6 +60,9 @@ INSERT INTO units (
     key, name, symbol, dimension, to_base_numerator, to_base_denominator
 ) VALUES (?, ?, ?, ?, ?, ?)
 RETURNING *;
+
+-- name: GetUnitByKey :one
+SELECT * FROM units WHERE key = ?;
 
 -- name: ListUnits :many
 SELECT * FROM units ORDER BY dimension, name;

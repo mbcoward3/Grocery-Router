@@ -24,6 +24,8 @@ type Querier interface {
 	GetGroceryItemByKey(ctx context.Context, key string) (GroceryItem, error)
 	GetRecipe(ctx context.Context, id int64) (Recipe, error)
 	GetRecipeByKey(ctx context.Context, key string) (Recipe, error)
+	GetStoreSectionByKey(ctx context.Context, key string) (StoreSection, error)
+	GetUnitByKey(ctx context.Context, key string) (Unit, error)
 	ListGroceryItems(ctx context.Context) ([]ListGroceryItemsRow, error)
 	ListIngredientSections(ctx context.Context, recipeID int64) ([]RecipeIngredientSection, error)
 	ListInstructionSections(ctx context.Context, recipeID int64) ([]RecipeInstructionSection, error)

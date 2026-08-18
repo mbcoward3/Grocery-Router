@@ -469,6 +469,36 @@ func (q *Queries) GetRecipeByKey(ctx context.Context, key string) (Recipe, error
 	return i, err
 }
 
+const getStoreSectionByKey = `-- name: GetStoreSectionByKey :one
+SELECT id, "key", name FROM store_sections WHERE key = ?
+`
+
+func (q *Queries) GetStoreSectionByKey(ctx context.Context, key string) (StoreSection, error) {
+	row := q.db.QueryRowContext(ctx, getStoreSectionByKey, key)
+	var i StoreSection
+	err := row.Scan(&i.ID, &i.Key, &i.Name)
+	return i, err
+}
+
+const getUnitByKey = `-- name: GetUnitByKey :one
+SELECT id, "key", name, symbol, dimension, to_base_numerator, to_base_denominator FROM units WHERE key = ?
+`
+
+func (q *Queries) GetUnitByKey(ctx context.Context, key string) (Unit, error) {
+	row := q.db.QueryRowContext(ctx, getUnitByKey, key)
+	var i Unit
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Name,
+		&i.Symbol,
+		&i.Dimension,
+		&i.ToBaseNumerator,
+		&i.ToBaseDenominator,
+	)
+	return i, err
+}
+
 const listGroceryItems = `-- name: ListGroceryItems :many
 SELECT gi.id, gi."key", gi.name, gi.store_section_id, gi.shopping_mode, gi.created_at, gi.updated_at, ss.name AS store_section_name
 FROM grocery_items gi

@@ -116,9 +116,10 @@ func TestQuantityAndPackageConstraints(t *testing.T) {
 	db := migratedDB(t)
 	recipeID := mustInsertID(t, db, "INSERT INTO recipes (key, name) VALUES ('test', 'Test')")
 	sectionID := mustInsertID(t, db, "INSERT INTO recipe_ingredient_sections (recipe_id, name, position) VALUES (?, 'Ingredients', 0)", recipeID)
-	unitID := mustInsertID(t, db, `INSERT INTO units
-		(key, name, symbol, dimension, to_base_numerator, to_base_denominator)
-		VALUES ('oz', 'ounce', 'oz', 'mass', 1, 1)`)
+	var unitID int64
+	if err := db.QueryRow("SELECT id FROM units WHERE key = 'oz'").Scan(&unitID); err != nil {
+		t.Fatal(err)
+	}
 
 	_, err := db.Exec(`INSERT INTO recipe_ingredients
 		(section_id, position, source_text, quantity_kind, amount_min_numerator,

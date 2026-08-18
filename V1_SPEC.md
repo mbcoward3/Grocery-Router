@@ -136,7 +136,7 @@ For recipe content:
 3. If an entry has no usable website, a similar credible recipe may be found and used as a reference.
 4. A backfilled recipe may be adjusted to represent the family recipe.
 5. A recipe based on a reference must be marked `adapted-from`; it must not claim to reproduce that source exactly.
-6. Existing transcripts, typed inputs, Markdown recipes, and derived tables may assist migration, but none is trusted without comparison to the PDF and authoritative website.
+6. Legacy transcripts, typed inputs, derived Markdown recipes, and tables may assist migration, but none is trusted without comparison to the PDF and authoritative website.
 
 True-up is a one-time snapshot. Recipes do not automatically update when a source website changes later.
 
@@ -170,7 +170,9 @@ True-up work must leave reusable context for later SDK agents. This includes:
 - examples of accepted and rejected transformations; and
 - a clear distinction between source evidence, agent proposals, and approved truth.
 
-Future agents should receive controlled queries or exports from SQLite rather than Markdown replicas of the corpus.
+Runtime agents should receive controlled queries or exports from SQLite. The approved Markdown
+bootstrap corpus may support ingestion agents and human review, but it is never read by the
+running application or synchronized back from SQLite.
 
 ### 4.4 Recipe lifecycle
 
@@ -661,7 +663,8 @@ SQLite foreign keys must be enabled on every connection.
 
 ### 12.3 Runtime data
 
-SQLite is the sole runtime recipe source of truth. There is no synchronized Markdown recipe store.
+SQLite is the sole runtime recipe source of truth. There is no bidirectional or runtime
+Markdown recipe store.
 
 Git contains:
 
@@ -669,9 +672,11 @@ Git contains:
 - application code;
 - true-up rules and fixtures;
 - preserved raw corpus evidence; and
-- a manually refreshed SQL corpus snapshot for bootstrap/recovery.
+- one strictly structured, individually approved Markdown file per recipe.
 
-The snapshot is not automatically synchronized and is not a second live data source.
+A Go ingestion command validates the complete approved Markdown corpus and loads it into an
+empty migrated SQLite database transactionally. The application reads only SQLite. Markdown
+is the reviewable bootstrap format, not a synchronized second runtime source.
 
 ### 12.4 Local operation
 
@@ -824,14 +829,14 @@ Before v1 is considered complete:
 The product and implementation contract ends here; execution mechanics and future scope live
 in focused companion documents:
 
-- [`TRUE_UP_PLAN.md`](TRUE_UP_PLAN.md) — corpus inventory, one-at-a-time review, migration,
-  audit, and snapshot plan.
+- [`TRUE_UP_PLAN.md`](TRUE_UP_PLAN.md) — corpus inventory, one-at-a-time review, ingestion,
+  and audit plan.
 - [`UP_NEXT.md`](UP_NEXT.md) — all interview “not yets,” explicitly outside v1.
 - [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — durable rationale and revisit conditions.
 - [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md) —
   non-authoritative raw interview transcript for nuance recovery only.
 
-The first four documents are required project authorities but do not expand the v1 product
+The first three documents are required project authorities but do not expand the v1 product
 scope. The transcript is historical evidence and must not be loaded as routine agent context.
 
 ---
@@ -848,7 +853,7 @@ Grocery Router v1 is done when:
 6. the PDF inventory ledger gives every canonical recipe an explicit disposition;
 7. every included recipe has been individually reviewed and resolved;
 8. every selectable recipe satisfies the verification contract;
-9. the complete-corpus audit passes and a fresh database can load the committed SQL snapshot;
+9. the complete-corpus audit passes and a fresh database can ingest every committed approved recipe file;
 10. reusable ingestion rules, fixtures, validation queries, and future-agent context remain after true-up;
 11. the three required screens work well on desktop and iPhone;
 12. random generation and all specified pool edits work without AI;

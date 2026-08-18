@@ -11,17 +11,19 @@ means. This plan defines how the work is executed, reviewed, tracked, and closed
 
 - **Gate 1 complete:** `trueup/recipes.csv` inventories all 25 PDF recipes and passes the
   repository evidence audit.
-- **Gate 7 in progress:** the first Goose migration models sources, exact quantities,
-  packages, canonical grocery items, instructions, review flags, and verification guards.
-  Chicken and Biscuits Casserole now passes as an intentionally unverified schema fixture with
-  three review flags; no recipe is verified yet.
-- **Next:** resolve and approve the first pilot review, then exercise the remaining difficult
-  cases before bulk one-at-a-time true-up.
+- **Gate 7 in progress:** the Goose schema models sources, exact quantities, packages,
+  canonical grocery items, instructions, review flags, and verification guards. The strict
+  Markdown parser and transactional importer are working.
+- **First recipe verified:** Chicken and Biscuits Casserole is approved at
+  `corpus/recipes/chicken-and-biscuits-casserole.md` and imports successfully into a fresh
+  migrated database.
+- **Next:** exercise the remaining difficult pilot cases before bulk one-at-a-time true-up.
 
 ## 1. Execution gates
 
-True-up is a tracked migration, not an informal rewrite of the existing Markdown recipes.
-It proceeds in the following gates.
+True-up is a tracked migration, not an informal rewrite of the legacy Markdown recipes. Each
+approved result is retained in a new strict Markdown bootstrap format and ingested into SQLite
+through validated Go code. It proceeds in the following gates.
 
 ### Gate 1 — Inventory the PDF
 
@@ -88,8 +90,9 @@ onboarding. For each recipe, draft:
 - store section and shopping mode; and
 - ordered, readable cooking instructions.
 
-Agent-generated additions must be identifiable in the review packet even though, after
-approval, SQLite stores one current recipe truth. The draft must not become selectable.
+Agent-generated additions must be identifiable in the review packet. After approval, the
+strictly structured Markdown review becomes the committed bootstrap record and SQLite stores
+the current runtime truth. The draft must not become selectable.
 
 ### Gate 4 — Normalize grocery identity
 
@@ -183,16 +186,17 @@ quality scores.
 
 Once the corpus audit passes:
 
-1. create the local application database through Goose migrations;
-2. load the verified corpus;
-3. manually refresh the committed SQL corpus snapshot;
-4. verify that a fresh database can be initialized from migrations plus the snapshot;
-5. record the snapshot date and complete-corpus audit result; and
-6. remove temporary migration artifacts that are neither raw evidence nor reusable
-   onboarding fixtures.
+1. ensure every included ledger row points to one committed approved Markdown recipe;
+2. create a fresh local application database through Goose migrations;
+3. ingest all approved recipe files in one transaction;
+4. verify the fresh database against the complete-corpus audit;
+5. record the import date and audit result; and
+6. remove temporary migration artifacts that are neither approved bootstrap recipes, raw
+   evidence, nor reusable onboarding fixtures.
 
-The inventory ledger, ingestion rules, difficult fixtures, and validation queries remain
-as future-onboarding and future-agent context.
+The approved Markdown corpus, inventory ledger, ingestion rules, difficult fixtures, and
+validation queries remain as future-onboarding and future-agent context. The running
+application reads only SQLite.
 
 ## 2. Deliverables
 
@@ -201,7 +205,7 @@ True-up is complete only when the repository contains:
 - the PDF inventory/disposition ledger;
 - reusable ingestion and verification commands;
 - the approved SQLite corpus;
-- the manually refreshed injectable SQL snapshot;
+- one strictly structured, individually approved Markdown bootstrap file per recipe;
 - canonical grocery items, sections, modes, and exact units;
 - representative ingestion and aggregation fixtures;
 - a complete-corpus audit command; and

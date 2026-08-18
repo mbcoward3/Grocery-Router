@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mbcoward3/grocery-router/internal/ingest"
 	"github.com/mbcoward3/grocery-router/internal/trueup"
 )
 
@@ -29,6 +30,26 @@ func TestRepositoryInventory(t *testing.T) {
 	}
 	if rows[len(rows)-1].Key != "tuna-melt" {
 		t.Fatalf("last inventory key = %q", rows[len(rows)-1].Key)
+	}
+}
+
+func TestApprovedCorpusMatchesInventory(t *testing.T) {
+	root := filepath.Join("..", "..")
+	file, err := os.Open(filepath.Join(root, "trueup", "recipes.csv"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows, err := trueup.ReadInventory(root, file)
+	file.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	documents, err := ingest.ReadDirectory(filepath.Join(root, "corpus", "recipes"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := trueup.MatchApprovedCorpus(rows, documents); err != nil {
+		t.Fatal(err)
 	}
 }
 
