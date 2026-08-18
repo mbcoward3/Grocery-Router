@@ -15,9 +15,11 @@ as routine context; consult it only to recover nuance not settled by the current
 ## Current state
 
 The old application and contradictory context were intentionally removed. There is no runnable
-v1 yet. Do not recover the Python prototype or prior deployment infrastructure as a base.
+web v1 yet. Do not recover the Python prototype or prior deployment infrastructure as a base.
 
-The implementation direction is Go, SQLite, Goose, sqlc, and a React/TypeScript frontend.
+The corpus foundation is Go, SQLite, Goose, and sqlc. `trueup/recipes.csv` inventories all 25
+PDF recipes; no recipe has been reviewed or verified yet. The frontend direction is
+React/TypeScript.
 Runtime AI, Docker, hosting, authentication, pantry inference, scaling, and recipe discovery
 are out of v1.
 
@@ -30,6 +32,19 @@ are out of v1.
 - Every recipe is reviewed individually before verification.
 - Ingredient-to-grocery mapping happens during ingestion, never week generation.
 - No ingredient contribution may be silently dropped.
+
+## Commands
+
+```sh
+go test ./...
+go tool sqlc generate
+go run ./cmd/grocery-router trueup-inventory
+go run ./cmd/grocery-router migrate
+```
+
+`internal/database/migrations/` is the schema authority. Generated files in `internal/store/`
+must match `internal/store/queries/` and `sqlc.yaml`. SQLite foreign keys must be enabled on
+every connection; use `internal/database.Open`.
 
 ## Working rule
 

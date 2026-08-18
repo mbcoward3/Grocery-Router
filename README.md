@@ -5,9 +5,10 @@ recipe pool and a deterministic grocery checklist.
 
 ## Status
 
-**The previous prototype has been removed from the active tree. v1 implementation has not
-started.** The current repository contains the raw corpus evidence and the settled context for
-the clean Go/React/SQLite rebuild.
+**The previous prototype has been removed from the active tree.** The Go/SQLite corpus
+foundation is now in place; the web application has not been built. The PDF-controlled ledger
+contains 25 inventoried recipes, and true-up will proceed one recipe at a time after the pilot
+schema is exercised.
 
 ## Start here
 
@@ -28,5 +29,16 @@ historical and non-authoritative; routine work should use the documents above.
   recipe.
 - `SOURCE_MANIFEST.sha256` records the preserved source files before true-up.
 
-There is currently no application to run. The next work is the clean scaffold and true-up
-pilot described by the plans above.
+## Development
+
+Requires Go 1.25. The repository pins sqlc as a Go tool.
+
+```sh
+go test ./...                                      # schema and inventory invariants
+go tool sqlc generate                              # regenerate typed query code
+go run ./cmd/grocery-router trueup-inventory       # validate all 25 PDF inventory rows
+go run ./cmd/grocery-router migrate                # create/update data/grocery-router.db
+```
+
+There is currently no web application to run. The next work is the difficult-recipe schema
+pilot and one-at-a-time true-up described in `TRUE_UP_PLAN.md`.

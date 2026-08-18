@@ -7,6 +7,16 @@ This document governs the one-time migration from the raw family recipe evidence
 verified SQLite corpus. The PDF defines membership; `V1_SPEC.md` defines what verified data
 means. This plan defines how the work is executed, reviewed, tracked, and closed.
 
+## Progress
+
+- **Gate 1 complete:** `trueup/recipes.csv` inventories all 25 PDF recipes and passes the
+  repository evidence audit.
+- **Corpus schema draft ready for Gate 7:** the first Goose migration models sources, exact
+  quantities, packages, canonical grocery items, instructions, review flags, and verification
+  guards. No recipe is drafted or verified yet.
+- **Next:** exercise the schema and review representation with the difficult pilot set before
+  bulk one-at-a-time true-up.
+
 ## 1. Execution gates
 
 True-up is a tracked migration, not an informal rewrite of the existing Markdown recipes.

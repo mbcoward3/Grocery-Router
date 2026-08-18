@@ -1,0 +1,26 @@
+inventory_key,pdf_name,pdf_pages,linked_url,supporting_evidence,proposed_recipe_name,source_relationship,status,verified_on,disposition_note
+chicken-and-biscuits-casserole,Chicken and biscuits casserole,1,https://www.thecountrycook.net/chicken-and-biscuits-casserole/,sources/Recipes.pdf,Chicken and Biscuits Casserole,source,inventoried,,PDF link
+sausage-and-peppers,Sausage and peppers,1,https://chefjeanpierre.com/recipes/sausage-and-peppers/,sources/Recipes.pdf,Sausage and Peppers,source,inventoried,,PDF link
+crock-pot-italian-beef-sandwiches,Crock pot Italian beef sandwiches,1,https://iowagirleats.com/crock-pot-italian-beef-sandwiches/,sources/Recipes.pdf,Crock Pot Italian Beef Sandwiches,source,inventoried,,PDF link
+meatloaf,Meatloaf,1,https://natashaskitchen.com/meatloaf-recipe/,sources/Recipes.pdf,Meatloaf,source,inventoried,,PDF link
+beef-stew-with-carrots-and-potatoes,Beef stew with carrots and potatoes,1,https://www.onceuponachef.com/recipes/beef-stew-with-carrots-potatoes.html,sources/Recipes.pdf,Beef Stew with Carrots and Potatoes,source,inventoried,,PDF link
+three-ingredient-teriyaki-chicken,3-ingredient teriyaki chicken,1,https://tasty.co/recipe/3-ingredient-teriyaki-chicken,sources/Recipes.pdf,3-Ingredient Teriyaki Chicken,source,inventoried,,PDF link
+chicken-veggie-stir-fry,Chicken veggie stir fry,1,https://tasty.co/recipe/chicken-veggie-stir-fry,sources/Recipes.pdf,Chicken Veggie Stir Fry,source,inventoried,,PDF link
+easy-salmon-dinner,Easy salmon dinner,1,https://tasty.co/recipe/easy-salmon-dinner,sources/Recipes.pdf,Easy Salmon Dinner,source,inventoried,,PDF link
+chili,Chili,1-5,,sources/Recipes.pdf;sources/inputs/transcripts/chili.md,Chili,source,inventoried,,PDF screenshot; exact source URL not captured
+enchiladas,Enchiladas,5-7,,sources/Recipes.pdf;sources/inputs/transcripts/enchiladas.md,Enchiladas,source,inventoried,,PDF screenshot; exact source URL not captured
+chicken-noodle-soup,Chicken noodle soup,7-9,,sources/Recipes.pdf;sources/inputs/transcripts/chicken-noodle-soup.md,Chicken Noodle Soup,source,inventoried,,PDF screenshot; temporary source URL is no longer useful
+tacos,Tacos,9-10,,sources/Recipes.pdf;sources/inputs/text/tacos.txt,Tacos,source,inventoried,,Typed household recipe in PDF
+hamburgers,Hamburgers,10,,sources/Recipes.pdf;sources/inputs/text/hamburgers.txt,Hamburgers,source,inventoried,,Typed household recipe in PDF
+pork-loin-and-rice,Pork loin and rice,10,,sources/Recipes.pdf;sources/inputs/text/pork-loin-and-rice.txt,Pork Loin and Rice,source,inventoried,,Typed household recipe in PDF
+cheesy-pasta,Cheesy pasta,10,,sources/Recipes.pdf;sources/inputs/text/cheesy-pasta.txt,Cheesy Pasta,source,inventoried,,Typed household recipe in PDF
+biscuits-and-gravy,Biscuits and gravy,10,,sources/Recipes.pdf;sources/inputs/text/biscuits-and-gravy.txt,Biscuits and Gravy,source,inventoried,,Typed household recipe in PDF
+blt,BLT,10-11,,sources/Recipes.pdf;sources/inputs/text/blt.txt,BLT,source,inventoried,,Typed household recipe in PDF
+meatball-subs,Meatball subs,11-13,,sources/Recipes.pdf;sources/inputs/transcripts/meatball-subs.md,Meatball Subs,source,inventoried,,PDF screenshot; exact source URL not captured
+chicken-and-dumplings,Chicken and dumplings?,13-15,,sources/Recipes.pdf;sources/inputs/transcripts/chicken-and-dumplings.md,Chicken and Dumplings,source,inventoried,,PDF screenshot; question mark retained as source evidence only
+sliders,Sliders,15-17,,sources/Recipes.pdf;sources/inputs/transcripts/sliders.md,Sliders,source,inventoried,,PDF screenshot; exact source URL not captured
+beef-dip-sammies,Beef dip Sammies,17-18,,sources/Recipes.pdf;sources/inputs/transcripts/beef-dip-sammies.md,Beef Dip Sammies,source,inventoried,,PDF photograph of handwritten recipe
+chicken-chili,Chicken chili,18-20,,sources/Recipes.pdf;sources/inputs/transcripts/chicken-chili.md,Chicken Chili,source,inventoried,,PDF screenshot of social post; no source URL captured
+zuppa-toscana,Zuppa toscana,20-22,,sources/Recipes.pdf;sources/inputs/transcripts/zuppa-toscana.md,Zuppa Toscana,source,inventoried,,PDF screenshot; temporary source URL is no longer useful
+beef-pot-roast,Beef pot roast,22-26,,sources/Recipes.pdf;sources/inputs/transcripts/beef-pot-roast.md,Beef Pot Roast,source,inventoried,,PDF screenshot; exact source URL not captured
+tuna-melt,Tuna melt,26-28,,sources/Recipes.pdf;sources/inputs/transcripts/tuna-melt.md,Tuna Melt,source,inventoried,,PDF screenshot of expiring social story
