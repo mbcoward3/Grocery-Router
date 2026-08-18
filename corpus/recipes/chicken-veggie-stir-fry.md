@@ -120,7 +120,7 @@ ingredient_sections:
           key: white-rice
           name: White Rice
           store_section: {key: pantry, name: Pantry}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
         preparation: cooked for serving
         optional: true

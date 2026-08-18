@@ -12,7 +12,7 @@ enchiladas,Enchiladas,5-7,https://southernbite.com/5-ingredient-beef-enchiladas/
 chicken-noodle-soup,Chicken noodle soup,7-9,,sources/Recipes.pdf;sources/inputs/transcripts/chicken-noodle-soup.md,Chicken Noodle Soup,source,verified,2026-08-17,Incomplete temporary source reconstructed and approved: corpus/recipes/chicken-noodle-soup.md
 tacos,Tacos,9-10,,sources/Recipes.pdf;sources/inputs/text/tacos.txt,Tacos,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/tacos.md
 hamburgers,Hamburgers,10,,sources/Recipes.pdf;sources/inputs/text/hamburgers.txt,Hamburgers,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/hamburgers.md
-pork-loin-and-rice,Pork loin and rice,10,,sources/Recipes.pdf;sources/inputs/text/pork-loin-and-rice.txt,Pork Loin and Rice,source,inventoried,,Typed household recipe in PDF
+pork-loin-and-rice,Pork loin and rice,10,,sources/Recipes.pdf;sources/inputs/text/pork-loin-and-rice.txt,Pork Loin and Rice,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/pork-loin-and-rice.md
 cheesy-pasta,Cheesy pasta,10,,sources/Recipes.pdf;sources/inputs/text/cheesy-pasta.txt,Cheesy Pasta,source,inventoried,,Typed household recipe in PDF
 biscuits-and-gravy,Biscuits and gravy,10,,sources/Recipes.pdf;sources/inputs/text/biscuits-and-gravy.txt,Biscuits and Gravy,source,inventoried,,Typed household recipe in PDF
 blt,BLT,10-11,,sources/Recipes.pdf;sources/inputs/text/blt.txt,BLT,source,inventoried,,Typed household recipe in PDF
