@@ -33,7 +33,7 @@ func TestChickenAndBiscuitsPilotFitsCorpusSchema(t *testing.T) {
 	biscuits := createItem(t, db, "refrigerated-biscuits", "Refrigerated Biscuits", dairy, "counted")
 	peasCarrots := createItem(t, db, "frozen-peas-and-carrots", "Frozen Peas and Carrots", frozen, "measured")
 	cheddar := createItem(t, db, "shredded-cheddar-cheese", "Shredded Cheddar Cheese", dairy, "measured")
-	rotisserieChicken := createItem(t, db, "rotisserie-chicken", "Rotisserie Chicken", deli, "presence-only")
+	cookedChicken := createItem(t, db, "cooked-chicken", "Cooked Chicken", deli, "measured")
 	greenOnion := createItem(t, db, "green-onion", "Green Onion", produce, "measured")
 
 	recipeID := mustInsertID(t, db, `INSERT INTO recipes
@@ -62,8 +62,10 @@ func TestChickenAndBiscuitsPilotFitsCorpusSchema(t *testing.T) {
 		"1 cup frozen peas and carrots (allow to thaw slightly)", 1, 1, cup, false, strPtr("allow to thaw slightly"))
 	insertMeasuredIngredient(t, db, sectionID, cheddar, 7,
 		"1 cup shredded cheddar cheese", 1, 1, cup, false, strPtr("shredded"))
-	insertMeasuredIngredient(t, db, sectionID, rotisserieChicken, 8,
+	insertMeasuredIngredient(t, db, sectionID, cookedChicken, 8,
 		"2 cups cooked chicken (shredded or diced)", 2, 1, cup, false, strPtr("shredded or diced"))
+	mustExec(t, db, `UPDATE recipe_ingredients SET display_note = 'suggestion: rotisserie chicken'
+		WHERE section_id = ? AND position = 8`, sectionID)
 	insertMeasuredIngredient(t, db, sectionID, greenOnion, 9,
 		"1/4 cup sliced green onion (optional)", 1, 4, cup, true, strPtr("sliced"))
 
@@ -83,7 +85,7 @@ func TestChickenAndBiscuitsPilotFitsCorpusSchema(t *testing.T) {
 	mustExec(t, db, `INSERT INTO recipe_review_flags (recipe_id, field_path, kind, note)
 		VALUES (?, 'ingredients[5]', 'conflict-resolved', 'Selected the source-listed 12 ounce biscuit can instead of two 6 ounce cans')`, recipeID)
 	mustExec(t, db, `INSERT INTO recipe_review_flags (recipe_id, field_path, kind, note)
-		VALUES (?, 'ingredients[8].grocery_item', 'conflict-resolved', 'Mapped cooked chicken to the author-recommended rotisserie chicken; shopping quantity remains presence-only')`, recipeID)
+		VALUES (?, 'ingredients[8].display_note', 'rewritten', 'Kept the 2 cup cooked-chicken requirement and condensed the source recommendation to suggestion: rotisserie chicken')`, recipeID)
 	mustExec(t, db, `INSERT INTO recipe_review_flags (recipe_id, field_path, kind, note)
 		VALUES (?, 'steps', 'rewritten', 'Condensed source instructions without changing the method')`, recipeID)
 

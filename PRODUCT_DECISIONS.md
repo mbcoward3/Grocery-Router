@@ -407,3 +407,18 @@ scope expansion that made the prototype incoherent.
 **Consequence:** Deferred work needs a new phase and observed justification before promotion.
 
 **Revisit when:** An item meets the promotion rule in `UP_NEXT.md`.
+
+## D032 — Suggestions do not replace recipe requirements
+
+**Decision:** Keep a generic approved requirement when the source allows multiple ways to
+satisfy it, and preserve a preferred option as a short suggestion note.
+
+**Why:** Mapping `2 cups cooked chicken` to `Rotisserie Chicken` would force one purchase choice
+before substitutions exist. The shopper should retain the source quantity and decide how to
+satisfy it.
+
+**Consequence:** The Chicken and Biscuits pilot displays `2 cups Cooked Chicken` with the note
+`suggestion: rotisserie chicken`. A suggestion is not a substitution relationship and does not
+change aggregation identity or quantity.
+
+**Revisit when:** First-class substitutions and alternatives move into scope.
