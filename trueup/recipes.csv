@@ -7,7 +7,7 @@ beef-stew-with-carrots-and-potatoes,Beef stew with carrots and potatoes,1,https:
 three-ingredient-teriyaki-chicken,3-ingredient teriyaki chicken,1,https://tasty.co/recipe/3-ingredient-teriyaki-chicken,sources/Recipes.pdf,3-Ingredient Teriyaki Chicken,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/three-ingredient-teriyaki-chicken.md
 chicken-veggie-stir-fry,Chicken veggie stir fry,1,https://tasty.co/recipe/chicken-veggie-stir-fry,sources/Recipes.pdf,Chicken Veggie Stir Fry,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/chicken-veggie-stir-fry.md
 easy-salmon-dinner,Easy salmon dinner,1,https://tasty.co/recipe/easy-salmon-dinner,sources/Recipes.pdf,Easy Salmon Dinner,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/easy-salmon-dinner.md
-chili,Chili,1-5,,sources/Recipes.pdf;sources/inputs/transcripts/chili.md,Chili,source,inventoried,,PDF screenshot; exact source URL not captured
+chili,Chili,1-5,https://www.julieseatsandtreats.com/easy-chili-recipe/,sources/Recipes.pdf;sources/inputs/transcripts/chili.md,Chili,source,verified,2026-08-17,Exact source URL recovered and matched; approved bootstrap recipe: corpus/recipes/chili.md
 enchiladas,Enchiladas,5-7,,sources/Recipes.pdf;sources/inputs/transcripts/enchiladas.md,Enchiladas,source,inventoried,,PDF screenshot; exact source URL not captured
 chicken-noodle-soup,Chicken noodle soup,7-9,,sources/Recipes.pdf;sources/inputs/transcripts/chicken-noodle-soup.md,Chicken Noodle Soup,source,inventoried,,PDF screenshot; temporary source URL is no longer useful
 tacos,Tacos,9-10,,sources/Recipes.pdf;sources/inputs/text/tacos.txt,Tacos,source,inventoried,,Typed household recipe in PDF

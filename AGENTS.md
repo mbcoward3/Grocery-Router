@@ -18,7 +18,7 @@ The old application and contradictory context were intentionally removed. There 
 web v1 yet. Do not recover the Python prototype or prior deployment infrastructure as a base.
 
 The corpus foundation is Go, SQLite, Goose, and sqlc. `trueup/recipes.csv` inventories all 25
-PDF recipes. Approved bootstrap recipes live under `corpus/recipes/`; nine are verified and 16
+PDF recipes. Approved bootstrap recipes live under `corpus/recipes/`; ten are verified and 15
 remain. The frontend direction is React/TypeScript.
 Runtime AI, Docker, hosting, authentication, pantry inference, scaling, and recipe discovery
 are out of v1.
