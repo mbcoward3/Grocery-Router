@@ -13,7 +13,7 @@ chicken-noodle-soup,Chicken noodle soup,7-9,,sources/Recipes.pdf;sources/inputs/
 tacos,Tacos,9-10,,sources/Recipes.pdf;sources/inputs/text/tacos.txt,Tacos,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/tacos.md
 hamburgers,Hamburgers,10,,sources/Recipes.pdf;sources/inputs/text/hamburgers.txt,Hamburgers,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/hamburgers.md
 pork-loin-and-rice,Pork loin and rice,10,,sources/Recipes.pdf;sources/inputs/text/pork-loin-and-rice.txt,Pork Loin and Rice,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/pork-loin-and-rice.md
-cheesy-pasta,Cheesy pasta,10,,sources/Recipes.pdf;sources/inputs/text/cheesy-pasta.txt,Cheesy Pasta,source,inventoried,,Typed household recipe in PDF
+cheesy-pasta,Cheesy pasta,10,,sources/Recipes.pdf;sources/inputs/text/cheesy-pasta.txt,Cheesy Pasta,source,verified,2026-08-17,Approved bootstrap recipe: corpus/recipes/cheesy-pasta.md
 biscuits-and-gravy,Biscuits and gravy,10,,sources/Recipes.pdf;sources/inputs/text/biscuits-and-gravy.txt,Biscuits and Gravy,source,inventoried,,Typed household recipe in PDF
 blt,BLT,10-11,,sources/Recipes.pdf;sources/inputs/text/blt.txt,BLT,source,inventoried,,Typed household recipe in PDF
 meatball-subs,Meatball subs,11-13,,sources/Recipes.pdf;sources/inputs/transcripts/meatball-subs.md,Meatball Subs,source,inventoried,,PDF screenshot; exact source URL not captured

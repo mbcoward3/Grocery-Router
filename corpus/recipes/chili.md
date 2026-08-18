@@ -114,7 +114,7 @@ ingredient_sections:
           key: shredded-cheese
           name: Shredded Cheese
           store_section: {key: dairy, name: Dairy}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
         preparation: for topping
         optional: true
