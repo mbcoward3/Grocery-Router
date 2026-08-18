@@ -1,0 +1,55 @@
+version: "3"
+
+vars:
+  GOLANGCI_LINT_VERSION: v2.12.2
+  GOLANGCI_LINT: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@{{.GOLANGCI_LINT_VERSION}}
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  format:
+    desc: Format Go source and imports
+    cmds:
+      - '{{.GOLANGCI_LINT}} fmt'
+
+  generate:
+    desc: Regenerate typed sqlc queries
+    cmds:
+      - go tool sqlc generate
+
+  test:
+    desc: Run all Go tests
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: Run the pinned Go lint policy and formatting checks
+    cmds:
+      - '{{.GOLANGCI_LINT}} run'
+
+  ci:
+    desc: Run the checks enforced in CI
+    deps: [lint, test]
+
+  migrate:
+    desc: Apply database migrations (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router migrate {{.CLI_ARGS}}
+
+  trueup-inventory:
+    desc: Validate the PDF recipe inventory (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router trueup-inventory {{.CLI_ARGS}}
+
+  corpus-audit:
+    desc: Validate the approved Markdown corpus (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router corpus-audit {{.CLI_ARGS}}
+
+  corpus-ingest:
+    desc: Migrate and ingest the approved corpus (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router corpus-ingest {{.CLI_ARGS}}

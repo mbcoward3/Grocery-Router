@@ -1,3 +1,4 @@
+// Package trueup validates the PDF-controlled inventory and approved corpus membership.
 package trueup
 
 import (

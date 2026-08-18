@@ -1,67 +1,97 @@
+// Command grocery-router manages the local corpus and SQLite database.
 package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/alecthomas/kong"
 	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
 	"github.com/mbcoward3/grocery-router/internal/trueup"
 )
 
+type RepositoryPaths struct {
+	Root      string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	Corpus    string `help:"Approved Markdown corpus directory, relative to root." default:"corpus/recipes" env:"GROCERY_ROUTER_CORPUS" type:"path"`
+	Inventory string `help:"Inventory path, relative to root." default:"trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY" type:"path"`
+}
+
+type DatabasePath struct {
+	Database string `help:"SQLite database path." default:"data/grocery-router.db" env:"GROCERY_ROUTER_DATABASE" type:"path"`
+}
+
+type corpusAuditCommand struct {
+	RepositoryPaths
+}
+
+func (command *corpusAuditCommand) Run() error {
+	return auditCorpus(command.Root, command.Corpus, command.Inventory)
+}
+
+type corpusIngestCommand struct {
+	RepositoryPaths
+	DatabasePath
+}
+
+func (command *corpusIngestCommand) Run() error {
+	return ingestCorpus(command.Database, command.Root, command.Corpus, command.Inventory)
+}
+
+type migrateCommand struct {
+	DatabasePath
+}
+
+func (command *migrateCommand) Run() error {
+	return migrate(command.Database)
+}
+
+type trueupInventoryCommand struct {
+	Root      string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	Inventory string `help:"Inventory path, relative to root." default:"trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY" type:"path"`
+}
+
+func (command *trueupInventoryCommand) Run() error {
+	return auditInventory(command.Root, command.Inventory)
+}
+
+type cli struct {
+	CorpusAudit     corpusAuditCommand     `cmd:"" help:"Validate the approved corpus against the PDF inventory."`
+	CorpusIngest    corpusIngestCommand    `cmd:"" help:"Migrate a database and transactionally ingest the approved corpus."`
+	Migrate         migrateCommand         `cmd:"" help:"Apply all database migrations."`
+	TrueupInventory trueupInventoryCommand `cmd:"" help:"Validate the PDF recipe inventory and its evidence paths."`
+}
+
 func main() {
-	if err := run(os.Args[1:]); err != nil {
+	if err := run(os.Args[1:], os.Stdout, os.Stderr); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		os.Exit(1)
 	}
 }
 
-func run(args []string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("usage: grocery-router <corpus-audit|corpus-ingest|migrate|trueup-inventory>")
+func run(args []string, stdout, stderr io.Writer) error {
+	configuration := &cli{}
+	parser, err := kong.New(
+		configuration,
+		kong.Name("grocery-router"),
+		kong.Description("Build and validate the Grocery Router corpus and database."),
+		kong.UsageOnError(),
+		kong.Writers(stdout, stderr),
+	)
+	if err != nil {
+		return fmt.Errorf("configure CLI: %w", err)
 	}
-
-	switch args[0] {
-	case "corpus-audit":
-		flags := flag.NewFlagSet("corpus-audit", flag.ContinueOnError)
-		root := flags.String("root", ".", "repository root")
-		corpusPath := flags.String("corpus", "corpus/recipes", "approved Markdown corpus directory relative to root")
-		inventoryPath := flags.String("inventory", "trueup/recipes.csv", "inventory path relative to root")
-		if err := flags.Parse(args[1:]); err != nil {
-			return err
-		}
-		return auditCorpus(*root, *corpusPath, *inventoryPath)
-	case "corpus-ingest":
-		flags := flag.NewFlagSet("corpus-ingest", flag.ContinueOnError)
-		databasePath := flags.String("database", "data/grocery-router.db", "SQLite database path")
-		root := flags.String("root", ".", "repository root")
-		corpusPath := flags.String("corpus", "corpus/recipes", "approved Markdown corpus directory relative to root")
-		inventoryPath := flags.String("inventory", "trueup/recipes.csv", "inventory path relative to root")
-		if err := flags.Parse(args[1:]); err != nil {
-			return err
-		}
-		return ingestCorpus(*databasePath, *root, *corpusPath, *inventoryPath)
-	case "migrate":
-		flags := flag.NewFlagSet("migrate", flag.ContinueOnError)
-		databasePath := flags.String("database", "data/grocery-router.db", "SQLite database path")
-		if err := flags.Parse(args[1:]); err != nil {
-			return err
-		}
-		return migrate(*databasePath)
-	case "trueup-inventory":
-		flags := flag.NewFlagSet("trueup-inventory", flag.ContinueOnError)
-		root := flags.String("root", ".", "repository root")
-		inventoryPath := flags.String("inventory", "trueup/recipes.csv", "inventory path relative to root")
-		if err := flags.Parse(args[1:]); err != nil {
-			return err
-		}
-		return auditInventory(*root, *inventoryPath)
-	default:
-		return fmt.Errorf("unknown command %q; usage: grocery-router <corpus-audit|corpus-ingest|migrate|trueup-inventory>", args[0])
+	context, err := parser.Parse(args)
+	if err != nil {
+		return err
 	}
+	if err := context.Run(); err != nil {
+		return err
+	}
+	return nil
 }
 
 func auditCorpus(root, corpusPath, inventoryPath string) error {
