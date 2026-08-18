@@ -101,10 +101,7 @@ func valueOrUnknown(value string) string {
 }
 
 func formatShoppingRequirement(ingredient Ingredient) string {
-	var quantity string
-	if ingredient.GroceryItem.ShoppingMode != "presence-only" {
-		quantity = formatQuantity(ingredient.Quantity)
-	}
+	quantity := formatQuantity(ingredient.Quantity)
 	line := strings.TrimSpace(quantity + " " + ingredient.GroceryItem.Name)
 	if ingredient.Optional {
 		line += " — optional"

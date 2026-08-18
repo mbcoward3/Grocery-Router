@@ -32,14 +32,14 @@ ingredient_sections:
           key: salt
           name: Salt
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
       - source_text: pepper, to taste
         grocery_item:
           key: black-pepper
           name: Black Pepper
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
       - source_text: 1 lb broccoli florets
         grocery_item:

@@ -41,7 +41,7 @@ ingredient_sections:
           key: garlic-powder
           name: Garlic Powder
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: exact, amount: "1", unit: tsp}
       - source_text: 1/2 teaspoon rotisserie seasoning
         grocery_item:
@@ -55,7 +55,7 @@ ingredient_sections:
           key: black-pepper
           name: Black Pepper
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: exact, amount: "1/2", unit: tsp}
       - source_text: 12 ounce can refrigerated biscuits (or two smaller 6 ounce cans)
         grocery_item:
@@ -148,11 +148,11 @@ review:
 - 1 cup milk
   - Shopping: 1 cup Milk — Dairy
 - 1 teaspoon garlic powder
-  - Shopping: Garlic Powder — Spices
+  - Shopping: 1 tsp Garlic Powder — Spices
 - 1/2 teaspoon rotisserie seasoning
-  - Shopping: Rotisserie Seasoning — Spices
+  - Shopping: 1/2 tsp Rotisserie Seasoning — Spices
 - 1/2 teaspoon black pepper
-  - Shopping: Black Pepper — Spices
+  - Shopping: 1/2 tsp Black Pepper — Spices
 - 12 ounce can refrigerated biscuits (or two smaller 6 ounce cans)
   - Shopping: 1 × 12 oz can Refrigerated Biscuits — `v1 default: one 12 ounce can` — Dairy
   - Note: v1 default: one 12 ounce can
@@ -208,9 +208,9 @@ review:
 
 ### Spices
 
-- Garlic Powder
-- Rotisserie Seasoning
-- Black Pepper
+- 1 tsp Garlic Powder
+- 1/2 tsp Rotisserie Seasoning
+- 1/2 tsp Black Pepper
 
 ## Approved true-up decisions
 

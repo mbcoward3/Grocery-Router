@@ -61,14 +61,14 @@ ingredient_sections:
           key: ketchup
           name: Ketchup
           store_section: {key: condiments, name: Condiments}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
       - source_text: Salt
         grocery_item:
           key: salt
           name: Salt
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
         preparation: sprinkled on formed patties
       - source_text: Pepper
@@ -76,7 +76,7 @@ ingredient_sections:
           key: black-pepper
           name: Black Pepper
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
         preparation: sprinkled on formed patties
       - source_text: Garlic powder
@@ -84,7 +84,7 @@ ingredient_sections:
           key: garlic-powder
           name: Garlic Powder
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
         preparation: sprinkled on formed patties
       - source_text: 8 slices Colby Jack cheese

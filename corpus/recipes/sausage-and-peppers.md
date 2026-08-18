@@ -32,7 +32,7 @@ ingredient_sections:
           key: olive-oil
           name: Olive Oil
           store_section: {key: pantry, name: Pantry}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
         note: "suggestion: garlic olive oil"
       - source_text: 1 cup Onion sliced
@@ -88,14 +88,14 @@ ingredient_sections:
           key: salt
           name: Salt
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
       - source_text: pepper to taste
         grocery_item:
           key: black-pepper
           name: Black Pepper
           store_section: {key: spices, name: Spices}
-          shopping_mode: presence-only
+          shopping_mode: measured
         quantity: {kind: unspecified}
 instruction_sections:
   - name: Method
