@@ -14,8 +14,9 @@ means. This plan defines how the work is executed, reviewed, tracked, and closed
 - **Gate 7 in progress:** the Goose schema models sources, exact quantities, packages,
   canonical grocery items, instructions, review flags, and verification guards. The strict
   Markdown parser and transactional importer are working.
-- **Two recipes verified:** Chicken and Biscuits Casserole and Hamburgers are approved under
-  `corpus/recipes/` and import successfully into a fresh migrated database.
+- **Three recipes verified:** Chicken and Biscuits Casserole, Hamburgers, and Sausage and
+  Peppers are approved under `corpus/recipes/` and import successfully into a fresh migrated
+  database.
 - **Readable bootstrap enforced:** `corpus-render` generates recipe details, ingredients,
   instructions, grocery preview, and approved decisions from strict front matter;
   `corpus-audit` rejects any drift.

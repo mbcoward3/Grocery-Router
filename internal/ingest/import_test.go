@@ -79,12 +79,22 @@ func TestImportApprovedCorpus(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	expectedIngredients, expectedSteps := 0, 0
+	for _, document := range documents {
+		for _, section := range document.IngredientSections {
+			expectedIngredients += len(section.Ingredients)
+		}
+		for _, section := range document.InstructionSections {
+			expectedSteps += len(section.Steps)
+		}
+	}
+
 	var recipes, ingredients, steps, unapproved int
 	mustCount(t, db, "SELECT count(*) FROM recipes WHERE status = 'verified'", &recipes)
 	mustCount(t, db, "SELECT count(*) FROM recipe_ingredients", &ingredients)
 	mustCount(t, db, "SELECT count(*) FROM recipe_steps", &steps)
 	mustCount(t, db, "SELECT count(*) FROM recipe_review_flags WHERE approved = 0", &unapproved)
-	if recipes != 2 || ingredients != 20 || steps != 12 || unapproved != 0 {
+	if recipes != len(documents) || ingredients != expectedIngredients || steps != expectedSteps || unapproved != 0 {
 		t.Fatalf("import counts: recipes=%d ingredients=%d steps=%d unapproved=%d", recipes, ingredients, steps, unapproved)
 	}
 
