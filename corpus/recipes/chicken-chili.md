@@ -209,7 +209,7 @@ review:
   approved: true
 - field: package_sizes
   kind: backfilled
-  note: Under delegated household review, used common 10-ounce Rotel, 15.25-ounce corn, 15-ounce bean, and 1-ounce ranch packet sizes. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review approved common 10-ounce Rotel, 15.25-ounce corn, 15-ounce bean, and 1-ounce ranch packet sizes.
   approved: true
 - field: instruction_sections
   kind: conflict-resolved
@@ -307,5 +307,5 @@ review:
 ## Approved true-up decisions
 
 - `ingredient_sections[0].ingredients[6]` — **conflict-resolved:** Corrected the source typo “2 cups or chicken broth” to 2 cups of chicken broth.
-- `package_sizes` — **backfilled:** Under delegated household review, used common 10-ounce Rotel, 15.25-ounce corn, 15-ounce bean, and 1-ounce ranch packet sizes. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+- `package_sizes` — **backfilled:** Household re-review approved common 10-ounce Rotel, 15.25-ounce corn, 15-ounce bean, and 1-ounce ranch packet sizes.
 - `instruction_sections` — **conflict-resolved:** Selected the source-listed high-for-four-hours path as the concrete v1 method; the low-for-eight-hours alternative remains in source evidence.

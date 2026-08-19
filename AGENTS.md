@@ -19,8 +19,8 @@ web v1 yet. Do not recover the Python prototype or prior deployment infrastructu
 
 The corpus foundation is Go, SQLite, Goose, and sqlc. `trueup/recipes.csv` inventories all 25
 PDF recipes. Completed household re-review includes 24 approved bootstrap recipes under
-`corpus/recipes/` and explicitly excludes Chicken and Dumplings. Delegated-pass outcomes are
-recorded in `trueup/CONTROVERSIAL_CALLS.md`. The frontend direction is React/TypeScript.
+`corpus/recipes/` and explicitly excludes Chicken and Dumplings. The frontend direction is
+React/TypeScript.
 Runtime AI, Docker, hosting, authentication, pantry inference, scaling, and recipe discovery
 are out of v1.
 

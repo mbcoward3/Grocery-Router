@@ -20,8 +20,8 @@ Rules:
 - Unit keys must exist in the exact-unit migration.
 - Grocery item key, name, section, and shopping mode must agree across every recipe.
 - Every backfill, rewrite, or resolved conflict appears in `review` with `approved: true`.
-- Agent-selected calls from the delegated final true-up pass and their completed household
-  re-review outcomes are indexed in `trueup/CONTROVERSIAL_CALLS.md`.
+- Agent-selected calls and household outcomes are retained in each recipe's approved review
+  fields.
 - The ledger status and approval date must match the file.
 
 Validate and load with:

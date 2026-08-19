@@ -180,7 +180,7 @@ review:
   approved: true
 - field: ingredient_sections[0].ingredients[0]
   kind: conflict-resolved
-  note: Under delegated household review, selected 90% lean beef and retained 93% lean as a suggestion; logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review approved 90% lean beef and retained 93% lean as a suggestion.
   approved: true
 - field: instruction_sections
   kind: rewritten
@@ -280,5 +280,5 @@ review:
 ## Approved true-up decisions
 
 - `source` — **conflict-resolved:** Recovered and matched the current authoritative Cheeseburger Sliders recipe and complete method.
-- `ingredient_sections[0].ingredients[0]` — **conflict-resolved:** Under delegated household review, selected 90% lean beef and retained 93% lean as a suggestion; logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+- `ingredient_sections[0].ingredients[0]` — **conflict-resolved:** Household re-review approved 90% lean beef and retained 93% lean as a suggestion.
 - `instruction_sections` — **rewritten:** Condensed the authoritative method without changing ingredients, temperature, or bake range.

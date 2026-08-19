@@ -183,7 +183,7 @@ review:
   approved: true
 - field: instruction_sections
   kind: conflict-resolved
-  note: Under delegated household review, selected low for 8 hours as the concrete source method and completed the ad-obscured final slurry step. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review approved low for 8 hours as the concrete source method and the completed ad-obscured final slurry step.
   approved: true
 - field: ingredient_sections[0].ingredients[10]
   kind: conflict-resolved
@@ -281,5 +281,5 @@ review:
 ## Approved true-up decisions
 
 - `source` — **conflict-resolved:** Used the captured Dinner Then Dessert recipe and corpus title because the exact live URL and on-page title could not be recovered.
-- `instruction_sections` — **conflict-resolved:** Under delegated household review, selected low for 8 hours as the concrete source method and completed the ad-obscured final slurry step. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+- `instruction_sections` — **conflict-resolved:** Household re-review approved low for 8 hours as the concrete source method and the completed ad-obscured final slurry step.
 - `ingredient_sections[0].ingredients[10]` — **conflict-resolved:** Retained the exact cold-water slurry contribution as non-shopping.

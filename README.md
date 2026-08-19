@@ -8,8 +8,7 @@ recipe pool and a deterministic grocery checklist.
 **The previous prototype has been removed from the active tree.** The Go/SQLite corpus
 foundation is now in place; the web application has not been built. The PDF-controlled ledger
 contains 25 recipes. Completed household re-review includes 24 in the strict Markdown
-bootstrap and explicitly excludes Chicken and Dumplings. Outcomes from the final delegated
-pass are recorded in `trueup/CONTROVERSIAL_CALLS.md`.
+bootstrap and explicitly excludes Chicken and Dumplings.
 
 ## Start here
 

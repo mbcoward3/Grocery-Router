@@ -206,7 +206,7 @@ instruction_sections:
 review:
 - field: ingredient_sections[0].ingredients[12:14]
   kind: backfilled
-  note: Under delegated household review, backfilled 2 tablespoons cornstarch and 2 tablespoons non-shopping water for the slurry required by the captured method. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review approved 2 tablespoons cornstarch and 2 tablespoons non-shopping water for the slurry required by the captured method.
   approved: true
 - field: yield_and_time
   kind: backfilled
@@ -312,6 +312,6 @@ review:
 
 ## Approved true-up decisions
 
-- `ingredient_sections[0].ingredients[12:14]` — **backfilled:** Under delegated household review, backfilled 2 tablespoons cornstarch and 2 tablespoons non-shopping water for the slurry required by the captured method. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+- `ingredient_sections[0].ingredients[12:14]` — **backfilled:** Household re-review approved 2 tablespoons cornstarch and 2 tablespoons non-shopping water for the slurry required by the captured method.
 - `yield_and_time` — **backfilled:** Estimated six servings, 20 minutes hands-on, and 40 minutes unattended from the captured quantities and timed method.
 - `instruction_sections` — **rewritten:** Preserved the captured method and made the backfilled slurry quantities explicit.

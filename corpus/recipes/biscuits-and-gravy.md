@@ -127,7 +127,7 @@ instruction_sections:
 review:
 - field: ingredient_sections
   kind: conflict-resolved
-  note: Under delegated household review, selected regular 1-pound breakfast sausage and one standard biscuit tube; backfilled half an onion, 1/4 cup flour, 2 tablespoons butter, and 2 1/2 cups milk. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review approved regular 1-pound breakfast sausage, one standard biscuit tube, half an onion, 1/4 cup flour, 2 tablespoons butter, and 2 1/2 cups milk.
   approved: true
 - field: instruction_sections
   kind: backfilled
@@ -208,5 +208,5 @@ review:
 
 ## Approved true-up decisions
 
-- `ingredient_sections` — **conflict-resolved:** Under delegated household review, selected regular 1-pound breakfast sausage and one standard biscuit tube; backfilled half an onion, 1/4 cup flour, 2 tablespoons butter, and 2 1/2 cups milk. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+- `ingredient_sections` — **conflict-resolved:** Household re-review approved regular 1-pound breakfast sausage, one standard biscuit tube, half an onion, 1/4 cup flour, 2 tablespoons butter, and 2 1/2 cups milk.
 - `instruction_sections` — **backfilled:** The household source has no method; completed a standard biscuit-package and skillet-gravy method using every approved ingredient.

@@ -18,8 +18,8 @@ means. This plan defines how the work is executed, reviewed, tracked, and closed
   `corpus/recipes/` and explicitly excludes Chicken and Dumplings. The included corpus imports
   successfully into a fresh migrated database.
 - **Delegated final pass re-reviewed:** the household completed focused re-review of every
-  non-obvious default in `trueup/CONTROVERSIAL_CALLS.md`; accepted and changed outcomes are
-  recorded inline.
+  non-obvious default; accepted and changed outcomes are recorded in the approved recipe
+  review fields.
 - **Readable bootstrap enforced:** `corpus-render` generates recipe details, ingredients,
   instructions, grocery preview, and approved decisions from strict front matter;
   `corpus-audit` rejects any drift.
