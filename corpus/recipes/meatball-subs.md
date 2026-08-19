@@ -152,14 +152,14 @@ ingredient_sections:
 instruction_sections:
 - name: Method
   steps:
-  - Preheat the oven to 350°F. Combine the meatball ingredients, shape into 1-inch balls, place on a parchment-lined pan, and bake for 20 minutes or until cooked through.
+  - Preheat the oven to 350°F. Combine the meatball ingredients, shape into 1-inch balls, place on a parchment-lined pan, and bake for 20 minutes or until cooked through. For a shortcut, 16 frozen meatballs can be prepared according to their package directions instead.
   - Simmer the cooked meatballs in the marinara sauce, covered, for 10 minutes.
   - Spread garlic butter inside each roll and broil for about 3 minutes, until golden.
   - Place four meatballs in each roll, add sauce and cheese, and broil for 2 to 3 minutes until melted. Serve with additional sauce if desired.
 review:
 - field: source_and_alternatives
   kind: conflict-resolved
-  note: Recovered the current authoritative recipe, which now specifies homemade meatballs. Selected its primary shredded Italian cheese blend while preserving the former screenshot discrepancy in trueup/CONTROVERSIAL_CALLS.md.
+  note: Recovered the current authoritative recipe, which now specifies homemade meatballs. Household re-review kept homemade meatballs and the primary shredded Italian cheese blend, with a non-binding suggestion that 16 frozen meatballs can be used as a shortcut.
   approved: true
 - field: instruction_sections
   kind: rewritten
@@ -214,7 +214,7 @@ review:
 
 ### Method
 
-1. Preheat the oven to 350°F. Combine the meatball ingredients, shape into 1-inch balls, place on a parchment-lined pan, and bake for 20 minutes or until cooked through.
+1. Preheat the oven to 350°F. Combine the meatball ingredients, shape into 1-inch balls, place on a parchment-lined pan, and bake for 20 minutes or until cooked through. For a shortcut, 16 frozen meatballs can be prepared according to their package directions instead.
 2. Simmer the cooked meatballs in the marinara sauce, covered, for 10 minutes.
 3. Spread garlic butter inside each roll and broil for about 3 minutes, until golden.
 4. Place four meatballs in each roll, add sauce and cheese, and broil for 2 to 3 minutes until melted. Serve with additional sauce if desired.
@@ -252,5 +252,5 @@ review:
 
 ## Approved true-up decisions
 
-- `source_and_alternatives` — **conflict-resolved:** Recovered the current authoritative recipe, which now specifies homemade meatballs. Selected its primary shredded Italian cheese blend while preserving the former screenshot discrepancy in trueup/CONTROVERSIAL_CALLS.md.
+- `source_and_alternatives` — **conflict-resolved:** Recovered the current authoritative recipe, which now specifies homemade meatballs. Household re-review kept homemade meatballs and the primary shredded Italian cheese blend, with a non-binding suggestion that 16 frozen meatballs can be used as a shortcut.
 - `instruction_sections` — **rewritten:** Condensed the current authoritative method while preserving all timed cooking stages and contributions.

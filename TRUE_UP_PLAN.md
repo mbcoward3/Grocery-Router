@@ -14,16 +14,17 @@ means. This plan defines how the work is executed, reviewed, tracked, and closed
 - **Gate 7 in progress:** the Goose schema models sources, exact quantities, packages,
   canonical grocery items, instructions, review flags, and verification guards. The strict
   Markdown parser and transactional importer are working.
-- **All 25 recipes verified:** every PDF member has one strict file under `corpus/recipes/`,
-  and the complete corpus imports successfully into a fresh migrated database.
-- **Delegated final pass logged:** the household explicitly delegated the final ten completion
-  calls on 2026-08-17. Every non-obvious default is queued in
-  `trueup/CONTROVERSIAL_CALLS.md` for re-review rather than hidden.
+- **All 25 recipes dispositioned:** household re-review includes 24 verified recipes under
+  `corpus/recipes/` and explicitly excludes Chicken and Dumplings. The included corpus imports
+  successfully into a fresh migrated database.
+- **Delegated final pass re-reviewed:** the household completed focused re-review of every
+  non-obvious default in `trueup/CONTROVERSIAL_CALLS.md`; accepted and changed outcomes are
+  recorded inline.
 - **Readable bootstrap enforced:** `corpus-render` generates recipe details, ingredients,
   instructions, grocery preview, and approved decisions from strict front matter;
   `corpus-audit` rejects any drift.
-- **Next:** re-review the logged controversial calls, apply any corrections by returning those
-  recipes to draft, and then close the corpus gates with a final fresh-database audit.
+- **Next:** close the corpus gates with a final fresh-database audit and proceed to deterministic
+  week selection and grocery-list implementation.
 
 ## 1. Execution gates
 

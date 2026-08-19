@@ -12,8 +12,8 @@ hands_on:
   min: 25
   max: 25
 unattended:
-  min: 180
-  max: 180
+  min: 120
+  max: 120
 ingredient_sections:
 - name: Beef Dip
   ingredients:
@@ -82,26 +82,27 @@ ingredient_sections:
         type: package
   - source_text: oleo or butter
     grocery_item:
-      key: butter
-      name: Butter
+      key: sliced-provolone-cheese
+      name: Sliced Provolone Cheese
       store_section:
         key: dairy
         name: Dairy
-      shopping_mode: measured
+      shopping_mode: counted
     quantity:
       kind: unspecified
+    note: household replacement for the card's butter
 instruction_sections:
 - name: Method
   steps:
   - Heat a large covered pan over high heat. Add the roast and turn it until deeply browned on all sides.
   - Add enough water to reach about two-thirds of the way up the roast. Sprinkle with the onion soup mix and pour in the liquid from the pepperoncini jar.
-  - Bring to a boil, reduce the heat to low, cover, and simmer for about 3 hours, turning occasionally, until the beef is tender enough to pull apart. Add water if needed to keep the braising liquid from drying out.
+  - Bring to a boil, reduce the heat to a simmer, cover, and cook for about 2 hours, turning occasionally, until the beef is tender enough to pull apart. Add water if needed to keep the braising liquid from drying out.
   - Shred or thinly slice the beef and return it to the cooking liquid. Add pepperoncini as desired.
-  - Spread butter on the cut sides of the buns and broil on a baking sheet until toasted, watching carefully. Fill with beef and serve with the cooking liquid for dipping.
+  - Place provolone slices on the split buns and broil on a baking sheet until the cheese melts and the buns are lightly toasted, watching carefully. Fill with beef and serve with the cooking liquid for dipping.
 review:
 - field: method_and_quantities
   kind: conflict-resolved
-  note: Under delegated household review, trusted the photographed stovetop braise over the old slow-cooker note and backfilled a 3-pound roast, one pepperoncini jar, one bun package, and a covered three-hour low simmer. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review kept the photographed stovetop braise, 3-pound roast, pepperoncini jar, and bun package, but clarified the cut-off instruction as a covered simmer for a couple hours.
   approved: true
 - field: ingredient_sections[0].ingredients[3]
   kind: backfilled
@@ -109,7 +110,7 @@ review:
   approved: true
 - field: instruction_sections
   kind: backfilled
-  note: Completed the cut-off card with a conservative covered braise to a shreddable endpoint and retained the captured broiled-bun method.
+  note: Household re-review completed the cut-off card as a two-hour simmer and replaced its buttered-bun direction with sliced provolone melted under the broiler.
   approved: true
 ---
 
@@ -124,7 +125,7 @@ review:
 - Source checked: 2026-08-17
 - Yield: unknown
 - Hands-on: 25 minutes
-- Unattended: 180 minutes
+- Unattended: 120 minutes
 
 ## Ingredients
 
@@ -142,7 +143,8 @@ review:
 - Buns
   - Shopping: 1 package Sandwich Buns — Bakery
 - oleo or butter
-  - Shopping: Butter — Dairy
+  - Shopping: Sliced Provolone Cheese — `household replacement for the card's butter` — Dairy
+  - Note: household replacement for the card's butter
 
 ## Instructions
 
@@ -150,9 +152,9 @@ review:
 
 1. Heat a large covered pan over high heat. Add the roast and turn it until deeply browned on all sides.
 2. Add enough water to reach about two-thirds of the way up the roast. Sprinkle with the onion soup mix and pour in the liquid from the pepperoncini jar.
-3. Bring to a boil, reduce the heat to low, cover, and simmer for about 3 hours, turning occasionally, until the beef is tender enough to pull apart. Add water if needed to keep the braising liquid from drying out.
+3. Bring to a boil, reduce the heat to a simmer, cover, and cook for about 2 hours, turning occasionally, until the beef is tender enough to pull apart. Add water if needed to keep the braising liquid from drying out.
 4. Shred or thinly slice the beef and return it to the cooking liquid. Add pepperoncini as desired.
-5. Spread butter on the cut sides of the buns and broil on a baking sheet until toasted, watching carefully. Fill with beef and serve with the cooking liquid for dipping.
+5. Place provolone slices on the split buns and broil on a baking sheet until the cheese melts and the buns are lightly toasted, watching carefully. Fill with beef and serve with the cooking liquid for dipping.
 
 ## One-batch grocery preview
 
@@ -166,7 +168,7 @@ review:
 
 ### Dairy
 
-- Butter
+- Sliced Provolone Cheese — `household replacement for the card's butter`
 
 ### Meat
 
@@ -178,6 +180,6 @@ review:
 
 ## Approved true-up decisions
 
-- `method_and_quantities` — **conflict-resolved:** Under delegated household review, trusted the photographed stovetop braise over the old slow-cooker note and backfilled a 3-pound roast, one pepperoncini jar, one bun package, and a covered three-hour low simmer. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+- `method_and_quantities` — **conflict-resolved:** Household re-review kept the photographed stovetop braise, 3-pound roast, pepperoncini jar, and bun package, but clarified the cut-off instruction as a covered simmer for a couple hours.
 - `ingredient_sections[0].ingredients[3]` — **backfilled:** Retained the card-directed water level as an unquantified non-shopping input.
-- `instruction_sections` — **backfilled:** Completed the cut-off card with a conservative covered braise to a shreddable endpoint and retained the captured broiled-bun method.
+- `instruction_sections` — **backfilled:** Household re-review completed the cut-off card as a two-hour simmer and replaced its buttered-bun direction with sliced provolone melted under the broiler.

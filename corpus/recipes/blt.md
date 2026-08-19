@@ -40,8 +40,9 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: exact
-      amount: '8'
-      unit: slice
+      amount: '1'
+      package:
+        type: package
   - source_text: Lettuce
     grocery_item:
       key: lettuce
@@ -52,9 +53,9 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: exact
-      amount: '4'
-      unit: leaf
-    preparation: washed and dried
+      amount: '1'
+      unit: each
+    preparation: head; leaves washed and dried
   - source_text: Tomato
     grocery_item:
       key: tomato
@@ -65,7 +66,7 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: exact
-      amount: '1'
+      amount: '2'
       unit: each
     preparation: sliced
   - source_text: Mayo
@@ -88,7 +89,7 @@ instruction_sections:
 review:
 - field: yield_and_quantities
   kind: backfilled
-  note: Under delegated household review, set a four-sandwich baseline with 8 bread slices, 8 bacon slices, 4 lettuce leaves, and 1 tomato; mayonnaise remains unquantified. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review kept the four-sandwich baseline with 8 bread slices but changed shopping requirements to one package bacon, one head lettuce, and 2 tomatoes; mayonnaise remains unquantified.
   approved: true
 - field: instruction_sections
   kind: backfilled
@@ -116,12 +117,12 @@ review:
 - bread
   - Shopping: 8 slices Sandwich Bread — Bakery
 - Bacon
-  - Shopping: 8 slices Bacon — Meat
+  - Shopping: 1 package Bacon — Meat
 - Lettuce
-  - Shopping: 4 leaf Lettuce — Produce
-  - Preparation: washed and dried
+  - Shopping: 1 Lettuce — Produce
+  - Preparation: head; leaves washed and dried
 - Tomato
-  - Shopping: 1 Tomato — Produce
+  - Shopping: 2 Tomato — Produce
   - Preparation: sliced
 - Mayo
   - Shopping: Mayonnaise — Condiments
@@ -147,14 +148,14 @@ review:
 
 ### Meat
 
-- 8 slices Bacon
+- 1 package Bacon
 
 ### Produce
 
-- 4 leaf Lettuce
-- 1 Tomato
+- 1 Lettuce
+- 2 Tomato
 
 ## Approved true-up decisions
 
-- `yield_and_quantities` — **backfilled:** Under delegated household review, set a four-sandwich baseline with 8 bread slices, 8 bacon slices, 4 lettuce leaves, and 1 tomato; mayonnaise remains unquantified. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+- `yield_and_quantities` — **backfilled:** Household re-review kept the four-sandwich baseline with 8 bread slices but changed shopping requirements to one package bacon, one head lettuce, and 2 tomatoes; mayonnaise remains unquantified.
 - `instruction_sections` — **backfilled:** The household source has no method; added a minimal assembly method without introducing ingredients.

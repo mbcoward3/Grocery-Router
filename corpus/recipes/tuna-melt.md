@@ -8,13 +8,13 @@ source:
   relationship: source
   attribution: '@mealssheeats Instagram story captured in Recipes.pdf, pages 26–28'
   checked_on: '2026-08-17'
-yield: 1 sandwich
+yield: 4 sandwiches
 hands_on:
-  min: 15
-  max: 15
+  min: 30
+  max: 30
 unattended:
-  min: 5
-  max: 5
+  min: 0
+  max: 0
 ingredient_sections:
 - name: Tuna Mix
   ingredients:
@@ -28,7 +28,7 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: exact
-      amount: '1'
+      amount: '4'
       package:
         type: can
         size: '5'
@@ -44,8 +44,8 @@ ingredient_sections:
       shopping_mode: measured
     quantity:
       kind: range
-      amount: '2'
-      maximum: '3'
+      amount: '8'
+      maximum: '12'
       unit: tbsp
   - source_text: 1-2 tsp yellow mustard
     grocery_item:
@@ -57,8 +57,8 @@ ingredient_sections:
       shopping_mode: measured
     quantity:
       kind: range
-      amount: '1'
-      maximum: '2'
+      amount: '4'
+      maximum: '8'
       unit: tsp
   - source_text: 2-3 tbsp finely chopped pickles
     grocery_item:
@@ -70,8 +70,8 @@ ingredient_sections:
       shopping_mode: measured
     quantity:
       kind: range
-      amount: '2'
-      maximum: '3'
+      amount: '8'
+      maximum: '12'
       unit: tbsp
     preparation: finely chopped
   - source_text: 1-2 tsp pickle juice
@@ -84,8 +84,8 @@ ingredient_sections:
       shopping_mode: measured
     quantity:
       kind: range
-      amount: '1'
-      maximum: '2'
+      amount: '4'
+      maximum: '8'
       unit: tsp
   - source_text: 1-2 tbsp finely chopped pepperoncini
     grocery_item:
@@ -97,8 +97,8 @@ ingredient_sections:
       shopping_mode: measured
     quantity:
       kind: range
-      amount: '1'
-      maximum: '2'
+      amount: '4'
+      maximum: '8'
       unit: tbsp
     preparation: finely chopped
   - source_text: 1-2 tbsp finely diced red onion
@@ -111,8 +111,8 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: range
-      amount: '1'
-      maximum: '2'
+      amount: '4'
+      maximum: '8'
       unit: tbsp
     preparation: finely diced
   - source_text: Salt
@@ -159,7 +159,7 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: exact
-      amount: '2'
+      amount: '8'
       unit: slice
   - source_text: Boar's Head pickle slices
     grocery_item:
@@ -171,7 +171,7 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: exact
-      amount: '2'
+      amount: '8'
       unit: each
     note: 'source brand: Boar''s Head'
   - source_text: Thinly sliced red onion
@@ -195,7 +195,7 @@ ingredient_sections:
       shopping_mode: counted
     quantity:
       kind: exact
-      amount: '2'
+      amount: '8'
       unit: slice
   - source_text: Butter or oil
     grocery_item:
@@ -207,27 +207,27 @@ ingredient_sections:
       shopping_mode: measured
     quantity:
       kind: exact
-      amount: '1'
+      amount: '4'
       unit: tbsp
 instruction_sections:
 - name: Method
   steps:
   - Combine the tuna, mayonnaise, yellow mustard, chopped pickles, pickle juice, pepperoncini, diced red onion, optional celery seed, salt, and a generous amount of black pepper until creamy but still textured.
-  - Layer one bread slice with the tuna mixture, pickle slices, thinly sliced red onion, cheddar, and the second bread slice.
-  - Melt the butter in a cast-iron skillet over medium heat. Add the sandwich, press lightly, and cook until golden.
-  - Flip, cover the skillet, and continue cooking until the second side is golden and the cheese is melted.
+  - Assemble four sandwiches by layering bread with tuna mixture, pickle slices, thinly sliced red onion, cheddar, and top bread.
+  - Melt butter in a cast-iron skillet over medium heat. Working in batches as needed, add the sandwiches, press lightly, and cook until golden.
+  - Flip, cover the skillet, and continue cooking until the second sides are golden and the cheese is melted.
 review:
 - field: yield_and_sandwich_quantities
   kind: backfilled
-  note: Under delegated household review, backfilled one sandwich using a 5-ounce tuna can, 2 bread slices, 2 pickle slices, 2 cheddar slices, and 1 tablespoon butter. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
+  note: Household re-review replaced the delegated one-sandwich baseline with a four-sandwich family baseline, scaling all quantified source contributions exactly.
   approved: true
 - field: ingredient_sections[1].ingredients[3:5]
   kind: conflict-resolved
-  note: Selected cheddar from cheese of choice and butter rather than oil.
+  note: Kept cheddar from cheese of choice and butter rather than oil while scaling both to four sandwiches.
   approved: true
 - field: instruction_sections
   kind: conflict-resolved
-  note: Selected the source-listed covered-skillet finish rather than its oven alternative and preserved all tuna-mix ranges.
+  note: Kept the covered-skillet finish rather than the oven alternative and adjusted the method to cook four sandwiches in batches as needed.
   approved: true
 ---
 
@@ -240,31 +240,31 @@ review:
 
 - Source: @mealssheeats Instagram story captured in Recipes.pdf, pages 26–28 (`source`)
 - Source checked: 2026-08-17
-- Yield: 1 sandwich
-- Hands-on: 15 minutes
-- Unattended: 5 minutes
+- Yield: 4 sandwiches
+- Hands-on: 30 minutes
+- Unattended: 0 minutes
 
 ## Ingredients
 
 ### Tuna Mix
 
 - 1 can spicy yellowfin tuna, lightly drained
-  - Shopping: 1 × 5 oz can Spicy Yellowfin Tuna — Pantry
+  - Shopping: 4 × 5 oz cans Spicy Yellowfin Tuna — Pantry
   - Preparation: lightly drained
 - 2-3 tbsp mayo
-  - Shopping: 2–3 tbsp Mayonnaise — Condiments
+  - Shopping: 8–12 tbsp Mayonnaise — Condiments
 - 1-2 tsp yellow mustard
-  - Shopping: 1–2 tsp Yellow Mustard — Condiments
+  - Shopping: 4–8 tsp Yellow Mustard — Condiments
 - 2-3 tbsp finely chopped pickles
-  - Shopping: 2–3 tbsp Dill Pickles — Condiments
+  - Shopping: 8–12 tbsp Dill Pickles — Condiments
   - Preparation: finely chopped
 - 1-2 tsp pickle juice
-  - Shopping: 1–2 tsp Pickle Juice — Condiments
+  - Shopping: 4–8 tsp Pickle Juice — Condiments
 - 1-2 tbsp finely chopped pepperoncini
-  - Shopping: 1–2 tbsp Sliced Pepperoncini — Condiments
+  - Shopping: 4–8 tbsp Sliced Pepperoncini — Condiments
   - Preparation: finely chopped
 - 1-2 tbsp finely diced red onion
-  - Shopping: 1–2 tbsp Red Onion — Produce
+  - Shopping: 4–8 tbsp Red Onion — Produce
   - Preparation: finely diced
 - Salt
   - Shopping: Salt — Spices
@@ -278,54 +278,54 @@ review:
 ### Sandwich
 
 - Bread of choice
-  - Shopping: 2 slices Sandwich Bread — Bakery
+  - Shopping: 8 slices Sandwich Bread — Bakery
 - Boar's Head pickle slices
-  - Shopping: 2 Dill Pickle Slices — `source brand: Boar's Head` — Condiments
+  - Shopping: 8 Dill Pickle Slices — `source brand: Boar's Head` — Condiments
   - Note: source brand: Boar's Head
 - Thinly sliced red onion
   - Shopping: Red Onion — Produce
   - Preparation: thinly sliced
 - Cheese of choice
-  - Shopping: 2 slices Sliced Cheddar Cheese — Dairy
+  - Shopping: 8 slices Sliced Cheddar Cheese — Dairy
 - Butter or oil
-  - Shopping: 1 tbsp Butter — Dairy
+  - Shopping: 4 tbsp Butter — Dairy
 
 ## Instructions
 
 ### Method
 
 1. Combine the tuna, mayonnaise, yellow mustard, chopped pickles, pickle juice, pepperoncini, diced red onion, optional celery seed, salt, and a generous amount of black pepper until creamy but still textured.
-2. Layer one bread slice with the tuna mixture, pickle slices, thinly sliced red onion, cheddar, and the second bread slice.
-3. Melt the butter in a cast-iron skillet over medium heat. Add the sandwich, press lightly, and cook until golden.
-4. Flip, cover the skillet, and continue cooking until the second side is golden and the cheese is melted.
+2. Assemble four sandwiches by layering bread with tuna mixture, pickle slices, thinly sliced red onion, cheddar, and top bread.
+3. Melt butter in a cast-iron skillet over medium heat. Working in batches as needed, add the sandwiches, press lightly, and cook until golden.
+4. Flip, cover the skillet, and continue cooking until the second sides are golden and the cheese is melted.
 
 ## One-batch grocery preview
 
 ### Bakery
 
-- 2 slices Sandwich Bread
+- 8 slices Sandwich Bread
 
 ### Condiments
 
-- 2–3 tbsp Mayonnaise
-- 1–2 tsp Yellow Mustard
-- 2–3 tbsp Dill Pickles
-- 1–2 tsp Pickle Juice
-- 1–2 tbsp Sliced Pepperoncini
-- 2 Dill Pickle Slices — `source brand: Boar's Head`
+- 8–12 tbsp Mayonnaise
+- 4–8 tsp Yellow Mustard
+- 8–12 tbsp Dill Pickles
+- 4–8 tsp Pickle Juice
+- 4–8 tbsp Sliced Pepperoncini
+- 8 Dill Pickle Slices — `source brand: Boar's Head`
 
 ### Dairy
 
-- 2 slices Sliced Cheddar Cheese
-- 1 tbsp Butter
+- 8 slices Sliced Cheddar Cheese
+- 4 tbsp Butter
 
 ### Pantry
 
-- 1 × 5 oz can Spicy Yellowfin Tuna
+- 4 × 5 oz cans Spicy Yellowfin Tuna
 
 ### Produce
 
-- 1–2 tbsp Red Onion
+- 4–8 tbsp Red Onion
 - Red Onion
 
 ### Spices
@@ -336,6 +336,6 @@ review:
 
 ## Approved true-up decisions
 
-- `yield_and_sandwich_quantities` — **backfilled:** Under delegated household review, backfilled one sandwich using a 5-ounce tuna can, 2 bread slices, 2 pickle slices, 2 cheddar slices, and 1 tablespoon butter. Logged for revisit in trueup/CONTROVERSIAL_CALLS.md.
-- `ingredient_sections[1].ingredients[3:5]` — **conflict-resolved:** Selected cheddar from cheese of choice and butter rather than oil.
-- `instruction_sections` — **conflict-resolved:** Selected the source-listed covered-skillet finish rather than its oven alternative and preserved all tuna-mix ranges.
+- `yield_and_sandwich_quantities` — **backfilled:** Household re-review replaced the delegated one-sandwich baseline with a four-sandwich family baseline, scaling all quantified source contributions exactly.
+- `ingredient_sections[1].ingredients[3:5]` — **conflict-resolved:** Kept cheddar from cheese of choice and butter rather than oil while scaling both to four sandwiches.
+- `instruction_sections` — **conflict-resolved:** Kept the covered-skillet finish rather than the oven alternative and adjusted the method to cook four sandwiches in batches as needed.
