@@ -31,17 +31,27 @@ historical and non-authoritative; routine work should use the documents above.
 
 ## Development
 
-Requires Go 1.25. The repository pins sqlc as a Go tool.
+Requires Go 1.25 and [Task](https://taskfile.dev/). `Taskfile.yml` is the standard command
+surface; it pins golangci-lint and the repository pins sqlc as a Go tool.
 
 ```sh
-go test ./...                                      # schema, ingestion, and inventory invariants
-go tool sqlc generate                              # regenerate typed query code
-go run ./cmd/grocery-router trueup-inventory       # validate all 25 PDF inventory rows
-go run ./cmd/grocery-router corpus-render          # refresh checked human-readable sections
-go run ./cmd/grocery-router corpus-audit           # validate approved Markdown recipes
-go run ./cmd/grocery-router corpus-ingest          # migrate and load an empty local SQLite DB
-go run ./cmd/grocery-router migrate                # migrate without loading the corpus
+task test                 # schema, ingestion, CLI, and inventory invariants
+task lint                 # high-signal Go lint policy and formatting checks
+task ci                   # all checks enforced by GitHub Actions
+task format               # apply Go formatting and import organization
+task generate             # regenerate typed sqlc query code
+task trueup-inventory     # validate all 25 PDF inventory rows
+task corpus-render        # refresh checked human-readable recipe sections
+task corpus-audit         # validate approved Markdown recipes
+task corpus-ingest        # migrate and load an empty local SQLite DB
+task migrate              # migrate without loading the corpus
 ```
 
-There is currently no web application to run. The next work is the difficult-recipe schema
-pilot and one-at-a-time true-up described in `TRUE_UP_PLAN.md`.
+Pass command flags after `--`, for example `task migrate -- --database /tmp/router.db`. The CLI
+also accepts `GROCERY_ROUTER_DATABASE`, `GROCERY_ROUTER_ROOT`, `GROCERY_ROUTER_CORPUS`, and
+`GROCERY_ROUTER_INVENTORY`; command-line flags take precedence. Run
+`go run ./cmd/grocery-router --help` for command-specific help.
+
+GitHub Actions runs `task ci` for pull requests and pushes to `main`. There is currently no web
+application to run. Corpus true-up is complete; the next product slice is weeks, recipe
+occurrences, and deterministic grocery aggregation.

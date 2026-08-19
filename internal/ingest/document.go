@@ -1,3 +1,4 @@
+// Package ingest validates and imports the approved Markdown bootstrap corpus.
 package ingest
 
 import (
@@ -33,6 +34,7 @@ type Document struct {
 	Body                string               `yaml:"-"`
 }
 
+// Source records the approved recipe's relationship to its source evidence.
 type Source struct {
 	Relationship string `yaml:"relationship"`
 	Attribution  string `yaml:"attribution"`
@@ -40,16 +42,19 @@ type Source struct {
 	CheckedOn    string `yaml:"checked_on,omitempty"`
 }
 
+// Duration is an inclusive duration range in minutes.
 type Duration struct {
 	Min int64 `yaml:"min"`
 	Max int64 `yaml:"max"`
 }
 
+// IngredientSection is an ordered group of recipe ingredients.
 type IngredientSection struct {
 	Name        string       `yaml:"name"`
 	Ingredients []Ingredient `yaml:"ingredients"`
 }
 
+// Ingredient preserves one source requirement and its approved grocery mapping.
 type Ingredient struct {
 	SourceText  string      `yaml:"source_text"`
 	GroceryItem GroceryItem `yaml:"grocery_item"`
@@ -60,6 +65,7 @@ type Ingredient struct {
 	Note        string      `yaml:"note,omitempty"`
 }
 
+// GroceryItem is the canonical shoppable identity for an ingredient.
 type GroceryItem struct {
 	Key          string       `yaml:"key"`
 	Name         string       `yaml:"name"`
@@ -67,11 +73,13 @@ type GroceryItem struct {
 	ShoppingMode string       `yaml:"shopping_mode"`
 }
 
+// StoreSection identifies where a grocery item is grouped for shopping.
 type StoreSection struct {
 	Key  string `yaml:"key"`
 	Name string `yaml:"name"`
 }
 
+// Quantity is an exact measured, counted, or unspecified recipe requirement.
 type Quantity struct {
 	Kind    string   `yaml:"kind"`
 	Amount  string   `yaml:"amount,omitempty"`
@@ -80,17 +88,20 @@ type Quantity struct {
 	Package *Package `yaml:"package,omitempty"`
 }
 
+// Package preserves a source package type and optional exact size.
 type Package struct {
 	Type string `yaml:"type"`
 	Size string `yaml:"size,omitempty"`
 	Unit string `yaml:"unit,omitempty"`
 }
 
+// InstructionSection is an ordered group of cooking steps.
 type InstructionSection struct {
 	Name  string   `yaml:"name"`
 	Steps []string `yaml:"steps"`
 }
 
+// ReviewDecision records a human-approved true-up interpretation.
 type ReviewDecision struct {
 	Field    string `yaml:"field"`
 	Kind     string `yaml:"kind"`

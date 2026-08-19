@@ -1,3 +1,4 @@
+// Package database opens SQLite with application invariants and applies embedded migrations.
 package database
 
 import (
@@ -7,7 +8,7 @@ import (
 	"fmt"
 
 	"github.com/pressly/goose/v3"
-	_ "modernc.org/sqlite"
+	_ "modernc.org/sqlite" // Register the pure-Go SQLite database driver.
 )
 
 // migrations is the single authoritative migration set used by the application, tests,

@@ -3,6 +3,7 @@ module github.com/mbcoward3/grocery-router
 go 1.25.3
 
 require (
+	github.com/alecthomas/kong v1.16.1
 	github.com/pressly/goose/v3 v3.27.0
 	gopkg.in/yaml.v3 v3.0.1
 	modernc.org/sqlite v1.46.1

@@ -3,6 +3,7 @@ package ingest
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -207,7 +208,7 @@ func ensureGroceryItem(
 	if !ok {
 		var err error
 		section, err = queries.GetStoreSectionByKey(ctx, wanted.StoreSection.Key)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			section, err = queries.CreateStoreSection(ctx, store.CreateStoreSectionParams{
 				Key: wanted.StoreSection.Key, Name: wanted.StoreSection.Name,
 			})
@@ -225,7 +226,7 @@ func ensureGroceryItem(
 	if !ok {
 		var err error
 		item, err = queries.GetGroceryItemByKey(ctx, wanted.Key)
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			item, err = queries.CreateGroceryItem(ctx, store.CreateGroceryItemParams{
 				Key: wanted.Key, Name: wanted.Name, StoreSectionID: section.ID, ShoppingMode: wanted.ShoppingMode,
 			})
@@ -305,7 +306,7 @@ func ensureUnit(ctx context.Context, queries *store.Queries, key string, units m
 	}
 	unit, err := queries.GetUnitByKey(ctx, key)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return store.Unit{}, fmt.Errorf("unknown exact unit %q", key)
 		}
 		return store.Unit{}, err
