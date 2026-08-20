@@ -28,7 +28,7 @@ are out of v1.
 
 - `sources/Recipes.pdf` controls initial corpus membership.
 - Linked websites control linked recipe content at true-up time.
-- `sources/inputs/` is supporting evidence only.
+- `archive/trueup-evidence/inputs/` is archived supporting evidence only.
 - A source may be incomplete; a selectable recipe may not be.
 - Every recipe is reviewed individually before verification.
 - Approved recipes remain as strict Markdown bootstrap files and are ingested one-way.

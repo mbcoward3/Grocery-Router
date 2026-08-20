@@ -24,10 +24,10 @@ historical and non-authoritative; routine work should use the documents above.
 ## Raw corpus
 
 - `sources/Recipes.pdf` defines which family recipes belong in the initial corpus.
-- `sources/inputs/` contains supporting typed text, transcripts, and saved URLs. It is useful
-  migration evidence but does not override the PDF's membership or an authoritative linked
-  recipe.
-- `SOURCE_MANIFEST.sha256` records the preserved source files before true-up.
+- `archive/trueup-evidence/inputs/` preserves the supporting typed text, transcripts, and saved
+  URLs used during migration. It does not override the PDF's membership or an authoritative
+  linked recipe.
+- `archive/trueup-evidence/SOURCE_MANIFEST.sha256` records the preserved pre-true-up evidence.
 
 ## Development
 
