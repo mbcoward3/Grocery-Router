@@ -12,7 +12,7 @@ import (
 
 func TestRepositoryInventory(t *testing.T) {
 	root := filepath.Join("..", "..")
-	file, err := os.Open(filepath.Join(root, "trueup", "recipes.csv"))
+	file, err := os.Open(filepath.Join(root, "archive", "trueup", "recipes.csv"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestRepositoryInventory(t *testing.T) {
 
 func TestApprovedCorpusMatchesInventory(t *testing.T) {
 	root := filepath.Join("..", "..")
-	file, err := os.Open(filepath.Join(root, "trueup", "recipes.csv"))
+	file, err := os.Open(filepath.Join(root, "archive", "trueup", "recipes.csv"))
 	if err != nil {
 		t.Fatal(err)
 	}

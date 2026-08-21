@@ -3,21 +3,26 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/alecthomas/kong"
 	"github.com/mbcoward3/grocery-router/internal/database"
+	"github.com/mbcoward3/grocery-router/internal/httpapi"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
 	"github.com/mbcoward3/grocery-router/internal/trueup"
+	"github.com/mbcoward3/grocery-router/internal/week"
 )
 
 type RepositoryPaths struct {
 	Root      string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
 	Corpus    string `help:"Approved Markdown corpus directory, relative to root." default:"corpus/recipes" env:"GROCERY_ROUTER_CORPUS"`
-	Inventory string `help:"Inventory path, relative to root." default:"trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY"`
+	Inventory string `help:"Archived inventory path, relative to root." default:"archive/trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY"`
 }
 
 type DatabasePath struct {
@@ -58,9 +63,18 @@ func (command *migrateCommand) Run() error {
 	return migrate(command.Database)
 }
 
+type serveCommand struct {
+	DatabasePath
+	Address string `help:"HTTP listen address." default:"127.0.0.1:8080" env:"GROCERY_ROUTER_ADDRESS"`
+}
+
+func (command *serveCommand) Run() error {
+	return serve(command.Database, command.Address)
+}
+
 type trueupInventoryCommand struct {
 	Root      string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
-	Inventory string `help:"Inventory path, relative to root." default:"trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY"`
+	Inventory string `help:"Archived inventory path, relative to root." default:"archive/trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY"`
 }
 
 func (command *trueupInventoryCommand) Run() error {
@@ -72,6 +86,7 @@ type cli struct {
 	CorpusIngest    corpusIngestCommand    `cmd:"" help:"Migrate a database and transactionally ingest the approved corpus."`
 	CorpusRender    corpusRenderCommand    `cmd:"" help:"Regenerate checked human-readable recipe sections."`
 	Migrate         migrateCommand         `cmd:"" help:"Apply all database migrations."`
+	Serve           serveCommand           `cmd:"" help:"Start the local Grocery Router HTTP API."`
 	TrueupInventory trueupInventoryCommand `cmd:"" help:"Validate the PDF recipe inventory and its evidence paths."`
 }
 
@@ -197,6 +212,31 @@ func migrate(path string) error {
 		return err
 	}
 	fmt.Printf("migrated %s\n", path)
+	return nil
+}
+
+func serve(databasePath, address string) error {
+	if err := migrate(databasePath); err != nil {
+		return err
+	}
+	db, err := database.Open(databasePath)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	weekService := week.NewService(db, nil)
+	api := httpapi.New(db, weekService, nil)
+	server := &http.Server{
+		Addr:              address,
+		Handler:           api.Handler(),
+		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	fmt.Printf("Grocery Router API listening on http://%s\n", address)
+	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
+		return fmt.Errorf("serve HTTP API: %w", err)
+	}
 	return nil
 }
 

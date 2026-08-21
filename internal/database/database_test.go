@@ -39,7 +39,8 @@ func TestMigrateEmptyDatabase(t *testing.T) {
 	for _, table := range []string{
 		"recipes", "recipe_sources", "recipe_ingredient_sections", "recipe_ingredients",
 		"recipe_instruction_sections", "recipe_steps", "recipe_review_flags",
-		"store_sections", "grocery_items", "units",
+		"store_sections", "grocery_items", "units", "weeks", "week_recipes",
+		"shopping_lists", "shopping_lines", "shopping_line_contributions",
 	} {
 		var count int
 		err := db.QueryRow("SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = ?", table).Scan(&count)
@@ -110,6 +111,20 @@ func TestRecipeMustPassReviewBeforeVerification(t *testing.T) {
 
 	mustExec(t, db, "UPDATE recipes SET status = 'draft', verified_at = NULL WHERE id = ?", recipeID)
 	mustExec(t, db, "UPDATE recipe_ingredients SET source_text = 'more salt' WHERE id = ?", ingredientID)
+}
+
+func TestWeekDateAndVerifiedRecipeConstraints(t *testing.T) {
+	db := migratedDB(t)
+
+	_, err := db.Exec("INSERT INTO weeks (starts_on) VALUES ('2026-08-17')")
+	assertErrorContains(t, err, "CHECK constraint failed")
+	_, err = db.Exec("INSERT INTO weeks (starts_on) VALUES ('2026-99-99')")
+	assertErrorContains(t, err, "CHECK constraint failed")
+	weekID := mustInsertID(t, db, "INSERT INTO weeks (starts_on) VALUES ('2026-08-16')")
+	recipeID := mustInsertID(t, db, "INSERT INTO recipes (key, name) VALUES ('draft', 'Draft')")
+
+	_, err = db.Exec("INSERT INTO week_recipes (week_id, recipe_id, position) VALUES (?, ?, 0)", weekID, recipeID)
+	assertErrorContains(t, err, "verified recipe")
 }
 
 func TestQuantityAndPackageConstraints(t *testing.T) {

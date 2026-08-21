@@ -52,8 +52,8 @@ type RecipeIngredient struct {
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	Preparation            sql.NullString `db:"preparation" json:"preparation"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
-	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
 	IncludeOnGroceryList   int64          `db:"include_on_grocery_list" json:"include_on_grocery_list"`
+	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
 }
 
 type RecipeIngredientSection struct {
@@ -97,6 +97,58 @@ type RecipeStep struct {
 	Instruction string `db:"instruction" json:"instruction"`
 }
 
+type ShoppingLine struct {
+	ID                     int64          `db:"id" json:"id"`
+	ShoppingListID         int64          `db:"shopping_list_id" json:"shopping_list_id"`
+	GroceryItemID          sql.NullInt64  `db:"grocery_item_id" json:"grocery_item_id"`
+	StoreSectionID         int64          `db:"store_section_id" json:"store_section_id"`
+	AggregationKey         sql.NullString `db:"aggregation_key" json:"aggregation_key"`
+	Origin                 string         `db:"origin" json:"origin"`
+	DisplayName            string         `db:"display_name" json:"display_name"`
+	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
+	AmountMinNumerator     sql.NullInt64  `db:"amount_min_numerator" json:"amount_min_numerator"`
+	AmountMinDenominator   sql.NullInt64  `db:"amount_min_denominator" json:"amount_min_denominator"`
+	AmountMaxNumerator     sql.NullInt64  `db:"amount_max_numerator" json:"amount_max_numerator"`
+	AmountMaxDenominator   sql.NullInt64  `db:"amount_max_denominator" json:"amount_max_denominator"`
+	UnitID                 sql.NullInt64  `db:"unit_id" json:"unit_id"`
+	PackageType            sql.NullString `db:"package_type" json:"package_type"`
+	PackageSizeNumerator   sql.NullInt64  `db:"package_size_numerator" json:"package_size_numerator"`
+	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
+	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
+	IsOptional             int64          `db:"is_optional" json:"is_optional"`
+	IsRemoved              int64          `db:"is_removed" json:"is_removed"`
+	IsCompleted            int64          `db:"is_completed" json:"is_completed"`
+	DisplayPosition        int64          `db:"display_position" json:"display_position"`
+	OverrideText           sql.NullString `db:"override_text" json:"override_text"`
+	CreatedAt              string         `db:"created_at" json:"created_at"`
+	UpdatedAt              string         `db:"updated_at" json:"updated_at"`
+}
+
+type ShoppingLineContribution struct {
+	ID                     int64          `db:"id" json:"id"`
+	ShoppingLineID         int64          `db:"shopping_line_id" json:"shopping_line_id"`
+	WeekRecipeID           int64          `db:"week_recipe_id" json:"week_recipe_id"`
+	RecipeIngredientID     int64          `db:"recipe_ingredient_id" json:"recipe_ingredient_id"`
+	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
+	AmountMinNumerator     sql.NullInt64  `db:"amount_min_numerator" json:"amount_min_numerator"`
+	AmountMinDenominator   sql.NullInt64  `db:"amount_min_denominator" json:"amount_min_denominator"`
+	AmountMaxNumerator     sql.NullInt64  `db:"amount_max_numerator" json:"amount_max_numerator"`
+	AmountMaxDenominator   sql.NullInt64  `db:"amount_max_denominator" json:"amount_max_denominator"`
+	UnitID                 sql.NullInt64  `db:"unit_id" json:"unit_id"`
+	PackageType            sql.NullString `db:"package_type" json:"package_type"`
+	PackageSizeNumerator   sql.NullInt64  `db:"package_size_numerator" json:"package_size_numerator"`
+	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
+	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
+	IsOptional             int64          `db:"is_optional" json:"is_optional"`
+}
+
+type ShoppingList struct {
+	ID        int64  `db:"id" json:"id"`
+	WeekID    int64  `db:"week_id" json:"week_id"`
+	CreatedAt string `db:"created_at" json:"created_at"`
+	UpdatedAt string `db:"updated_at" json:"updated_at"`
+}
+
 type StoreSection struct {
 	ID   int64  `db:"id" json:"id"`
 	Key  string `db:"key" json:"key"`
@@ -111,4 +163,19 @@ type Unit struct {
 	Dimension         string `db:"dimension" json:"dimension"`
 	ToBaseNumerator   int64  `db:"to_base_numerator" json:"to_base_numerator"`
 	ToBaseDenominator int64  `db:"to_base_denominator" json:"to_base_denominator"`
+}
+
+type Week struct {
+	ID        int64  `db:"id" json:"id"`
+	StartsOn  string `db:"starts_on" json:"starts_on"`
+	CreatedAt string `db:"created_at" json:"created_at"`
+	UpdatedAt string `db:"updated_at" json:"updated_at"`
+}
+
+type WeekRecipe struct {
+	ID        int64  `db:"id" json:"id"`
+	WeekID    int64  `db:"week_id" json:"week_id"`
+	RecipeID  int64  `db:"recipe_id" json:"recipe_id"`
+	Position  int64  `db:"position" json:"position"`
+	CreatedAt string `db:"created_at" json:"created_at"`
 }

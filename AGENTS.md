@@ -5,22 +5,25 @@
 Read in this order:
 
 1. `V1_SPEC.md`
-2. `TRUE_UP_PLAN.md`
-3. `UP_NEXT.md`
-4. `PRODUCT_DECISIONS.md` for rationale
+2. `UP_NEXT.md`
+3. `PRODUCT_DECISIONS.md` for rationale
+
+The completed true-up ledger is archived at `archive/trueup/recipes.csv`; it is evidence, not
+an active planning authority.
 
 `archive/interviews/v1-scope-interview.md` is historical and non-authoritative. Do not load it
 as routine context; consult it only to recover nuance not settled by the current documents.
 
 ## Current state
 
-The old application and contradictory context were intentionally removed. There is no runnable
-web v1 yet. Do not recover the Python prototype or prior deployment infrastructure as a base.
+The old application and contradictory context were intentionally removed. Do not recover the
+Python prototype or prior deployment infrastructure as a base.
 
-The corpus foundation is Go, SQLite, Goose, and sqlc. `trueup/recipes.csv` inventories all 25
-PDF recipes. Completed household re-review includes 24 approved bootstrap recipes under
-`corpus/recipes/` and explicitly excludes Chicken and Dumplings. The frontend direction is
-React/TypeScript.
+The corpus foundation is Go, SQLite, Goose, and sqlc. `archive/trueup/recipes.csv` records the
+completed disposition of all 25 PDF recipes. Completed household re-review includes 24 approved
+bootstrap recipes under `corpus/recipes/` and explicitly excludes Chicken and Dumplings. The
+frontend is React/TypeScript/Vite with TanStack Router and TanStack Query; the Week vertical
+slice is runnable.
 Runtime AI, Docker, hosting, authentication, pantry inference, scaling, and recipe discovery
 are out of v1.
 
@@ -41,11 +44,13 @@ are out of v1.
 ```sh
 go test ./...
 go tool sqlc generate
+task sql-lint
 go run ./cmd/grocery-router trueup-inventory
 go run ./cmd/grocery-router corpus-render
 go run ./cmd/grocery-router corpus-audit
 go run ./cmd/grocery-router corpus-ingest
 go run ./cmd/grocery-router migrate
+task dev
 ```
 
 `internal/database/migrations/` is the schema authority. Generated files in `internal/store/`

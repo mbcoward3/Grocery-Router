@@ -1,0 +1,14 @@
+[sqlfluff]
+dialect = sqlite
+templater = raw
+large_file_skip_byte_limit = 0
+rules = AL04,AL08,AL09,AM01,AM02,AM06,AM08,AM09,CP01,CP04,CP05,CV01,CV03,CV04,CV05,CV06,CV07,CV08,CV11,CV12,ST01,ST02,ST03,ST04,ST08,ST10,ST11,ST12
+
+[sqlfluff:rules:capitalisation.keywords]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.literals]
+capitalisation_policy = upper
+
+[sqlfluff:rules:capitalisation.types]
+extended_capitalisation_policy = upper

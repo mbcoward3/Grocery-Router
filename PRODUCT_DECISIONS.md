@@ -11,10 +11,9 @@ and exists only to recover nuance.
 ## Authority order
 
 1. `V1_SPEC.md` — product and implementation contract.
-2. `TRUE_UP_PLAN.md` — corpus migration execution contract.
-3. `UP_NEXT.md` — explicitly deferred scope.
-4. This record — rationale and revisit conditions.
-5. Raw interview archive — historical evidence only.
+2. `UP_NEXT.md` — explicitly deferred scope.
+3. This record — rationale and revisit conditions.
+4. Completed true-up ledger and raw interview archives — historical evidence only.
 
 ---
 
@@ -357,14 +356,21 @@ flow.
 
 ## D027 — Responsive Linear-inspired UI
 
-**Decision:** Use a polished, compact, dark, professional visual direction inspired by Linear.
-Both planning and shopping must work well on iPhone.
+**Decision:** Use Linear as the primary visual and interaction reference, following its visual
+grammar closely where it fits Grocery Router. Both planning and shopping must work well on
+iPhone.
 
 **Why:** The current UI felt like data administration. The target should look serious, move
-cleanly, and avoid explanatory clutter.
+cleanly, and avoid explanatory clutter. Linear provides a concrete reference for compact
+density, hierarchy, typography, dark surfaces, borders, interaction feedback, and restrained
+motion.
 
-**Consequence:** React and TypeScript are the preferred frontend; transitions are restrained,
-and mobile is a first-class layout.
+**Consequence:** React and TypeScript are the preferred frontend; mobile is a first-class layout.
+Borrow aggressively from Linear's presentation without copying its branding or importing
+product-specific controls that do not serve Grocery Router's three-screen workflow. The Atlas
+workspace exploration (`design/ui-explorations/concept-a.html`) is the production starting
+composition. Concept C may inform one-handed grocery interactions, but Atlas controls the
+visual language and information architecture.
 
 **Revisit when:** User testing identifies a clearer visual direction.
 
@@ -447,3 +453,21 @@ requires that decision to be explicit in the approved Markdown; runtime week gen
 infers it.
 
 **Revisit when:** Household inventory or configurable staple policies enter scope.
+
+## D034 — Use a TanStack-first TypeScript frontend
+
+**Decision:** Build the React frontend with strict TypeScript and Vite. Use TanStack Router for
+typed navigation and TanStack Query for SQLite-backed server state. Prefer a mature TanStack
+library when a future in-scope need fits one directly, including charting if charts are ever
+introduced.
+
+**Why:** A coherent TanStack stack provides strong TypeScript inference and consistent async
+state conventions without introducing a separate global client-state architecture.
+
+**Consequence:** OpenAPI generates the frontend contract types, query keys define server-state
+ownership, and transient interaction state remains local to components. Do not install TanStack
+packages speculatively for deferred features, and do not add Redux-style duplication of server
+state.
+
+**Revisit when:** A concrete requirement is poorly served by the corresponding TanStack
+library or the library is not production-ready.

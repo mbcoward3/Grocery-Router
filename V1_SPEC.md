@@ -208,11 +208,12 @@ A recipe may become `verified` only when:
 
 Hands-on time, unattended time, source yield, source URL, and image may be unknown when genuinely unavailable. Instructions may be rewritten for clarity and consistent step structure.
 
-### 4.6 Execution authority
+### 4.6 Completed migration evidence
 
-The operational inventory, source-recovery, drafting, review, audit, and snapshot process is
-specified in [`TRUE_UP_PLAN.md`](TRUE_UP_PLAN.md). That plan is a required v1 deliverable,
-not optional project management. The verification contract in this section remains the data
+The one-time inventory, source recovery, review, and corpus migration are complete. The final
+25-recipe disposition ledger is preserved at `archive/trueup/recipes.csv`; supporting inputs
+remain under `archive/trueup-evidence/`. These files are audit evidence, not runtime recipe
+sources or an active execution plan. The verification contract in this section remains the data
 authority.
 
 ---
@@ -453,7 +454,9 @@ Past weeks may be retained in SQLite but are not exposed in v1.
 
 ### 10.2 Visual direction
 
-Linear is the visual inspiration, specifically:
+Linear is the primary visual and interaction reference, not merely a loose mood-board. Follow
+its visual grammar closely wherever it fits Grocery Router's simpler household workflow,
+specifically:
 
 - high visual polish;
 - compact information density;
@@ -463,7 +466,9 @@ Linear is the visual inspiration, specifically:
 - professional, “means business” tone; and
 - little instructional copy.
 
-The goal is not to clone Linear or build a generalized design system.
+Borrow aggressively from Linear's density, hierarchy, typography, dark surfaces, borders,
+interaction feedback, and restrained motion. The goal is not to copy Linear's branding or
+product-specific controls, or to build a generalized design system.
 
 ### 10.3 Responsive behavior
 
@@ -659,9 +664,11 @@ SQLite foreign keys must be enabled on every connection.
 
 ### 12.2 Frontend
 
-- React and TypeScript are the preferred default.
-- Vite is an acceptable build tool unless implementation discovery identifies a simpler equivalent.
-- Generated or shared API types should prevent avoidable frontend/backend drift.
+- React, strict TypeScript, and Vite.
+- Use TanStack Router for typed routing and TanStack Query for authoritative server state.
+- Prefer the relevant TanStack library when a future in-scope need has a mature fit; do not add speculative dependencies for deferred capabilities.
+- Generate frontend API types from the checked-in OpenAPI contract to prevent avoidable frontend/backend drift.
+- Keep transient component state local; do not add a Redux-style client store for SQLite-backed state.
 - The frontend may run separately during development; whether release assets are embedded in the Go binary is an implementation convenience, not a product requirement.
 
 ### 12.3 Runtime data
@@ -829,18 +836,17 @@ Before v1 is considered complete:
 
 ## 16. Delivery plans and deferred work
 
-The product and implementation contract ends here; execution mechanics and future scope live
-in focused companion documents:
+The product and implementation contract ends here; deferred scope, rationale, and completed
+migration evidence live in focused companion records:
 
-- [`TRUE_UP_PLAN.md`](TRUE_UP_PLAN.md) — corpus inventory, one-at-a-time review, ingestion,
-  and audit plan.
 - [`UP_NEXT.md`](UP_NEXT.md) — all interview “not yets,” explicitly outside v1.
+- `archive/trueup/recipes.csv` — completed corpus membership and disposition evidence.
 - [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — durable rationale and revisit conditions.
 - [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md) —
   non-authoritative raw interview transcript for nuance recovery only.
 
-The first three documents are required project authorities but do not expand the v1 product
-scope. The transcript is historical evidence and must not be loaded as routine agent context.
+The active documents do not expand the v1 product scope. The archived ledger and transcript are
+historical evidence and must not be treated as active implementation plans.
 
 ---
 

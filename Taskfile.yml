@@ -3,6 +3,8 @@ version: "3"
 vars:
   GOLANGCI_LINT_VERSION: v2.12.2
   GOLANGCI_LINT: go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@{{.GOLANGCI_LINT_VERSION}}
+  SQLFLUFF_VERSION: 3.5.0
+  SQLFLUFF: uvx --from sqlfluff=={{.SQLFLUFF_VERSION}} sqlfluff
 
 tasks:
   default:
@@ -26,18 +28,62 @@ tasks:
       - go test ./...
 
   lint:
+    desc: Run all pinned linters
+    deps: [go-lint, sql-lint]
+
+  go-lint:
     desc: Run the pinned Go lint policy and formatting checks
     cmds:
       - '{{.GOLANGCI_LINT}} run'
 
+  sql-lint:
+    desc: Lint migrations and sqlc query sources with SQLFluff
+    cmds:
+      - '{{.SQLFLUFF}} lint internal/database/migrations internal/store/queries'
+
   ci:
     desc: Run the checks enforced in CI
-    deps: [lint, test]
+    deps: [lint, test, web-ci]
+
+  web-install:
+    desc: Install the locked frontend dependencies
+    cmds:
+      - npm ci --prefix web
+
+  web-dev:
+    desc: Start the Vite development server
+    cmds:
+      - npm run dev --prefix web
+
+  dev:
+    desc: Bootstrap and start the complete local application
+    cmds:
+      - bash scripts/dev.sh
+
+  web-generate:
+    desc: Generate TypeScript API types from OpenAPI
+    cmds:
+      - npm run generate:api --prefix web
+
+  web-ci:
+    desc: Generate, type-check, test, and build the frontend
+    cmds:
+      - npm ci --prefix web
+      - npm run generate:api --prefix web
+      - git diff --exit-code -- web/src/api/schema.d.ts
+      - npm run check --prefix web
+      - npm test --prefix web
+      - npm run build --prefix web
 
   migrate:
     desc: Apply database migrations (pass CLI flags after --)
     cmds:
       - go run ./cmd/grocery-router migrate {{.CLI_ARGS}}
+
+  serve:
+    desc: Start the local JSON API (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router serve {{.CLI_ARGS}}
 
   trueup-inventory:
     desc: Validate the PDF recipe inventory (pass CLI flags after --)

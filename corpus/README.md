@@ -5,7 +5,7 @@ matter is the machine-readable bootstrap record. Its generated Markdown body pro
 recipe details, ingredients, instructions, grocery preview, and review decisions.
 
 The running application never reads these files. `corpus-ingest` validates the complete set,
-checks it against `trueup/recipes.csv`, and inserts it transactionally into an empty migrated
+checks it against `archive/trueup/recipes.csv`, and inserts it transactionally into an empty migrated
 SQLite database.
 
 Rules:

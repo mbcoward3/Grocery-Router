@@ -181,7 +181,7 @@ INSERT INTO recipe_ingredients (
     package_size_numerator, package_size_denominator, package_size_unit_id,
     preparation, is_optional, include_on_grocery_list, display_note
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-RETURNING id, section_id, grocery_item_id, position, source_text, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, preparation, is_optional, display_note, include_on_grocery_list
+RETURNING id, section_id, grocery_item_id, position, source_text, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, preparation, is_optional, include_on_grocery_list, display_note
 `
 
 type CreateRecipeIngredientParams struct {
@@ -245,8 +245,8 @@ func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIn
 		&i.PackageSizeUnitID,
 		&i.Preparation,
 		&i.IsOptional,
-		&i.DisplayNote,
 		&i.IncludeOnGroceryList,
+		&i.DisplayNote,
 	)
 	return i, err
 }
@@ -618,7 +618,7 @@ func (q *Queries) ListInstructionSections(ctx context.Context, recipeID int64) (
 
 const listRecipeIngredients = `-- name: ListRecipeIngredients :many
 SELECT
-    ri.id, ri.section_id, ri.grocery_item_id, ri.position, ri.source_text, ri.quantity_kind, ri.amount_min_numerator, ri.amount_min_denominator, ri.amount_max_numerator, ri.amount_max_denominator, ri.unit_id, ri.package_type, ri.package_size_numerator, ri.package_size_denominator, ri.package_size_unit_id, ri.preparation, ri.is_optional, ri.display_note, ri.include_on_grocery_list,
+    ri.id, ri.section_id, ri.grocery_item_id, ri.position, ri.source_text, ri.quantity_kind, ri.amount_min_numerator, ri.amount_min_denominator, ri.amount_max_numerator, ri.amount_max_denominator, ri.unit_id, ri.package_type, ri.package_size_numerator, ri.package_size_denominator, ri.package_size_unit_id, ri.preparation, ri.is_optional, ri.include_on_grocery_list, ri.display_note,
     ris.recipe_id,
     ris.name AS section_name,
     ris.position AS section_position,
@@ -656,8 +656,8 @@ type ListRecipeIngredientsRow struct {
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	Preparation            sql.NullString `db:"preparation" json:"preparation"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
-	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
 	IncludeOnGroceryList   int64          `db:"include_on_grocery_list" json:"include_on_grocery_list"`
+	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
 	RecipeID               int64          `db:"recipe_id" json:"recipe_id"`
 	SectionName            string         `db:"section_name" json:"section_name"`
 	SectionPosition        int64          `db:"section_position" json:"section_position"`
@@ -696,8 +696,8 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeID int64) ([]
 			&i.PackageSizeUnitID,
 			&i.Preparation,
 			&i.IsOptional,
-			&i.DisplayNote,
 			&i.IncludeOnGroceryList,
+			&i.DisplayNote,
 			&i.RecipeID,
 			&i.SectionName,
 			&i.SectionPosition,

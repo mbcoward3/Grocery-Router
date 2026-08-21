@@ -101,23 +101,7 @@ scope requires a new phase with its own acceptance criteria.
 - **Offline synchronization.** Reconcile edits made by multiple devices or while detached
   from the local server.
 
-## 7. Engineering foundations
-
-These are intentionally deferred from the current true-up slice, but should land before the
-application grows several independently configured command paths:
-
-- **Go lint policy.** Add a pinned, best-practices `golangci-lint` configuration aligned as
-  loosely as practical with the Google Go Style Guide. Keep the enabled set high-signal,
-  document intentional exceptions, and run it through the standard task entry point.
-- **Task runner.** Add a root `Taskfile.yml` as the human and agent command surface for format,
-  generate, test, lint, migration, corpus audit, corpus ingestion, and eventually frontend
-  checks. Tasks should call ordinary underlying tools rather than hide bespoke behavior.
-- **Kong CLI and environment contract.** Replace ad hoc subcommand/flag parsing with Kong as
-  commands multiply. Define typed command configuration, validation, help, and environment
-  bindings in one place so true-up, server, migration, and future runtime state do not develop
-  separate configuration conventions.
-
-## 8. Optional polish not blocking v1
+## 7. Optional polish not blocking v1
 
 - Recipe images beyond easy source images.
 - More elaborate fraction typography.
@@ -125,7 +109,7 @@ application grows several independently configured command paths:
 - Additional themes beyond the dark-first direction.
 - Reorderable store sections.
 
-## 9. Rules for deferred work
+## 8. Rules for deferred work
 
 - Deferred features must not leak controls, empty tables, placeholder navigation, or
   explanatory copy into v1.
@@ -137,7 +121,7 @@ application grows several independently configured command paths:
 
 ---
 
-## 10. Promotion rule
+## 9. Promotion rule
 
 A deferred item moves into an implementation specification only when an observed limitation
 or explicit new product decision justifies it. Promotion must define user value, data

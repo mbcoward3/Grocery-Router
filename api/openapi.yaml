@@ -1,0 +1,196 @@
+openapi: 3.1.0
+info:
+  title: Grocery Router API
+  version: 0.1.0
+  description: Local API for the current recipe week and its grocery checklist.
+servers:
+  - url: /api
+paths:
+  /recipes:
+    get:
+      operationId: listRecipes
+      summary: List every verified recipe eligible for selection.
+      responses:
+        "200":
+          description: Verified recipes ordered by name.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [recipes]
+                properties:
+                  recipes:
+                    type: array
+                    items: { $ref: "#/components/schemas/RecipeSummary" }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /week/current:
+    get:
+      operationId: getCurrentWeek
+      summary: Return the explicitly generated current week.
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
+        "404": { $ref: "#/components/responses/NoCurrentWeek" }
+  /week/current/generate:
+    post:
+      operationId: generateCurrentWeek
+      summary: Create or fully regenerate the current week.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [recipeCount]
+              properties:
+                recipeCount:
+                  type: integer
+                  minimum: 1
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+  /week/current/recipes:
+    post:
+      operationId: addCurrentWeekRecipe
+      summary: Append a specific verified recipe occurrence.
+      requestBody:
+        $ref: "#/components/requestBodies/RecipeSelection"
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+  /week/current/recipes/{occurrenceID}:
+    parameters:
+      - $ref: "#/components/parameters/OccurrenceID"
+    delete:
+      operationId: removeCurrentWeekRecipe
+      summary: Remove one recipe occurrence.
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/OccurrenceNotFound" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+    put:
+      operationId: swapCurrentWeekRecipe
+      summary: Replace one occurrence with a specific verified recipe.
+      requestBody:
+        $ref: "#/components/requestBodies/RecipeSelection"
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/OccurrenceNotFound" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+  /week/current/recipes/{occurrenceID}/random-swap:
+    parameters:
+      - $ref: "#/components/parameters/OccurrenceID"
+    post:
+      operationId: randomSwapCurrentWeekRecipe
+      summary: Replace one occurrence with a random eligible recipe.
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/OccurrenceNotFound" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+components:
+  parameters:
+    OccurrenceID:
+      name: occurrenceID
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+  requestBodies:
+    RecipeSelection:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [recipeId]
+            properties:
+              recipeId:
+                type: integer
+                minimum: 1
+  schemas:
+    DurationRange:
+      type: object
+      required: [minimumMinutes, maximumMinutes]
+      properties:
+        minimumMinutes:
+          type: [integer, "null"]
+          minimum: 0
+        maximumMinutes:
+          type: [integer, "null"]
+          minimum: 0
+    RecipeSummary:
+      type: object
+      required: [id, key, name, imageUrl, yield, handsOn, unattended]
+      properties:
+        id: { type: integer }
+        key: { type: string }
+        name: { type: string }
+        imageUrl: { type: [string, "null"], format: uri }
+        yield: { type: [string, "null"] }
+        handsOn: { $ref: "#/components/schemas/DurationRange" }
+        unattended: { $ref: "#/components/schemas/DurationRange" }
+    RecipeOccurrence:
+      type: object
+      required: [id, position, recipe]
+      properties:
+        id: { type: integer }
+        position: { type: integer, minimum: 0 }
+        recipe: { $ref: "#/components/schemas/RecipeSummary" }
+    Week:
+      type: object
+      required: [id, startsOn, recipes]
+      properties:
+        id: { type: integer }
+        startsOn: { type: string, format: date }
+        recipes:
+          type: array
+          items: { $ref: "#/components/schemas/RecipeOccurrence" }
+    APIError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+  responses:
+    Week:
+      description: Canonical current week after the operation.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Week" }
+    InvalidRequest:
+      description: The path or JSON request was invalid.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    NoCurrentWeek:
+      description: The current week has not been explicitly generated.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    OccurrenceNotFound:
+      description: The occurrence is not part of the current week.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    WeekOperationFailed:
+      description: The requested week mutation could not be completed atomically.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    InternalError:
+      description: The request could not be completed.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
