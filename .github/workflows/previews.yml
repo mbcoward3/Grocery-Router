@@ -1,0 +1,64 @@
+name: PR previews
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, closed]
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: grocery-router-preview-gitops
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure GitOps deploy key
+        env:
+          DEPLOY_KEY: ${{ secrets.GITOPS_DEPLOY_KEY }}
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/grocery-router-gitops
+          chmod 0600 ~/.ssh/grocery-router-gitops
+          ssh-keyscan -H github.com > ~/.ssh/known_hosts
+
+      - name: Clone GitOps repository
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/grocery-router-gitops -o IdentitiesOnly=yes
+        run: git clone git@github.com:mbcoward3/talos-cluster.git gitops
+
+      - name: Deploy or remove preview
+        if: github.event_name == 'pull_request_target'
+        env:
+          ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: .github/scripts/sync-preview.sh gitops "$ACTION" "$PR_NUMBER" "$HEAD_SHA"
+
+      - name: Remove expired previews
+        if: github.event_name != 'pull_request_target'
+        run: .github/scripts/prune-previews.sh gitops
+
+      - name: Commit and push GitOps changes
+        working-directory: gitops
+        env:
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/grocery-router-gitops -o IdentitiesOnly=yes
+        run: |
+          if git diff --quiet && test -z "$(git status --short)"; then
+            echo 'No preview changes'
+            exit 0
+          fi
+          git config user.name 'grocery-router-preview-bot'
+          git config user.email 'grocery-router-preview-bot@users.noreply.github.com'
+          git add apps/grocery-router/previews
+          git commit -m 'chore: sync Grocery Router previews'
+          git push origin main
