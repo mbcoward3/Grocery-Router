@@ -12,6 +12,15 @@ Deployment is a separately approved phase beyond the local-only v1 product scope
 
 On an empty volume the entrypoint migrates SQLite and ingests the approved corpus. On an existing volume it applies pending migrations without reimporting the corpus.
 
-GitHub Actions publishes branch, commit-SHA, and default-branch tags to `ghcr.io/mbcoward3/grocery-router`. Kubernetes deployments should use immutable `sha-<commit>` tags rather than mutable branch tags.
+GitHub Actions publishes commit-SHA and default-branch tags to the public package `ghcr.io/mbcoward3/grocery-router`.
 
-Development previews and the production deployment are defined in the separate `talos-cluster` GitOps repository.
+A successful build from `main` commits the resulting OCI digest to the private `talos-cluster` GitOps repository. Flux then rolls out production. Production therefore follows `main` without giving GitHub-hosted runners direct Kubernetes access.
+
+Pull requests build a `sha-<head-commit>` image. A separate `pull_request_target` workflow safely commits manifests derived only from trusted PR metadata; it does not execute PR code with the GitOps credential. Each preview receives:
+
+- URL `http://pr-<number>.192-168-4-200.sslip.io`
+- resources in the shared `grocery-router-dev` namespace
+- a distinct 2 Gi SQLite PVC
+- automatic removal when the PR closes or its 24-hour lease expires
+
+The production deployment is available on the LAN at `http://groceries.192-168-4-200.sslip.io`. All Kubernetes resources are defined in the separate `talos-cluster` GitOps repository.
