@@ -43,7 +43,8 @@ jobs:
             type=raw,value=sha-${{ github.event.pull_request.head.sha }},enable=${{ github.event_name == 'pull_request' }}
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - uses: docker/build-push-action@v6
+      - id: build
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -52,3 +53,42 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
+
+      - name: Configure GitOps deploy key
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          DEPLOY_KEY: ${{ secrets.GITOPS_DEPLOY_KEY }}
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/grocery-router-gitops
+          chmod 0600 ~/.ssh/grocery-router-gitops
+          ssh-keyscan -H github.com > ~/.ssh/known_hosts
+
+      - name: Update production image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/grocery-router-gitops -o IdentitiesOnly=yes
+        run: |
+          git clone git@github.com:mbcoward3/talos-cluster.git gitops
+          cd gitops
+          python3 - "$IMAGE_DIGEST" <<'PY'
+          import pathlib, re, sys
+          path = pathlib.Path('apps/grocery-router/prod/deployment.yaml')
+          text = path.read_text()
+          image = f'ghcr.io/mbcoward3/grocery-router@{sys.argv[1]}'
+          updated, count = re.subn(r'ghcr\.io/mbcoward3/grocery-router@sha256:[0-9a-f]{64}', image, text)
+          if count != 1:
+              raise SystemExit(f'expected one production image, replaced {count}')
+          path.write_text(updated)
+          PY
+          if git diff --quiet; then
+            echo 'Production already uses this image'
+            exit 0
+          fi
+          git config user.name 'grocery-router-deploy-bot'
+          git config user.email 'grocery-router-deploy-bot@users.noreply.github.com'
+          git add apps/grocery-router/prod/deployment.yaml
+          git commit -m "chore: deploy Grocery Router ${GITHUB_SHA::12}"
+          git pull --rebase origin main
+          git push origin main
