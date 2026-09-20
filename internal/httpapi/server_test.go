@@ -66,6 +66,47 @@ func TestWeekAPIEmptyGenerateAndMutate(t *testing.T) {
 	}
 }
 
+func TestRecipeDetailAndGroceryAPI(t *testing.T) {
+	handler := testHandler(t)
+	generated := request(t, handler, http.MethodPost, "/api/week/current/generate", `{"recipeCount":2}`)
+	if generated.Code != http.StatusOK {
+		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
+	}
+	firstRecipe := decodeObject(t, generated)["recipes"].([]any)[0].(map[string]any)["recipe"].(map[string]any)
+	recipeID := int64(firstRecipe["id"].(float64))
+	detail := request(t, handler, http.MethodGet, fmt.Sprintf("/api/recipes/%d", recipeID), "")
+	if detail.Code != http.StatusOK {
+		t.Fatalf("detail status = %d, body %s", detail.Code, detail.Body.String())
+	}
+	detailBody := decodeObject(t, detail)
+	if detailBody["name"] == "" || len(detailBody["ingredientSections"].([]any)) == 0 || len(detailBody["instructionSections"].([]any)) == 0 {
+		t.Fatalf("incomplete recipe detail = %#v", detailBody)
+	}
+
+	groceries := request(t, handler, http.MethodGet, "/api/week/current/groceries", "")
+	groceryBody := decodeObject(t, groceries)
+	lines := groceryBody["lines"].([]any)
+	if groceries.Code != http.StatusOK || len(lines) == 0 {
+		t.Fatalf("groceries status = %d, body %s", groceries.Code, groceries.Body.String())
+	}
+	line := lines[0].(map[string]any)
+	lineID := int64(line["id"].(float64))
+	contributions := request(t, handler, http.MethodGet,
+		fmt.Sprintf("/api/week/current/groceries/%d/contributions", lineID), "")
+	if contributions.Code != http.StatusOK || len(decodeObject(t, contributions)["contributions"].([]any)) == 0 {
+		t.Fatalf("contributions status = %d, body %s", contributions.Code, contributions.Body.String())
+	}
+	completed := request(t, handler, http.MethodPatch,
+		fmt.Sprintf("/api/week/current/groceries/%d", lineID), `{"completed":true}`)
+	if completed.Code != http.StatusOK {
+		t.Fatalf("complete status = %d, body %s", completed.Code, completed.Body.String())
+	}
+	added := request(t, handler, http.MethodPost, "/api/week/current/groceries", `{"name":"Paper towels"}`)
+	if added.Code != http.StatusOK || len(decodeObject(t, added)["lines"].([]any)) != len(lines)+1 {
+		t.Fatalf("manual add status = %d, body %s", added.Code, added.Body.String())
+	}
+}
+
 func TestRecipesAPIAndRequestValidation(t *testing.T) {
 	handler := testHandler(t)
 

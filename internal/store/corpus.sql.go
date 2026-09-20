@@ -502,6 +502,31 @@ func (q *Queries) GetUnitByKey(ctx context.Context, key string) (Unit, error) {
 	return i, err
 }
 
+const getVerifiedRecipe = `-- name: GetVerifiedRecipe :one
+SELECT id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE id = ? AND status = 'verified'
+`
+
+func (q *Queries) GetVerifiedRecipe(ctx context.Context, id int64) (Recipe, error) {
+	row := q.db.QueryRowContext(ctx, getVerifiedRecipe, id)
+	var i Recipe
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Name,
+		&i.Status,
+		&i.ImageUrl,
+		&i.YieldText,
+		&i.HandsOnMinMinutes,
+		&i.HandsOnMaxMinutes,
+		&i.UnattendedMinMinutes,
+		&i.UnattendedMaxMinutes,
+		&i.VerifiedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const listGroceryItems = `-- name: ListGroceryItems :many
 SELECT gi.id, gi."key", gi.name, gi.store_section_id, gi.shopping_mode, gi.created_at, gi.updated_at, ss.name AS store_section_name
 FROM grocery_items gi
@@ -627,7 +652,9 @@ SELECT
     gi.shopping_mode,
     ss.name AS store_section_name,
     u.key AS unit_key,
-    psu.key AS package_size_unit_key
+    u.symbol AS unit_symbol,
+    psu.key AS package_size_unit_key,
+    psu.symbol AS package_size_unit_symbol
 FROM recipe_ingredients ri
 JOIN recipe_ingredient_sections ris ON ris.id = ri.section_id
 LEFT JOIN grocery_items gi ON gi.id = ri.grocery_item_id
@@ -666,7 +693,9 @@ type ListRecipeIngredientsRow struct {
 	ShoppingMode           sql.NullString `db:"shopping_mode" json:"shopping_mode"`
 	StoreSectionName       sql.NullString `db:"store_section_name" json:"store_section_name"`
 	UnitKey                sql.NullString `db:"unit_key" json:"unit_key"`
+	UnitSymbol             sql.NullString `db:"unit_symbol" json:"unit_symbol"`
 	PackageSizeUnitKey     sql.NullString `db:"package_size_unit_key" json:"package_size_unit_key"`
+	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
 }
 
 func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeID int64) ([]ListRecipeIngredientsRow, error) {
@@ -706,7 +735,9 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeID int64) ([]
 			&i.ShoppingMode,
 			&i.StoreSectionName,
 			&i.UnitKey,
+			&i.UnitSymbol,
 			&i.PackageSizeUnitKey,
+			&i.PackageSizeUnitSymbol,
 		); err != nil {
 			return nil, err
 		}

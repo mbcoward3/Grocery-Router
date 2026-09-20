@@ -470,6 +470,24 @@ Borrow aggressively from Linear's density, hierarchy, typography, dark surfaces,
 interaction feedback, and restrained motion. The goal is not to copy Linear's branding or
 product-specific controls, or to build a generalized design system.
 
+#### 10.2.1 v1 identity
+
+Grocery Router uses the approved provisional Concept I mark: a basket handle above two
+grocery-list rows, constructed from three heavy rounded strokes. The wider upper row and shorter
+lower row imply a tapered basket without an enclosing outline. Use an optically adjusted small
+version for the favicon rather than mechanically shrinking the primary mark.
+
+The primary brand accent is Market teal (`#50BFA5`), with Market teal hover (`#62CCB2`), Market
+teal soft (`#8DDECB`), and dark Market ink (`#071A15`) on teal surfaces. The core dark surfaces
+remain Canvas (`#0B0C0E`), Sidebar (`#0E1012`), and Panel (`#111316`). Sprout (`#69C39C`)
+is reserved for completion and success, not used as a second brand accent. A discarded gold
+pass must not be restored because it made the three-stroke mark resemble a beehive.
+
+The shipped v1 frontend must include the primary mark, monochrome mark, horizontal lockup,
+SVG favicon, and Apple touch icon. The mark may receive optical geometry corrections without a
+product-scope change, but v1 must retain the selected three-stroke basket/list concept. Do not
+add a checkmark, basket outline, route nodes, gradients, or internal multicolor treatment.
+
 ### 10.3 Responsive behavior
 
 Both planning and shopping must work well on iPhone, not merely shrink a desktop layout. Requirements include:

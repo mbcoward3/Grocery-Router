@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { currentWeekQueryOptions } from '../features/week/queries'
-import { BagIcon, CalendarIcon } from './icons'
+import { BagIcon, BrandMark, CalendarIcon } from './icons'
 
 export function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
@@ -12,7 +12,7 @@ export function AppShell() {
     <div className="app-shell">
       <aside className="sidebar">
         <Link className="brand" to="/" aria-label="Grocery Router home">
-          <span className="brand-mark" aria-hidden="true"><span /><span /><span /></span>
+          <span className="brand-mark" aria-hidden="true"><BrandMark /></span>
           <span>Grocery Router</span>
         </Link>
         <div className="workspace-label">Household</div>

@@ -9,6 +9,9 @@ RETURNING *;
 -- name: GetRecipe :one
 SELECT * FROM recipes WHERE id = ?;
 
+-- name: GetVerifiedRecipe :one
+SELECT * FROM recipes WHERE id = ? AND status = 'verified';
+
 -- name: GetRecipeByKey :one
 SELECT * FROM recipes WHERE key = ?;
 
@@ -111,7 +114,9 @@ SELECT
     gi.shopping_mode,
     ss.name AS store_section_name,
     u.key AS unit_key,
-    psu.key AS package_size_unit_key
+    u.symbol AS unit_symbol,
+    psu.key AS package_size_unit_key,
+    psu.symbol AS package_size_unit_symbol
 FROM recipe_ingredients ri
 JOIN recipe_ingredient_sections ris ON ris.id = ri.section_id
 LEFT JOIN grocery_items gi ON gi.id = ri.grocery_item_id

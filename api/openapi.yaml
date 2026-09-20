@@ -23,6 +23,23 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/RecipeSummary" }
         "500": { $ref: "#/components/responses/InternalError" }
+  /recipes/{recipeID}:
+    parameters:
+      - name: recipeID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    get:
+      operationId: getRecipe
+      summary: Fetch one complete verified recipe.
+      responses:
+        "200":
+          description: Complete read-only recipe.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RecipeDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /week/current:
     get:
       operationId: getCurrentWeek
@@ -93,6 +110,84 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+  /week/current/groceries:
+    get:
+      operationId: getCurrentGroceries
+      summary: Return the current grouped grocery checklist.
+      responses:
+        "200": { $ref: "#/components/responses/Groceries" }
+        "404": { $ref: "#/components/responses/NoCurrentWeek" }
+    post:
+      operationId: addCurrentGroceryLine
+      summary: Add a manual presence-only line to Other.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [name]
+              properties: { name: { type: string, minLength: 1 } }
+      responses:
+        "200": { $ref: "#/components/responses/Groceries" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NoCurrentWeek" }
+  /week/current/groceries/{lineID}:
+    parameters:
+      - name: lineID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    patch:
+      operationId: updateCurrentGroceryLine
+      summary: Toggle completion or set a week-only quantity override.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - type: object
+                  additionalProperties: false
+                  required: [completed]
+                  properties: { completed: { type: boolean } }
+                - type: object
+                  additionalProperties: false
+                  required: [overrideText]
+                  properties: { overrideText: { type: string } }
+      responses:
+        "200": { $ref: "#/components/responses/Groceries" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+    delete:
+      operationId: removeCurrentGroceryLine
+      summary: Remove a line from this week's visible checklist.
+      responses:
+        "200": { $ref: "#/components/responses/Groceries" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+  /week/current/groceries/{lineID}/contributions:
+    parameters:
+      - name: lineID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    get:
+      operationId: getCurrentGroceryLineContributions
+      summary: Return recipe provenance for one generated line.
+      responses:
+        "200":
+          description: Recipe contribution traces.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [contributions]
+                properties:
+                  contributions:
+                    type: array
+                    items: { $ref: "#/components/schemas/GroceryContribution" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
 components:
   parameters:
     OccurrenceID:
@@ -137,6 +232,93 @@ components:
         yield: { type: [string, "null"] }
         handsOn: { $ref: "#/components/schemas/DurationRange" }
         unattended: { $ref: "#/components/schemas/DurationRange" }
+    RecipeSource:
+      type: object
+      required: [relationship, attribution, url, primary]
+      properties:
+        relationship: { type: string, enum: [source, adapted-from] }
+        attribution: { type: string }
+        url: { type: [string, "null"] }
+        primary: { type: boolean }
+    RecipeIngredient:
+      type: object
+      required: [id, sourceText, preparation, optional, displayNote, shoppingItem]
+      properties:
+        id: { type: integer }
+        sourceText: { type: string }
+        preparation: { type: [string, "null"] }
+        optional: { type: boolean }
+        displayNote: { type: [string, "null"] }
+        shoppingItem: { type: [string, "null"] }
+    RecipeIngredientSection:
+      type: object
+      required: [name, ingredients]
+      properties:
+        name: { type: string }
+        ingredients:
+          type: array
+          items: { $ref: "#/components/schemas/RecipeIngredient" }
+    RecipeStep:
+      type: object
+      required: [id, instruction]
+      properties:
+        id: { type: integer }
+        instruction: { type: string }
+    RecipeInstructionSection:
+      type: object
+      required: [name, steps]
+      properties:
+        name: { type: string }
+        steps:
+          type: array
+          items: { $ref: "#/components/schemas/RecipeStep" }
+    RecipeDetail:
+      allOf:
+        - { $ref: "#/components/schemas/RecipeSummary" }
+        - type: object
+          required: [sources, ingredientSections, instructionSections]
+          properties:
+            sources:
+              type: array
+              items: { $ref: "#/components/schemas/RecipeSource" }
+            ingredientSections:
+              type: array
+              items: { $ref: "#/components/schemas/RecipeIngredientSection" }
+            instructionSections:
+              type: array
+              items: { $ref: "#/components/schemas/RecipeInstructionSection" }
+    GroceryLine:
+      type: object
+      required: [id, section, name, quantity, generatedQuantity, origin, optional, removed, completed, hasContributions]
+      properties:
+        id: { type: integer }
+        section: { type: string }
+        name: { type: string }
+        quantity: { type: [string, "null"] }
+        generatedQuantity: { type: [string, "null"] }
+        origin: { type: string, enum: [generated, manual] }
+        optional: { type: boolean }
+        removed: { type: boolean }
+        completed: { type: boolean }
+        hasContributions: { type: boolean }
+    Groceries:
+      type: object
+      required: [startsOn, lines]
+      properties:
+        startsOn: { type: string, format: date }
+        lines:
+          type: array
+          items: { $ref: "#/components/schemas/GroceryLine" }
+    GroceryContribution:
+      type: object
+      required: [recipeId, recipeName, sourceText, quantity, preparation, optional]
+      properties:
+        recipeId: { type: integer }
+        recipeName: { type: string }
+        sourceText: { type: string }
+        quantity: { type: [string, "null"] }
+        preparation: { type: [string, "null"] }
+        optional: { type: boolean }
     RecipeOccurrence:
       type: object
       required: [id, position, recipe]
@@ -186,6 +368,16 @@ components:
           schema: { $ref: "#/components/schemas/APIError" }
     WeekOperationFailed:
       description: The requested week mutation could not be completed atomically.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    Groceries:
+      description: Canonical current grocery checklist.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/Groceries" }
+    NotFound:
+      description: The requested resource was not found.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }

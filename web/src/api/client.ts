@@ -3,6 +3,10 @@ import type { components } from './schema'
 export type ApiError = components['schemas']['APIError']
 export type RecipeSummary = components['schemas']['RecipeSummary']
 export type Week = components['schemas']['Week']
+export type RecipeDetail = components['schemas']['RecipeDetail']
+export type Groceries = components['schemas']['Groceries']
+export type GroceryContribution = components['schemas']['GroceryContribution']
+export type GroceryLine = components['schemas']['GroceryLine']
 
 export class ApiRequestError extends Error {
   readonly status: number
@@ -55,6 +59,10 @@ export function listRecipes(): Promise<{ recipes: RecipeSummary[] }> {
   return request('/recipes')
 }
 
+export function getRecipe(recipeId: number): Promise<RecipeDetail> {
+  return request(`/recipes/${recipeId}`)
+}
+
 export async function getCurrentWeek(): Promise<Week | null> {
   try {
     return await request('/week/current')
@@ -91,4 +99,29 @@ export function swapRecipe(occurrenceId: number, recipeId: number): Promise<Week
 
 export function randomSwapRecipe(occurrenceId: number): Promise<Week> {
   return request(`/week/current/recipes/${occurrenceId}/random-swap`, { method: 'POST' })
+}
+
+export async function getGroceries(): Promise<Groceries | null> {
+  try {
+    return await request('/week/current/groceries')
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.code === 'no_current_week') return null
+    throw error
+  }
+}
+
+export function addGroceryLine(name: string): Promise<Groceries> {
+  return request('/week/current/groceries', { method: 'POST', body: JSON.stringify({ name }) })
+}
+
+export function updateGroceryLine(lineId: number, update: { completed: boolean } | { overrideText: string }): Promise<Groceries> {
+  return request(`/week/current/groceries/${lineId}`, { method: 'PATCH', body: JSON.stringify(update) })
+}
+
+export function removeGroceryLine(lineId: number): Promise<Groceries> {
+  return request(`/week/current/groceries/${lineId}`, { method: 'DELETE' })
+}
+
+export function getGroceryContributions(lineId: number): Promise<{ contributions: GroceryContribution[] }> {
+  return request(`/week/current/groceries/${lineId}/contributions`)
 }

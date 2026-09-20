@@ -471,3 +471,22 @@ state.
 
 **Revisit when:** A concrete requirement is poorly served by the corresponding TanStack
 library or the library is not production-ready.
+
+## D035 — Use the three-stroke basket/list identity for v1
+
+**Decision:** Use Concept I as the provisional v1 mark: a basket handle above two grocery-list
+rows. Replace the prototype purple accent with Market teal (`#50BFA5`) and its documented dark,
+hover, focus, and success companions.
+
+**Why:** The three-stroke mark is the simplest explored combination of the product's planning
+and shopping roles. It stays legible at favicon size and avoids generic cart, AI, food-blog,
+and workflow-diagram imagery. Teal avoids both Anthropic's coral identity and the beehive
+association produced when the three-stroke mark was paired with gold.
+
+**Consequence:** v1 ships a primary mark, monochrome mark, horizontal lockup, optically adjusted
+favicon, and Apple touch icon. Ordinary UI icons remain a separate lighter-weight system. Minor
+optical corrections are allowed, but additional logo concepts or an expanded marketing-image
+system are not required to complete v1.
+
+**Revisit when:** Real-device testing reveals a legibility issue or a later public/hosted phase
+requires a broader marketing identity.

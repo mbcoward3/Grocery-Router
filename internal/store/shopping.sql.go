@@ -280,11 +280,14 @@ func (q *Queries) ListGeneratedShoppingLineStates(ctx context.Context, shoppingL
 }
 
 const listShoppingLineContributions = `-- name: ListShoppingLineContributions :many
-SELECT c.id, c.shopping_line_id, c.week_recipe_id, c.recipe_ingredient_id, c.quantity_kind, c.amount_min_numerator, c.amount_min_denominator, c.amount_max_numerator, c.amount_max_denominator, c.unit_id, c.package_type, c.package_size_numerator, c.package_size_denominator, c.package_size_unit_id, c.is_optional, r.name AS recipe_name, ri.source_text, ri.preparation
+SELECT c.id, c.shopping_line_id, c.week_recipe_id, c.recipe_ingredient_id, c.quantity_kind, c.amount_min_numerator, c.amount_min_denominator, c.amount_max_numerator, c.amount_max_denominator, c.unit_id, c.package_type, c.package_size_numerator, c.package_size_denominator, c.package_size_unit_id, c.is_optional, r.id AS recipe_id, r.name AS recipe_name, ri.source_text, ri.preparation,
+    u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol
 FROM shopping_line_contributions c
 JOIN week_recipes wr ON wr.id = c.week_recipe_id
 JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredients ri ON ri.id = c.recipe_ingredient_id
+LEFT JOIN units u ON u.id = c.unit_id
+LEFT JOIN units psu ON psu.id = c.package_size_unit_id
 WHERE c.shopping_line_id = ?
 ORDER BY wr.position, c.id
 `
@@ -305,9 +308,12 @@ type ListShoppingLineContributionsRow struct {
 	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
+	RecipeID               int64          `db:"recipe_id" json:"recipe_id"`
 	RecipeName             string         `db:"recipe_name" json:"recipe_name"`
 	SourceText             string         `db:"source_text" json:"source_text"`
 	Preparation            sql.NullString `db:"preparation" json:"preparation"`
+	UnitSymbol             sql.NullString `db:"unit_symbol" json:"unit_symbol"`
+	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
 }
 
 func (q *Queries) ListShoppingLineContributions(ctx context.Context, shoppingLineID int64) ([]ListShoppingLineContributionsRow, error) {
@@ -335,9 +341,12 @@ func (q *Queries) ListShoppingLineContributions(ctx context.Context, shoppingLin
 			&i.PackageSizeDenominator,
 			&i.PackageSizeUnitID,
 			&i.IsOptional,
+			&i.RecipeID,
 			&i.RecipeName,
 			&i.SourceText,
 			&i.Preparation,
+			&i.UnitSymbol,
+			&i.PackageSizeUnitSymbol,
 		); err != nil {
 			return nil, err
 		}
@@ -353,7 +362,8 @@ func (q *Queries) ListShoppingLineContributions(ctx context.Context, shoppingLin
 }
 
 const listShoppingLines = `-- name: ListShoppingLines :many
-SELECT sl.id, sl.shopping_list_id, sl.grocery_item_id, sl.store_section_id, sl.aggregation_key, sl.origin, sl.display_name, sl.quantity_kind, sl.amount_min_numerator, sl.amount_min_denominator, sl.amount_max_numerator, sl.amount_max_denominator, sl.unit_id, sl.package_type, sl.package_size_numerator, sl.package_size_denominator, sl.package_size_unit_id, sl.is_optional, sl.is_removed, sl.is_completed, sl.display_position, sl.override_text, sl.created_at, sl.updated_at, ss.name AS store_section_name, u.key AS unit_key, psu.key AS package_size_unit_key
+SELECT sl.id, sl.shopping_list_id, sl.grocery_item_id, sl.store_section_id, sl.aggregation_key, sl.origin, sl.display_name, sl.quantity_kind, sl.amount_min_numerator, sl.amount_min_denominator, sl.amount_max_numerator, sl.amount_max_denominator, sl.unit_id, sl.package_type, sl.package_size_numerator, sl.package_size_denominator, sl.package_size_unit_id, sl.is_optional, sl.is_removed, sl.is_completed, sl.display_position, sl.override_text, sl.created_at, sl.updated_at, ss.name AS store_section_name, u.key AS unit_key, u.symbol AS unit_symbol,
+    psu.key AS package_size_unit_key, psu.symbol AS package_size_unit_symbol
 FROM shopping_lines sl
 JOIN store_sections ss ON ss.id = sl.store_section_id
 LEFT JOIN units u ON u.id = sl.unit_id
@@ -389,7 +399,9 @@ type ListShoppingLinesRow struct {
 	UpdatedAt              string         `db:"updated_at" json:"updated_at"`
 	StoreSectionName       string         `db:"store_section_name" json:"store_section_name"`
 	UnitKey                sql.NullString `db:"unit_key" json:"unit_key"`
+	UnitSymbol             sql.NullString `db:"unit_symbol" json:"unit_symbol"`
 	PackageSizeUnitKey     sql.NullString `db:"package_size_unit_key" json:"package_size_unit_key"`
+	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
 }
 
 func (q *Queries) ListShoppingLines(ctx context.Context, shoppingListID int64) ([]ListShoppingLinesRow, error) {
@@ -428,7 +440,9 @@ func (q *Queries) ListShoppingLines(ctx context.Context, shoppingListID int64) (
 			&i.UpdatedAt,
 			&i.StoreSectionName,
 			&i.UnitKey,
+			&i.UnitSymbol,
 			&i.PackageSizeUnitKey,
+			&i.PackageSizeUnitSymbol,
 		); err != nil {
 			return nil, err
 		}

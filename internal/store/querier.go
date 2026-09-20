@@ -37,6 +37,7 @@ type Querier interface {
 	GetShoppingListByWeek(ctx context.Context, weekID int64) (ShoppingList, error)
 	GetStoreSectionByKey(ctx context.Context, key string) (StoreSection, error)
 	GetUnitByKey(ctx context.Context, key string) (Unit, error)
+	GetVerifiedRecipe(ctx context.Context, id int64) (Recipe, error)
 	GetWeekByStart(ctx context.Context, startsOn string) (Week, error)
 	GetWeekRecipe(ctx context.Context, id int64) (WeekRecipe, error)
 	ListGeneratedShoppingLineStates(ctx context.Context, shoppingListID int64) ([]ListGeneratedShoppingLineStatesRow, error)

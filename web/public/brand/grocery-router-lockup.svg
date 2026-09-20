@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 330 64" role="img" aria-labelledby="title desc">
+  <title id="title">Grocery Router</title>
+  <desc id="desc">Grocery Router wordmark with basket and list mark.</desc>
+  <rect width="64" height="64" rx="15" fill="#50BFA5"/>
+  <g fill="none" stroke="#071A15" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 25V19c0-7.2 6.3-12 14-12s14 4.8 14 12v6"/><path d="M9 34h46"/><path d="M14 49h36"/>
+  </g>
+  <text x="84" y="41" fill="#F5F2EA" font-family="Inter,ui-sans-serif,system-ui,sans-serif" font-size="27" font-weight="680" letter-spacing="-1">Grocery Router</text>
+</svg>

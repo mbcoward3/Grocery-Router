@@ -28,7 +28,8 @@ INSERT INTO shopping_line_contributions (
 RETURNING *;
 
 -- name: ListShoppingLines :many
-SELECT sl.*, ss.name AS store_section_name, u.key AS unit_key, psu.key AS package_size_unit_key
+SELECT sl.*, ss.name AS store_section_name, u.key AS unit_key, u.symbol AS unit_symbol,
+    psu.key AS package_size_unit_key, psu.symbol AS package_size_unit_symbol
 FROM shopping_lines sl
 JOIN store_sections ss ON ss.id = sl.store_section_id
 LEFT JOIN units u ON u.id = sl.unit_id
@@ -37,11 +38,14 @@ WHERE sl.shopping_list_id = ?
 ORDER BY ss.name, sl.display_position, sl.display_name, sl.id;
 
 -- name: ListShoppingLineContributions :many
-SELECT c.*, r.name AS recipe_name, ri.source_text, ri.preparation
+SELECT c.*, r.id AS recipe_id, r.name AS recipe_name, ri.source_text, ri.preparation,
+    u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol
 FROM shopping_line_contributions c
 JOIN week_recipes wr ON wr.id = c.week_recipe_id
 JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredients ri ON ri.id = c.recipe_ingredient_id
+LEFT JOIN units u ON u.id = c.unit_id
+LEFT JOIN units psu ON psu.id = c.package_size_unit_id
 WHERE c.shopping_line_id = ?
 ORDER BY wr.position, c.id;
 

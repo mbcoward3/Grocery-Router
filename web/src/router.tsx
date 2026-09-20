@@ -6,6 +6,8 @@ import {
   Link,
 } from '@tanstack/react-router'
 import { AppShell } from './ui/app-shell'
+import { GroceriesPage } from './features/groceries/groceries-page'
+import { RecipePage } from './features/recipe/recipe-page'
 import { WeekPage } from './features/week/week-page'
 
 interface RouterContext {
@@ -30,26 +32,14 @@ const weekRoute = createRoute({
 const groceriesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/groceries',
-  component: () => (
-    <StatePage eyebrow="Groceries" title="Your consolidated checklist is next.">
-      Week planning is ready. Grocery checklist wiring follows the same compact Atlas shell.
-    </StatePage>
-  ),
+  component: GroceriesPage,
 })
 
 const recipeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/recipes/$recipeId',
-  component: RecipePlaceholder,
+  component: RecipePage,
 })
-
-function RecipePlaceholder() {
-  return (
-    <StatePage eyebrow="Recipe detail" title="Recipe details are being prepared.">
-      <Link className="button" to="/">Return to this week</Link>
-    </StatePage>
-  )
-}
 
 function StatePage({
   eyebrow,

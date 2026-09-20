@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Grocery Router</title>
+  <desc id="desc">A grocery basket handle above two list lines.</desc>
+  <g fill="none" stroke="#071A15" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 25V19c0-7.2 6.3-12 14-12s14 4.8 14 12v6"/>
+    <path d="M9 34h46"/>
+    <path d="M14 49h36"/>
+  </g>
+</svg>
