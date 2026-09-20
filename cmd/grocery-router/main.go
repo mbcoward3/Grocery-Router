@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/alecthomas/kong"
@@ -66,10 +67,11 @@ func (command *migrateCommand) Run() error {
 type serveCommand struct {
 	DatabasePath
 	Address string `help:"HTTP listen address." default:"127.0.0.1:8080" env:"GROCERY_ROUTER_ADDRESS"`
+	WebRoot string `help:"Built web application directory. Leave empty to serve only the API." default:"web/dist" env:"GROCERY_ROUTER_WEB_ROOT" type:"path"`
 }
 
 func (command *serveCommand) Run() error {
-	return serve(command.Database, command.Address)
+	return serve(command.Database, command.Address, command.WebRoot)
 }
 
 type trueupInventoryCommand struct {
@@ -215,7 +217,7 @@ func migrate(path string) error {
 	return nil
 }
 
-func serve(databasePath, address string) error {
+func serve(databasePath, address, webRoot string) error {
 	if err := migrate(databasePath); err != nil {
 		return err
 	}
@@ -227,17 +229,55 @@ func serve(databasePath, address string) error {
 
 	weekService := week.NewService(db, nil)
 	api := httpapi.New(db, weekService, nil)
+	handler, err := applicationHandler(api.Handler(), webRoot)
+	if err != nil {
+		return err
+	}
 	server := &http.Server{
 		Addr:              address,
-		Handler:           api.Handler(),
+		Handler:           handler,
 		ReadHeaderTimeout: 5 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-	fmt.Printf("Grocery Router API listening on http://%s\n", address)
+	fmt.Printf("Grocery Router listening on http://%s\n", address)
 	if err := server.ListenAndServe(); !errors.Is(err, http.ErrServerClosed) {
-		return fmt.Errorf("serve HTTP API: %w", err)
+		return fmt.Errorf("serve Grocery Router: %w", err)
 	}
 	return nil
+}
+
+func applicationHandler(api http.Handler, webRoot string) (http.Handler, error) {
+	mux := http.NewServeMux()
+	mux.Handle("/api/", api)
+	mux.HandleFunc("GET /healthz", func(response http.ResponseWriter, _ *http.Request) {
+		response.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		response.WriteHeader(http.StatusOK)
+		_, _ = response.Write([]byte("ok\n"))
+	})
+
+	if webRoot == "" {
+		return mux, nil
+	}
+	indexPath := filepath.Join(webRoot, "index.html")
+	if _, err := os.Stat(indexPath); err != nil {
+		return nil, fmt.Errorf("find web application index: %w", err)
+	}
+	files := http.FileServer(http.Dir(webRoot))
+	mux.HandleFunc("/", func(response http.ResponseWriter, request *http.Request) {
+		if request.Method != http.MethodGet && request.Method != http.MethodHead {
+			http.NotFound(response, request)
+			return
+		}
+		relativePath := strings.TrimPrefix(filepath.Clean(request.URL.Path), string(filepath.Separator))
+		if relativePath != "." {
+			if info, err := os.Stat(filepath.Join(webRoot, relativePath)); err == nil && !info.IsDir() {
+				files.ServeHTTP(response, request)
+				return
+			}
+		}
+		http.ServeFile(response, request, indexPath)
+	})
+	return mux, nil
 }
 
 func auditInventory(root, relativePath string) error {

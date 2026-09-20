@@ -1,0 +1,14 @@
+.git
+.github
+.vscode
+.idea
+node_modules
+web/node_modules
+web/dist
+data
+*.db
+*.db-shm
+*.db-wal
+coverage.out
+sources/*.pdf
+!sources/Recipes.pdf
