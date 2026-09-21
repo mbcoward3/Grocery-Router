@@ -12,7 +12,7 @@ import (
 func RenderBody(document Document) string {
 	var out strings.Builder
 	fmt.Fprintf(&out, "# %s\n\n", document.Name)
-	out.WriteString("> Approved bootstrap recipe. YAML front matter is ingested into SQLite; the sections below\n")
+	out.WriteString("> Approved bootstrap recipe. YAML front matter is ingested into PostgreSQL; the sections below\n")
 	out.WriteString("> are the checked human-readable view.\n\n")
 
 	out.WriteString("## Recipe details\n\n")

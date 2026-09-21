@@ -57,7 +57,7 @@ scope requires a new phase with its own acceptance criteria.
 - **Agent-assisted onboarding.** Package true-up rules, fixtures, and context as SDK/ADK
   agents rather than relying on a coding-session agent.
 - **Agent context tools.** Controlled database queries, exports, and skills that build model
-  context directly from SQLite.
+  context directly from PostgreSQL.
 - **Subsequent source refresh.** Deliberately compare an approved recipe with a changed
   website; never automatic silent synchronization.
 - **Recipe revision history.** Preserve source snapshots, household corrections, approvals,
@@ -87,14 +87,11 @@ scope requires a new phase with its own acceptance criteria.
 
 ## 6. Platform and household expansion
 
-- **Formal backup/export/import.** Replace manual SQLite copying and bootstrap re-ingestion
+- **Formal backup/export/import.** Add CNPG object-store backups, restore drills, and portable exports
   with supported runtime-data tools.
-- **Generated database releases.** Package and verify a ready-to-run SQLite snapshot from the
+- **Generated database releases.** Package and verify a ready-to-restore PostgreSQL snapshot from the
   approved Markdown corpus through an explicit release process.
 - **Single-binary packaging.** Embed frontend assets in Go if distribution needs it.
-- **Docker packaging.** Add only when local distribution or deployment needs it.
-- **Hosted deployment.** Choose infrastructure after the local product proves useful; prior
-  Talos, Flux, CockroachDB, CloudNativePG, Compose, and VPS designs are not presumed.
 - **Authentication.** Required before trusting clients outside the local network.
 - **Multiple users/households.** Identity, concurrent household use, tenancy, permissions,
   and attributed feedback.

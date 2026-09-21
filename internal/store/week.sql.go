@@ -11,7 +11,7 @@ import (
 )
 
 const createShoppingList = `-- name: CreateShoppingList :one
-INSERT INTO shopping_lists (week_id) VALUES (?)
+INSERT INTO shopping_lists (week_id) VALUES ($1)
 RETURNING id, week_id, created_at, updated_at
 `
 
@@ -28,7 +28,7 @@ func (q *Queries) CreateShoppingList(ctx context.Context, weekID int64) (Shoppin
 }
 
 const createWeek = `-- name: CreateWeek :one
-INSERT INTO weeks (starts_on) VALUES (?)
+INSERT INTO weeks (starts_on) VALUES ($1)
 RETURNING id, starts_on, created_at, updated_at
 `
 
@@ -45,7 +45,7 @@ func (q *Queries) CreateWeek(ctx context.Context, startsOn string) (Week, error)
 }
 
 const createWeekRecipe = `-- name: CreateWeekRecipe :one
-INSERT INTO week_recipes (week_id, recipe_id, position) VALUES (?, ?, ?)
+INSERT INTO week_recipes (week_id, recipe_id, position) VALUES ($1, $2, $3)
 RETURNING id, week_id, recipe_id, position, created_at
 `
 
@@ -69,7 +69,7 @@ func (q *Queries) CreateWeekRecipe(ctx context.Context, arg CreateWeekRecipePara
 }
 
 const deleteWeekRecipe = `-- name: DeleteWeekRecipe :execrows
-DELETE FROM week_recipes WHERE id = ?
+DELETE FROM week_recipes WHERE id = $1
 `
 
 func (q *Queries) DeleteWeekRecipe(ctx context.Context, id int64) (int64, error) {
@@ -81,7 +81,7 @@ func (q *Queries) DeleteWeekRecipe(ctx context.Context, id int64) (int64, error)
 }
 
 const deleteWeekRecipes = `-- name: DeleteWeekRecipes :exec
-DELETE FROM week_recipes WHERE week_id = ?
+DELETE FROM week_recipes WHERE week_id = $1
 `
 
 func (q *Queries) DeleteWeekRecipes(ctx context.Context, weekID int64) error {
@@ -90,7 +90,7 @@ func (q *Queries) DeleteWeekRecipes(ctx context.Context, weekID int64) error {
 }
 
 const getShoppingListByWeek = `-- name: GetShoppingListByWeek :one
-SELECT id, week_id, created_at, updated_at FROM shopping_lists WHERE week_id = ?
+SELECT id, week_id, created_at, updated_at FROM shopping_lists WHERE week_id = $1
 `
 
 func (q *Queries) GetShoppingListByWeek(ctx context.Context, weekID int64) (ShoppingList, error) {
@@ -106,7 +106,7 @@ func (q *Queries) GetShoppingListByWeek(ctx context.Context, weekID int64) (Shop
 }
 
 const getWeekByStart = `-- name: GetWeekByStart :one
-SELECT id, starts_on, created_at, updated_at FROM weeks WHERE starts_on = ?
+SELECT id, starts_on, created_at, updated_at FROM weeks WHERE starts_on = $1
 `
 
 func (q *Queries) GetWeekByStart(ctx context.Context, startsOn string) (Week, error) {
@@ -122,7 +122,7 @@ func (q *Queries) GetWeekByStart(ctx context.Context, startsOn string) (Week, er
 }
 
 const getWeekRecipe = `-- name: GetWeekRecipe :one
-SELECT id, week_id, recipe_id, position, created_at FROM week_recipes WHERE id = ?
+SELECT id, week_id, recipe_id, position, created_at FROM week_recipes WHERE id = $1
 `
 
 func (q *Queries) GetWeekRecipe(ctx context.Context, id int64) (WeekRecipe, error) {
@@ -177,7 +177,7 @@ JOIN grocery_items gi ON gi.id = ri.grocery_item_id
 JOIN store_sections ss ON ss.id = gi.store_section_id
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
-WHERE wr.week_id = ? AND ri.include_on_grocery_list = 1
+WHERE wr.week_id = $1 AND ri.include_on_grocery_list = 1
 ORDER BY wr.position, wr.id, ris.position, ri.position
 `
 
@@ -267,7 +267,7 @@ func (q *Queries) ListWeekIngredientRequirements(ctx context.Context, weekID int
 }
 
 const listWeekRecipeIDs = `-- name: ListWeekRecipeIDs :many
-SELECT recipe_id FROM week_recipes WHERE week_id = ?
+SELECT recipe_id FROM week_recipes WHERE week_id = $1
 `
 
 func (q *Queries) ListWeekRecipeIDs(ctx context.Context, weekID int64) ([]int64, error) {
@@ -306,7 +306,7 @@ SELECT
     r.unattended_max_minutes
 FROM week_recipes wr
 JOIN recipes r ON r.id = wr.recipe_id
-WHERE wr.week_id = ?
+WHERE wr.week_id = $1
 ORDER BY wr.position, wr.id
 `
 
@@ -364,7 +364,7 @@ func (q *Queries) ListWeekRecipes(ctx context.Context, weekID int64) ([]ListWeek
 }
 
 const nextWeekRecipePosition = `-- name: NextWeekRecipePosition :one
-SELECT CAST(coalesce(max(position) + 1, 0) AS INTEGER) FROM week_recipes WHERE week_id = ?
+SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes WHERE week_id = $1
 `
 
 func (q *Queries) NextWeekRecipePosition(ctx context.Context, weekID int64) (int64, error) {
@@ -375,7 +375,7 @@ func (q *Queries) NextWeekRecipePosition(ctx context.Context, weekID int64) (int
 }
 
 const touchWeek = `-- name: TouchWeek :exec
-UPDATE weeks SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?
+UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') WHERE id = $1
 `
 
 func (q *Queries) TouchWeek(ctx context.Context, id int64) error {
@@ -384,7 +384,7 @@ func (q *Queries) TouchWeek(ctx context.Context, id int64) error {
 }
 
 const updateWeekRecipeRecipe = `-- name: UpdateWeekRecipeRecipe :one
-UPDATE week_recipes SET recipe_id = ? WHERE id = ?
+UPDATE week_recipes SET recipe_id = $1 WHERE id = $2
 RETURNING id, week_id, recipe_id, position, created_at
 `
 

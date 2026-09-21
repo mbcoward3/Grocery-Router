@@ -1,19 +1,19 @@
 -- name: CreateWeek :one
-INSERT INTO weeks (starts_on) VALUES (?)
+INSERT INTO weeks (starts_on) VALUES ($1)
 RETURNING *;
 
 -- name: GetWeekByStart :one
-SELECT * FROM weeks WHERE starts_on = ?;
+SELECT * FROM weeks WHERE starts_on = $1;
 
 -- name: TouchWeek :exec
-UPDATE weeks SET updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE id = ?;
+UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') WHERE id = $1;
 
 -- name: CreateWeekRecipe :one
-INSERT INTO week_recipes (week_id, recipe_id, position) VALUES (?, ?, ?)
+INSERT INTO week_recipes (week_id, recipe_id, position) VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: GetWeekRecipe :one
-SELECT * FROM week_recipes WHERE id = ?;
+SELECT * FROM week_recipes WHERE id = $1;
 
 -- name: ListWeekRecipes :many
 SELECT
@@ -28,31 +28,31 @@ SELECT
     r.unattended_max_minutes
 FROM week_recipes wr
 JOIN recipes r ON r.id = wr.recipe_id
-WHERE wr.week_id = ?
+WHERE wr.week_id = $1
 ORDER BY wr.position, wr.id;
 
 -- name: ListWeekRecipeIDs :many
-SELECT recipe_id FROM week_recipes WHERE week_id = ?;
+SELECT recipe_id FROM week_recipes WHERE week_id = $1;
 
 -- name: NextWeekRecipePosition :one
-SELECT CAST(coalesce(max(position) + 1, 0) AS INTEGER) FROM week_recipes WHERE week_id = ?;
+SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes WHERE week_id = $1;
 
 -- name: UpdateWeekRecipeRecipe :one
-UPDATE week_recipes SET recipe_id = ? WHERE id = ?
+UPDATE week_recipes SET recipe_id = $1 WHERE id = $2
 RETURNING *;
 
 -- name: DeleteWeekRecipe :execrows
-DELETE FROM week_recipes WHERE id = ?;
+DELETE FROM week_recipes WHERE id = $1;
 
 -- name: DeleteWeekRecipes :exec
-DELETE FROM week_recipes WHERE week_id = ?;
+DELETE FROM week_recipes WHERE week_id = $1;
 
 -- name: CreateShoppingList :one
-INSERT INTO shopping_lists (week_id) VALUES (?)
+INSERT INTO shopping_lists (week_id) VALUES ($1)
 RETURNING *;
 
 -- name: GetShoppingListByWeek :one
-SELECT * FROM shopping_lists WHERE week_id = ?;
+SELECT * FROM shopping_lists WHERE week_id = $1;
 
 -- name: ListWeekIngredientRequirements :many
 SELECT
@@ -93,5 +93,5 @@ JOIN grocery_items gi ON gi.id = ri.grocery_item_id
 JOIN store_sections ss ON ss.id = gi.store_section_id
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
-WHERE wr.week_id = ? AND ri.include_on_grocery_list = 1
+WHERE wr.week_id = $1 AND ri.include_on_grocery_list = 1
 ORDER BY wr.position, wr.id, ris.position, ri.position;

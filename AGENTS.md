@@ -19,7 +19,7 @@ as routine context; consult it only to recover nuance not settled by the current
 The old application and contradictory context were intentionally removed. Do not recover the
 Python prototype or prior deployment infrastructure as a base.
 
-The corpus foundation is Go, SQLite, Goose, and sqlc. `archive/trueup/recipes.csv` records the
+The corpus foundation is Go, PostgreSQL, Goose, and sqlc. `archive/trueup/recipes.csv` records the
 completed disposition of all 25 PDF recipes. Completed household re-review includes 24 approved
 bootstrap recipes under `corpus/recipes/` and explicitly excludes Chicken and Dumplings. The
 frontend is React/TypeScript/Vite with TanStack Router and TanStack Query; the Week vertical
@@ -35,7 +35,7 @@ are out of v1.
 - A source may be incomplete; a selectable recipe may not be.
 - Every recipe is reviewed individually before verification.
 - Approved recipes remain as strict Markdown bootstrap files and are ingested one-way.
-- SQLite is runtime truth; application code never reads or synchronizes recipe Markdown.
+- PostgreSQL is runtime truth; application code never reads or synchronizes recipe Markdown.
 - Ingredient-to-grocery mapping happens during ingestion, never week generation.
 - No ingredient contribution may be silently dropped.
 
@@ -54,8 +54,8 @@ task dev
 ```
 
 `internal/database/migrations/` is the schema authority. Generated files in `internal/store/`
-must match `internal/store/queries/` and `sqlc.yaml`. SQLite foreign keys must be enabled on
-every connection; use `internal/database.Open`.
+must match `internal/store/queries/` and `sqlc.yaml`. Open PostgreSQL connections through
+`internal/database.Open`.
 
 ## Working rule
 

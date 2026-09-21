@@ -6,7 +6,7 @@ import (
 	"math/big"
 )
 
-// Rational is an exact SQLite-safe fraction.
+// Rational is an exact 64-bit database fraction.
 type Rational struct {
 	Numerator   int64
 	Denominator int64
@@ -231,7 +231,7 @@ func rat(value *Rational) *big.Rat {
 
 func fromRat(value *big.Rat) (*Rational, error) {
 	if !value.Num().IsInt64() || !value.Denom().IsInt64() {
-		return nil, fmt.Errorf("quantity %s exceeds SQLite integer range", value.RatString())
+		return nil, fmt.Errorf("quantity %s exceeds 64-bit integer range", value.RatString())
 	}
 	return &Rational{Numerator: value.Num().Int64(), Denominator: value.Denom().Int64()}, nil
 }

@@ -317,7 +317,7 @@ func ensureUnit(ctx context.Context, queries *store.Queries, key string, units m
 
 func nullRational(value *big.Rat) (sql.NullInt64, sql.NullInt64, error) {
 	if !value.Num().IsInt64() || !value.Denom().IsInt64() {
-		return sql.NullInt64{}, sql.NullInt64{}, fmt.Errorf("quantity %s exceeds SQLite integer range", value.RatString())
+		return sql.NullInt64{}, sql.NullInt64{}, fmt.Errorf("quantity %s exceeds 64-bit integer range", value.RatString())
 	}
 	return sql.NullInt64{Int64: value.Num().Int64(), Valid: true},
 		sql.NullInt64{Int64: value.Denom().Int64(), Valid: true}, nil

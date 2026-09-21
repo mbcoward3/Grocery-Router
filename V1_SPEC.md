@@ -76,7 +76,7 @@ Examples:
 
 ### 2.6 Preserve evidence, store one current truth
 
-The database keeps source ingredient text beside its approved structured interpretation. SQLite holds the current verified recipe, not a complete edit history.
+The database keeps source ingredient text beside its approved structured interpretation. PostgreSQL holds the current verified recipe, not a complete edit history.
 
 ### 2.7 Keep v1 replaceable and extensible
 
@@ -89,7 +89,7 @@ The schema must not prevent future serving scaling, substitutions, onboarding, a
 ### 3.1 Included
 
 - One-time true-up of every recipe represented by the canonical PDF.
-- SQLite recipe corpus.
+- PostgreSQL recipe corpus.
 - Development-time, agent-assisted recipe completion.
 - One-at-a-time human approval of completed recipes.
 - Random weekly recipe generation.
@@ -98,7 +98,7 @@ The schema must not prevent future serving scaling, substitutions, onboarding, a
 - Editable grocery checklist.
 - Recipe detail pages with in-app instructions.
 - Responsive, polished planning and shopping interfaces.
-- Retention of generated weeks in SQLite.
+- Retention of generated weeks in PostgreSQL.
 
 ### 3.2 Explicitly excluded
 
@@ -173,9 +173,9 @@ True-up work must leave reusable context for later SDK agents. This includes:
 - examples of accepted and rejected transformations; and
 - a clear distinction between source evidence, agent proposals, and approved truth.
 
-Runtime agents should receive controlled queries or exports from SQLite. The approved Markdown
+Runtime agents should receive controlled queries or exports from PostgreSQL. The approved Markdown
 bootstrap corpus may support ingestion agents and human review, but it is never read by the
-running application or synchronized back from SQLite.
+running application or synchronized back from PostgreSQL.
 
 ### 4.4 Recipe lifecycle
 
@@ -450,7 +450,7 @@ v1 has exactly three product screens:
 2. **Groceries**
 3. **Recipe detail**
 
-Past weeks may be retained in SQLite but are not exposed in v1.
+Past weeks may be retained in PostgreSQL but are not exposed in v1.
 
 ### 10.2 Visual direction
 
@@ -665,7 +665,7 @@ The database and domain layer must enforce:
 - no contribution without its week-recipe and ingredient; and
 - no silent deletion of contribution data during aggregation.
 
-SQLite foreign keys must be enabled on every connection.
+PostgreSQL enforces foreign keys on every connection.
 
 ---
 
@@ -674,7 +674,7 @@ SQLite foreign keys must be enabled on every connection.
 ### 12.1 Backend
 
 - Go.
-- SQLite database.
+- PostgreSQL database, managed in Kubernetes by CloudNativePG.
 - Goose for versioned schema migrations.
 - sqlc for typed SQL access.
 - Domain and aggregation behavior in ordinary Go, independent of HTTP handlers.
@@ -686,12 +686,12 @@ SQLite foreign keys must be enabled on every connection.
 - Use TanStack Router for typed routing and TanStack Query for authoritative server state.
 - Prefer the relevant TanStack library when a future in-scope need has a mature fit; do not add speculative dependencies for deferred capabilities.
 - Generate frontend API types from the checked-in OpenAPI contract to prevent avoidable frontend/backend drift.
-- Keep transient component state local; do not add a Redux-style client store for SQLite-backed state.
+- Keep transient component state local; do not add a Redux-style client store for PostgreSQL-backed state.
 - The frontend may run separately during development; whether release assets are embedded in the Go binary is an implementation convenience, not a product requirement.
 
 ### 12.3 Runtime data
 
-SQLite is the sole runtime recipe source of truth. There is no bidirectional or runtime
+PostgreSQL is the sole runtime recipe source of truth. There is no bidirectional or runtime
 Markdown recipe store.
 
 Git contains:
@@ -703,7 +703,7 @@ Git contains:
 - one strictly structured, individually approved Markdown file per recipe.
 
 A Go ingestion command validates the complete approved Markdown corpus and loads it into an
-empty migrated SQLite database transactionally. The application reads only SQLite. Markdown
+empty migrated PostgreSQL database transactionally. The application reads only PostgreSQL. Markdown
 is the reviewable bootstrap format, not a synchronized second runtime source.
 
 ### 12.4 Local operation
@@ -872,10 +872,10 @@ historical evidence and must not be treated as active implementation plans.
 
 Grocery Router v1 is done when:
 
-1. the active repository contains one coherent Go/React/SQLite application and current documentation;
+1. the active repository contains one coherent Go/React/PostgreSQL application and current documentation;
 2. a fresh clone contains no contradictory prototype, deployment, or superseded-spec instructions;
 3. obsolete PRs and work branches have been closed or archived;
-4. Goose can create the schema from an empty SQLite database;
+4. Goose can create the schema from an empty PostgreSQL database;
 5. sqlc provides typed access for application queries;
 6. the PDF inventory ledger gives every canonical recipe an explicit disposition;
 7. every included recipe has been individually reviewed and resolved;

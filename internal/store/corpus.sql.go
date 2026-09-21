@@ -12,7 +12,7 @@ import (
 
 const approveReviewFlag = `-- name: ApproveReviewFlag :one
 UPDATE recipe_review_flags SET approved = 1
-WHERE id = ?
+WHERE id = $1
 RETURNING id, recipe_id, field_path, kind, note, approved
 `
 
@@ -31,7 +31,7 @@ func (q *Queries) ApproveReviewFlag(ctx context.Context, id int64) (RecipeReview
 }
 
 const countUnapprovedReviewFlags = `-- name: CountUnapprovedReviewFlags :one
-SELECT count(*) FROM recipe_review_flags WHERE recipe_id = ? AND approved = 0
+SELECT count(*) FROM recipe_review_flags WHERE recipe_id = $1 AND approved = 0
 `
 
 func (q *Queries) CountUnapprovedReviewFlags(ctx context.Context, recipeID int64) (int64, error) {
@@ -46,8 +46,8 @@ INSERT INTO recipes (
     key, name, image_url, yield_text,
     hands_on_min_minutes, hands_on_max_minutes,
     unattended_min_minutes, unattended_max_minutes
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-RETURNING id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
 `
 
 type CreateDraftRecipeParams struct {
@@ -93,8 +93,8 @@ func (q *Queries) CreateDraftRecipe(ctx context.Context, arg CreateDraftRecipePa
 
 const createGroceryItem = `-- name: CreateGroceryItem :one
 INSERT INTO grocery_items (key, name, store_section_id, shopping_mode)
-VALUES (?, ?, ?, ?)
-RETURNING id, "key", name, store_section_id, shopping_mode, created_at, updated_at
+VALUES ($1, $2, $3, $4)
+RETURNING id, key, name, store_section_id, shopping_mode, created_at, updated_at
 `
 
 type CreateGroceryItemParams struct {
@@ -126,7 +126,7 @@ func (q *Queries) CreateGroceryItem(ctx context.Context, arg CreateGroceryItemPa
 
 const createIngredientSection = `-- name: CreateIngredientSection :one
 INSERT INTO recipe_ingredient_sections (recipe_id, name, position)
-VALUES (?, ?, ?)
+VALUES ($1, $2, $3)
 RETURNING id, recipe_id, name, position
 `
 
@@ -150,7 +150,7 @@ func (q *Queries) CreateIngredientSection(ctx context.Context, arg CreateIngredi
 
 const createInstructionSection = `-- name: CreateInstructionSection :one
 INSERT INTO recipe_instruction_sections (recipe_id, name, position)
-VALUES (?, ?, ?)
+VALUES ($1, $2, $3)
 RETURNING id, recipe_id, name, position
 `
 
@@ -180,7 +180,7 @@ INSERT INTO recipe_ingredients (
     unit_id, package_type,
     package_size_numerator, package_size_denominator, package_size_unit_id,
     preparation, is_optional, include_on_grocery_list, display_note
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
 RETURNING id, section_id, grocery_item_id, position, source_text, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, preparation, is_optional, include_on_grocery_list, display_note
 `
 
@@ -254,7 +254,7 @@ func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIn
 const createRecipeSource = `-- name: CreateRecipeSource :one
 INSERT INTO recipe_sources (
     recipe_id, relationship, attribution, url, checked_on, is_primary, position
-) VALUES (?, ?, ?, ?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4, $5, $6, $7)
 RETURNING id, recipe_id, relationship, attribution, url, checked_on, is_primary, position
 `
 
@@ -294,7 +294,7 @@ func (q *Queries) CreateRecipeSource(ctx context.Context, arg CreateRecipeSource
 
 const createRecipeStep = `-- name: CreateRecipeStep :one
 INSERT INTO recipe_steps (section_id, position, instruction)
-VALUES (?, ?, ?)
+VALUES ($1, $2, $3)
 RETURNING id, section_id, position, instruction
 `
 
@@ -318,7 +318,7 @@ func (q *Queries) CreateRecipeStep(ctx context.Context, arg CreateRecipeStepPara
 
 const createReviewFlag = `-- name: CreateReviewFlag :one
 INSERT INTO recipe_review_flags (recipe_id, field_path, kind, note)
-VALUES (?, ?, ?, ?)
+VALUES ($1, $2, $3, $4)
 RETURNING id, recipe_id, field_path, kind, note, approved
 `
 
@@ -349,8 +349,8 @@ func (q *Queries) CreateReviewFlag(ctx context.Context, arg CreateReviewFlagPara
 }
 
 const createStoreSection = `-- name: CreateStoreSection :one
-INSERT INTO store_sections (key, name) VALUES (?, ?)
-RETURNING id, "key", name
+INSERT INTO store_sections (key, name) VALUES ($1, $2)
+RETURNING id, key, name
 `
 
 type CreateStoreSectionParams struct {
@@ -368,8 +368,8 @@ func (q *Queries) CreateStoreSection(ctx context.Context, arg CreateStoreSection
 const createUnit = `-- name: CreateUnit :one
 INSERT INTO units (
     key, name, symbol, dimension, to_base_numerator, to_base_denominator
-) VALUES (?, ?, ?, ?, ?, ?)
-RETURNING id, "key", name, symbol, dimension, to_base_numerator, to_base_denominator
+) VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING id, key, name, symbol, dimension, to_base_numerator, to_base_denominator
 `
 
 type CreateUnitParams struct {
@@ -404,7 +404,7 @@ func (q *Queries) CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, e
 }
 
 const getGroceryItemByKey = `-- name: GetGroceryItemByKey :one
-SELECT id, "key", name, store_section_id, shopping_mode, created_at, updated_at FROM grocery_items WHERE key = ?
+SELECT id, key, name, store_section_id, shopping_mode, created_at, updated_at FROM grocery_items WHERE key = $1
 `
 
 func (q *Queries) GetGroceryItemByKey(ctx context.Context, key string) (GroceryItem, error) {
@@ -423,7 +423,7 @@ func (q *Queries) GetGroceryItemByKey(ctx context.Context, key string) (GroceryI
 }
 
 const getRecipe = `-- name: GetRecipe :one
-SELECT id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE id = ?
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE id = $1
 `
 
 func (q *Queries) GetRecipe(ctx context.Context, id int64) (Recipe, error) {
@@ -448,7 +448,7 @@ func (q *Queries) GetRecipe(ctx context.Context, id int64) (Recipe, error) {
 }
 
 const getRecipeByKey = `-- name: GetRecipeByKey :one
-SELECT id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE key = ?
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE key = $1
 `
 
 func (q *Queries) GetRecipeByKey(ctx context.Context, key string) (Recipe, error) {
@@ -473,7 +473,7 @@ func (q *Queries) GetRecipeByKey(ctx context.Context, key string) (Recipe, error
 }
 
 const getStoreSectionByKey = `-- name: GetStoreSectionByKey :one
-SELECT id, "key", name FROM store_sections WHERE key = ?
+SELECT id, key, name FROM store_sections WHERE key = $1
 `
 
 func (q *Queries) GetStoreSectionByKey(ctx context.Context, key string) (StoreSection, error) {
@@ -484,7 +484,7 @@ func (q *Queries) GetStoreSectionByKey(ctx context.Context, key string) (StoreSe
 }
 
 const getUnitByKey = `-- name: GetUnitByKey :one
-SELECT id, "key", name, symbol, dimension, to_base_numerator, to_base_denominator FROM units WHERE key = ?
+SELECT id, key, name, symbol, dimension, to_base_numerator, to_base_denominator FROM units WHERE key = $1
 `
 
 func (q *Queries) GetUnitByKey(ctx context.Context, key string) (Unit, error) {
@@ -503,7 +503,7 @@ func (q *Queries) GetUnitByKey(ctx context.Context, key string) (Unit, error) {
 }
 
 const getVerifiedRecipe = `-- name: GetVerifiedRecipe :one
-SELECT id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE id = ? AND status = 'verified'
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE id = $1 AND status = 'verified'
 `
 
 func (q *Queries) GetVerifiedRecipe(ctx context.Context, id int64) (Recipe, error) {
@@ -528,7 +528,7 @@ func (q *Queries) GetVerifiedRecipe(ctx context.Context, id int64) (Recipe, erro
 }
 
 const listGroceryItems = `-- name: ListGroceryItems :many
-SELECT gi.id, gi."key", gi.name, gi.store_section_id, gi.shopping_mode, gi.created_at, gi.updated_at, ss.name AS store_section_name
+SELECT gi.id, gi.key, gi.name, gi.store_section_id, gi.shopping_mode, gi.created_at, gi.updated_at, ss.name AS store_section_name
 FROM grocery_items gi
 JOIN store_sections ss ON ss.id = gi.store_section_id
 ORDER BY gi.name
@@ -578,7 +578,7 @@ func (q *Queries) ListGroceryItems(ctx context.Context) ([]ListGroceryItemsRow, 
 }
 
 const listIngredientSections = `-- name: ListIngredientSections :many
-SELECT id, recipe_id, name, position FROM recipe_ingredient_sections WHERE recipe_id = ? ORDER BY position
+SELECT id, recipe_id, name, position FROM recipe_ingredient_sections WHERE recipe_id = $1 ORDER BY position
 `
 
 func (q *Queries) ListIngredientSections(ctx context.Context, recipeID int64) ([]RecipeIngredientSection, error) {
@@ -610,7 +610,7 @@ func (q *Queries) ListIngredientSections(ctx context.Context, recipeID int64) ([
 }
 
 const listInstructionSections = `-- name: ListInstructionSections :many
-SELECT id, recipe_id, name, position FROM recipe_instruction_sections WHERE recipe_id = ? ORDER BY position
+SELECT id, recipe_id, name, position FROM recipe_instruction_sections WHERE recipe_id = $1 ORDER BY position
 `
 
 func (q *Queries) ListInstructionSections(ctx context.Context, recipeID int64) ([]RecipeInstructionSection, error) {
@@ -661,7 +661,7 @@ LEFT JOIN grocery_items gi ON gi.id = ri.grocery_item_id
 LEFT JOIN store_sections ss ON ss.id = gi.store_section_id
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
-WHERE ris.recipe_id = ?
+WHERE ris.recipe_id = $1
 ORDER BY ris.position, ri.position
 `
 
@@ -753,7 +753,7 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeID int64) ([]
 }
 
 const listRecipeReviewFlags = `-- name: ListRecipeReviewFlags :many
-SELECT id, recipe_id, field_path, kind, note, approved FROM recipe_review_flags WHERE recipe_id = ? ORDER BY field_path, kind
+SELECT id, recipe_id, field_path, kind, note, approved FROM recipe_review_flags WHERE recipe_id = $1 ORDER BY field_path, kind
 `
 
 func (q *Queries) ListRecipeReviewFlags(ctx context.Context, recipeID int64) ([]RecipeReviewFlag, error) {
@@ -787,7 +787,7 @@ func (q *Queries) ListRecipeReviewFlags(ctx context.Context, recipeID int64) ([]
 }
 
 const listRecipeSources = `-- name: ListRecipeSources :many
-SELECT id, recipe_id, relationship, attribution, url, checked_on, is_primary, position FROM recipe_sources WHERE recipe_id = ? ORDER BY position
+SELECT id, recipe_id, relationship, attribution, url, checked_on, is_primary, position FROM recipe_sources WHERE recipe_id = $1 ORDER BY position
 `
 
 func (q *Queries) ListRecipeSources(ctx context.Context, recipeID int64) ([]RecipeSource, error) {
@@ -826,7 +826,7 @@ const listRecipeSteps = `-- name: ListRecipeSteps :many
 SELECT rs.id, rs.section_id, rs.position, rs.instruction, ris.recipe_id, ris.name AS section_name, ris.position AS section_position
 FROM recipe_steps rs
 JOIN recipe_instruction_sections ris ON ris.id = rs.section_id
-WHERE ris.recipe_id = ?
+WHERE ris.recipe_id = $1
 ORDER BY ris.position, rs.position
 `
 
@@ -872,7 +872,7 @@ func (q *Queries) ListRecipeSteps(ctx context.Context, recipeID int64) ([]ListRe
 }
 
 const listStoreSections = `-- name: ListStoreSections :many
-SELECT id, "key", name FROM store_sections ORDER BY name
+SELECT id, key, name FROM store_sections ORDER BY name
 `
 
 func (q *Queries) ListStoreSections(ctx context.Context) ([]StoreSection, error) {
@@ -899,7 +899,7 @@ func (q *Queries) ListStoreSections(ctx context.Context) ([]StoreSection, error)
 }
 
 const listUnits = `-- name: ListUnits :many
-SELECT id, "key", name, symbol, dimension, to_base_numerator, to_base_denominator FROM units ORDER BY dimension, name
+SELECT id, key, name, symbol, dimension, to_base_numerator, to_base_denominator FROM units ORDER BY dimension, name
 `
 
 func (q *Queries) ListUnits(ctx context.Context) ([]Unit, error) {
@@ -934,7 +934,7 @@ func (q *Queries) ListUnits(ctx context.Context) ([]Unit, error) {
 }
 
 const listVerifiedRecipes = `-- name: ListVerifiedRecipes :many
-SELECT id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE status = 'verified' ORDER BY name
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE status = 'verified' ORDER BY name
 `
 
 func (q *Queries) ListVerifiedRecipes(ctx context.Context) ([]Recipe, error) {
@@ -977,9 +977,9 @@ func (q *Queries) ListVerifiedRecipes(ctx context.Context) ([]Recipe, error) {
 const markRecipeReviewable = `-- name: MarkRecipeReviewable :one
 UPDATE recipes
 SET status = 'reviewable', verified_at = NULL,
-    updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE id = ? AND status = 'draft'
-RETURNING id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE id = $1 AND status = 'draft'
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
 `
 
 func (q *Queries) MarkRecipeReviewable(ctx context.Context, id int64) (Recipe, error) {
@@ -1006,9 +1006,9 @@ func (q *Queries) MarkRecipeReviewable(ctx context.Context, id int64) (Recipe, e
 const returnRecipeToDraft = `-- name: ReturnRecipeToDraft :one
 UPDATE recipes
 SET status = 'draft', verified_at = NULL,
-    updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE id = ? AND status IN ('reviewable', 'verified')
-RETURNING id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE id = $1 AND status IN ('reviewable', 'verified')
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
 `
 
 func (q *Queries) ReturnRecipeToDraft(ctx context.Context, id int64) (Recipe, error) {
@@ -1034,10 +1034,10 @@ func (q *Queries) ReturnRecipeToDraft(ctx context.Context, id int64) (Recipe, er
 
 const verifyRecipe = `-- name: VerifyRecipe :one
 UPDATE recipes
-SET status = 'verified', verified_at = ?,
-    updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE id = ? AND status = 'reviewable'
-RETURNING id, "key", name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+SET status = 'verified', verified_at = $1,
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE id = $2 AND status = 'reviewable'
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
 `
 
 type VerifyRecipeParams struct {

@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/httpapi"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
+	"github.com/mbcoward3/grocery-router/internal/testdatabase"
 	"github.com/mbcoward3/grocery-router/internal/week"
 )
 
@@ -132,15 +132,7 @@ func TestRecipesAPIAndRequestValidation(t *testing.T) {
 
 func testHandler(t *testing.T) http.Handler {
 	t.Helper()
-	dsn := fmt.Sprintf("file:httpapi-%d?mode=memory&cache=shared", time.Now().UnixNano())
-	db, err := database.Open(dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-	if err := database.Migrate(context.Background(), db); err != nil {
-		t.Fatal(err)
-	}
+	db := testdatabase.Open(t)
 	documents, err := ingest.ReadDirectory(filepath.Join("..", "..", "corpus", "recipes"))
 	if err != nil {
 		t.Fatal(err)

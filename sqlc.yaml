@@ -1,6 +1,6 @@
 version: "2"
 sql:
-  - engine: "sqlite"
+  - engine: "postgresql"
     schema: "internal/database/migrations"
     queries: "internal/store/queries"
     gen:
@@ -11,3 +11,4 @@ sql:
         emit_json_tags: true
         emit_interface: true
         emit_empty_slices: true
+        sql_package: "database/sql"

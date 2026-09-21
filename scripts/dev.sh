@@ -5,10 +5,12 @@ if [[ ! -d web/node_modules ]]; then
   npm ci --prefix web
 fi
 
-recipe_count="$(sqlite3 data/grocery-router.db 'select count(*) from recipes;' 2>/dev/null || true)"
-if [[ -z "$recipe_count" || "$recipe_count" == "0" ]]; then
-  go run ./cmd/grocery-router corpus-ingest
+if [[ -z "${GROCERY_ROUTER_DATABASE_URL:-}" ]]; then
+  docker compose up -d --wait postgres
+  export GROCERY_ROUTER_DATABASE_URL='postgres://grocery_router:grocery_router@localhost:5432/grocery_router?sslmode=disable'
 fi
+
+go run ./cmd/grocery-router bootstrap
 
 mkdir -p bin
 go build -o bin/grocery-router ./cmd/grocery-router

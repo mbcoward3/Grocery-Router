@@ -1,4 +1,4 @@
-// Command grocery-router manages the local corpus and SQLite database.
+// Command grocery-router manages the local corpus and PostgreSQL database.
 package main
 
 import (
@@ -26,8 +26,8 @@ type RepositoryPaths struct {
 	Inventory string `help:"Archived inventory path, relative to root." default:"archive/trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY"`
 }
 
-type DatabasePath struct {
-	Database string `help:"SQLite database path." default:"data/grocery-router.db" env:"GROCERY_ROUTER_DATABASE" type:"path"`
+type DatabaseConfig struct {
+	DatabaseURL string `name:"database-url" help:"PostgreSQL connection URL." default:"postgres://grocery_router:grocery_router@localhost:5432/grocery_router?sslmode=disable" env:"GROCERY_ROUTER_DATABASE_URL"`
 }
 
 type corpusAuditCommand struct {
@@ -40,11 +40,11 @@ func (command *corpusAuditCommand) Run() error {
 
 type corpusIngestCommand struct {
 	RepositoryPaths
-	DatabasePath
+	DatabaseConfig
 }
 
 func (command *corpusIngestCommand) Run() error {
-	return ingestCorpus(command.Database, command.Root, command.Corpus, command.Inventory)
+	return ingestCorpus(command.DatabaseURL, command.Root, command.Corpus, command.Inventory)
 }
 
 type corpusRenderCommand struct {
@@ -57,21 +57,30 @@ func (command *corpusRenderCommand) Run() error {
 }
 
 type migrateCommand struct {
-	DatabasePath
+	DatabaseConfig
 }
 
 func (command *migrateCommand) Run() error {
-	return migrate(command.Database)
+	return migrate(command.DatabaseURL)
+}
+
+type bootstrapCommand struct {
+	RepositoryPaths
+	DatabaseConfig
+}
+
+func (command *bootstrapCommand) Run() error {
+	return bootstrap(command.DatabaseURL, command.Root, command.Corpus, command.Inventory)
 }
 
 type serveCommand struct {
-	DatabasePath
+	DatabaseConfig
 	Address string `help:"HTTP listen address." default:"127.0.0.1:8080" env:"GROCERY_ROUTER_ADDRESS"`
 	WebRoot string `help:"Built web application directory. Leave empty to serve only the API." default:"web/dist" env:"GROCERY_ROUTER_WEB_ROOT" type:"path"`
 }
 
 func (command *serveCommand) Run() error {
-	return serve(command.Database, command.Address, command.WebRoot)
+	return serve(command.DatabaseURL, command.Address, command.WebRoot)
 }
 
 type trueupInventoryCommand struct {
@@ -84,6 +93,7 @@ func (command *trueupInventoryCommand) Run() error {
 }
 
 type cli struct {
+	Bootstrap       bootstrapCommand       `cmd:"" help:"Migrate and load the approved corpus when the database is empty."`
 	CorpusAudit     corpusAuditCommand     `cmd:"" help:"Validate the approved corpus against the PDF inventory."`
 	CorpusIngest    corpusIngestCommand    `cmd:"" help:"Migrate a database and transactionally ingest the approved corpus."`
 	CorpusRender    corpusRenderCommand    `cmd:"" help:"Regenerate checked human-readable recipe sections."`
@@ -146,7 +156,7 @@ func ingestCorpus(databasePath, root, corpusPath, inventoryPath string) error {
 	if err := ingest.Import(context.Background(), db, documents); err != nil {
 		return err
 	}
-	fmt.Printf("ingested %d approved recipes into %s\n", len(documents), databasePath)
+	fmt.Printf("ingested %d approved recipes\n", len(documents))
 	return nil
 }
 
@@ -199,13 +209,8 @@ func readAuditedCorpus(root, corpusPath, inventoryPath string) ([]ingest.Documen
 	return documents, len(rows), nil
 }
 
-func migrate(path string) error {
-	if directory := filepath.Dir(path); directory != "." {
-		if err := os.MkdirAll(directory, 0o755); err != nil {
-			return fmt.Errorf("create database directory: %w", err)
-		}
-	}
-	db, err := database.Open(path)
+func migrate(databaseURL string) error {
+	db, err := database.Open(databaseURL)
 	if err != nil {
 		return err
 	}
@@ -213,7 +218,35 @@ func migrate(path string) error {
 	if err := database.Migrate(context.Background(), db); err != nil {
 		return err
 	}
-	fmt.Printf("migrated %s\n", path)
+	fmt.Println("database migrated")
+	return nil
+}
+
+func bootstrap(databaseURL, root, corpusPath, inventoryPath string) error {
+	if err := migrate(databaseURL); err != nil {
+		return err
+	}
+	db, err := database.Open(databaseURL)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	var count int
+	if err := db.QueryRow("SELECT count(*) FROM recipes").Scan(&count); err != nil {
+		return fmt.Errorf("count recipes: %w", err)
+	}
+	if count > 0 {
+		fmt.Printf("database already bootstrapped with %d recipes\n", count)
+		return nil
+	}
+	documents, _, err := readAuditedCorpus(root, corpusPath, inventoryPath)
+	if err != nil {
+		return err
+	}
+	if err := ingest.Import(context.Background(), db, documents); err != nil {
+		return err
+	}
+	fmt.Printf("ingested %d approved recipes\n", len(documents))
 	return nil
 }
 

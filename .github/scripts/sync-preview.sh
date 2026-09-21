@@ -46,17 +46,24 @@ resources:
 EOF
 
 cat > "$dir/resources.yaml" <<EOF
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
 metadata:
-  name: grocery-router-pr-$pr-data
+  name: grocery-router-pr-$pr-db
   namespace: grocery-router-dev
 spec:
-  accessModes: [ReadWriteOnce]
-  storageClassName: local-path
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18.4-system-trixie
+  bootstrap:
+    initdb:
+      database: grocery_router
+      owner: grocery_router
+  storage:
+    storageClass: local-path
+    size: 2Gi
   resources:
-    requests:
-      storage: 2Gi
+    requests: {cpu: 50m, memory: 192Mi}
+    limits: {cpu: 500m, memory: 512Mi}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -82,14 +89,18 @@ spec:
         runAsNonRoot: true
         runAsUser: 65532
         runAsGroup: 65532
-        fsGroup: 65532
-        fsGroupChangePolicy: OnRootMismatch
         seccompProfile:
           type: RuntimeDefault
       containers:
         - name: grocery-router
           image: ghcr.io/mbcoward3/grocery-router:$tag
           imagePullPolicy: IfNotPresent
+          env:
+            - name: GROCERY_ROUTER_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: grocery-router-pr-$pr-db-app
+                  key: uri
           ports:
             - name: http
               containerPort: 8080
@@ -110,12 +121,8 @@ spec:
             capabilities: {drop: [ALL]}
             readOnlyRootFilesystem: true
           volumeMounts:
-            - {name: data, mountPath: /data}
             - {name: tmp, mountPath: /tmp}
       volumes:
-        - name: data
-          persistentVolumeClaim:
-            claimName: grocery-router-pr-$pr-data
         - name: tmp
           emptyDir: {sizeLimit: 128Mi}
 ---

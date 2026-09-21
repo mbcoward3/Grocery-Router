@@ -193,7 +193,7 @@ review:
 
 # Beef Pot Roast
 
-> Approved bootstrap recipe. YAML front matter is ingested into SQLite; the sections below
+> Approved bootstrap recipe. YAML front matter is ingested into PostgreSQL; the sections below
 > are the checked human-readable view.
 
 ## Recipe details

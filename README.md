@@ -5,7 +5,7 @@ recipe pool and a deterministic grocery checklist.
 
 ## Status
 
-**The previous prototype has been removed from the active tree.** The Go/SQLite corpus
+**The previous prototype has been removed from the active tree.** The Go/PostgreSQL corpus
 foundation, current-week HTTP API, and initial React application shell are now in place. The
 PDF-controlled ledger contains 25 recipes. Completed household re-review includes 24 in the
 strict Markdown bootstrap and explicitly excludes Chicken and Dumplings.
@@ -47,7 +47,7 @@ task generate             # regenerate typed sqlc query code
 task trueup-inventory     # validate all 25 PDF inventory rows
 task corpus-render        # refresh checked human-readable recipe sections
 task corpus-audit         # validate approved Markdown recipes
-task corpus-ingest        # migrate and load an empty local SQLite DB
+task corpus-ingest        # migrate and load an empty PostgreSQL database
 task migrate              # migrate without loading the corpus
 task serve                # start the local JSON API
 task web-install          # install locked frontend dependencies
@@ -55,12 +55,14 @@ task web-dev              # start Vite with an API development proxy
 task web-ci               # generate, type-check, test, and build the frontend
 ```
 
-Pass command flags after `--`, for example `task migrate -- --database /tmp/router.db`. The CLI
-also accepts `GROCERY_ROUTER_DATABASE`, `GROCERY_ROUTER_ROOT`, `GROCERY_ROUTER_CORPUS`, and
+Start local PostgreSQL with `task db-up`. Pass command flags after `--`, for example
+`task migrate -- --database-url "$GROCERY_ROUTER_DATABASE_URL"`. The CLI also accepts
+`GROCERY_ROUTER_DATABASE_URL`, `GROCERY_ROUTER_ROOT`, `GROCERY_ROUTER_CORPUS`, and
 `GROCERY_ROUTER_INVENTORY`; command-line flags take precedence. Run
 `go run ./cmd/grocery-router --help` for command-specific help.
 
-GitHub Actions runs `task ci` for pull requests and pushes to `main`. Run `task dev` from a fresh
+GitHub Actions runs `task ci` for pull requests and pushes to `main`. Local Go integration tests
+use PostgreSQL; run `task db-up` first or set `GROCERY_ROUTER_TEST_DATABASE_URL`. Run `task dev` from a fresh
 clone to install missing frontend dependencies, ingest the corpus into the local database, and
 start both servers. Open `http://localhost:5173`; another device on the same network can use the
 Network URL printed by Vite. The Week screen is the first live vertical slice. Grocery and

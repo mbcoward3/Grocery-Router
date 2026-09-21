@@ -6,7 +6,7 @@ Historical source: [`archive/interviews/v1-scope-interview.md`](archive/intervie
 
 This document records why v1 has its current shape. It is not a second specification: when
 wording conflicts, `V1_SPEC.md` governs behavior. The interview archive is non-authoritative
-and exists only to recover nuance.
+and exists only to recover nuance. D036 supersedes earlier SQLite-specific decisions.
 
 ## Authority order
 
@@ -457,7 +457,7 @@ infers it.
 ## D034 — Use a TanStack-first TypeScript frontend
 
 **Decision:** Build the React frontend with strict TypeScript and Vite. Use TanStack Router for
-typed navigation and TanStack Query for SQLite-backed server state. Prefer a mature TanStack
+typed navigation and TanStack Query for PostgreSQL-backed server state. Prefer a mature TanStack
 library when a future in-scope need fits one directly, including charting if charts are ever
 introduced.
 
@@ -490,3 +490,20 @@ system are not required to complete v1.
 
 **Revisit when:** Real-device testing reveals a legibility issue or a later public/hosted phase
 requires a broader marketing identity.
+
+## D036 — Replace SQLite with PostgreSQL managed by CloudNativePG
+
+**Decision:** PostgreSQL is the sole runtime data store. Production and preview databases run
+as CloudNativePG `Cluster` resources on the Talos Kubernetes cluster; local development uses a
+containerized PostgreSQL instance. Goose and sqlc remain the migration and query tools.
+
+**Why:** Deployment is no longer local-only, and PostgreSQL removes the application's coupling
+to a pod-mounted database file while providing a supported Kubernetes database lifecycle.
+
+**Consequence:** `GROCERY_ROUTER_DATABASE_URL` replaces the SQLite path, application pods are
+stateless, and CNPG owns credentials and persistent volumes. Existing SQLite data is not migrated
+because it contains no data worth preserving. A single database instance is appropriate while
+the Talos cluster has one node; additional instances would not provide node-level availability.
+
+**Revisit when:** The cluster gains multiple failure domains or requires object-store backups,
+point-in-time recovery, or a tested disaster-recovery policy.

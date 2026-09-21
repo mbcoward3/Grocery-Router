@@ -3,15 +3,13 @@ package ingest_test
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-	"time"
 
-	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
+	"github.com/mbcoward3/grocery-router/internal/testdatabase"
 )
 
 func approvedDocument(t *testing.T) ingest.Document {
@@ -146,16 +144,7 @@ func TestImportRollsBackCompleteSet(t *testing.T) {
 
 func openMigratedDB(t *testing.T) *sql.DB {
 	t.Helper()
-	dsn := fmt.Sprintf("file:ingest-%d?mode=memory&cache=shared", time.Now().UnixNano())
-	db, err := database.Open(dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-	if err := database.Migrate(context.Background(), db); err != nil {
-		t.Fatal(err)
-	}
-	return db
+	return testdatabase.Open(t)
 }
 
 func mustCount(t *testing.T, db *sql.DB, query string, destination *int) {

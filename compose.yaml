@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:18.4-alpine
+    environment:
+      POSTGRES_DB: grocery_router
+      POSTGRES_USER: grocery_router
+      POSTGRES_PASSWORD: grocery_router
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grocery_router -d grocery_router"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+volumes:
+  postgres-data:

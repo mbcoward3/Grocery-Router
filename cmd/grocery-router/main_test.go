@@ -8,17 +8,16 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/mbcoward3/grocery-router/internal/testdatabase"
 )
 
 func TestRunUsesDatabaseEnvironment(t *testing.T) {
-	databasePath := filepath.Join(t.TempDir(), "configured.db")
-	t.Setenv("GROCERY_ROUTER_DATABASE", databasePath)
+	_, databaseURL := testdatabase.OpenWithURL(t)
+	t.Setenv("GROCERY_ROUTER_DATABASE_URL", databaseURL)
 
 	if err := run([]string{"migrate"}, io.Discard, io.Discard); err != nil {
 		t.Fatalf("run migrate: %v", err)
-	}
-	if _, err := os.Stat(databasePath); err != nil {
-		t.Fatalf("stat configured database: %v", err)
 	}
 }
 

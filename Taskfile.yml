@@ -55,6 +55,16 @@ tasks:
     cmds:
       - npm run dev --prefix web
 
+  db-up:
+    desc: Start the local PostgreSQL database
+    cmds:
+      - docker compose up -d --wait postgres
+
+  db-down:
+    desc: Stop the local PostgreSQL database
+    cmds:
+      - docker compose down
+
   dev:
     desc: Bootstrap and start the complete local application
     cmds:
@@ -74,6 +84,11 @@ tasks:
       - npm run check --prefix web
       - npm test --prefix web
       - npm run build --prefix web
+
+  bootstrap:
+    desc: Migrate and load the corpus when PostgreSQL is empty
+    cmds:
+      - go run ./cmd/grocery-router bootstrap {{.CLI_ARGS}}
 
   migrate:
     desc: Apply database migrations (pass CLI flags after --)

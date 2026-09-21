@@ -11,7 +11,7 @@ selected visual baseline under `design/ui-explorations/concept-a.html`.
 - Plain responsive CSS for the deliberately small Atlas visual vocabulary
 - Vitest and Testing Library for component and client tests
 
-SQLite-backed values belong in TanStack Query rather than a second global store. Local UI state,
+PostgreSQL-backed values belong in TanStack Query rather than a second global store. Local UI state,
 such as an open picker, stays in the owning component. Add another TanStack package only when a
 current product requirement needs it; charting and other deferred features do not justify idle
 dependencies.

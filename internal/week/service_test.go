@@ -4,13 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"path/filepath"
 	"testing"
 	"time"
 
-	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
+	"github.com/mbcoward3/grocery-router/internal/testdatabase"
 	"github.com/mbcoward3/grocery-router/internal/week"
 )
 
@@ -118,21 +117,21 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	var completed int
 	var override, sourceAfter string
 	if err := db.QueryRow(`SELECT is_completed, override_text FROM shopping_lines
-		WHERE shopping_list_id = (SELECT id FROM shopping_lists WHERE week_id = ?)
-		AND aggregation_key = ?`, view.Week.ID, key).Scan(&completed, &override); err != nil {
+		WHERE shopping_list_id = (SELECT id FROM shopping_lists WHERE week_id = $1)
+		AND aggregation_key = $2`, view.Week.ID, key).Scan(&completed, &override); err != nil {
 		t.Fatal(err)
 	}
 	if completed != 1 || override != "buy two large containers" {
 		t.Fatalf("recomputed state = completed %d override %q", completed, override)
 	}
-	if err := db.QueryRow("SELECT source_text FROM recipe_ingredients WHERE source_text = ? LIMIT 1", sourceBefore).Scan(&sourceAfter); err != nil {
+	if err := db.QueryRow("SELECT source_text FROM recipe_ingredients WHERE source_text = $1 LIMIT 1", sourceBefore).Scan(&sourceAfter); err != nil {
 		t.Fatal(err)
 	}
 	if sourceAfter != sourceBefore {
 		t.Fatal("week override changed recipe truth")
 	}
 	var manualCount int
-	if err := db.QueryRow("SELECT count(*) FROM shopping_lines WHERE id = ? AND origin = 'manual'", manual.ID).Scan(&manualCount); err != nil {
+	if err := db.QueryRow("SELECT count(*) FROM shopping_lines WHERE id = $1 AND origin = 'manual'", manual.ID).Scan(&manualCount); err != nil {
 		t.Fatal(err)
 	}
 	if manualCount != 1 {
@@ -170,15 +169,7 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 
 func testService(t *testing.T) (*week.Service, *sql.DB) {
 	t.Helper()
-	dsn := fmt.Sprintf("file:week-%d?mode=memory&cache=shared", time.Now().UnixNano())
-	db, err := database.Open(dsn)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { db.Close() })
-	if err := database.Migrate(context.Background(), db); err != nil {
-		t.Fatal(err)
-	}
+	db := testdatabase.Open(t)
 	documents, err := ingest.ReadDirectory(filepath.Join("..", "..", "corpus", "recipes"))
 	if err != nil {
 		t.Fatal(err)
@@ -201,7 +192,7 @@ func assertAllShoppingContributionsPresent(t *testing.T, db *sql.DB, weekID int6
 		FROM week_recipes wr
 		JOIN recipe_ingredient_sections ris ON ris.recipe_id = wr.recipe_id
 		JOIN recipe_ingredients ri ON ri.section_id = ris.id
-		WHERE wr.week_id = ? AND ri.include_on_grocery_list = 1
+		WHERE wr.week_id = $1 AND ri.include_on_grocery_list = 1
 	`, weekID).Scan(&wanted); err != nil {
 		t.Fatal(err)
 	}
@@ -210,7 +201,7 @@ func assertAllShoppingContributionsPresent(t *testing.T, db *sql.DB, weekID int6
 		FROM shopping_line_contributions c
 		JOIN shopping_lines sl ON sl.id = c.shopping_line_id
 		JOIN shopping_lists list ON list.id = sl.shopping_list_id
-		WHERE list.week_id = ?
+		WHERE list.week_id = $1
 	`, weekID).Scan(&got); err != nil {
 		t.Fatal(err)
 	}

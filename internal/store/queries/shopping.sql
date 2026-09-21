@@ -1,10 +1,10 @@
 -- name: ListGeneratedShoppingLineStates :many
 SELECT id, aggregation_key, is_removed, is_completed, override_text
 FROM shopping_lines
-WHERE shopping_list_id = ? AND origin = 'generated';
+WHERE shopping_list_id = $1 AND origin = 'generated';
 
 -- name: DeleteGeneratedShoppingLines :exec
-DELETE FROM shopping_lines WHERE shopping_list_id = ? AND origin = 'generated';
+DELETE FROM shopping_lines WHERE shopping_list_id = $1 AND origin = 'generated';
 
 -- name: CreateGeneratedShoppingLine :one
 INSERT INTO shopping_lines (
@@ -14,7 +14,7 @@ INSERT INTO shopping_lines (
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
     is_optional, is_removed, is_completed, display_position, override_text
-) VALUES (?, ?, ?, ?, 'generated', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4, 'generated', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
 RETURNING *;
 
 -- name: CreateShoppingLineContribution :one
@@ -24,7 +24,7 @@ INSERT INTO shopping_line_contributions (
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
     is_optional
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 RETURNING *;
 
 -- name: ListShoppingLines :many
@@ -34,7 +34,7 @@ FROM shopping_lines sl
 JOIN store_sections ss ON ss.id = sl.store_section_id
 LEFT JOIN units u ON u.id = sl.unit_id
 LEFT JOIN units psu ON psu.id = sl.package_size_unit_id
-WHERE sl.shopping_list_id = ?
+WHERE sl.shopping_list_id = $1
 ORDER BY ss.name, sl.display_position, sl.display_name, sl.id;
 
 -- name: ListShoppingLineContributions :many
@@ -46,26 +46,26 @@ JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredients ri ON ri.id = c.recipe_ingredient_id
 LEFT JOIN units u ON u.id = c.unit_id
 LEFT JOIN units psu ON psu.id = c.package_size_unit_id
-WHERE c.shopping_line_id = ?
+WHERE c.shopping_line_id = $1
 ORDER BY wr.position, c.id;
 
 -- name: GetOtherStoreSection :one
 SELECT * FROM store_sections WHERE key = 'other';
 
 -- name: NextManualShoppingLinePosition :one
-SELECT CAST(coalesce(max(display_position) + 1, 0) AS INTEGER)
-FROM shopping_lines WHERE shopping_list_id = ? AND origin = 'manual';
+SELECT CAST(coalesce(max(display_position) + 1, 0) AS BIGINT)
+FROM shopping_lines WHERE shopping_list_id = $1 AND origin = 'manual';
 
 -- name: CreateManualShoppingLine :one
 INSERT INTO shopping_lines (
     shopping_list_id, store_section_id, origin, display_name, quantity_kind,
     display_position
-) VALUES (?, ?, 'manual', ?, 'unspecified', ?)
+) VALUES ($1, $2, 'manual', $3, 'unspecified', $4)
 RETURNING *;
 
 -- name: SetShoppingLineRemoved :execrows
 UPDATE shopping_lines
-SET is_removed = sqlc.arg(removed), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+SET is_removed = sqlc.arg(removed), updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 WHERE shopping_lines.id = sqlc.arg(line_id) AND shopping_list_id = (
     SELECT list.id FROM shopping_lists list
     JOIN weeks w ON w.id = list.week_id
@@ -74,7 +74,7 @@ WHERE shopping_lines.id = sqlc.arg(line_id) AND shopping_list_id = (
 
 -- name: SetShoppingLineCompleted :execrows
 UPDATE shopping_lines
-SET is_completed = sqlc.arg(completed), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+SET is_completed = sqlc.arg(completed), updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 WHERE shopping_lines.id = sqlc.arg(line_id) AND shopping_list_id = (
     SELECT list.id FROM shopping_lists list
     JOIN weeks w ON w.id = list.week_id
@@ -83,7 +83,7 @@ WHERE shopping_lines.id = sqlc.arg(line_id) AND shopping_list_id = (
 
 -- name: SetShoppingLineOverride :execrows
 UPDATE shopping_lines
-SET override_text = sqlc.arg(override_text), updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+SET override_text = sqlc.arg(override_text), updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 WHERE shopping_lines.id = sqlc.arg(line_id) AND origin = 'generated' AND shopping_list_id = (
     SELECT list.id FROM shopping_lists list
     JOIN weeks w ON w.id = list.week_id

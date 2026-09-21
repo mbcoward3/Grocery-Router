@@ -18,7 +18,7 @@ INSERT INTO shopping_lines (
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
     is_optional, is_removed, is_completed, display_position, override_text
-) VALUES (?, ?, ?, ?, 'generated', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4, 'generated', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
 RETURNING id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key, origin, display_name, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, is_removed, is_completed, display_position, override_text, created_at, updated_at
 `
 
@@ -102,7 +102,7 @@ const createManualShoppingLine = `-- name: CreateManualShoppingLine :one
 INSERT INTO shopping_lines (
     shopping_list_id, store_section_id, origin, display_name, quantity_kind,
     display_position
-) VALUES (?, ?, 'manual', ?, 'unspecified', ?)
+) VALUES ($1, $2, 'manual', $3, 'unspecified', $4)
 RETURNING id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key, origin, display_name, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, is_removed, is_completed, display_position, override_text, created_at, updated_at
 `
 
@@ -157,7 +157,7 @@ INSERT INTO shopping_line_contributions (
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
     is_optional
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 RETURNING id, shopping_line_id, week_recipe_id, recipe_ingredient_id, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional
 `
 
@@ -217,7 +217,7 @@ func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg Create
 }
 
 const deleteGeneratedShoppingLines = `-- name: DeleteGeneratedShoppingLines :exec
-DELETE FROM shopping_lines WHERE shopping_list_id = ? AND origin = 'generated'
+DELETE FROM shopping_lines WHERE shopping_list_id = $1 AND origin = 'generated'
 `
 
 func (q *Queries) DeleteGeneratedShoppingLines(ctx context.Context, shoppingListID int64) error {
@@ -226,7 +226,7 @@ func (q *Queries) DeleteGeneratedShoppingLines(ctx context.Context, shoppingList
 }
 
 const getOtherStoreSection = `-- name: GetOtherStoreSection :one
-SELECT id, "key", name FROM store_sections WHERE key = 'other'
+SELECT id, key, name FROM store_sections WHERE key = 'other'
 `
 
 func (q *Queries) GetOtherStoreSection(ctx context.Context) (StoreSection, error) {
@@ -239,7 +239,7 @@ func (q *Queries) GetOtherStoreSection(ctx context.Context) (StoreSection, error
 const listGeneratedShoppingLineStates = `-- name: ListGeneratedShoppingLineStates :many
 SELECT id, aggregation_key, is_removed, is_completed, override_text
 FROM shopping_lines
-WHERE shopping_list_id = ? AND origin = 'generated'
+WHERE shopping_list_id = $1 AND origin = 'generated'
 `
 
 type ListGeneratedShoppingLineStatesRow struct {
@@ -288,7 +288,7 @@ JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredients ri ON ri.id = c.recipe_ingredient_id
 LEFT JOIN units u ON u.id = c.unit_id
 LEFT JOIN units psu ON psu.id = c.package_size_unit_id
-WHERE c.shopping_line_id = ?
+WHERE c.shopping_line_id = $1
 ORDER BY wr.position, c.id
 `
 
@@ -368,7 +368,7 @@ FROM shopping_lines sl
 JOIN store_sections ss ON ss.id = sl.store_section_id
 LEFT JOIN units u ON u.id = sl.unit_id
 LEFT JOIN units psu ON psu.id = sl.package_size_unit_id
-WHERE sl.shopping_list_id = ?
+WHERE sl.shopping_list_id = $1
 ORDER BY ss.name, sl.display_position, sl.display_name, sl.id
 `
 
@@ -458,8 +458,8 @@ func (q *Queries) ListShoppingLines(ctx context.Context, shoppingListID int64) (
 }
 
 const nextManualShoppingLinePosition = `-- name: NextManualShoppingLinePosition :one
-SELECT CAST(coalesce(max(display_position) + 1, 0) AS INTEGER)
-FROM shopping_lines WHERE shopping_list_id = ? AND origin = 'manual'
+SELECT CAST(coalesce(max(display_position) + 1, 0) AS BIGINT)
+FROM shopping_lines WHERE shopping_list_id = $1 AND origin = 'manual'
 `
 
 func (q *Queries) NextManualShoppingLinePosition(ctx context.Context, shoppingListID int64) (int64, error) {
@@ -471,11 +471,11 @@ func (q *Queries) NextManualShoppingLinePosition(ctx context.Context, shoppingLi
 
 const setShoppingLineCompleted = `-- name: SetShoppingLineCompleted :execrows
 UPDATE shopping_lines
-SET is_completed = ?1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE shopping_lines.id = ?2 AND shopping_list_id = (
+SET is_completed = $1, updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE shopping_lines.id = $2 AND shopping_list_id = (
     SELECT list.id FROM shopping_lists list
     JOIN weeks w ON w.id = list.week_id
-    WHERE w.starts_on = ?3
+    WHERE w.starts_on = $3
 )
 `
 
@@ -495,11 +495,11 @@ func (q *Queries) SetShoppingLineCompleted(ctx context.Context, arg SetShoppingL
 
 const setShoppingLineOverride = `-- name: SetShoppingLineOverride :execrows
 UPDATE shopping_lines
-SET override_text = ?1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE shopping_lines.id = ?2 AND origin = 'generated' AND shopping_list_id = (
+SET override_text = $1, updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE shopping_lines.id = $2 AND origin = 'generated' AND shopping_list_id = (
     SELECT list.id FROM shopping_lists list
     JOIN weeks w ON w.id = list.week_id
-    WHERE w.starts_on = ?3
+    WHERE w.starts_on = $3
 )
 `
 
@@ -519,11 +519,11 @@ func (q *Queries) SetShoppingLineOverride(ctx context.Context, arg SetShoppingLi
 
 const setShoppingLineRemoved = `-- name: SetShoppingLineRemoved :execrows
 UPDATE shopping_lines
-SET is_removed = ?1, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
-WHERE shopping_lines.id = ?2 AND shopping_list_id = (
+SET is_removed = $1, updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE shopping_lines.id = $2 AND shopping_list_id = (
     SELECT list.id FROM shopping_lists list
     JOIN weeks w ON w.id = list.week_id
-    WHERE w.starts_on = ?3
+    WHERE w.starts_on = $3
 )
 `
 

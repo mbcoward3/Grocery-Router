@@ -1,4 +1,4 @@
-// Package database opens SQLite with application invariants and applies embedded migrations.
+// Package database opens PostgreSQL connections and applies embedded migrations.
 package database
 
 import (
@@ -6,9 +6,10 @@ import (
 	"database/sql"
 	"embed"
 	"fmt"
+	"time"
 
+	_ "github.com/jackc/pgx/v5/stdlib" // Register the pgx database/sql driver.
 	"github.com/pressly/goose/v3"
-	_ "modernc.org/sqlite" // Register the pure-Go SQLite database driver.
 )
 
 // migrations is the single authoritative migration set used by the application, tests,
@@ -17,27 +18,19 @@ import (
 //go:embed migrations/*.sql
 var migrations embed.FS
 
-// Open opens SQLite with the connection invariants Grocery Router relies on. Foreign keys
-// are enabled in the DSN so the setting applies to every pooled connection, not merely the
-// first one returned by database/sql.
+// Open opens and verifies a PostgreSQL connection pool.
 func Open(dataSourceName string) (*sql.DB, error) {
-	dsn := dataSourceName
-	separator := "?"
-	for _, b := range dsn {
-		if b == '?' {
-			separator = "&"
-			break
-		}
-	}
-	dsn += separator + "_pragma=foreign_keys(1)&_pragma=busy_timeout(5000)"
-
-	db, err := sql.Open("sqlite", dsn)
+	db, err := sql.Open("pgx", dataSourceName)
 	if err != nil {
-		return nil, fmt.Errorf("open sqlite: %w", err)
+		return nil, fmt.Errorf("open postgres: %w", err)
 	}
+	db.SetConnMaxIdleTime(5 * time.Minute)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	db.SetMaxIdleConns(2)
+	db.SetMaxOpenConns(10)
 	if err := db.Ping(); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("ping sqlite: %w", err)
+		return nil, fmt.Errorf("ping postgres: %w", err)
 	}
 	return db, nil
 }
@@ -45,7 +38,7 @@ func Open(dataSourceName string) (*sql.DB, error) {
 // Migrate applies all embedded Goose migrations in order.
 func Migrate(ctx context.Context, db *sql.DB) error {
 	goose.SetBaseFS(migrations)
-	if err := goose.SetDialect("sqlite3"); err != nil {
+	if err := goose.SetDialect("postgres"); err != nil {
 		return fmt.Errorf("set goose dialect: %w", err)
 	}
 	if err := goose.UpContext(ctx, db, "migrations"); err != nil {
