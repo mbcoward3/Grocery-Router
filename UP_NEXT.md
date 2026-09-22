@@ -64,7 +64,7 @@ scope requires a new phase with its own acceptance criteria.
   and reversions instead of only current truth.
 - **Recipe roles and taxonomy.** Mains, sides, breakfasts, lunches, desserts, cuisines,
   proteins, and tags.
-- **Search and filtering.** Find recipes by name, role, time, ingredient, or future metadata.
+- **Advanced recipe filtering.** Filter the corpus by role, time, ingredient, or future metadata. Basic alphabetical browsing and name search are now part of v1.
 - **Robust image ingestion.** Download, store, transform, attribute, and provide fallbacks
   for recipe images.
 

@@ -40,7 +40,7 @@ traceable grocery checklist.
 **Why:** Reliable recipe data and quantities are the prerequisite for every more ambitious
 feature. Discovery, learning, inventory, and agent reasoning obscure whether the core works.
 
-**Consequence:** There are only three product screens: Week, Groceries, and Recipe detail.
+**Consequence:** The core workflow uses Week, Groceries, Recipes, and Recipe detail screens. The Recipes screen was added by D037 after household use exposed a corpus-access gap.
 
 **Revisit when:** The complete workflow is trusted in real household use.
 
@@ -507,3 +507,19 @@ the Talos cluster has one node; additional instances would not provide node-leve
 
 **Revisit when:** The cluster gains multiple failure domains or requires object-store backups,
 point-in-time recovery, or a tested disaster-recovery policy.
+
+## D037 — Make the verified corpus directly browsable
+
+**Decision:** Add a permanent Recipes screen that lists verified recipes alphabetically, supports
+name search, opens the existing recipe detail view, and allows adding a recipe to an existing
+current week.
+
+**Why:** Household use exposed that recipe details were reachable only through the current week.
+Finding an approved recipe for ad hoc cooking required temporarily changing the plan, even though
+the API already treated the verified corpus as readable application data.
+
+**Consequence:** Grocery Router has four product screens. Search remains intentionally limited to
+recipe names; role, ingredient, time, and taxonomy filters remain deferred until their metadata and
+use cases justify them. The active query is preserved when returning from recipe detail.
+
+**Revisit when:** Corpus size or observed lookup behavior makes name search insufficient.

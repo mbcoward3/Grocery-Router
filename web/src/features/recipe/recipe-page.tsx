@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useParams, useSearch } from '@tanstack/react-router'
 import { getRecipe, type RecipeSummary } from '../../api/client'
 import { ArrowIcon, ExternalIcon } from '../../ui/icons'
 
 export function RecipePage() {
   const { recipeId } = useParams({ strict: false }) as { recipeId: string }
+  const search = useSearch({ strict: false }) as { from?: 'recipes'; q?: string }
+  const fromRecipes = search.from === 'recipes'
   const id = Number(recipeId)
   const query = useQuery({
     queryKey: ['recipes', id],
@@ -17,7 +19,9 @@ export function RecipePage() {
     return (
       <div className="error-panel" role="alert">
         <div><strong>Couldn’t load this recipe.</strong><p>{query.error?.message ?? 'The recipe ID is invalid.'}</p></div>
-        <Link className="button" to="/">Back to week</Link>
+        {fromRecipes
+          ? <Link className="button" to="/recipes" search={{ q: search.q }}>Back to recipes</Link>
+          : <Link className="button" to="/">Back to week</Link>}
       </div>
     )
   }
@@ -26,7 +30,9 @@ export function RecipePage() {
   const primarySource = recipe.sources.find((source) => source.primary) ?? recipe.sources[0]
   return (
     <article className="recipe-detail">
-      <Link className="recipe-back" to="/"><span aria-hidden="true">←</span> This week</Link>
+      {fromRecipes
+        ? <Link className="recipe-back" to="/recipes" search={{ q: search.q }}><span aria-hidden="true">←</span> Recipes</Link>
+        : <Link className="recipe-back" to="/"><span aria-hidden="true">←</span> This week</Link>}
       <header className="recipe-detail-header">
         <div className="eyebrow">Recipe</div>
         <h1>{recipe.name}</h1>

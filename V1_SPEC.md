@@ -34,7 +34,7 @@ v1 is successful when the user can:
 
 1. manually generate the current week's pool with a chosen number of recipes;
 2. add, remove, randomly swap, specifically swap, or regenerate recipes;
-3. inspect any selected recipe in a usable in-app recipe view;
+3. browse or search the verified corpus by recipe name and inspect any recipe without adding it to the week;
 4. produce a store-sectioned grocery list containing all requirements from the selected recipe batches;
 5. understand which recipes contributed to every generated line;
 6. make week-only list edits and check items off from an iPhone; and
@@ -97,6 +97,7 @@ The schema must not prevent future serving scaling, substitutions, onboarding, a
 - Deterministic grocery aggregation.
 - Editable grocery checklist.
 - Recipe detail pages with in-app instructions.
+- A verified-corpus browser with alphabetical browsing, recipe-name search, and add-to-week actions.
 - Responsive, polished planning and shopping interfaces.
 - Retention of generated weeks in PostgreSQL.
 
@@ -106,7 +107,7 @@ The schema must not prevent future serving scaling, substitutions, onboarding, a
 - AI-generated meal choices.
 - Recipe discovery and recommendations.
 - Candidate recipes or membership scoring.
-- Search and filtering in the recipe picker.
+- Advanced recipe filtering by ingredient, time, role, or other metadata.
 - Day-by-day meal scheduling.
 - Guest counts and household-size scaling.
 - Leftovers and repeat-night planning.
@@ -444,11 +445,16 @@ Interactive cooking mode, timers, step checkboxes, and recipe editing are deferr
 
 ### 10.1 Screens
 
-v1 has exactly three product screens:
+v1 has exactly four product screens:
 
 1. **Week**
 2. **Groceries**
-3. **Recipe detail**
+3. **Recipes**
+4. **Recipe detail**
+
+The Recipes screen lists all verified recipes alphabetically, supports immediate name search,
+shows available time and yield metadata, opens recipe details directly, and can add a recipe
+to an existing current week. Returning from recipe detail preserves the active search.
 
 Past weeks may be retained in PostgreSQL but are not exposed in v1.
 
@@ -828,12 +834,14 @@ Automated browser coverage must verify the critical mobile-capable path:
 1. open an empty current week;
 2. generate a chosen number of recipes;
 3. add, remove, and swap recipes;
-4. open recipe details;
-5. view grouped groceries;
-6. expand recipe contributions;
-7. add and remove a manual item;
-8. override a weekly quantity; and
-9. check an item off and observe its de-emphasized state.
+4. browse and search the verified recipe corpus;
+5. open recipe details without first adding the recipe to the week;
+6. add a corpus recipe to the current week;
+7. view grouped groceries;
+8. expand recipe contributions;
+9. add and remove a manual item;
+10. override a weekly quantity; and
+11. check an item off and observe its de-emphasized state.
 
 The same path must remain usable at an iPhone-sized viewport.
 
@@ -882,7 +890,7 @@ Grocery Router v1 is done when:
 8. every selectable recipe satisfies the verification contract;
 9. the complete-corpus audit passes and a fresh database can ingest every committed approved recipe file;
 10. reusable ingestion rules, fixtures, validation queries, and future-agent context remain after true-up;
-11. the three required screens work well on desktop and iPhone;
+11. the four required screens work well on desktop and iPhone;
 12. random generation and all specified pool edits work without AI;
 13. grocery generation includes every recipe requirement with exact, traceable aggregation and no inventory assumptions;
 14. weekly list editing and completion work without modifying recipe truth;

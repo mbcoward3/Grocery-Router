@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { currentWeekQueryOptions } from '../features/week/queries'
-import { BagIcon, BrandMark, CalendarIcon } from './icons'
+import { BagIcon, BrandMark, CalendarIcon, RecipeIcon } from './icons'
 
 export function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const week = useQuery(currentWeekQueryOptions)
-  const crumb = pathname === '/' ? 'Week' : pathname === '/groceries' ? 'Groceries' : 'Recipe detail'
+  const crumb = pathname === '/' ? 'Week' : pathname === '/groceries' ? 'Groceries' : pathname === '/recipes' ? 'Recipes' : 'Recipe detail'
 
   return (
     <div className="app-shell">
@@ -25,6 +25,10 @@ export function AppShell() {
           <Link to="/groceries" activeProps={{ className: 'active' }}>
             <BagIcon />
             <span>Groceries</span>
+          </Link>
+          <Link to="/recipes" activeOptions={{ exact: true }} activeProps={{ className: 'active' }}>
+            <RecipeIcon />
+            <span>Recipes</span>
           </Link>
         </nav>
         <div className="sidebar-footer"><span>Local only</span><span>v1</span></div>
