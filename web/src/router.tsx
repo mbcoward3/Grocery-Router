@@ -8,6 +8,7 @@ import {
 import { AppShell } from './ui/app-shell'
 import { GroceriesPage } from './features/groceries/groceries-page'
 import { RecipePage } from './features/recipe/recipe-page'
+import { RecipesPage } from './features/recipes/recipes-page'
 import { WeekPage } from './features/week/week-page'
 
 interface RouterContext {
@@ -35,9 +36,22 @@ const groceriesRoute = createRoute({
   component: GroceriesPage,
 })
 
+const recipesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/recipes',
+  validateSearch: (search: Record<string, unknown>): { q?: string } => (
+    typeof search.q === 'string' && search.q.length > 0 ? { q: search.q } : {}
+  ),
+  component: RecipesPage,
+})
+
 const recipeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/recipes/$recipeId',
+  validateSearch: (search: Record<string, unknown>): { from?: 'recipes'; q?: string } => ({
+    ...(search.from === 'recipes' ? { from: 'recipes' as const } : {}),
+    ...(typeof search.q === 'string' && search.q.length > 0 ? { q: search.q } : {}),
+  }),
   component: RecipePage,
 })
 
@@ -59,7 +73,7 @@ function StatePage({
   )
 }
 
-const routeTree = rootRoute.addChildren([weekRoute, groceriesRoute, recipeRoute])
+const routeTree = rootRoute.addChildren([weekRoute, groceriesRoute, recipesRoute, recipeRoute])
 
 export const router = createRouter({ routeTree, context: { queryClient: undefined! } })
 
