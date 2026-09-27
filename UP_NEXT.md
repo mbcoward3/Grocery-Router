@@ -94,9 +94,15 @@ scope requires a new phase with its own acceptance criteria.
 - **Generated database releases.** Package and verify a ready-to-restore PostgreSQL snapshot from the
   approved Markdown corpus through an explicit release process.
 - **Single-binary packaging.** Embed frontend assets in Go if distribution needs it.
-- **Authentication.** Required before trusting clients outside the local network.
-- **Multiple users/households.** Identity, concurrent household use, tenancy, permissions,
-  and attributed feedback.
+- **Public registration and household invitations.** The approved Google-only authentication phase
+  in [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) admits only the two configured owners.
+  Public signup, invitation delivery and acceptance, recovery, and self-service account management
+  require a separate product phase.
+- **Additional identity providers.** The active identity model is provider-independent, but Apple,
+  native passwordless email, passkeys, MFA, and account-linking UI remain deferred until required.
+- **Additional household creation.** The auth model supports multiple household memberships, but
+  self-service household creation needs a separate rule for obtaining or onboarding a recipe
+  corpus; it must not create unexplained copies of the current family's approved data.
 - **Offline synchronization.** Reconcile edits made by multiple devices or while detached
   from the local server.
 

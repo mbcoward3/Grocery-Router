@@ -4,9 +4,10 @@
 
 Read in this order:
 
-1. `V1_SPEC.md`
-2. `UP_NEXT.md`
-3. `PRODUCT_DECISIONS.md` for rationale
+1. `V1_SPEC.md` for the completed base product contract
+2. `AUTH_HOUSEHOLDS_SPEC.md` for the current approved post-v1 authentication phase
+3. `UP_NEXT.md`
+4. `PRODUCT_DECISIONS.md` for rationale
 
 The completed true-up ledger is archived at `archive/trueup/recipes.csv`; it is evidence, not
 an active planning authority.
@@ -24,8 +25,11 @@ completed disposition of all 25 PDF recipes. Completed household re-review inclu
 bootstrap recipes under `corpus/recipes/` and explicitly excludes Chicken and Dumplings. The
 frontend is React/TypeScript/Vite with TanStack Router and TanStack Query; the Week vertical
 slice is runnable.
-Runtime AI, Docker, hosting, authentication, pantry inference, scaling, and recipe discovery
-are out of v1.
+Runtime AI, pantry inference, scaling, and recipe discovery remain out of scope. Authentication
+is still excluded from the original v1 contract, but direct Google OIDC and the shared `Coward`
+household are now authorized as the focused post-v1 phase in `AUTH_HOUSEHOLDS_SPEC.md`. Public
+signup, invitations, additional identity providers, and additional-household creation remain
+deferred.
 
 ## Corpus rules
 
