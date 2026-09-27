@@ -53,7 +53,7 @@ export function WeekPage() {
   if (!week) {
     return (
       <section aria-labelledby="week-heading">
-        <PageHeading count={0} />
+        <PageHeading count={0} startsOn={null} />
         <div className="empty-week">
           <div className="empty-mark" aria-hidden="true">✦</div>
           <h2 id="week-heading">Build this week’s recipe pool</h2>
@@ -86,7 +86,7 @@ export function WeekPage() {
 
   return (
     <section aria-labelledby="week-heading" aria-busy={mutation.isPending}>
-      <PageHeading count={week.recipes.length}>
+      <PageHeading count={week.recipes.length} startsOn={week.startsOn}>
         <button className="button" type="button" onClick={() => mutation.mutate({ type: 'generate', recipeCount: week.recipes.length })} disabled={mutation.isPending || week.recipes.length === 0}>
           <SwapIcon /> Refresh pool
         </button>
@@ -151,13 +151,16 @@ export function WeekPage() {
   )
 }
 
-function PageHeading({ count, children }: { count: number; children?: React.ReactNode }) {
+function PageHeading({ count, startsOn, children }: { count: number; startsOn: string | null; children?: React.ReactNode }) {
   return (
     <header className="page-heading">
       <div>
-        <div className="eyebrow">Current pool</div>
-        <h1 id="week-heading">Recipes for this week</h1>
-        <p>A flexible set of meals, ready when you are.</p>
+        <div className="eyebrow">Current week</div>
+        <div className="week-title-line">
+          <h1 id="week-heading">This week</h1>
+          <span className={`planning-status ${startsOn ? 'planned' : 'unplanned'}`}>{startsOn ? `Planned · ${count} ${count === 1 ? 'meal' : 'meals'}` : 'Not planned'}</span>
+        </div>
+        <p>{startsOn ? formatWeekRange(startsOn) : 'Choose your meals when you’re ready.'}</p>
       </div>
       <div className="page-actions">{children}</div>
       <span className="page-count">{count} {count === 1 ? 'recipe' : 'recipes'}</span>
@@ -209,7 +212,7 @@ function RecipePicker({
 function WeekSkeleton() {
   return (
     <section aria-label="Loading this week" aria-busy="true">
-      <PageHeading count={0} />
+      <PageHeading count={0} startsOn={null} />
       <div className="recipe-list skeleton-list">
         {Array.from({ length: 4 }, (_, index) => <div className="skeleton-row" key={index} />)}
       </div>
@@ -242,6 +245,15 @@ function durationLabel(recipe: RecipeSummary): string | null {
 
 function formatWeekDate(date: string): string {
   return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`))
+}
+
+function formatWeekRange(date: string): string {
+  const start = new Date(`${date}T00:00:00Z`)
+  const end = new Date(start)
+  end.setUTCDate(end.getUTCDate() + 6)
+  const startText = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(start)
+  const endText = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(end)
+  return `${startText} – ${endText}`
 }
 
 function runWeekAction(action: WeekAction): Promise<Week> {

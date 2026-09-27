@@ -5,6 +5,23 @@ RETURNING *;
 -- name: GetWeekByStart :one
 SELECT * FROM weeks WHERE starts_on = $1;
 
+-- name: ListPastWeeks :many
+SELECT
+    w.*,
+    CAST((SELECT count(*) FROM week_recipes wr WHERE wr.week_id = w.id) AS BIGINT) AS recipe_count,
+    CAST((SELECT count(*) FROM shopping_lines sl
+        JOIN shopping_lists list ON list.id = sl.shopping_list_id
+        WHERE list.week_id = w.id AND sl.is_removed = 0) AS BIGINT) AS grocery_count,
+    CAST((SELECT count(*) FROM shopping_lines sl
+        JOIN shopping_lists list ON list.id = sl.shopping_list_id
+        WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
+FROM weeks w
+WHERE w.starts_on < $1
+ORDER BY w.starts_on DESC;
+
+-- name: GetPastWeek :one
+SELECT * FROM weeks WHERE id = $1 AND starts_on < $2;
+
 -- name: TouchWeek :exec
 UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') WHERE id = $1;
 

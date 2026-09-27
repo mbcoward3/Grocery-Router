@@ -89,6 +89,27 @@ func (q *Queries) DeleteWeekRecipes(ctx context.Context, weekID int64) error {
 	return err
 }
 
+const getPastWeek = `-- name: GetPastWeek :one
+SELECT id, starts_on, created_at, updated_at FROM weeks WHERE id = $1 AND starts_on < $2
+`
+
+type GetPastWeekParams struct {
+	ID       int64  `db:"id" json:"id"`
+	StartsOn string `db:"starts_on" json:"starts_on"`
+}
+
+func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error) {
+	row := q.db.QueryRowContext(ctx, getPastWeek, arg.ID, arg.StartsOn)
+	var i Week
+	err := row.Scan(
+		&i.ID,
+		&i.StartsOn,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const getShoppingListByWeek = `-- name: GetShoppingListByWeek :one
 SELECT id, week_id, created_at, updated_at FROM shopping_lists WHERE week_id = $1
 `
@@ -136,6 +157,62 @@ func (q *Queries) GetWeekRecipe(ctx context.Context, id int64) (WeekRecipe, erro
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const listPastWeeks = `-- name: ListPastWeeks :many
+SELECT
+    w.id, w.starts_on, w.created_at, w.updated_at,
+    CAST((SELECT count(*) FROM week_recipes wr WHERE wr.week_id = w.id) AS BIGINT) AS recipe_count,
+    CAST((SELECT count(*) FROM shopping_lines sl
+        JOIN shopping_lists list ON list.id = sl.shopping_list_id
+        WHERE list.week_id = w.id AND sl.is_removed = 0) AS BIGINT) AS grocery_count,
+    CAST((SELECT count(*) FROM shopping_lines sl
+        JOIN shopping_lists list ON list.id = sl.shopping_list_id
+        WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
+FROM weeks w
+WHERE w.starts_on < $1
+ORDER BY w.starts_on DESC
+`
+
+type ListPastWeeksRow struct {
+	ID             int64  `db:"id" json:"id"`
+	StartsOn       string `db:"starts_on" json:"starts_on"`
+	CreatedAt      string `db:"created_at" json:"created_at"`
+	UpdatedAt      string `db:"updated_at" json:"updated_at"`
+	RecipeCount    int64  `db:"recipe_count" json:"recipe_count"`
+	GroceryCount   int64  `db:"grocery_count" json:"grocery_count"`
+	CompletedCount int64  `db:"completed_count" json:"completed_count"`
+}
+
+func (q *Queries) ListPastWeeks(ctx context.Context, startsOn string) ([]ListPastWeeksRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPastWeeks, startsOn)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPastWeeksRow{}
+	for rows.Next() {
+		var i ListPastWeeksRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.StartsOn,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.RecipeCount,
+			&i.GroceryCount,
+			&i.CompletedCount,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listWeekIngredientRequirements = `-- name: ListWeekIngredientRequirements :many

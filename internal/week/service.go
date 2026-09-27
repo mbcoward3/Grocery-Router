@@ -20,6 +20,8 @@ var (
 	ErrNoCurrentWeek = errors.New("current week has not been generated")
 	// ErrOccurrence means a recipe occurrence does not belong to the current week.
 	ErrOccurrence = errors.New("week recipe occurrence not found")
+	// ErrPastWeek means the requested week is not an earlier generated week.
+	ErrPastWeek = errors.New("past week not found")
 )
 
 // Picker supplies unbiased indexes and can be replaced by deterministic tests.
@@ -77,6 +79,42 @@ func (service *Service) Current(ctx context.Context, now time.Time) (View, error
 		return View{}, err
 	}
 	return loadView(ctx, queries, weekRow)
+}
+
+// PastWeeks returns earlier generated weeks, newest first.
+func (service *Service) PastWeeks(ctx context.Context, now time.Time) ([]store.ListPastWeeksRow, error) {
+	return store.New(service.db).ListPastWeeks(ctx, CurrentSunday(now))
+}
+
+// HistoricalView is the final recipe pool and grocery checklist retained for an earlier week.
+type HistoricalView struct {
+	View
+	Checklist Checklist
+}
+
+// PastWeek returns a read-only earlier week with its retained checklist state.
+func (service *Service) PastWeek(ctx context.Context, now time.Time, weekID int64) (HistoricalView, error) {
+	queries := store.New(service.db)
+	weekRow, err := queries.GetPastWeek(ctx, store.GetPastWeekParams{ID: weekID, StartsOn: CurrentSunday(now)})
+	if errors.Is(err, sql.ErrNoRows) {
+		return HistoricalView{}, ErrPastWeek
+	}
+	if err != nil {
+		return HistoricalView{}, err
+	}
+	view, err := loadView(ctx, queries, weekRow)
+	if err != nil {
+		return HistoricalView{}, err
+	}
+	list, err := queries.GetShoppingListByWeek(ctx, weekRow.ID)
+	if err != nil {
+		return HistoricalView{}, err
+	}
+	lines, err := queries.ListShoppingLines(ctx, list.ID)
+	if err != nil {
+		return HistoricalView{}, err
+	}
+	return HistoricalView{View: view, Checklist: Checklist{List: list, Lines: lines}}, nil
 }
 
 // Generate creates or fully regenerates the current week with unique verified recipes.

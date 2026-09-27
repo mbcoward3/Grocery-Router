@@ -47,6 +47,40 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Week" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
+  /weeks/history:
+    get:
+      operationId: listWeekHistory
+      summary: List earlier generated weeks, newest first.
+      responses:
+        "200":
+          description: Read-only past-week summaries.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [weeks]
+                properties:
+                  weeks:
+                    type: array
+                    items: { $ref: "#/components/schemas/WeekHistorySummary" }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /weeks/history/{weekID}:
+    parameters:
+      - name: weekID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    get:
+      operationId: getHistoricalWeek
+      summary: Return an earlier week's final meals and retained grocery checklist.
+      responses:
+        "200":
+          description: Read-only historical week detail.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/HistoricalWeek" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /week/current/generate:
     post:
       operationId: generateCurrentWeek
@@ -335,6 +369,21 @@ components:
         recipes:
           type: array
           items: { $ref: "#/components/schemas/RecipeOccurrence" }
+    WeekHistorySummary:
+      type: object
+      required: [id, startsOn, recipeCount, groceryCount, completedCount]
+      properties:
+        id: { type: integer }
+        startsOn: { type: string, format: date }
+        recipeCount: { type: integer, minimum: 0 }
+        groceryCount: { type: integer, minimum: 0 }
+        completedCount: { type: integer, minimum: 0 }
+    HistoricalWeek:
+      type: object
+      required: [week, groceries]
+      properties:
+        week: { $ref: "#/components/schemas/Week" }
+        groceries: { $ref: "#/components/schemas/Groceries" }
     APIError:
       type: object
       required: [error]

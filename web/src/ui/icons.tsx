@@ -26,6 +26,9 @@ export const CalendarIcon = (props: IconProps) => (
 export const BagIcon = (props: IconProps) => (
   <Icon {...props}><path d="m5 8 2 12h10l2-12M8 8V6a4 4 0 0 1 8 0v2" /></Icon>
 )
+export const HistoryIcon = (props: IconProps) => (
+  <Icon {...props}><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6M12 7v5l3 2" /></Icon>
+)
 export const PlusIcon = (props: IconProps) => <Icon {...props}><path d="M12 5v14M5 12h14" /></Icon>
 export const SwapIcon = (props: IconProps) => (
   <Icon {...props}><path d="M20 7h-9a5 5 0 0 0-5 5m-2 5h9a5 5 0 0 0 5-5M17 4l3 3-3 3M7 14l-3 3 3 3" /></Icon>

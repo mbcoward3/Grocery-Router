@@ -57,6 +57,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/weeks/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List earlier generated weeks, newest first. */
+        get: operations["listWeekHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/weeks/history/{weekID}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                weekID: number;
+            };
+            cookie?: never;
+        };
+        /** Return an earlier week's final meals and retained grocery checklist. */
+        get: operations["getHistoricalWeek"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/week/current/generate": {
         parameters: {
             query?: never;
@@ -274,6 +310,18 @@ export interface components {
             startsOn: string;
             recipes: components["schemas"]["RecipeOccurrence"][];
         };
+        WeekHistorySummary: {
+            id: number;
+            /** Format: date */
+            startsOn: string;
+            recipeCount: number;
+            groceryCount: number;
+            completedCount: number;
+        };
+        HistoricalWeek: {
+            week: components["schemas"]["Week"];
+            groceries: components["schemas"]["Groceries"];
+        };
         APIError: {
             error: {
                 code: string;
@@ -430,6 +478,53 @@ export interface operations {
         responses: {
             200: components["responses"]["Week"];
             404: components["responses"]["NoCurrentWeek"];
+        };
+    };
+    listWeekHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Read-only past-week summaries. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        weeks: components["schemas"]["WeekHistorySummary"][];
+                    };
+                };
+            };
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getHistoricalWeek: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                weekID: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Read-only historical week detail. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoricalWeek"];
+                };
+            };
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
         };
     };
     generateCurrentWeek: {
