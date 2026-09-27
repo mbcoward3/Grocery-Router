@@ -11,6 +11,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
+// ExternalIdentity is the provider-independent result of successful authentication.
 type ExternalIdentity struct {
 	Issuer        string
 	Subject       string
@@ -19,17 +20,20 @@ type ExternalIdentity struct {
 	AvatarURL     string
 }
 
+// Provider isolates external authorization and identity-token behavior.
 type Provider interface {
 	AuthorizationURL(state, nonce, codeChallenge string) string
 	Authenticate(ctx context.Context, code, verifier, expectedNonce string) (ExternalIdentity, error)
 }
 
+// GoogleProvider implements direct OIDC authorization code flow with PKCE.
 type GoogleProvider struct {
 	issuer string
 	oauth  oauth2.Config
 	verify *oidc.IDTokenVerifier
 }
 
+// NewGoogleProvider discovers and configures the trusted OIDC provider.
 func NewGoogleProvider(ctx context.Context, config Config) (*GoogleProvider, error) {
 	provider, err := oidc.NewProvider(ctx, config.Issuer)
 	if err != nil {
@@ -46,6 +50,7 @@ func NewGoogleProvider(ctx context.Context, config Config) (*GoogleProvider, err
 	}, nil
 }
 
+// AuthorizationURL builds an authorization request with state, nonce, and PKCE.
 func (provider *GoogleProvider) AuthorizationURL(state, nonce, codeChallenge string) string {
 	return provider.oauth.AuthCodeURL(state,
 		oauth2.SetAuthURLParam("nonce", nonce),
@@ -54,6 +59,7 @@ func (provider *GoogleProvider) AuthorizationURL(state, nonce, codeChallenge str
 	)
 }
 
+// Authenticate exchanges and validates a provider authorization response.
 func (provider *GoogleProvider) Authenticate(ctx context.Context, code, verifier, expectedNonce string) (ExternalIdentity, error) {
 	token, err := provider.oauth.Exchange(ctx, code, oauth2.SetAuthURLParam("code_verifier", verifier))
 	if err != nil {
@@ -92,6 +98,7 @@ func (provider *GoogleProvider) Authenticate(ctx context.Context, code, verifier
 	}, nil
 }
 
+// PKCEChallenge returns the S256 challenge for a verifier.
 func PKCEChallenge(verifier string) string {
 	digest := sha256.Sum256([]byte(verifier))
 	return base64.RawURLEncoding.EncodeToString(digest[:])

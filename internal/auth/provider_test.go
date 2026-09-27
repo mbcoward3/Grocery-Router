@@ -36,7 +36,7 @@ func newFakeOIDC(t *testing.T) (*fakeOIDC, *httptest.Server) {
 	fake := &fakeOIDC{clientID: "test-client", key: key, kid: "key-1"}
 	server := httptest.NewServer(http.HandlerFunc(fake.serveHTTP))
 	fake.issuer = server.URL
-	fake.claims = func(nonce string) jwt.Claims {
+	fake.claims = func(_ string) jwt.Claims {
 		now := time.Now()
 		return jwt.Claims{Issuer: fake.issuer, Subject: "google-subject", Audience: jwt.Audience{fake.clientID}, IssuedAt: jwt.NewNumericDate(now.Add(-time.Minute)), Expiry: jwt.NewNumericDate(now.Add(time.Hour))}
 	}

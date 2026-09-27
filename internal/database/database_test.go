@@ -145,11 +145,9 @@ func TestHouseholdConstraintsRejectCrossTenantRelationships(t *testing.T) {
 		VALUES ($1, 'apple', 'Apple', $2, 'counted')`, other, sectionID)
 	assertErrorContains(t, err, "grocery_items_household_section_fkey")
 
-	weekID := mustInsertID(t, db, "INSERT INTO weeks (household_id, starts_on) VALUES ($1, '2026-08-16')", coward)
-	recipeID := mustInsertID(t, db, "INSERT INTO recipes (household_id, key, name) VALUES ($1, 'other', 'Other Recipe')", other)
-	_, err = db.Exec(`INSERT INTO week_recipes
-		(household_id, week_id, recipe_id, position) VALUES ($1, $2, $3, 0)`, coward, weekID, recipeID)
-	assertErrorContains(t, err, "week_recipes_household_recipe_fkey")
+	otherWeekID := mustInsertID(t, db, "INSERT INTO weeks (household_id, starts_on) VALUES ($1, '2026-08-16')", other)
+	_, err = db.Exec("INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)", coward, otherWeekID)
+	assertErrorContains(t, err, "shopping_lists_household_week_fkey")
 }
 
 func TestHouseholdCannotLoseLastOwner(t *testing.T) {

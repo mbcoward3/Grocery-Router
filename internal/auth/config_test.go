@@ -53,21 +53,21 @@ func TestConfigAndProtectedLoginTransaction(t *testing.T) {
 	service := NewService(nil, config)
 	fixed := time.Unix(1_800_000_000, 0)
 	service.now = func() time.Time { return fixed }
-	transaction, protected, err := service.NewLoginTransaction("/recipes?q=pasta")
+	transaction, protected, err := service.newLoginTransaction("/recipes?q=pasta")
 	if err != nil {
 		t.Fatal(err)
 	}
-	parsed, err := service.ParseLoginTransaction(protected, transaction.State)
+	parsed, err := service.parseLoginTransaction(protected, transaction.State)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if parsed.ReturnTo != "/recipes?q=pasta" || parsed.Nonce == "" || parsed.Verifier == "" {
 		t.Fatalf("unexpected transaction: %+v", parsed)
 	}
-	if _, err := service.ParseLoginTransaction(protected, "wrong"); err == nil {
+	if _, err := service.parseLoginTransaction(protected, "wrong"); err == nil {
 		t.Fatal("wrong state accepted")
 	}
-	if _, _, err := service.NewLoginTransaction("https://evil.example/"); err != nil {
+	if _, _, err := service.newLoginTransaction("https://evil.example/"); err != nil {
 		t.Fatal(err)
 	}
 }

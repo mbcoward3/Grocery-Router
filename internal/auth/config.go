@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// Config is validated authentication configuration safe for runtime use.
 type Config struct {
 	Origin           *url.URL
 	Issuer           string
@@ -23,10 +24,12 @@ type Config struct {
 	SecureCookies    bool
 }
 
+// RawConfig contains unvalidated authentication settings from the environment.
 type RawConfig struct {
 	Origin, Issuer, ClientID, ClientSecret, SessionSecret, AllowedEmails, HouseholdName string
 }
 
+// ParseConfig validates fail-closed runtime authentication settings.
 func ParseConfig(raw RawConfig) (Config, error) {
 	origin, err := url.Parse(strings.TrimSpace(raw.Origin))
 	if err != nil || origin.Scheme == "" || origin.Host == "" || origin.Path != "" || origin.RawQuery != "" || origin.Fragment != "" {
@@ -62,10 +65,12 @@ func ParseConfig(raw RawConfig) (Config, error) {
 	}, nil
 }
 
+// CallbackURL returns the exact callback registered with the provider.
 func (config Config) CallbackURL() string {
 	return config.Origin.String() + "/api/v2/auth/google/callback"
 }
 
+// CookieName returns the secure production or distinct localhost session name.
 func (config Config) CookieName() string {
 	if config.SecureCookies {
 		return "__Host-grocery_session"
@@ -73,6 +78,7 @@ func (config Config) CookieName() string {
 	return "grocery_session_dev"
 }
 
+// ValidateAllowed applies the active normalized email access policy.
 func (config Config) ValidateAllowed(email string) bool {
 	_, ok := config.AllowedEmails[normalizeEmail(email)]
 	return ok

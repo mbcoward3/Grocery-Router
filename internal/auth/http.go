@@ -13,11 +13,13 @@ import (
 
 type contextKey struct{}
 
+// SessionFromContext returns the session established by RequireSession.
 func SessionFromContext(ctx context.Context) (Session, bool) {
 	session, ok := ctx.Value(contextKey{}).(Session)
 	return session, ok
 }
 
+// HTTPHandler exposes public OIDC and authenticated session endpoints.
 type HTTPHandler struct {
 	config   Config
 	service  *Service
@@ -25,10 +27,12 @@ type HTTPHandler struct {
 	limiter  *rateLimiter
 }
 
+// NewHTTPHandler constructs the authentication HTTP boundary.
 func NewHTTPHandler(config Config, service *Service, provider Provider) *HTTPHandler {
 	return &HTTPHandler{config: config, service: service, provider: provider, limiter: newRateLimiter(20, time.Minute)}
 }
 
+// Register adds the approved public authentication and session routes.
 func (handler *HTTPHandler) Register(mux *http.ServeMux) {
 	mux.HandleFunc("GET /api/v2/auth/google/start", handler.googleStart)
 	mux.HandleFunc("GET /api/v2/auth/google/callback", handler.googleCallback)
@@ -36,6 +40,7 @@ func (handler *HTTPHandler) Register(mux *http.ServeMux) {
 	mux.Handle("GET /api/v2/session", handler.RequireSession(http.HandlerFunc(handler.session)))
 }
 
+// RequireSession authenticates cookies and protects unsafe requests from CSRF.
 func (handler *HTTPHandler) RequireSession(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		cookie, err := request.Cookie(handler.config.CookieName())
@@ -59,23 +64,18 @@ func (handler *HTTPHandler) RequireSession(next http.Handler) http.Handler {
 	})
 }
 
-// RequireHousehold authorizes the explicit path tenant without disclosing other households.
-func (handler *HTTPHandler) RequireHousehold(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		session, ok := SessionFromContext(request.Context())
-		if !ok {
-			writeAuthError(response, http.StatusUnauthorized, "authentication_required", "Sign in is required.")
-			return
+// AuthorizeHousehold reports whether the authenticated context has the explicit membership.
+func AuthorizeHousehold(ctx context.Context, householdID string) bool {
+	session, ok := SessionFromContext(ctx)
+	if !ok {
+		return false
+	}
+	for _, membership := range session.Memberships {
+		if membership.HouseholdID == householdID {
+			return true
 		}
-		householdID := request.PathValue("householdID")
-		for _, membership := range session.Memberships {
-			if membership.HouseholdID == householdID {
-				next.ServeHTTP(response, request)
-				return
-			}
-		}
-		response.WriteHeader(http.StatusNotFound)
-	})
+	}
+	return false
 }
 
 func (handler *HTTPHandler) googleStart(response http.ResponseWriter, request *http.Request) {
@@ -83,7 +83,7 @@ func (handler *HTTPHandler) googleStart(response http.ResponseWriter, request *h
 		writeAuthError(response, http.StatusTooManyRequests, "rate_limited", "Try again later.")
 		return
 	}
-	transaction, protected, err := handler.service.NewLoginTransaction(request.URL.Query().Get("returnTo"))
+	transaction, protected, err := handler.service.newLoginTransaction(request.URL.Query().Get("returnTo"))
 	if err != nil {
 		writeAuthError(response, http.StatusInternalServerError, "auth_unavailable", "Sign in is unavailable.")
 		return
@@ -106,7 +106,7 @@ func (handler *HTTPHandler) googleCallback(response http.ResponseWriter, request
 		handler.authFailure(response, http.StatusUnauthorized)
 		return
 	}
-	transaction, err := handler.service.ParseLoginTransaction(cookie.Value, request.URL.Query().Get("state"))
+	transaction, err := handler.service.parseLoginTransaction(cookie.Value, request.URL.Query().Get("state"))
 	if err != nil {
 		handler.authFailure(response, http.StatusUnauthorized)
 		return

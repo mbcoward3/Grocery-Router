@@ -2,6 +2,7 @@
 package httpapi
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -19,38 +20,45 @@ import (
 // Clock returns the local time used to resolve the current Sunday.
 type Clock func() time.Time
 
+// AuthorizeHousehold checks membership after ServeMux has resolved the path value.
+type AuthorizeHousehold func(context.Context, string) bool
+
 // Server is the HTTP boundary around corpus reads and week operations.
 type Server struct {
 	queries     *store.Queries
 	weeks       *week.Service
 	now         Clock
 	householdID string
+	authorize   AuthorizeHousehold
 	handler     http.Handler
 }
 
 // New constructs an API handler. A nil clock uses time.Now.
-func New(db *sql.DB, weeks *week.Service, clock Clock, householdID string) *Server {
+func New(db *sql.DB, weeks *week.Service, clock Clock, householdID string, authorize AuthorizeHousehold) *Server {
 	if clock == nil {
 		clock = time.Now
 	}
-	server := &Server{queries: store.New(db), weeks: weeks, now: clock, householdID: householdID}
+	if householdID == "" || authorize == nil {
+		panic("HTTP API requires an explicit household and authorizer")
+	}
+	server := &Server{queries: store.New(db), weeks: weeks, now: clock, householdID: householdID, authorize: authorize}
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/v2/households/{householdID}/recipes", server.listRecipes)
-	mux.HandleFunc("GET /api/v2/households/{householdID}/recipes/{recipeID}", server.getRecipe)
-	mux.HandleFunc("GET /api/v2/households/{householdID}/week/current", server.currentWeek)
-	mux.HandleFunc("GET /api/v2/households/{householdID}/weeks/history", server.weekHistory)
-	mux.HandleFunc("GET /api/v2/households/{householdID}/weeks/history/{weekID}", server.historicalWeek)
-	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/generate", server.generateWeek)
-	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/recipes", server.addRecipe)
-	mux.HandleFunc("DELETE /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.removeRecipe)
-	mux.HandleFunc("PUT /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.swapRecipe)
-	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}/random-swap", server.randomSwapRecipe)
-	mux.HandleFunc("GET /api/v2/households/{householdID}/week/current/groceries", server.getGroceries)
-	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/groceries", server.addGroceryLine)
-	mux.HandleFunc("PATCH /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.updateGroceryLine)
-	mux.HandleFunc("DELETE /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.removeGroceryLine)
-	mux.HandleFunc("GET /api/v2/households/{householdID}/week/current/groceries/{lineID}/contributions", server.getGroceryContributions)
-	server.handler = requestHeaders(server.requireConfiguredHousehold(mux))
+	mux.Handle("GET /api/v2/households/{householdID}/recipes", server.guard(http.HandlerFunc(server.listRecipes)))
+	mux.Handle("GET /api/v2/households/{householdID}/recipes/{recipeID}", server.guard(http.HandlerFunc(server.getRecipe)))
+	mux.Handle("GET /api/v2/households/{householdID}/week/current", server.guard(http.HandlerFunc(server.currentWeek)))
+	mux.Handle("GET /api/v2/households/{householdID}/weeks/history", server.guard(http.HandlerFunc(server.weekHistory)))
+	mux.Handle("GET /api/v2/households/{householdID}/weeks/history/{weekID}", server.guard(http.HandlerFunc(server.historicalWeek)))
+	mux.Handle("POST /api/v2/households/{householdID}/week/current/generate", server.guard(http.HandlerFunc(server.generateWeek)))
+	mux.Handle("POST /api/v2/households/{householdID}/week/current/recipes", server.guard(http.HandlerFunc(server.addRecipe)))
+	mux.Handle("DELETE /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.guard(http.HandlerFunc(server.removeRecipe)))
+	mux.Handle("PUT /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.guard(http.HandlerFunc(server.swapRecipe)))
+	mux.Handle("POST /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}/random-swap", server.guard(http.HandlerFunc(server.randomSwapRecipe)))
+	mux.Handle("GET /api/v2/households/{householdID}/week/current/groceries", server.guard(http.HandlerFunc(server.getGroceries)))
+	mux.Handle("POST /api/v2/households/{householdID}/week/current/groceries", server.guard(http.HandlerFunc(server.addGroceryLine)))
+	mux.Handle("PATCH /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.guard(http.HandlerFunc(server.updateGroceryLine)))
+	mux.Handle("DELETE /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.guard(http.HandlerFunc(server.removeGroceryLine)))
+	mux.Handle("GET /api/v2/households/{householdID}/week/current/groceries/{lineID}/contributions", server.guard(http.HandlerFunc(server.getGroceryContributions)))
+	server.handler = requestHeaders(mux)
 	return server
 }
 
@@ -59,9 +67,10 @@ func (server *Server) Handler() http.Handler {
 	return server.handler
 }
 
-func (server *Server) requireConfiguredHousehold(next http.Handler) http.Handler {
+func (server *Server) guard(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
-		if request.PathValue("householdID") != server.householdID {
+		householdID := request.PathValue("householdID")
+		if householdID != server.householdID || !server.authorize(request.Context(), householdID) {
 			http.NotFound(response, request)
 			return
 		}

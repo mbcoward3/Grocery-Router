@@ -218,7 +218,7 @@ func handlerForDB(db *sql.DB) http.Handler {
 	now := func() time.Time {
 		return time.Date(2026, time.August, 19, 12, 0, 0, 0, time.Local)
 	}
-	return httpapi.New(db, service, now, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5").Handler()
+	return httpapi.New(db, service, now, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", func(context.Context, string) bool { return true }).Handler()
 }
 
 func request(t *testing.T, handler http.Handler, method, path, body string) *httptest.ResponseRecorder {

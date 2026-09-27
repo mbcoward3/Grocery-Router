@@ -19,39 +19,49 @@ import (
 )
 
 var (
+	// ErrUnauthenticated indicates a missing, expired, or revoked local session.
 	ErrUnauthenticated = errors.New("authentication required")
-	ErrForbidden       = errors.New("household access denied")
-	ErrNotAllowed      = errors.New("identity is not allowed")
-	ErrLinkRequired    = errors.New("an existing account must be linked while authenticated")
+	// ErrForbidden indicates missing household authorization.
+	ErrForbidden = errors.New("household access denied")
+	// ErrNotAllowed indicates rejection by the active admission policy.
+	ErrNotAllowed = errors.New("identity is not allowed")
+	// ErrLinkRequired prevents email-only identity linking.
+	ErrLinkRequired = errors.New("an existing account must be linked while authenticated")
 )
 
+// User is the provider-independent local application account.
 type User struct {
 	ID, Email, DisplayName string
 	AvatarURL              *string
 }
 
+// Membership is a user's current role in a household.
 type Membership struct {
 	HouseholdID   string `json:"householdID"`
 	HouseholdName string `json:"householdName"`
 	Role          string `json:"role"`
 }
 
+// Session is the current user and freshly loaded memberships.
 type Session struct {
 	ID          string
 	User        User
 	Memberships []Membership
 }
 
+// Service owns account resolution and opaque application sessions.
 type Service struct {
 	db     *sql.DB
 	config Config
 	now    func() time.Time
 }
 
+// NewService constructs the authentication service.
 func NewService(db *sql.DB, config Config) *Service {
 	return &Service{db: db, config: config, now: time.Now}
 }
 
+// ResolveIdentity admits or refreshes a verified external identity transactionally.
 func (service *Service) ResolveIdentity(ctx context.Context, identity ExternalIdentity) (User, error) {
 	if !service.config.ValidateAllowed(identity.VerifiedEmail) {
 		return User{}, ErrNotAllowed
@@ -139,6 +149,7 @@ func (service *Service) ResolveIdentity(ctx context.Context, identity ExternalId
 	return user, nil
 }
 
+// CreateSession persists only a digest and returns the raw opaque token once.
 func (service *Service) CreateSession(ctx context.Context, userID, metadata string) (string, error) {
 	token, err := randomToken(32)
 	if err != nil {
@@ -155,6 +166,7 @@ func (service *Service) CreateSession(ctx context.Context, userID, metadata stri
 	return token, nil
 }
 
+// Authenticate validates a token and reloads current user and membership state.
 func (service *Service) Authenticate(ctx context.Context, token string) (Session, error) {
 	if token == "" {
 		return Session{}, ErrUnauthenticated
@@ -210,6 +222,7 @@ func (service *Service) Authenticate(ctx context.Context, token string) (Session
 	return session, nil
 }
 
+// Revoke invalidates an opaque application session.
 func (service *Service) Revoke(ctx context.Context, token string) error {
 	if token == "" {
 		return nil
@@ -224,7 +237,8 @@ type loginTransaction struct {
 	ExpiresAt                        int64
 }
 
-func (service *Service) NewLoginTransaction(returnTo string) (loginTransaction, string, error) {
+// newLoginTransaction creates protected short-lived state, nonce, and PKCE values.
+func (service *Service) newLoginTransaction(returnTo string) (loginTransaction, string, error) {
 	if !validReturnPath(returnTo) {
 		returnTo = "/"
 	}
@@ -245,7 +259,8 @@ func (service *Service) NewLoginTransaction(returnTo string) (loginTransaction, 
 	return transaction, payload, err
 }
 
-func (service *Service) ParseLoginTransaction(value, state string) (loginTransaction, error) {
+// parseLoginTransaction verifies protected callback state and expiry.
+func (service *Service) parseLoginTransaction(value, state string) (loginTransaction, error) {
 	parts := strings.Split(value, ".")
 	if len(parts) != 2 {
 		return loginTransaction{}, ErrUnauthenticated
@@ -280,10 +295,12 @@ func (service *Service) signTransaction(transaction loginTransaction) (string, e
 	return base64.RawURLEncoding.EncodeToString(body) + "." + base64.RawURLEncoding.EncodeToString(mac.Sum(nil)), nil
 }
 
+// SessionCookie constructs the environment-appropriate first-party session cookie.
 func SessionCookie(config Config, token string, expires time.Time) *http.Cookie {
 	return &http.Cookie{Name: config.CookieName(), Value: token, Path: "/", Secure: config.SecureCookies, HttpOnly: true, SameSite: http.SameSiteLaxMode, Expires: expires, MaxAge: int(time.Until(expires).Seconds())}
 }
 
+// ExpiredSessionCookie removes the first-party application session cookie.
 func ExpiredSessionCookie(config Config) *http.Cookie {
 	cookie := SessionCookie(config, "", time.Unix(1, 0))
 	cookie.MaxAge = -1
@@ -306,9 +323,9 @@ func randomToken(bytes int) (string, error) {
 	return base64.RawURLEncoding.EncodeToString(value), nil
 }
 
-func truncate(value string, max int) string {
-	if len(value) > max {
-		return value[:max]
+func truncate(value string, limit int) string {
+	if len(value) > limit {
+		return value[:limit]
 	}
 	return value
 }

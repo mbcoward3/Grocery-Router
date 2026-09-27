@@ -278,7 +278,7 @@ func serve(databasePath, address, webRoot string, authConfig auth.Config) error 
 	defer db.Close()
 
 	weekService := week.NewService(db, nil, tenant.CowardHouseholdID)
-	api := httpapi.New(db, weekService, nil, tenant.CowardHouseholdID)
+	api := httpapi.New(db, weekService, nil, tenant.CowardHouseholdID, auth.AuthorizeHousehold)
 	provider, err := auth.NewGoogleProvider(context.Background(), authConfig)
 	if err != nil {
 		return err
@@ -287,7 +287,7 @@ func serve(databasePath, address, webRoot string, authConfig auth.Config) error 
 	authHandler := auth.NewHTTPHandler(authConfig, authService, provider)
 	apiMux := http.NewServeMux()
 	authHandler.Register(apiMux)
-	apiMux.Handle("/api/v2/households/", authHandler.RequireSession(authHandler.RequireHousehold(api.Handler())))
+	apiMux.Handle("/api/v2/households/", authHandler.RequireSession(api.Handler()))
 	handler, err := applicationHandler(apiMux, webRoot)
 	if err != nil {
 		return err
