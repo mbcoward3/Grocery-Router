@@ -37,6 +37,8 @@ func New(db *sql.DB, weeks *week.Service, clock Clock) *Server {
 	mux.HandleFunc("GET /api/recipes", server.listRecipes)
 	mux.HandleFunc("GET /api/recipes/{recipeID}", server.getRecipe)
 	mux.HandleFunc("GET /api/week/current", server.currentWeek)
+	mux.HandleFunc("GET /api/weeks/history", server.weekHistory)
+	mux.HandleFunc("GET /api/weeks/history/{weekID}", server.historicalWeek)
 	mux.HandleFunc("POST /api/week/current/generate", server.generateWeek)
 	mux.HandleFunc("POST /api/week/current/recipes", server.addRecipe)
 	mux.HandleFunc("DELETE /api/week/current/recipes/{occurrenceID}", server.removeRecipe)
@@ -141,6 +143,19 @@ type groceryLineUpdate struct {
 type groceryResponse struct {
 	StartsOn string        `json:"startsOn"`
 	Lines    []groceryLine `json:"lines"`
+}
+
+type weekHistorySummary struct {
+	ID             int64  `json:"id"`
+	StartsOn       string `json:"startsOn"`
+	RecipeCount    int64  `json:"recipeCount"`
+	GroceryCount   int64  `json:"groceryCount"`
+	CompletedCount int64  `json:"completedCount"`
+}
+
+type historicalWeekResponse struct {
+	Week      weekResponse    `json:"week"`
+	Groceries groceryResponse `json:"groceries"`
 }
 
 type groceryLine struct {
@@ -253,6 +268,42 @@ func (server *Server) getRecipe(response http.ResponseWriter, request *http.Requ
 func (server *Server) currentWeek(response http.ResponseWriter, request *http.Request) {
 	view, err := server.weeks.Current(request.Context(), server.now())
 	server.writeWeekResult(response, view, err)
+}
+
+func (server *Server) weekHistory(response http.ResponseWriter, request *http.Request) {
+	rows, err := server.weeks.PastWeeks(request.Context(), server.now())
+	if err != nil {
+		writeInternalError(response, err)
+		return
+	}
+	result := make([]weekHistorySummary, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, weekHistorySummary{
+			ID: row.ID, StartsOn: row.StartsOn, RecipeCount: row.RecipeCount,
+			GroceryCount: row.GroceryCount, CompletedCount: row.CompletedCount,
+		})
+	}
+	writeJSON(response, http.StatusOK, map[string]any{"weeks": result})
+}
+
+func (server *Server) historicalWeek(response http.ResponseWriter, request *http.Request) {
+	weekID, ok := pathID(response, request, "weekID")
+	if !ok {
+		return
+	}
+	view, err := server.weeks.PastWeek(request.Context(), server.now(), weekID)
+	if errors.Is(err, week.ErrPastWeek) {
+		writeError(response, http.StatusNotFound, "past_week_not_found", "The past week was not found.")
+		return
+	}
+	if err != nil {
+		writeInternalError(response, err)
+		return
+	}
+	writeJSON(response, http.StatusOK, historicalWeekResponse{
+		Week:      responseFromView(view.View),
+		Groceries: groceryResponseFromChecklist(view.Checklist, view.Week.StartsOn),
+	})
 }
 
 func (server *Server) generateWeek(response http.ResponseWriter, request *http.Request) {
@@ -395,7 +446,11 @@ func (server *Server) writeGroceries(response http.ResponseWriter, request *http
 		server.writeGroceryError(response, err)
 		return
 	}
-	result := groceryResponse{StartsOn: week.CurrentSunday(server.now()), Lines: make([]groceryLine, 0, len(checklist.Lines))}
+	writeJSON(response, http.StatusOK, groceryResponseFromChecklist(checklist, week.CurrentSunday(server.now())))
+}
+
+func groceryResponseFromChecklist(checklist week.Checklist, startsOn string) groceryResponse {
+	result := groceryResponse{StartsOn: startsOn, Lines: make([]groceryLine, 0, len(checklist.Lines))}
 	for _, row := range checklist.Lines {
 		generated := quantityText(row.QuantityKind, row.AmountMinNumerator, row.AmountMinDenominator,
 			row.AmountMaxNumerator, row.AmountMaxDenominator, row.UnitSymbol,
@@ -411,7 +466,7 @@ func (server *Server) writeGroceries(response http.ResponseWriter, request *http
 			HasContributions: row.Origin == "generated",
 		})
 	}
-	writeJSON(response, http.StatusOK, result)
+	return result
 }
 
 func (server *Server) writeGroceryError(response http.ResponseWriter, err error) {

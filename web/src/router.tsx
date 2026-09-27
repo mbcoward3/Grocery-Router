@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router'
 import { AppShell } from './ui/app-shell'
 import { GroceriesPage } from './features/groceries/groceries-page'
+import { HistoricalWeekPage, HistoryPage } from './features/history/history-page'
 import { RecipePage } from './features/recipe/recipe-page'
 import { RecipesPage } from './features/recipes/recipes-page'
 import { WeekPage } from './features/week/week-page'
@@ -45,6 +46,18 @@ const recipesRoute = createRoute({
   component: RecipesPage,
 })
 
+const historyRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/history',
+  component: HistoryPage,
+})
+
+const historicalWeekRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/history/$weekId',
+  component: HistoricalWeekPage,
+})
+
 const recipeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/recipes/$recipeId',
@@ -73,7 +86,14 @@ function StatePage({
   )
 }
 
-const routeTree = rootRoute.addChildren([weekRoute, groceriesRoute, recipesRoute, recipeRoute])
+const routeTree = rootRoute.addChildren([
+  weekRoute,
+  groceriesRoute,
+  recipesRoute,
+  historyRoute,
+  historicalWeekRoute,
+  recipeRoute,
+])
 
 export const router = createRouter({ routeTree, context: { queryClient: undefined! } })
 

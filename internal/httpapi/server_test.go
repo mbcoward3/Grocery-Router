@@ -2,6 +2,7 @@ package httpapi_test
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -107,6 +108,70 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 	}
 }
 
+func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
+	db := testDB(t)
+	service := week.NewService(db, zeroPicker{})
+	past := time.Date(2026, time.August, 12, 12, 0, 0, 0, time.Local)
+	view, err := service.Generate(context.Background(), past, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	checklist, err := service.Checklist(context.Background(), past)
+	if err != nil || len(checklist.Lines) == 0 {
+		t.Fatalf("past checklist: %v, lines = %d", err, len(checklist.Lines))
+	}
+	if len(checklist.Lines) < 3 {
+		t.Fatalf("past checklist needs representative lines, got %d", len(checklist.Lines))
+	}
+	if err := service.SetLineCompleted(context.Background(), past, checklist.Lines[0].ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.SetLineOverride(context.Background(), past, checklist.Lines[1].ID, "2 bags"); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.SetLineRemoved(context.Background(), past, checklist.Lines[2].ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.AddManualLine(context.Background(), past, "Paper towels"); err != nil {
+		t.Fatal(err)
+	}
+
+	handler := handlerForDB(db)
+	history := request(t, handler, http.MethodGet, "/api/weeks/history", "")
+	if history.Code != http.StatusOK {
+		t.Fatalf("history status = %d, body %s", history.Code, history.Body.String())
+	}
+	weeks := decodeObject(t, history)["weeks"].([]any)
+	if len(weeks) != 1 {
+		t.Fatalf("history weeks = %d", len(weeks))
+	}
+	summary := weeks[0].(map[string]any)
+	if summary["startsOn"] != "2026-08-09" || summary["recipeCount"] != float64(2) || summary["completedCount"] != float64(1) {
+		t.Fatalf("history summary = %#v", summary)
+	}
+
+	detail := request(t, handler, http.MethodGet, fmt.Sprintf("/api/weeks/history/%d", view.Week.ID), "")
+	if detail.Code != http.StatusOK {
+		t.Fatalf("history detail status = %d, body %s", detail.Code, detail.Body.String())
+	}
+	body := decodeObject(t, detail)
+	if len(body["week"].(map[string]any)["recipes"].([]any)) != 2 {
+		t.Fatalf("history detail week = %#v", body["week"])
+	}
+	lines := body["groceries"].(map[string]any)["lines"].([]any)
+	var foundCompleted, foundAdjusted, foundRemoved, foundManual bool
+	for _, value := range lines {
+		line := value.(map[string]any)
+		foundCompleted = foundCompleted || line["completed"] == true
+		foundAdjusted = foundAdjusted || line["quantity"] == "2 bags"
+		foundRemoved = foundRemoved || line["removed"] == true
+		foundManual = foundManual || line["origin"] == "manual"
+	}
+	if !foundCompleted || !foundAdjusted || !foundRemoved || !foundManual {
+		t.Fatalf("history groceries did not retain all states: %#v", lines)
+	}
+}
+
 func TestRecipesAPIAndRequestValidation(t *testing.T) {
 	handler := testHandler(t)
 
@@ -132,6 +197,11 @@ func TestRecipesAPIAndRequestValidation(t *testing.T) {
 
 func testHandler(t *testing.T) http.Handler {
 	t.Helper()
+	return handlerForDB(testDB(t))
+}
+
+func testDB(t *testing.T) *sql.DB {
+	t.Helper()
 	db := testdatabase.Open(t)
 	documents, err := ingest.ReadDirectory(filepath.Join("..", "..", "corpus", "recipes"))
 	if err != nil {
@@ -140,6 +210,10 @@ func testHandler(t *testing.T) http.Handler {
 	if err := ingest.Import(context.Background(), db, documents); err != nil {
 		t.Fatal(err)
 	}
+	return db
+}
+
+func handlerForDB(db *sql.DB) http.Handler {
 	service := week.NewService(db, zeroPicker{})
 	now := func() time.Time {
 		return time.Date(2026, time.August, 19, 12, 0, 0, 0, time.Local)

@@ -100,6 +100,7 @@ The schema must not prevent future serving scaling, substitutions, onboarding, a
 - A verified-corpus browser with alphabetical browsing, recipe-name search, and add-to-week actions.
 - Responsive, polished planning and shopping interfaces.
 - Retention of generated weeks in PostgreSQL.
+- Read-only history of past meal pools and their retained grocery checklist state.
 
 ### 3.2 Explicitly excluded
 
@@ -115,7 +116,6 @@ The schema must not prevent future serving scaling, substitutions, onboarding, a
 - Store, price, promotion, package optimization, SKU, and cart integrations.
 - Ingredient substitutions and recipe variants.
 - Recipe onboarding or editing UI.
-- Past-week UI.
 - Arbitrary future-week planning.
 - Automatic source-website synchronization.
 - Full recipe correction/version history.
@@ -302,7 +302,18 @@ Random swaps should prefer a recipe not already in the pool. A user may manually
 
 The pool has no assigned days and no leftover semantics.
 
-### 6.4 Natural workflow
+### 6.4 Week history
+
+Earlier generated weeks are available from a dedicated History screen, newest first. Opening a
+past week shows its final meal pool and retained grocery checklist, including completed,
+incomplete, removed, manual, and quantity-adjusted lines. History is read-only: it does not
+restore, copy, or mutate a past or current week. Regenerations and edits are not separate
+historical versions; each Sunday-to-Saturday week has one final retained state.
+
+The current Week screen clearly distinguishes `Planned` from `Not planned` and shows the
+Sunday-to-Saturday date range when planned.
+
+### 6.5 Natural workflow
 
 The expected workflow is to settle the recipe pool before editing the grocery list. v1 does not introduce a lock/unlock state. If recipes change later, recipe-derived grocery contributions must be recalculated deterministically while preserving unrelated manual list additions and reasonable user state where unambiguous.
 
@@ -445,18 +456,20 @@ Interactive cooking mode, timers, step checkboxes, and recipe editing are deferr
 
 ### 10.1 Screens
 
-v1 has exactly four product screens:
+The product has five primary screens:
 
 1. **Week**
 2. **Groceries**
 3. **Recipes**
-4. **Recipe detail**
+4. **History**
+5. **Recipe detail**
 
 The Recipes screen lists all verified recipes alphabetically, supports immediate name search,
 shows available time and yield metadata, opens recipe details directly, and can add a recipe
 to an existing current week. Returning from recipe detail preserves the active search.
 
-Past weeks may be retained in PostgreSQL but are not exposed in v1.
+History exposes retained earlier weeks read-only. Historical week detail is part of the History
+screen rather than a separate primary navigation destination.
 
 ### 10.2 Visual direction
 
@@ -736,6 +749,11 @@ Exact URLs are implementation details, but the backend must expose clear operati
 - specifically swap an occurrence; and
 - return the current week.
 
+### History operations
+
+- list earlier generated weeks newest first with meal and grocery completion counts; and
+- fetch one earlier week's final meal pool and retained grocery checklist read-only.
+
 ### Grocery operations
 
 - return the current grouped checklist;
@@ -840,8 +858,10 @@ Automated browser coverage must verify the critical mobile-capable path:
 7. view grouped groceries;
 8. expand recipe contributions;
 9. add and remove a manual item;
-10. override a weekly quantity; and
-11. check an item off and observe its de-emphasized state.
+10. override a weekly quantity;
+11. check an item off and observe its de-emphasized state;
+12. distinguish a planned current week from an unplanned one; and
+13. browse an earlier week's meals and completed, incomplete, removed, and adjusted grocery lines.
 
 The same path must remain usable at an iPhone-sized viewport.
 

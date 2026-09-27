@@ -7,6 +7,8 @@ export type RecipeDetail = components['schemas']['RecipeDetail']
 export type Groceries = components['schemas']['Groceries']
 export type GroceryContribution = components['schemas']['GroceryContribution']
 export type GroceryLine = components['schemas']['GroceryLine']
+export type WeekHistorySummary = components['schemas']['WeekHistorySummary']
+export type HistoricalWeek = components['schemas']['HistoricalWeek']
 
 export class ApiRequestError extends Error {
   readonly status: number
@@ -70,6 +72,14 @@ export async function getCurrentWeek(): Promise<Week | null> {
     if (error instanceof ApiRequestError && error.code === 'no_current_week') return null
     throw error
   }
+}
+
+export function listWeekHistory(): Promise<{ weeks: WeekHistorySummary[] }> {
+  return request('/weeks/history')
+}
+
+export function getHistoricalWeek(weekId: number): Promise<HistoricalWeek> {
+  return request(`/weeks/history/${weekId}`)
 }
 
 export function generateWeek(recipeCount: number): Promise<Week> {

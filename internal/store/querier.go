@@ -32,6 +32,7 @@ type Querier interface {
 	DeleteWeekRecipes(ctx context.Context, weekID int64) error
 	GetGroceryItemByKey(ctx context.Context, key string) (GroceryItem, error)
 	GetOtherStoreSection(ctx context.Context) (StoreSection, error)
+	GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error)
 	GetRecipe(ctx context.Context, id int64) (Recipe, error)
 	GetRecipeByKey(ctx context.Context, key string) (Recipe, error)
 	GetShoppingListByWeek(ctx context.Context, weekID int64) (ShoppingList, error)
@@ -44,6 +45,7 @@ type Querier interface {
 	ListGroceryItems(ctx context.Context) ([]ListGroceryItemsRow, error)
 	ListIngredientSections(ctx context.Context, recipeID int64) ([]RecipeIngredientSection, error)
 	ListInstructionSections(ctx context.Context, recipeID int64) ([]RecipeInstructionSection, error)
+	ListPastWeeks(ctx context.Context, startsOn string) ([]ListPastWeeksRow, error)
 	ListRecipeIngredients(ctx context.Context, recipeID int64) ([]ListRecipeIngredientsRow, error)
 	ListRecipeReviewFlags(ctx context.Context, recipeID int64) ([]RecipeReviewFlag, error)
 	ListRecipeSources(ctx context.Context, recipeID int64) ([]RecipeSource, error)

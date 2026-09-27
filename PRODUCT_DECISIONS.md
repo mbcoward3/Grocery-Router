@@ -523,3 +523,22 @@ recipe names; role, ingredient, time, and taxonomy filters remain deferred until
 use cases justify them. The active query is preserved when returning from recipe detail.
 
 **Revisit when:** Corpus size or observed lookup behavior makes name search insufficient.
+
+## D038 — Expose retained weeks as read-only history
+
+**Decision:** Add a dedicated History destination listing earlier Sunday-to-Saturday weeks.
+Each historical detail shows the final meal pool and retained grocery checklist state, including
+checked, unchecked, removed, manual, and adjusted lines. The current Week screen explicitly
+shows `Planned` or `Not planned` and its date range.
+
+**Why:** Real household use showed that an unlabelled current pool was ambiguous and that past
+meal combinations are valuable household memory. The schema already retains one row per week
+and the checklist state needed to answer both needs without introducing event history.
+
+**Consequence:** History is read-only and displays one final state per week, not each regeneration
+or edit. Copying a past pool into the current week and comparing weeks remain deferred.
+This decision supersedes D002 and D027 only on the screen count, D037 only on its four-screen
+count, and D026 only where it says past weeks are not exposed.
+
+**Revisit when:** The household repeatedly wants to reuse an earlier pool or needs an audit trail
+of changes within a week.
