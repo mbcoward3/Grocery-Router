@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/alecthomas/kong"
+	"github.com/mbcoward3/grocery-router/internal/auth"
 	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/httpapi"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
@@ -75,12 +76,25 @@ func (command *bootstrapCommand) Run() error {
 
 type serveCommand struct {
 	DatabaseConfig
-	Address string `help:"HTTP listen address." default:"127.0.0.1:8080" env:"GROCERY_ROUTER_ADDRESS"`
-	WebRoot string `help:"Built web application directory. Leave empty to serve only the API." default:"web/dist" env:"GROCERY_ROUTER_WEB_ROOT" type:"path"`
+	Address       string `help:"HTTP listen address." default:"127.0.0.1:8080" env:"GROCERY_ROUTER_ADDRESS"`
+	WebRoot       string `help:"Built web application directory. Leave empty to serve only the API." default:"web/dist" env:"GROCERY_ROUTER_WEB_ROOT" type:"path"`
+	Origin        string `help:"Canonical application origin." env:"GROCERY_ROUTER_ORIGIN"`
+	OIDCIssuer    string `help:"Trusted OIDC issuer." env:"GROCERY_ROUTER_OIDC_ISSUER"`
+	OIDCClientID  string `help:"Google OIDC client ID." env:"GROCERY_ROUTER_OIDC_CLIENT_ID"`
+	OIDCSecret    string `help:"Google OIDC client secret." env:"GROCERY_ROUTER_OIDC_CLIENT_SECRET"`
+	SessionSecret string `help:"Base64url application session secret." env:"GROCERY_ROUTER_SESSION_SECRET"`
+	AllowedEmails string `help:"Comma-separated verified-email allowlist." env:"GROCERY_ROUTER_ALLOWED_EMAILS"`
 }
 
 func (command *serveCommand) Run() error {
-	return serve(command.DatabaseURL, command.Address, command.WebRoot)
+	config, err := auth.ParseConfig(auth.RawConfig{
+		Origin: command.Origin, Issuer: command.OIDCIssuer, ClientID: command.OIDCClientID,
+		ClientSecret: command.OIDCSecret, SessionSecret: command.SessionSecret, AllowedEmails: command.AllowedEmails,
+	})
+	if err != nil {
+		return fmt.Errorf("validate authentication configuration: %w", err)
+	}
+	return serve(command.DatabaseURL, command.Address, command.WebRoot, config)
 }
 
 type trueupInventoryCommand struct {
@@ -250,7 +264,7 @@ func bootstrap(databaseURL, root, corpusPath, inventoryPath string) error {
 	return nil
 }
 
-func serve(databasePath, address, webRoot string) error {
+func serve(databasePath, address, webRoot string, authConfig auth.Config) error {
 	if err := migrate(databasePath); err != nil {
 		return err
 	}
@@ -262,7 +276,16 @@ func serve(databasePath, address, webRoot string) error {
 
 	weekService := week.NewService(db, nil)
 	api := httpapi.New(db, weekService, nil)
-	handler, err := applicationHandler(api.Handler(), webRoot)
+	provider, err := auth.NewGoogleProvider(context.Background(), authConfig)
+	if err != nil {
+		return err
+	}
+	authService := auth.NewService(db, authConfig)
+	authHandler := auth.NewHTTPHandler(authConfig, authService, provider)
+	apiMux := http.NewServeMux()
+	authHandler.Register(apiMux)
+	apiMux.Handle("/", api.Handler())
+	handler, err := applicationHandler(apiMux, webRoot)
 	if err != nil {
 		return err
 	}
@@ -289,7 +312,7 @@ func applicationHandler(api http.Handler, webRoot string) (http.Handler, error) 
 	})
 
 	if webRoot == "" {
-		return mux, nil
+		return securityHeaders(mux), nil
 	}
 	indexPath := filepath.Join(webRoot, "index.html")
 	if _, err := os.Stat(indexPath); err != nil {
@@ -310,7 +333,16 @@ func applicationHandler(api http.Handler, webRoot string) (http.Handler, error) 
 		}
 		http.ServeFile(response, request, indexPath)
 	})
-	return mux, nil
+	return securityHeaders(mux), nil
+}
+
+func securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		response.Header().Set("Content-Security-Policy", "default-src 'self'; img-src 'self' https: data:; style-src 'self' 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com")
+		response.Header().Set("Referrer-Policy", "no-referrer")
+		response.Header().Set("X-Content-Type-Options", "nosniff")
+		next.ServeHTTP(response, request)
+	})
 }
 
 func auditInventory(root, relativePath string) error {
