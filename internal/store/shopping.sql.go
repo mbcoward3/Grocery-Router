@@ -12,14 +12,14 @@ import (
 
 const createGeneratedShoppingLine = `-- name: CreateGeneratedShoppingLine :one
 INSERT INTO shopping_lines (
-    shopping_list_id, grocery_item_id, store_section_id, aggregation_key,
+    household_id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key,
     origin, display_name, quantity_kind,
     amount_min_numerator, amount_min_denominator,
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
     is_optional, is_removed, is_completed, display_position, override_text
-) VALUES ($1, $2, $3, $4, 'generated', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-RETURNING id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key, origin, display_name, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, is_removed, is_completed, display_position, override_text, created_at, updated_at
+) VALUES ($21, $1, $2, $3, $4, 'generated', $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+RETURNING id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key, origin, display_name, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, is_removed, is_completed, display_position, override_text, created_at, updated_at, household_id
 `
 
 type CreateGeneratedShoppingLineParams struct {
@@ -43,6 +43,7 @@ type CreateGeneratedShoppingLineParams struct {
 	IsCompleted            int64          `db:"is_completed" json:"is_completed"`
 	DisplayPosition        int64          `db:"display_position" json:"display_position"`
 	OverrideText           sql.NullString `db:"override_text" json:"override_text"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateGeneratedShoppingLine(ctx context.Context, arg CreateGeneratedShoppingLineParams) (ShoppingLine, error) {
@@ -67,6 +68,7 @@ func (q *Queries) CreateGeneratedShoppingLine(ctx context.Context, arg CreateGen
 		arg.IsCompleted,
 		arg.DisplayPosition,
 		arg.OverrideText,
+		arg.HouseholdID,
 	)
 	var i ShoppingLine
 	err := row.Scan(
@@ -94,16 +96,17 @@ func (q *Queries) CreateGeneratedShoppingLine(ctx context.Context, arg CreateGen
 		&i.OverrideText,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const createManualShoppingLine = `-- name: CreateManualShoppingLine :one
 INSERT INTO shopping_lines (
-    shopping_list_id, store_section_id, origin, display_name, quantity_kind,
+    household_id, shopping_list_id, store_section_id, origin, display_name, quantity_kind,
     display_position
-) VALUES ($1, $2, 'manual', $3, 'unspecified', $4)
-RETURNING id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key, origin, display_name, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, is_removed, is_completed, display_position, override_text, created_at, updated_at
+) VALUES ($5, $1, $2, 'manual', $3, 'unspecified', $4)
+RETURNING id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key, origin, display_name, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, is_removed, is_completed, display_position, override_text, created_at, updated_at, household_id
 `
 
 type CreateManualShoppingLineParams struct {
@@ -111,6 +114,7 @@ type CreateManualShoppingLineParams struct {
 	StoreSectionID  int64  `db:"store_section_id" json:"store_section_id"`
 	DisplayName     string `db:"display_name" json:"display_name"`
 	DisplayPosition int64  `db:"display_position" json:"display_position"`
+	HouseholdID     string `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateManualShoppingLine(ctx context.Context, arg CreateManualShoppingLineParams) (ShoppingLine, error) {
@@ -119,6 +123,7 @@ func (q *Queries) CreateManualShoppingLine(ctx context.Context, arg CreateManual
 		arg.StoreSectionID,
 		arg.DisplayName,
 		arg.DisplayPosition,
+		arg.HouseholdID,
 	)
 	var i ShoppingLine
 	err := row.Scan(
@@ -146,19 +151,20 @@ func (q *Queries) CreateManualShoppingLine(ctx context.Context, arg CreateManual
 		&i.OverrideText,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const createShoppingLineContribution = `-- name: CreateShoppingLineContribution :one
 INSERT INTO shopping_line_contributions (
-    shopping_line_id, week_recipe_id, recipe_ingredient_id, quantity_kind,
+    household_id, shopping_line_id, week_recipe_id, recipe_ingredient_id, quantity_kind,
     amount_min_numerator, amount_min_denominator,
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
     is_optional
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-RETURNING id, shopping_line_id, week_recipe_id, recipe_ingredient_id, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional
+) VALUES ($15, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+RETURNING id, shopping_line_id, week_recipe_id, recipe_ingredient_id, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, household_id
 `
 
 type CreateShoppingLineContributionParams struct {
@@ -176,6 +182,7 @@ type CreateShoppingLineContributionParams struct {
 	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg CreateShoppingLineContributionParams) (ShoppingLineContribution, error) {
@@ -194,6 +201,7 @@ func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg Create
 		arg.PackageSizeDenominator,
 		arg.PackageSizeUnitID,
 		arg.IsOptional,
+		arg.HouseholdID,
 	)
 	var i ShoppingLineContribution
 	err := row.Scan(
@@ -212,35 +220,54 @@ func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg Create
 		&i.PackageSizeDenominator,
 		&i.PackageSizeUnitID,
 		&i.IsOptional,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const deleteGeneratedShoppingLines = `-- name: DeleteGeneratedShoppingLines :exec
-DELETE FROM shopping_lines WHERE shopping_list_id = $1 AND origin = 'generated'
+DELETE FROM shopping_lines
+WHERE household_id = $1 AND shopping_list_id = $2
+    AND origin = 'generated'
 `
 
-func (q *Queries) DeleteGeneratedShoppingLines(ctx context.Context, shoppingListID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteGeneratedShoppingLines, shoppingListID)
+type DeleteGeneratedShoppingLinesParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
+
+func (q *Queries) DeleteGeneratedShoppingLines(ctx context.Context, arg DeleteGeneratedShoppingLinesParams) error {
+	_, err := q.db.ExecContext(ctx, deleteGeneratedShoppingLines, arg.HouseholdID, arg.ShoppingListID)
 	return err
 }
 
 const getOtherStoreSection = `-- name: GetOtherStoreSection :one
-SELECT id, key, name FROM store_sections WHERE key = 'other'
+SELECT id, key, name, household_id FROM store_sections WHERE household_id = $1 AND key = 'other'
 `
 
-func (q *Queries) GetOtherStoreSection(ctx context.Context) (StoreSection, error) {
-	row := q.db.QueryRowContext(ctx, getOtherStoreSection)
+func (q *Queries) GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error) {
+	row := q.db.QueryRowContext(ctx, getOtherStoreSection, householdID)
 	var i StoreSection
-	err := row.Scan(&i.ID, &i.Key, &i.Name)
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Name,
+		&i.HouseholdID,
+	)
 	return i, err
 }
 
 const listGeneratedShoppingLineStates = `-- name: ListGeneratedShoppingLineStates :many
 SELECT id, aggregation_key, is_removed, is_completed, override_text
 FROM shopping_lines
-WHERE shopping_list_id = $1 AND origin = 'generated'
+WHERE household_id = $1 AND shopping_list_id = $2
+    AND origin = 'generated'
 `
+
+type ListGeneratedShoppingLineStatesParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
 
 type ListGeneratedShoppingLineStatesRow struct {
 	ID             int64          `db:"id" json:"id"`
@@ -250,8 +277,8 @@ type ListGeneratedShoppingLineStatesRow struct {
 	OverrideText   sql.NullString `db:"override_text" json:"override_text"`
 }
 
-func (q *Queries) ListGeneratedShoppingLineStates(ctx context.Context, shoppingListID int64) ([]ListGeneratedShoppingLineStatesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listGeneratedShoppingLineStates, shoppingListID)
+func (q *Queries) ListGeneratedShoppingLineStates(ctx context.Context, arg ListGeneratedShoppingLineStatesParams) ([]ListGeneratedShoppingLineStatesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listGeneratedShoppingLineStates, arg.HouseholdID, arg.ShoppingListID)
 	if err != nil {
 		return nil, err
 	}
@@ -280,17 +307,23 @@ func (q *Queries) ListGeneratedShoppingLineStates(ctx context.Context, shoppingL
 }
 
 const listShoppingLineContributions = `-- name: ListShoppingLineContributions :many
-SELECT c.id, c.shopping_line_id, c.week_recipe_id, c.recipe_ingredient_id, c.quantity_kind, c.amount_min_numerator, c.amount_min_denominator, c.amount_max_numerator, c.amount_max_denominator, c.unit_id, c.package_type, c.package_size_numerator, c.package_size_denominator, c.package_size_unit_id, c.is_optional, r.id AS recipe_id, r.name AS recipe_name, ri.source_text, ri.preparation,
+SELECT c.id, c.shopping_line_id, c.week_recipe_id, c.recipe_ingredient_id, c.quantity_kind, c.amount_min_numerator, c.amount_min_denominator, c.amount_max_numerator, c.amount_max_denominator, c.unit_id, c.package_type, c.package_size_numerator, c.package_size_denominator, c.package_size_unit_id, c.is_optional, c.household_id, r.id AS recipe_id, r.name AS recipe_name, ri.source_text, ri.preparation,
     u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol
 FROM shopping_line_contributions c
-JOIN week_recipes wr ON wr.id = c.week_recipe_id
-JOIN recipes r ON r.id = wr.recipe_id
+JOIN week_recipes wr ON wr.household_id = c.household_id AND wr.id = c.week_recipe_id
+JOIN recipes r ON r.household_id = wr.household_id AND r.id = wr.recipe_id
 JOIN recipe_ingredients ri ON ri.id = c.recipe_ingredient_id
 LEFT JOIN units u ON u.id = c.unit_id
 LEFT JOIN units psu ON psu.id = c.package_size_unit_id
-WHERE c.shopping_line_id = $1
+WHERE c.household_id = $1
+    AND c.shopping_line_id = $2
 ORDER BY wr.position, c.id
 `
+
+type ListShoppingLineContributionsParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingLineID int64  `db:"shopping_line_id" json:"shopping_line_id"`
+}
 
 type ListShoppingLineContributionsRow struct {
 	ID                     int64          `db:"id" json:"id"`
@@ -308,6 +341,7 @@ type ListShoppingLineContributionsRow struct {
 	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 	RecipeID               int64          `db:"recipe_id" json:"recipe_id"`
 	RecipeName             string         `db:"recipe_name" json:"recipe_name"`
 	SourceText             string         `db:"source_text" json:"source_text"`
@@ -316,8 +350,8 @@ type ListShoppingLineContributionsRow struct {
 	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
 }
 
-func (q *Queries) ListShoppingLineContributions(ctx context.Context, shoppingLineID int64) ([]ListShoppingLineContributionsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listShoppingLineContributions, shoppingLineID)
+func (q *Queries) ListShoppingLineContributions(ctx context.Context, arg ListShoppingLineContributionsParams) ([]ListShoppingLineContributionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listShoppingLineContributions, arg.HouseholdID, arg.ShoppingLineID)
 	if err != nil {
 		return nil, err
 	}
@@ -341,6 +375,7 @@ func (q *Queries) ListShoppingLineContributions(ctx context.Context, shoppingLin
 			&i.PackageSizeDenominator,
 			&i.PackageSizeUnitID,
 			&i.IsOptional,
+			&i.HouseholdID,
 			&i.RecipeID,
 			&i.RecipeName,
 			&i.SourceText,
@@ -362,15 +397,21 @@ func (q *Queries) ListShoppingLineContributions(ctx context.Context, shoppingLin
 }
 
 const listShoppingLines = `-- name: ListShoppingLines :many
-SELECT sl.id, sl.shopping_list_id, sl.grocery_item_id, sl.store_section_id, sl.aggregation_key, sl.origin, sl.display_name, sl.quantity_kind, sl.amount_min_numerator, sl.amount_min_denominator, sl.amount_max_numerator, sl.amount_max_denominator, sl.unit_id, sl.package_type, sl.package_size_numerator, sl.package_size_denominator, sl.package_size_unit_id, sl.is_optional, sl.is_removed, sl.is_completed, sl.display_position, sl.override_text, sl.created_at, sl.updated_at, ss.name AS store_section_name, u.key AS unit_key, u.symbol AS unit_symbol,
+SELECT sl.id, sl.shopping_list_id, sl.grocery_item_id, sl.store_section_id, sl.aggregation_key, sl.origin, sl.display_name, sl.quantity_kind, sl.amount_min_numerator, sl.amount_min_denominator, sl.amount_max_numerator, sl.amount_max_denominator, sl.unit_id, sl.package_type, sl.package_size_numerator, sl.package_size_denominator, sl.package_size_unit_id, sl.is_optional, sl.is_removed, sl.is_completed, sl.display_position, sl.override_text, sl.created_at, sl.updated_at, sl.household_id, ss.name AS store_section_name, u.key AS unit_key, u.symbol AS unit_symbol,
     psu.key AS package_size_unit_key, psu.symbol AS package_size_unit_symbol
 FROM shopping_lines sl
-JOIN store_sections ss ON ss.id = sl.store_section_id
+JOIN store_sections ss ON ss.household_id = sl.household_id AND ss.id = sl.store_section_id
 LEFT JOIN units u ON u.id = sl.unit_id
 LEFT JOIN units psu ON psu.id = sl.package_size_unit_id
-WHERE sl.shopping_list_id = $1
+WHERE sl.household_id = $1
+    AND sl.shopping_list_id = $2
 ORDER BY ss.name, sl.display_position, sl.display_name, sl.id
 `
+
+type ListShoppingLinesParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
 
 type ListShoppingLinesRow struct {
 	ID                     int64          `db:"id" json:"id"`
@@ -397,6 +438,7 @@ type ListShoppingLinesRow struct {
 	OverrideText           sql.NullString `db:"override_text" json:"override_text"`
 	CreatedAt              string         `db:"created_at" json:"created_at"`
 	UpdatedAt              string         `db:"updated_at" json:"updated_at"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 	StoreSectionName       string         `db:"store_section_name" json:"store_section_name"`
 	UnitKey                sql.NullString `db:"unit_key" json:"unit_key"`
 	UnitSymbol             sql.NullString `db:"unit_symbol" json:"unit_symbol"`
@@ -404,8 +446,8 @@ type ListShoppingLinesRow struct {
 	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
 }
 
-func (q *Queries) ListShoppingLines(ctx context.Context, shoppingListID int64) ([]ListShoppingLinesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listShoppingLines, shoppingListID)
+func (q *Queries) ListShoppingLines(ctx context.Context, arg ListShoppingLinesParams) ([]ListShoppingLinesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listShoppingLines, arg.HouseholdID, arg.ShoppingListID)
 	if err != nil {
 		return nil, err
 	}
@@ -438,6 +480,7 @@ func (q *Queries) ListShoppingLines(ctx context.Context, shoppingListID int64) (
 			&i.OverrideText,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.HouseholdID,
 			&i.StoreSectionName,
 			&i.UnitKey,
 			&i.UnitSymbol,
@@ -459,11 +502,18 @@ func (q *Queries) ListShoppingLines(ctx context.Context, shoppingListID int64) (
 
 const nextManualShoppingLinePosition = `-- name: NextManualShoppingLinePosition :one
 SELECT CAST(coalesce(max(display_position) + 1, 0) AS BIGINT)
-FROM shopping_lines WHERE shopping_list_id = $1 AND origin = 'manual'
+FROM shopping_lines
+WHERE household_id = $1 AND shopping_list_id = $2
+    AND origin = 'manual'
 `
 
-func (q *Queries) NextManualShoppingLinePosition(ctx context.Context, shoppingListID int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, nextManualShoppingLinePosition, shoppingListID)
+type NextManualShoppingLinePositionParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
+
+func (q *Queries) NextManualShoppingLinePosition(ctx context.Context, arg NextManualShoppingLinePositionParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, nextManualShoppingLinePosition, arg.HouseholdID, arg.ShoppingListID)
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err
@@ -472,21 +522,28 @@ func (q *Queries) NextManualShoppingLinePosition(ctx context.Context, shoppingLi
 const setShoppingLineCompleted = `-- name: SetShoppingLineCompleted :execrows
 UPDATE shopping_lines
 SET is_completed = $1, updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE shopping_lines.id = $2 AND shopping_list_id = (
-    SELECT list.id FROM shopping_lists list
-    JOIN weeks w ON w.id = list.week_id
-    WHERE w.starts_on = $3
-)
+WHERE shopping_lines.household_id = $2
+    AND shopping_lines.id = $3 AND shopping_list_id = (
+        SELECT list.id FROM shopping_lists list
+        JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
+        WHERE w.household_id = $2 AND w.starts_on = $4
+    )
 `
 
 type SetShoppingLineCompletedParams struct {
-	Completed int64  `db:"completed" json:"completed"`
-	LineID    int64  `db:"line_id" json:"line_id"`
-	StartsOn  string `db:"starts_on" json:"starts_on"`
+	Completed   int64  `db:"completed" json:"completed"`
+	HouseholdID string `db:"household_id" json:"household_id"`
+	LineID      int64  `db:"line_id" json:"line_id"`
+	StartsOn    string `db:"starts_on" json:"starts_on"`
 }
 
 func (q *Queries) SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setShoppingLineCompleted, arg.Completed, arg.LineID, arg.StartsOn)
+	result, err := q.db.ExecContext(ctx, setShoppingLineCompleted,
+		arg.Completed,
+		arg.HouseholdID,
+		arg.LineID,
+		arg.StartsOn,
+	)
 	if err != nil {
 		return 0, err
 	}
@@ -496,21 +553,28 @@ func (q *Queries) SetShoppingLineCompleted(ctx context.Context, arg SetShoppingL
 const setShoppingLineOverride = `-- name: SetShoppingLineOverride :execrows
 UPDATE shopping_lines
 SET override_text = $1, updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE shopping_lines.id = $2 AND origin = 'generated' AND shopping_list_id = (
-    SELECT list.id FROM shopping_lists list
-    JOIN weeks w ON w.id = list.week_id
-    WHERE w.starts_on = $3
-)
+WHERE shopping_lines.household_id = $2
+    AND shopping_lines.id = $3 AND origin = 'generated' AND shopping_list_id = (
+        SELECT list.id FROM shopping_lists list
+        JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
+        WHERE w.household_id = $2 AND w.starts_on = $4
+    )
 `
 
 type SetShoppingLineOverrideParams struct {
 	OverrideText sql.NullString `db:"override_text" json:"override_text"`
+	HouseholdID  string         `db:"household_id" json:"household_id"`
 	LineID       int64          `db:"line_id" json:"line_id"`
 	StartsOn     string         `db:"starts_on" json:"starts_on"`
 }
 
 func (q *Queries) SetShoppingLineOverride(ctx context.Context, arg SetShoppingLineOverrideParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setShoppingLineOverride, arg.OverrideText, arg.LineID, arg.StartsOn)
+	result, err := q.db.ExecContext(ctx, setShoppingLineOverride,
+		arg.OverrideText,
+		arg.HouseholdID,
+		arg.LineID,
+		arg.StartsOn,
+	)
 	if err != nil {
 		return 0, err
 	}
@@ -520,21 +584,28 @@ func (q *Queries) SetShoppingLineOverride(ctx context.Context, arg SetShoppingLi
 const setShoppingLineRemoved = `-- name: SetShoppingLineRemoved :execrows
 UPDATE shopping_lines
 SET is_removed = $1, updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE shopping_lines.id = $2 AND shopping_list_id = (
-    SELECT list.id FROM shopping_lists list
-    JOIN weeks w ON w.id = list.week_id
-    WHERE w.starts_on = $3
-)
+WHERE shopping_lines.household_id = $2
+    AND shopping_lines.id = $3 AND shopping_list_id = (
+        SELECT list.id FROM shopping_lists list
+        JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
+        WHERE w.household_id = $2 AND w.starts_on = $4
+    )
 `
 
 type SetShoppingLineRemovedParams struct {
-	Removed  int64  `db:"removed" json:"removed"`
-	LineID   int64  `db:"line_id" json:"line_id"`
-	StartsOn string `db:"starts_on" json:"starts_on"`
+	Removed     int64  `db:"removed" json:"removed"`
+	HouseholdID string `db:"household_id" json:"household_id"`
+	LineID      int64  `db:"line_id" json:"line_id"`
+	StartsOn    string `db:"starts_on" json:"starts_on"`
 }
 
 func (q *Queries) SetShoppingLineRemoved(ctx context.Context, arg SetShoppingLineRemovedParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setShoppingLineRemoved, arg.Removed, arg.LineID, arg.StartsOn)
+	result, err := q.db.ExecContext(ctx, setShoppingLineRemoved,
+		arg.Removed,
+		arg.HouseholdID,
+		arg.LineID,
+		arg.StartsOn,
+	)
 	if err != nil {
 		return 0, err
 	}

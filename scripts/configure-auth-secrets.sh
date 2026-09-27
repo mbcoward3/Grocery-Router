@@ -52,8 +52,11 @@ if [[ -z "$google_client_id" || -z "$google_client_secret" ]]; then
 fi
 
 secret_name='grocery-router-auth'
+new_session_secret() {
+  openssl rand -base64 32 | tr '+/' '-_' | tr -d '='
+}
 if [[ "${ROTATE_SESSION_SECRET:-0}" == '1' ]]; then
-  session_secret=$(openssl rand -hex 32)
+  session_secret=$(new_session_secret)
 elif kubectl --namespace "$namespace" get secret "$secret_name" >/dev/null 2>&1; then
   session_secret=$(
     kubectl --namespace "$namespace" get secret "$secret_name" \
@@ -64,7 +67,7 @@ elif kubectl --namespace "$namespace" get secret "$secret_name" >/dev/null 2>&1;
     exit 1
   fi
 else
-  session_secret=$(openssl rand -hex 32)
+  session_secret=$(new_session_secret)
 fi
 
 bootstrap_users='[{"email":"mbcoward3@gmail.com","role":"owner"},{"email":"brooklynjocoward@gmail.com","role":"owner"}]'

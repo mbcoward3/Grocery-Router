@@ -64,10 +64,18 @@ VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', 'Coward');
 -- +goose StatementBegin
 CREATE FUNCTION prevent_last_household_owner() RETURNS TRIGGER AS $$
 BEGIN
-    IF OLD.role = 'owner' AND (TG_OP = 'DELETE' OR NEW.role <> 'owner') AND NOT EXISTS (
-        SELECT 1 FROM household_memberships
-        WHERE household_id = OLD.household_id AND role = 'owner' AND user_id <> OLD.user_id
-    ) THEN
+    IF OLD.role = 'owner'
+        AND (
+            TG_OP = 'DELETE'
+            OR NEW.role <> 'owner'
+            OR NEW.household_id <> OLD.household_id
+            OR NEW.user_id <> OLD.user_id
+        )
+        AND NOT EXISTS (
+            SELECT 1 FROM household_memberships
+            WHERE household_id = OLD.household_id AND role = 'owner' AND user_id <> OLD.user_id
+        )
+    THEN
         RAISE EXCEPTION 'a household must retain at least one owner';
     END IF;
     RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
@@ -76,7 +84,7 @@ $$ LANGUAGE plpgsql;
 -- +goose StatementEnd
 
 CREATE TRIGGER household_memberships_retain_owner
-BEFORE DELETE OR UPDATE OF role ON household_memberships
+BEFORE DELETE OR UPDATE OF role, household_id, user_id ON household_memberships
 FOR EACH ROW EXECUTE FUNCTION prevent_last_household_owner();
 
 -- +goose Down

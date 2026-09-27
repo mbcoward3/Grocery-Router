@@ -73,7 +73,7 @@ func TestImportApprovedCorpus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := ingest.Import(context.Background(), db, documents); err != nil {
+	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
 		t.Fatal(err)
 	}
 
@@ -123,7 +123,7 @@ func TestImportApprovedCorpus(t *testing.T) {
 		t.Fatalf("water include_on_grocery_list = %d, want 0", waterShopping)
 	}
 
-	if err := ingest.Import(context.Background(), db, documents); err == nil {
+	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err == nil {
 		t.Fatal("second import unexpectedly succeeded")
 	}
 }
@@ -131,7 +131,7 @@ func TestImportApprovedCorpus(t *testing.T) {
 func TestImportRollsBackCompleteSet(t *testing.T) {
 	db := openMigratedDB(t)
 	document := approvedDocument(t)
-	err := ingest.Import(context.Background(), db, []ingest.Document{document, document})
+	err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", []ingest.Document{document, document})
 	if err == nil {
 		t.Fatal("duplicate document import unexpectedly succeeded")
 	}

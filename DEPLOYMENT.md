@@ -7,21 +7,36 @@ The application is packaged as one container containing the Go API, built React 
 - Listen address: `GROCERY_ROUTER_ADDRESS` (container default `0.0.0.0:8080`)
 - PostgreSQL connection: `GROCERY_ROUTER_DATABASE_URL` (required in the container)
 - Static assets: `GROCERY_ROUTER_WEB_ROOT` (container default `/app/web/dist`)
+- Canonical HTTPS origin: `GROCERY_ROUTER_AUTH_ORIGIN`
+- OIDC issuer: `GROCERY_ROUTER_AUTH_OIDC_ISSUER` (`https://accounts.google.com` for Google)
+- Google client: `GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_ID` and `GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_SECRET`
+- Session signing key: `GROCERY_ROUTER_AUTH_SESSION_SECRET` (base64url, at least 32 decoded bytes)
+- Active verified-email policy: `GROCERY_ROUTER_AUTH_BOOTSTRAP_USERS` (owner JSON)
 - Health endpoint: `GET /healthz`
 
-The entrypoint applies pending Goose migrations and ingests the approved corpus only when the recipe table is empty. CNPG owns database storage and credentials; the application pod is stateless.
+The server fails startup if authentication configuration is absent or inconsistent. HTTPS deployments use host-only `__Host-` cookies; only an explicit localhost origin receives distinct non-secure development cookie names. There is no authentication-disabled mode.
 
-GitHub Actions publishes commit-SHA and default-branch tags to the public package `ghcr.io/mbcoward3/grocery-router`.
+The entrypoint applies pending Goose migrations and ingests the approved corpus only when the Coward household's recipe table is empty. CNPG owns database storage and credentials; the application pod is stateless.
 
-A successful build from `main` commits the resulting OCI digest to the private `talos-cluster` GitOps repository. Flux then rolls out production. Production therefore follows `main` without giving GitHub-hosted runners direct Kubernetes access.
+## Environments and cutover
 
-The Talos cluster installs the CNPG operator through Flux. Production uses a single-instance 5 Gi `Cluster` because the current Talos environment has one node; adding instances on that same node would not provide host-level high availability. The application receives CNPG's generated connection URI from the `grocery-router-db-app` Secret.
+- Production: `https://groceries.matthewcoward.com`
+- Stable development: `https://groceries-dev.matthewcoward.com`
 
-Pull requests build a `sha-<head-commit>` image. A separate `pull_request_target` workflow safely commits manifests derived only from trusted PR metadata; it does not execute PR code with the GitOps credential. Each preview receives:
+Production and stable development require separate Google OAuth clients, session keys, allowlists, and CNPG databases. Each Google client registers only its environment's exact callback:
 
-- URL `http://pr-<number>.192-168-4-200.sslip.io`
-- resources in the shared `grocery-router-dev` namespace
-- a distinct single-instance 2 Gi CNPG cluster
-- automatic removal when the PR closes or its 24-hour lease expires
+```text
+https://<environment-host>/api/v2/auth/google/callback
+```
 
-The production deployment is available on the LAN at `http://groceries.192-168-4-200.sslip.io`. Kubernetes resources are defined in the separate `talos-cluster` GitOps repository.
+The reusable application-secret helper is `scripts/configure-auth-secrets.sh`. Secret values must not be committed.
+
+Deployment resources are owned by the separate GitOps repository. Before application cutover that repository must provide stable development with its own CNPG `Cluster`, application `Deployment`, `Service`, and HTTPS `HTTPRoute`, wired to the development `grocery-router-auth` and database Secrets. Stable-dev acceptance must cover both owners on desktop and iPhone before any production image or route is changed.
+
+At production cutover, first rehearse migrations against a production backup and verify row counts, grocery contribution integrity, overrides, removed/completed state, and both owner claims. Roll out the authenticated image and configuration atomically. The application exposes product operations only below authenticated `/api/v2/households/{householdID}` routes; legacy unauthenticated `/api` product routes return 404.
+
+Dynamic PR hosts have no Google callback. They must remain fail-closed unless a separately approved test issuer and preview-only trust configuration are added.
+
+## Image publication
+
+GitHub Actions publishes commit-SHA and default-branch tags to `ghcr.io/mbcoward3/grocery-router`. GitOps controls promotion and rollout; application work in this repository must not directly deploy or mutate production resources.

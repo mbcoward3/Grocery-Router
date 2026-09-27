@@ -13,7 +13,7 @@ func validRawConfig() RawConfig {
 		Origin: "https://groceries.example.com", Issuer: "https://accounts.example.com",
 		ClientID: "client", ClientSecret: "secret",
 		SessionSecret: base64.RawURLEncoding.EncodeToString([]byte(strings.Repeat("k", 32))),
-		AllowedEmails: "Owner@Example.com, second@example.com",
+		AllowedEmails: "Owner@Example.com, second@example.com", HouseholdName: "Coward",
 	}
 }
 
@@ -29,6 +29,7 @@ func TestParseConfigFailsClosed(t *testing.T) {
 		{"missing client", func(raw *RawConfig) { raw.ClientID = "" }},
 		{"short session secret", func(raw *RawConfig) { raw.SessionSecret = base64.RawURLEncoding.EncodeToString([]byte("short")) }},
 		{"empty allowlist", func(raw *RawConfig) { raw.AllowedEmails = " , " }},
+		{"wrong household", func(raw *RawConfig) { raw.HouseholdName = "Other" }},
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {

@@ -9,6 +9,18 @@ export type GroceryContribution = components['schemas']['GroceryContribution']
 export type GroceryLine = components['schemas']['GroceryLine']
 export type WeekHistorySummary = components['schemas']['WeekHistorySummary']
 export type HistoricalWeek = components['schemas']['HistoricalWeek']
+export type Session = components['schemas']['Session']
+
+let householdId: string | null = null
+
+export function setHouseholdId(value: string): void {
+  householdId = value
+}
+
+function householdPath(path: string): string {
+  if (!householdId) throw new Error('No authenticated household is selected.')
+  return `/households/${encodeURIComponent(householdId)}${path}`
+}
 
 export class ApiRequestError extends Error {
   readonly status: number
@@ -23,7 +35,7 @@ export class ApiRequestError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`/api${path}`, {
+  const response = await fetch(`/api/v2${path}`, {
     ...init,
     headers: {
       Accept: 'application/json',
@@ -32,7 +44,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     },
   })
 
-  const body: unknown = await response.json()
+  const body: unknown = response.status === 204 ? null : await response.json()
   if (!response.ok) {
     const fallback: ApiError['error'] = {
       code: 'request_failed',
@@ -57,17 +69,20 @@ function isApiError(value: unknown): value is ApiError {
   )
 }
 
+export function getSession(): Promise<Session> { return request('/session') }
+export async function logout(): Promise<void> { await request('/auth/logout', { method: 'POST' }) }
+
 export function listRecipes(): Promise<{ recipes: RecipeSummary[] }> {
-  return request('/recipes')
+  return request(householdPath('/recipes'))
 }
 
 export function getRecipe(recipeId: number): Promise<RecipeDetail> {
-  return request(`/recipes/${recipeId}`)
+  return request(householdPath(`/recipes/${recipeId}`))
 }
 
 export async function getCurrentWeek(): Promise<Week | null> {
   try {
-    return await request('/week/current')
+    return await request(householdPath('/week/current'))
   } catch (error) {
     if (error instanceof ApiRequestError && error.code === 'no_current_week') return null
     throw error
@@ -75,45 +90,42 @@ export async function getCurrentWeek(): Promise<Week | null> {
 }
 
 export function listWeekHistory(): Promise<{ weeks: WeekHistorySummary[] }> {
-  return request('/weeks/history')
+  return request(householdPath('/weeks/history'))
 }
 
 export function getHistoricalWeek(weekId: number): Promise<HistoricalWeek> {
-  return request(`/weeks/history/${weekId}`)
+  return request(householdPath(`/weeks/history/${weekId}`))
 }
 
 export function generateWeek(recipeCount: number): Promise<Week> {
-  return request('/week/current/generate', {
-    method: 'POST',
-    body: JSON.stringify({ recipeCount }),
+  return request(householdPath('/week/current/generate'), {
+    method: 'POST', body: JSON.stringify({ recipeCount }),
   })
 }
 
 export function addRecipe(recipeId: number): Promise<Week> {
-  return request('/week/current/recipes', {
-    method: 'POST',
-    body: JSON.stringify({ recipeId }),
+  return request(householdPath('/week/current/recipes'), {
+    method: 'POST', body: JSON.stringify({ recipeId }),
   })
 }
 
 export function removeRecipe(occurrenceId: number): Promise<Week> {
-  return request(`/week/current/recipes/${occurrenceId}`, { method: 'DELETE' })
+  return request(householdPath(`/week/current/recipes/${occurrenceId}`), { method: 'DELETE' })
 }
 
 export function swapRecipe(occurrenceId: number, recipeId: number): Promise<Week> {
-  return request(`/week/current/recipes/${occurrenceId}`, {
-    method: 'PUT',
-    body: JSON.stringify({ recipeId }),
+  return request(householdPath(`/week/current/recipes/${occurrenceId}`), {
+    method: 'PUT', body: JSON.stringify({ recipeId }),
   })
 }
 
 export function randomSwapRecipe(occurrenceId: number): Promise<Week> {
-  return request(`/week/current/recipes/${occurrenceId}/random-swap`, { method: 'POST' })
+  return request(householdPath(`/week/current/recipes/${occurrenceId}/random-swap`), { method: 'POST' })
 }
 
 export async function getGroceries(): Promise<Groceries | null> {
   try {
-    return await request('/week/current/groceries')
+    return await request(householdPath('/week/current/groceries'))
   } catch (error) {
     if (error instanceof ApiRequestError && error.code === 'no_current_week') return null
     throw error
@@ -121,17 +133,17 @@ export async function getGroceries(): Promise<Groceries | null> {
 }
 
 export function addGroceryLine(name: string): Promise<Groceries> {
-  return request('/week/current/groceries', { method: 'POST', body: JSON.stringify({ name }) })
+  return request(householdPath('/week/current/groceries'), { method: 'POST', body: JSON.stringify({ name }) })
 }
 
 export function updateGroceryLine(lineId: number, update: { completed: boolean } | { overrideText: string }): Promise<Groceries> {
-  return request(`/week/current/groceries/${lineId}`, { method: 'PATCH', body: JSON.stringify(update) })
+  return request(householdPath(`/week/current/groceries/${lineId}`), { method: 'PATCH', body: JSON.stringify(update) })
 }
 
 export function removeGroceryLine(lineId: number): Promise<Groceries> {
-  return request(`/week/current/groceries/${lineId}`, { method: 'DELETE' })
+  return request(householdPath(`/week/current/groceries/${lineId}`), { method: 'DELETE' })
 }
 
 export function getGroceryContributions(lineId: number): Promise<{ contributions: GroceryContribution[] }> {
-  return request(`/week/current/groceries/${lineId}/contributions`)
+  return request(householdPath(`/week/current/groceries/${lineId}/contributions`))
 }

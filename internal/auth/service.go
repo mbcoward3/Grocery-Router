@@ -14,6 +14,8 @@ import (
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/mbcoward3/grocery-router/internal/tenant"
 )
 
 var (
@@ -29,7 +31,9 @@ type User struct {
 }
 
 type Membership struct {
-	HouseholdID, HouseholdName, Role string
+	HouseholdID   string `json:"householdID"`
+	HouseholdName string `json:"householdName"`
+	Role          string `json:"role"`
 }
 
 type Session struct {
@@ -119,7 +123,7 @@ func (service *Service) ResolveIdentity(ctx context.Context, identity ExternalId
 		}
 		_, err = tx.ExecContext(ctx, `
 			INSERT INTO household_memberships (household_id, user_id, role) VALUES ($1, $2, 'owner')
-			ON CONFLICT (household_id, user_id) DO NOTHING`, CowardHouseholdID, user.ID)
+			ON CONFLICT (household_id, user_id) DO NOTHING`, tenant.CowardHouseholdID, user.ID)
 		if err != nil {
 			return User{}, fmt.Errorf("claim household membership: %w", err)
 		}

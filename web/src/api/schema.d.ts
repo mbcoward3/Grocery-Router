@@ -4,11 +4,47 @@
  */
 
 export interface paths {
-    "/recipes": {
+    "/session": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        /** Return the current application user and household memberships. */
+        get: operations["getSession"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Revoke the current application session. */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{householdID}/recipes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         /** List every verified recipe eligible for selection. */
@@ -21,11 +57,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/recipes/{recipeID}": {
+    "/households/{householdID}/recipes/{recipeID}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 recipeID: number;
             };
             cookie?: never;
@@ -40,11 +77,13 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/week/current": {
+    "/households/{householdID}/week/current": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         /** Return the explicitly generated current week. */
@@ -57,11 +96,13 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/weeks/history": {
+    "/households/{householdID}/weeks/history": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         /** List earlier generated weeks, newest first. */
@@ -74,11 +115,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/weeks/history/{weekID}": {
+    "/households/{householdID}/weeks/history/{weekID}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 weekID: number;
             };
             cookie?: never;
@@ -93,11 +135,13 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/week/current/generate": {
+    "/households/{householdID}/week/current/generate": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         get?: never;
@@ -110,11 +154,13 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/week/current/recipes": {
+    "/households/{householdID}/week/current/recipes": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         get?: never;
@@ -127,11 +173,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/week/current/recipes/{occurrenceID}": {
+    "/households/{householdID}/week/current/recipes/{occurrenceID}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 occurrenceID: components["parameters"]["OccurrenceID"];
             };
             cookie?: never;
@@ -147,11 +194,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/week/current/recipes/{occurrenceID}/random-swap": {
+    "/households/{householdID}/week/current/recipes/{occurrenceID}/random-swap": {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 occurrenceID: components["parameters"]["OccurrenceID"];
             };
             cookie?: never;
@@ -166,11 +214,13 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/week/current/groceries": {
+    "/households/{householdID}/week/current/groceries": {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         /** Return the current grouped grocery checklist. */
@@ -184,11 +234,12 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/week/current/groceries/{lineID}": {
+    "/households/{householdID}/week/current/groceries/{lineID}": {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 lineID: number;
             };
             cookie?: never;
@@ -204,11 +255,12 @@ export interface paths {
         patch: operations["updateCurrentGroceryLine"];
         trace?: never;
     };
-    "/week/current/groceries/{lineID}/contributions": {
+    "/households/{householdID}/week/current/groceries/{lineID}/contributions": {
         parameters: {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 lineID: number;
             };
             cookie?: never;
@@ -227,6 +279,26 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        SessionUser: {
+            /** Format: uuid */
+            id: string;
+            /** Format: email */
+            email: string;
+            displayName: string;
+            /** Format: uri */
+            avatarUrl: string | null;
+        };
+        HouseholdMembership: {
+            /** Format: uuid */
+            householdID: string;
+            householdName: string;
+            /** @enum {string} */
+            role: "owner" | "admin" | "member";
+        };
+        Session: {
+            user: components["schemas"]["SessionUser"];
+            households: components["schemas"]["HouseholdMembership"][];
+        };
         DurationRange: {
             minimumMinutes: number | null;
             maximumMinutes: number | null;
@@ -330,6 +402,24 @@ export interface components {
         };
     };
     responses: {
+        /** @description A valid application session is required. */
+        Unauthenticated: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["APIError"];
+            };
+        };
+        /** @description The request origin or household access was denied. */
+        Forbidden: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["APIError"];
+            };
+        };
         /** @description Canonical current week after the operation. */
         Week: {
             headers: {
@@ -404,6 +494,7 @@ export interface components {
         };
     };
     parameters: {
+        HouseholdID: string;
         OccurrenceID: number;
     };
     requestBodies: {
@@ -420,11 +511,53 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    listRecipes: {
+    getSession: {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Current session. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Session"];
+                };
+            };
+            401: components["responses"]["Unauthenticated"];
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Session revoked. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            403: components["responses"]["Forbidden"];
+        };
+    };
+    listRecipes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -448,6 +581,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 recipeID: number;
             };
             cookie?: never;
@@ -471,7 +605,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -484,7 +620,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -508,6 +646,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 weekID: number;
             };
             cookie?: never;
@@ -531,7 +670,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         requestBody: {
@@ -551,7 +692,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         requestBody: components["requestBodies"]["RecipeSelection"];
@@ -567,6 +710,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 occurrenceID: components["parameters"]["OccurrenceID"];
             };
             cookie?: never;
@@ -584,6 +728,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 occurrenceID: components["parameters"]["OccurrenceID"];
             };
             cookie?: never;
@@ -601,6 +746,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 occurrenceID: components["parameters"]["OccurrenceID"];
             };
             cookie?: never;
@@ -617,7 +763,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         requestBody?: never;
@@ -630,7 +778,9 @@ export interface operations {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
             cookie?: never;
         };
         requestBody: {
@@ -651,6 +801,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 lineID: number;
             };
             cookie?: never;
@@ -666,6 +817,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 lineID: number;
             };
             cookie?: never;
@@ -690,6 +842,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                householdID: components["parameters"]["HouseholdID"];
                 lineID: number;
             };
             cookie?: never;

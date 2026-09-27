@@ -31,11 +31,18 @@ func (q *Queries) ApproveReviewFlag(ctx context.Context, id int64) (RecipeReview
 }
 
 const countUnapprovedReviewFlags = `-- name: CountUnapprovedReviewFlags :one
-SELECT count(*) FROM recipe_review_flags WHERE recipe_id = $1 AND approved = 0
+SELECT count(*) FROM recipe_review_flags f
+JOIN recipes r ON r.id = f.recipe_id
+WHERE r.household_id = $1 AND f.recipe_id = $2 AND approved = 0
 `
 
-func (q *Queries) CountUnapprovedReviewFlags(ctx context.Context, recipeID int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countUnapprovedReviewFlags, recipeID)
+type CountUnapprovedReviewFlagsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+}
+
+func (q *Queries) CountUnapprovedReviewFlags(ctx context.Context, arg CountUnapprovedReviewFlagsParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countUnapprovedReviewFlags, arg.HouseholdID, arg.RecipeID)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -43,11 +50,11 @@ func (q *Queries) CountUnapprovedReviewFlags(ctx context.Context, recipeID int64
 
 const createDraftRecipe = `-- name: CreateDraftRecipe :one
 INSERT INTO recipes (
-    key, name, image_url, yield_text,
+    household_id, key, name, image_url, yield_text,
     hands_on_min_minutes, hands_on_max_minutes,
     unattended_min_minutes, unattended_max_minutes
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+) VALUES ($9, $1, $2, $3, $4, $5, $6, $7, $8)
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id
 `
 
 type CreateDraftRecipeParams struct {
@@ -59,6 +66,7 @@ type CreateDraftRecipeParams struct {
 	HandsOnMaxMinutes    sql.NullInt64  `db:"hands_on_max_minutes" json:"hands_on_max_minutes"`
 	UnattendedMinMinutes sql.NullInt64  `db:"unattended_min_minutes" json:"unattended_min_minutes"`
 	UnattendedMaxMinutes sql.NullInt64  `db:"unattended_max_minutes" json:"unattended_max_minutes"`
+	HouseholdID          string         `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateDraftRecipe(ctx context.Context, arg CreateDraftRecipeParams) (Recipe, error) {
@@ -71,6 +79,7 @@ func (q *Queries) CreateDraftRecipe(ctx context.Context, arg CreateDraftRecipePa
 		arg.HandsOnMaxMinutes,
 		arg.UnattendedMinMinutes,
 		arg.UnattendedMaxMinutes,
+		arg.HouseholdID,
 	)
 	var i Recipe
 	err := row.Scan(
@@ -87,14 +96,15 @@ func (q *Queries) CreateDraftRecipe(ctx context.Context, arg CreateDraftRecipePa
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const createGroceryItem = `-- name: CreateGroceryItem :one
-INSERT INTO grocery_items (key, name, store_section_id, shopping_mode)
-VALUES ($1, $2, $3, $4)
-RETURNING id, key, name, store_section_id, shopping_mode, created_at, updated_at
+INSERT INTO grocery_items (household_id, key, name, store_section_id, shopping_mode)
+VALUES ($5, $1, $2, $3, $4)
+RETURNING id, key, name, store_section_id, shopping_mode, created_at, updated_at, household_id
 `
 
 type CreateGroceryItemParams struct {
@@ -102,6 +112,7 @@ type CreateGroceryItemParams struct {
 	Name           string `db:"name" json:"name"`
 	StoreSectionID int64  `db:"store_section_id" json:"store_section_id"`
 	ShoppingMode   string `db:"shopping_mode" json:"shopping_mode"`
+	HouseholdID    string `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateGroceryItem(ctx context.Context, arg CreateGroceryItemParams) (GroceryItem, error) {
@@ -110,6 +121,7 @@ func (q *Queries) CreateGroceryItem(ctx context.Context, arg CreateGroceryItemPa
 		arg.Name,
 		arg.StoreSectionID,
 		arg.ShoppingMode,
+		arg.HouseholdID,
 	)
 	var i GroceryItem
 	err := row.Scan(
@@ -120,6 +132,7 @@ func (q *Queries) CreateGroceryItem(ctx context.Context, arg CreateGroceryItemPa
 		&i.ShoppingMode,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
@@ -349,19 +362,25 @@ func (q *Queries) CreateReviewFlag(ctx context.Context, arg CreateReviewFlagPara
 }
 
 const createStoreSection = `-- name: CreateStoreSection :one
-INSERT INTO store_sections (key, name) VALUES ($1, $2)
-RETURNING id, key, name
+INSERT INTO store_sections (household_id, key, name) VALUES ($3, $1, $2)
+RETURNING id, key, name, household_id
 `
 
 type CreateStoreSectionParams struct {
-	Key  string `db:"key" json:"key"`
-	Name string `db:"name" json:"name"`
+	Key         string `db:"key" json:"key"`
+	Name        string `db:"name" json:"name"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateStoreSection(ctx context.Context, arg CreateStoreSectionParams) (StoreSection, error) {
-	row := q.db.QueryRowContext(ctx, createStoreSection, arg.Key, arg.Name)
+	row := q.db.QueryRowContext(ctx, createStoreSection, arg.Key, arg.Name, arg.HouseholdID)
 	var i StoreSection
-	err := row.Scan(&i.ID, &i.Key, &i.Name)
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Name,
+		&i.HouseholdID,
+	)
 	return i, err
 }
 
@@ -404,11 +423,16 @@ func (q *Queries) CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, e
 }
 
 const getGroceryItemByKey = `-- name: GetGroceryItemByKey :one
-SELECT id, key, name, store_section_id, shopping_mode, created_at, updated_at FROM grocery_items WHERE key = $1
+SELECT id, key, name, store_section_id, shopping_mode, created_at, updated_at, household_id FROM grocery_items WHERE household_id = $1 AND key = $2
 `
 
-func (q *Queries) GetGroceryItemByKey(ctx context.Context, key string) (GroceryItem, error) {
-	row := q.db.QueryRowContext(ctx, getGroceryItemByKey, key)
+type GetGroceryItemByKeyParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	Key         string `db:"key" json:"key"`
+}
+
+func (q *Queries) GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error) {
+	row := q.db.QueryRowContext(ctx, getGroceryItemByKey, arg.HouseholdID, arg.Key)
 	var i GroceryItem
 	err := row.Scan(
 		&i.ID,
@@ -418,16 +442,22 @@ func (q *Queries) GetGroceryItemByKey(ctx context.Context, key string) (GroceryI
 		&i.ShoppingMode,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const getRecipe = `-- name: GetRecipe :one
-SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE id = $1
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id FROM recipes WHERE household_id = $1 AND id = $2
 `
 
-func (q *Queries) GetRecipe(ctx context.Context, id int64) (Recipe, error) {
-	row := q.db.QueryRowContext(ctx, getRecipe, id)
+type GetRecipeParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) GetRecipe(ctx context.Context, arg GetRecipeParams) (Recipe, error) {
+	row := q.db.QueryRowContext(ctx, getRecipe, arg.HouseholdID, arg.ID)
 	var i Recipe
 	err := row.Scan(
 		&i.ID,
@@ -443,16 +473,22 @@ func (q *Queries) GetRecipe(ctx context.Context, id int64) (Recipe, error) {
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const getRecipeByKey = `-- name: GetRecipeByKey :one
-SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE key = $1
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id FROM recipes WHERE household_id = $1 AND key = $2
 `
 
-func (q *Queries) GetRecipeByKey(ctx context.Context, key string) (Recipe, error) {
-	row := q.db.QueryRowContext(ctx, getRecipeByKey, key)
+type GetRecipeByKeyParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	Key         string `db:"key" json:"key"`
+}
+
+func (q *Queries) GetRecipeByKey(ctx context.Context, arg GetRecipeByKeyParams) (Recipe, error) {
+	row := q.db.QueryRowContext(ctx, getRecipeByKey, arg.HouseholdID, arg.Key)
 	var i Recipe
 	err := row.Scan(
 		&i.ID,
@@ -468,18 +504,29 @@ func (q *Queries) GetRecipeByKey(ctx context.Context, key string) (Recipe, error
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const getStoreSectionByKey = `-- name: GetStoreSectionByKey :one
-SELECT id, key, name FROM store_sections WHERE key = $1
+SELECT id, key, name, household_id FROM store_sections WHERE household_id = $1 AND key = $2
 `
 
-func (q *Queries) GetStoreSectionByKey(ctx context.Context, key string) (StoreSection, error) {
-	row := q.db.QueryRowContext(ctx, getStoreSectionByKey, key)
+type GetStoreSectionByKeyParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	Key         string `db:"key" json:"key"`
+}
+
+func (q *Queries) GetStoreSectionByKey(ctx context.Context, arg GetStoreSectionByKeyParams) (StoreSection, error) {
+	row := q.db.QueryRowContext(ctx, getStoreSectionByKey, arg.HouseholdID, arg.Key)
 	var i StoreSection
-	err := row.Scan(&i.ID, &i.Key, &i.Name)
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Name,
+		&i.HouseholdID,
+	)
 	return i, err
 }
 
@@ -503,11 +550,16 @@ func (q *Queries) GetUnitByKey(ctx context.Context, key string) (Unit, error) {
 }
 
 const getVerifiedRecipe = `-- name: GetVerifiedRecipe :one
-SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE id = $1 AND status = 'verified'
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id FROM recipes WHERE household_id = $1 AND id = $2 AND status = 'verified'
 `
 
-func (q *Queries) GetVerifiedRecipe(ctx context.Context, id int64) (Recipe, error) {
-	row := q.db.QueryRowContext(ctx, getVerifiedRecipe, id)
+type GetVerifiedRecipeParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) GetVerifiedRecipe(ctx context.Context, arg GetVerifiedRecipeParams) (Recipe, error) {
+	row := q.db.QueryRowContext(ctx, getVerifiedRecipe, arg.HouseholdID, arg.ID)
 	var i Recipe
 	err := row.Scan(
 		&i.ID,
@@ -523,14 +575,16 @@ func (q *Queries) GetVerifiedRecipe(ctx context.Context, id int64) (Recipe, erro
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const listGroceryItems = `-- name: ListGroceryItems :many
-SELECT gi.id, gi.key, gi.name, gi.store_section_id, gi.shopping_mode, gi.created_at, gi.updated_at, ss.name AS store_section_name
+SELECT gi.id, gi.key, gi.name, gi.store_section_id, gi.shopping_mode, gi.created_at, gi.updated_at, gi.household_id, ss.name AS store_section_name
 FROM grocery_items gi
-JOIN store_sections ss ON ss.id = gi.store_section_id
+JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+WHERE gi.household_id = $1
 ORDER BY gi.name
 `
 
@@ -542,11 +596,12 @@ type ListGroceryItemsRow struct {
 	ShoppingMode     string `db:"shopping_mode" json:"shopping_mode"`
 	CreatedAt        string `db:"created_at" json:"created_at"`
 	UpdatedAt        string `db:"updated_at" json:"updated_at"`
+	HouseholdID      string `db:"household_id" json:"household_id"`
 	StoreSectionName string `db:"store_section_name" json:"store_section_name"`
 }
 
-func (q *Queries) ListGroceryItems(ctx context.Context) ([]ListGroceryItemsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listGroceryItems)
+func (q *Queries) ListGroceryItems(ctx context.Context, householdID string) ([]ListGroceryItemsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listGroceryItems, householdID)
 	if err != nil {
 		return nil, err
 	}
@@ -562,6 +617,7 @@ func (q *Queries) ListGroceryItems(ctx context.Context) ([]ListGroceryItemsRow, 
 			&i.ShoppingMode,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.HouseholdID,
 			&i.StoreSectionName,
 		); err != nil {
 			return nil, err
@@ -578,11 +634,19 @@ func (q *Queries) ListGroceryItems(ctx context.Context) ([]ListGroceryItemsRow, 
 }
 
 const listIngredientSections = `-- name: ListIngredientSections :many
-SELECT id, recipe_id, name, position FROM recipe_ingredient_sections WHERE recipe_id = $1 ORDER BY position
+SELECT ris.id, ris.recipe_id, ris.name, ris.position FROM recipe_ingredient_sections ris
+JOIN recipes r ON r.id = ris.recipe_id
+WHERE r.household_id = $1 AND ris.recipe_id = $2
+ORDER BY position
 `
 
-func (q *Queries) ListIngredientSections(ctx context.Context, recipeID int64) ([]RecipeIngredientSection, error) {
-	rows, err := q.db.QueryContext(ctx, listIngredientSections, recipeID)
+type ListIngredientSectionsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+}
+
+func (q *Queries) ListIngredientSections(ctx context.Context, arg ListIngredientSectionsParams) ([]RecipeIngredientSection, error) {
+	rows, err := q.db.QueryContext(ctx, listIngredientSections, arg.HouseholdID, arg.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -610,11 +674,19 @@ func (q *Queries) ListIngredientSections(ctx context.Context, recipeID int64) ([
 }
 
 const listInstructionSections = `-- name: ListInstructionSections :many
-SELECT id, recipe_id, name, position FROM recipe_instruction_sections WHERE recipe_id = $1 ORDER BY position
+SELECT ris.id, ris.recipe_id, ris.name, ris.position FROM recipe_instruction_sections ris
+JOIN recipes r ON r.id = ris.recipe_id
+WHERE r.household_id = $1 AND ris.recipe_id = $2
+ORDER BY position
 `
 
-func (q *Queries) ListInstructionSections(ctx context.Context, recipeID int64) ([]RecipeInstructionSection, error) {
-	rows, err := q.db.QueryContext(ctx, listInstructionSections, recipeID)
+type ListInstructionSectionsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+}
+
+func (q *Queries) ListInstructionSections(ctx context.Context, arg ListInstructionSectionsParams) ([]RecipeInstructionSection, error) {
+	rows, err := q.db.QueryContext(ctx, listInstructionSections, arg.HouseholdID, arg.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -658,12 +730,18 @@ SELECT
 FROM recipe_ingredients ri
 JOIN recipe_ingredient_sections ris ON ris.id = ri.section_id
 LEFT JOIN grocery_items gi ON gi.id = ri.grocery_item_id
-LEFT JOIN store_sections ss ON ss.id = gi.store_section_id
+LEFT JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
 WHERE ris.recipe_id = $1
+    AND EXISTS (SELECT 1 FROM recipes r WHERE r.id = ris.recipe_id AND r.household_id = $2)
 ORDER BY ris.position, ri.position
 `
+
+type ListRecipeIngredientsParams struct {
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	HouseholdID string `db:"household_id" json:"household_id"`
+}
 
 type ListRecipeIngredientsRow struct {
 	ID                     int64          `db:"id" json:"id"`
@@ -698,8 +776,8 @@ type ListRecipeIngredientsRow struct {
 	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
 }
 
-func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeID int64) ([]ListRecipeIngredientsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listRecipeIngredients, recipeID)
+func (q *Queries) ListRecipeIngredients(ctx context.Context, arg ListRecipeIngredientsParams) ([]ListRecipeIngredientsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listRecipeIngredients, arg.RecipeID, arg.HouseholdID)
 	if err != nil {
 		return nil, err
 	}
@@ -753,11 +831,19 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, recipeID int64) ([]
 }
 
 const listRecipeReviewFlags = `-- name: ListRecipeReviewFlags :many
-SELECT id, recipe_id, field_path, kind, note, approved FROM recipe_review_flags WHERE recipe_id = $1 ORDER BY field_path, kind
+SELECT f.id, f.recipe_id, f.field_path, f.kind, f.note, f.approved FROM recipe_review_flags f
+JOIN recipes r ON r.id = f.recipe_id
+WHERE r.household_id = $1 AND f.recipe_id = $2
+ORDER BY field_path, kind
 `
 
-func (q *Queries) ListRecipeReviewFlags(ctx context.Context, recipeID int64) ([]RecipeReviewFlag, error) {
-	rows, err := q.db.QueryContext(ctx, listRecipeReviewFlags, recipeID)
+type ListRecipeReviewFlagsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+}
+
+func (q *Queries) ListRecipeReviewFlags(ctx context.Context, arg ListRecipeReviewFlagsParams) ([]RecipeReviewFlag, error) {
+	rows, err := q.db.QueryContext(ctx, listRecipeReviewFlags, arg.HouseholdID, arg.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -787,11 +873,19 @@ func (q *Queries) ListRecipeReviewFlags(ctx context.Context, recipeID int64) ([]
 }
 
 const listRecipeSources = `-- name: ListRecipeSources :many
-SELECT id, recipe_id, relationship, attribution, url, checked_on, is_primary, position FROM recipe_sources WHERE recipe_id = $1 ORDER BY position
+SELECT rs.id, rs.recipe_id, rs.relationship, rs.attribution, rs.url, rs.checked_on, rs.is_primary, rs.position FROM recipe_sources rs
+JOIN recipes r ON r.id = rs.recipe_id
+WHERE r.household_id = $1 AND rs.recipe_id = $2
+ORDER BY position
 `
 
-func (q *Queries) ListRecipeSources(ctx context.Context, recipeID int64) ([]RecipeSource, error) {
-	rows, err := q.db.QueryContext(ctx, listRecipeSources, recipeID)
+type ListRecipeSourcesParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+}
+
+func (q *Queries) ListRecipeSources(ctx context.Context, arg ListRecipeSourcesParams) ([]RecipeSource, error) {
+	rows, err := q.db.QueryContext(ctx, listRecipeSources, arg.HouseholdID, arg.RecipeID)
 	if err != nil {
 		return nil, err
 	}
@@ -827,8 +921,14 @@ SELECT rs.id, rs.section_id, rs.position, rs.instruction, ris.recipe_id, ris.nam
 FROM recipe_steps rs
 JOIN recipe_instruction_sections ris ON ris.id = rs.section_id
 WHERE ris.recipe_id = $1
+    AND EXISTS (SELECT 1 FROM recipes r WHERE r.id = ris.recipe_id AND r.household_id = $2)
 ORDER BY ris.position, rs.position
 `
+
+type ListRecipeStepsParams struct {
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	HouseholdID string `db:"household_id" json:"household_id"`
+}
 
 type ListRecipeStepsRow struct {
 	ID              int64  `db:"id" json:"id"`
@@ -840,8 +940,8 @@ type ListRecipeStepsRow struct {
 	SectionPosition int64  `db:"section_position" json:"section_position"`
 }
 
-func (q *Queries) ListRecipeSteps(ctx context.Context, recipeID int64) ([]ListRecipeStepsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listRecipeSteps, recipeID)
+func (q *Queries) ListRecipeSteps(ctx context.Context, arg ListRecipeStepsParams) ([]ListRecipeStepsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listRecipeSteps, arg.RecipeID, arg.HouseholdID)
 	if err != nil {
 		return nil, err
 	}
@@ -872,11 +972,11 @@ func (q *Queries) ListRecipeSteps(ctx context.Context, recipeID int64) ([]ListRe
 }
 
 const listStoreSections = `-- name: ListStoreSections :many
-SELECT id, key, name FROM store_sections ORDER BY name
+SELECT id, key, name, household_id FROM store_sections WHERE household_id = $1 ORDER BY name
 `
 
-func (q *Queries) ListStoreSections(ctx context.Context) ([]StoreSection, error) {
-	rows, err := q.db.QueryContext(ctx, listStoreSections)
+func (q *Queries) ListStoreSections(ctx context.Context, householdID string) ([]StoreSection, error) {
+	rows, err := q.db.QueryContext(ctx, listStoreSections, householdID)
 	if err != nil {
 		return nil, err
 	}
@@ -884,7 +984,12 @@ func (q *Queries) ListStoreSections(ctx context.Context) ([]StoreSection, error)
 	items := []StoreSection{}
 	for rows.Next() {
 		var i StoreSection
-		if err := rows.Scan(&i.ID, &i.Key, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Key,
+			&i.Name,
+			&i.HouseholdID,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -934,11 +1039,11 @@ func (q *Queries) ListUnits(ctx context.Context) ([]Unit, error) {
 }
 
 const listVerifiedRecipes = `-- name: ListVerifiedRecipes :many
-SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at FROM recipes WHERE status = 'verified' ORDER BY name
+SELECT id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id FROM recipes WHERE household_id = $1 AND status = 'verified' ORDER BY name
 `
 
-func (q *Queries) ListVerifiedRecipes(ctx context.Context) ([]Recipe, error) {
-	rows, err := q.db.QueryContext(ctx, listVerifiedRecipes)
+func (q *Queries) ListVerifiedRecipes(ctx context.Context, householdID string) ([]Recipe, error) {
+	rows, err := q.db.QueryContext(ctx, listVerifiedRecipes, householdID)
 	if err != nil {
 		return nil, err
 	}
@@ -960,6 +1065,7 @@ func (q *Queries) ListVerifiedRecipes(ctx context.Context) ([]Recipe, error) {
 			&i.VerifiedAt,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.HouseholdID,
 		); err != nil {
 			return nil, err
 		}
@@ -978,12 +1084,17 @@ const markRecipeReviewable = `-- name: MarkRecipeReviewable :one
 UPDATE recipes
 SET status = 'reviewable', verified_at = NULL,
     updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE id = $1 AND status = 'draft'
-RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+WHERE household_id = $1 AND id = $2 AND status = 'draft'
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id
 `
 
-func (q *Queries) MarkRecipeReviewable(ctx context.Context, id int64) (Recipe, error) {
-	row := q.db.QueryRowContext(ctx, markRecipeReviewable, id)
+type MarkRecipeReviewableParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) MarkRecipeReviewable(ctx context.Context, arg MarkRecipeReviewableParams) (Recipe, error) {
+	row := q.db.QueryRowContext(ctx, markRecipeReviewable, arg.HouseholdID, arg.ID)
 	var i Recipe
 	err := row.Scan(
 		&i.ID,
@@ -999,6 +1110,7 @@ func (q *Queries) MarkRecipeReviewable(ctx context.Context, id int64) (Recipe, e
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
@@ -1007,12 +1119,17 @@ const returnRecipeToDraft = `-- name: ReturnRecipeToDraft :one
 UPDATE recipes
 SET status = 'draft', verified_at = NULL,
     updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE id = $1 AND status IN ('reviewable', 'verified')
-RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+WHERE household_id = $1 AND id = $2 AND status IN ('reviewable', 'verified')
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id
 `
 
-func (q *Queries) ReturnRecipeToDraft(ctx context.Context, id int64) (Recipe, error) {
-	row := q.db.QueryRowContext(ctx, returnRecipeToDraft, id)
+type ReturnRecipeToDraftParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) ReturnRecipeToDraft(ctx context.Context, arg ReturnRecipeToDraftParams) (Recipe, error) {
+	row := q.db.QueryRowContext(ctx, returnRecipeToDraft, arg.HouseholdID, arg.ID)
 	var i Recipe
 	err := row.Scan(
 		&i.ID,
@@ -1028,6 +1145,7 @@ func (q *Queries) ReturnRecipeToDraft(ctx context.Context, id int64) (Recipe, er
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
@@ -1036,17 +1154,18 @@ const verifyRecipe = `-- name: VerifyRecipe :one
 UPDATE recipes
 SET status = 'verified', verified_at = $1,
     updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE id = $2 AND status = 'reviewable'
-RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at
+WHERE household_id = $2 AND id = $3 AND status = 'reviewable'
+RETURNING id, key, name, status, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes, verified_at, created_at, updated_at, household_id
 `
 
 type VerifyRecipeParams struct {
-	VerifiedAt sql.NullString `db:"verified_at" json:"verified_at"`
-	ID         int64          `db:"id" json:"id"`
+	VerifiedAt  sql.NullString `db:"verified_at" json:"verified_at"`
+	HouseholdID string         `db:"household_id" json:"household_id"`
+	ID          int64          `db:"id" json:"id"`
 }
 
 func (q *Queries) VerifyRecipe(ctx context.Context, arg VerifyRecipeParams) (Recipe, error) {
-	row := q.db.QueryRowContext(ctx, verifyRecipe, arg.VerifiedAt, arg.ID)
+	row := q.db.QueryRowContext(ctx, verifyRecipe, arg.VerifiedAt, arg.HouseholdID, arg.ID)
 	var i Recipe
 	err := row.Scan(
 		&i.ID,
@@ -1062,6 +1181,7 @@ func (q *Queries) VerifyRecipe(ctx context.Context, arg VerifyRecipeParams) (Rec
 		&i.VerifiedAt,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/httpapi"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
+	"github.com/mbcoward3/grocery-router/internal/tenant"
 	"github.com/mbcoward3/grocery-router/internal/trueup"
 	"github.com/mbcoward3/grocery-router/internal/week"
 )
@@ -76,20 +77,22 @@ func (command *bootstrapCommand) Run() error {
 
 type serveCommand struct {
 	DatabaseConfig
-	Address       string `help:"HTTP listen address." default:"127.0.0.1:8080" env:"GROCERY_ROUTER_ADDRESS"`
-	WebRoot       string `help:"Built web application directory. Leave empty to serve only the API." default:"web/dist" env:"GROCERY_ROUTER_WEB_ROOT" type:"path"`
-	Origin        string `help:"Canonical application origin." env:"GROCERY_ROUTER_ORIGIN"`
-	OIDCIssuer    string `help:"Trusted OIDC issuer." env:"GROCERY_ROUTER_OIDC_ISSUER"`
-	OIDCClientID  string `help:"Google OIDC client ID." env:"GROCERY_ROUTER_OIDC_CLIENT_ID"`
-	OIDCSecret    string `help:"Google OIDC client secret." env:"GROCERY_ROUTER_OIDC_CLIENT_SECRET"`
-	SessionSecret string `help:"Base64url application session secret." env:"GROCERY_ROUTER_SESSION_SECRET"`
-	AllowedEmails string `help:"Comma-separated verified-email allowlist." env:"GROCERY_ROUTER_ALLOWED_EMAILS"`
+	Address        string `help:"HTTP listen address." default:"127.0.0.1:8080" env:"GROCERY_ROUTER_ADDRESS"`
+	WebRoot        string `help:"Built web application directory. Leave empty to serve only the API." default:"web/dist" env:"GROCERY_ROUTER_WEB_ROOT" type:"path"`
+	Origin         string `help:"Canonical application origin." env:"GROCERY_ROUTER_AUTH_ORIGIN"`
+	OIDCIssuer     string `help:"Trusted OIDC issuer." default:"https://accounts.google.com" env:"GROCERY_ROUTER_AUTH_OIDC_ISSUER"`
+	OIDCClientID   string `help:"Google OIDC client ID." env:"GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_ID"`
+	OIDCSecret     string `help:"Google OIDC client secret." env:"GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_SECRET"`
+	SessionSecret  string `help:"Base64url application session secret." env:"GROCERY_ROUTER_AUTH_SESSION_SECRET"`
+	BootstrapUsers string `help:"JSON bootstrap owner allowlist." env:"GROCERY_ROUTER_AUTH_BOOTSTRAP_USERS"`
+	HouseholdName  string `help:"Seeded household name." env:"GROCERY_ROUTER_AUTH_BOOTSTRAP_HOUSEHOLD"`
 }
 
 func (command *serveCommand) Run() error {
 	config, err := auth.ParseConfig(auth.RawConfig{
 		Origin: command.Origin, Issuer: command.OIDCIssuer, ClientID: command.OIDCClientID,
-		ClientSecret: command.OIDCSecret, SessionSecret: command.SessionSecret, AllowedEmails: command.AllowedEmails,
+		ClientSecret: command.OIDCSecret, SessionSecret: command.SessionSecret,
+		AllowedEmails: command.BootstrapUsers, HouseholdName: command.HouseholdName,
 	})
 	if err != nil {
 		return fmt.Errorf("validate authentication configuration: %w", err)
@@ -167,7 +170,7 @@ func ingestCorpus(databasePath, root, corpusPath, inventoryPath string) error {
 		return err
 	}
 	defer db.Close()
-	if err := ingest.Import(context.Background(), db, documents); err != nil {
+	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
 		return err
 	}
 	fmt.Printf("ingested %d approved recipes\n", len(documents))
@@ -246,7 +249,7 @@ func bootstrap(databaseURL, root, corpusPath, inventoryPath string) error {
 	}
 	defer db.Close()
 	var count int
-	if err := db.QueryRow("SELECT count(*) FROM recipes").Scan(&count); err != nil {
+	if err := db.QueryRow("SELECT count(*) FROM recipes WHERE household_id = $1", tenant.CowardHouseholdID).Scan(&count); err != nil {
 		return fmt.Errorf("count recipes: %w", err)
 	}
 	if count > 0 {
@@ -257,7 +260,7 @@ func bootstrap(databaseURL, root, corpusPath, inventoryPath string) error {
 	if err != nil {
 		return err
 	}
-	if err := ingest.Import(context.Background(), db, documents); err != nil {
+	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
 		return err
 	}
 	fmt.Printf("ingested %d approved recipes\n", len(documents))
@@ -274,8 +277,8 @@ func serve(databasePath, address, webRoot string, authConfig auth.Config) error 
 	}
 	defer db.Close()
 
-	weekService := week.NewService(db, nil)
-	api := httpapi.New(db, weekService, nil)
+	weekService := week.NewService(db, nil, tenant.CowardHouseholdID)
+	api := httpapi.New(db, weekService, nil, tenant.CowardHouseholdID)
 	provider, err := auth.NewGoogleProvider(context.Background(), authConfig)
 	if err != nil {
 		return err
@@ -284,7 +287,7 @@ func serve(databasePath, address, webRoot string, authConfig auth.Config) error 
 	authHandler := auth.NewHTTPHandler(authConfig, authService, provider)
 	apiMux := http.NewServeMux()
 	authHandler.Register(apiMux)
-	apiMux.Handle("/", api.Handler())
+	apiMux.Handle("/api/v2/households/", authHandler.RequireSession(authHandler.RequireHousehold(api.Handler())))
 	handler, err := applicationHandler(apiMux, webRoot)
 	if err != nil {
 		return err

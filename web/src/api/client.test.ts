@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiRequestError, generateWeek, getCurrentWeek, listRecipes } from './client'
+import { ApiRequestError, generateWeek, getCurrentWeek, listRecipes, setHouseholdId } from './client'
 
 const emptyWeek = { id: 1, startsOn: '2026-08-16', recipes: [] }
 
+setHouseholdId('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5')
 afterEach(() => vi.unstubAllGlobals())
 
 describe('API client', () => {
@@ -23,7 +24,7 @@ describe('API client', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     await expect(generateWeek(5)).resolves.toEqual(emptyWeek)
-    expect(fetchMock).toHaveBeenCalledWith('/api/week/current/generate', expect.objectContaining({
+    expect(fetchMock).toHaveBeenCalledWith('/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate', expect.objectContaining({
       method: 'POST',
       body: JSON.stringify({ recipeCount: 5 }),
     }))

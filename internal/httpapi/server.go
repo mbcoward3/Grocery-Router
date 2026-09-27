@@ -21,41 +21,52 @@ type Clock func() time.Time
 
 // Server is the HTTP boundary around corpus reads and week operations.
 type Server struct {
-	queries *store.Queries
-	weeks   *week.Service
-	now     Clock
-	handler http.Handler
+	queries     *store.Queries
+	weeks       *week.Service
+	now         Clock
+	householdID string
+	handler     http.Handler
 }
 
 // New constructs an API handler. A nil clock uses time.Now.
-func New(db *sql.DB, weeks *week.Service, clock Clock) *Server {
+func New(db *sql.DB, weeks *week.Service, clock Clock, householdID string) *Server {
 	if clock == nil {
 		clock = time.Now
 	}
-	server := &Server{queries: store.New(db), weeks: weeks, now: clock}
+	server := &Server{queries: store.New(db), weeks: weeks, now: clock, householdID: householdID}
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /api/recipes", server.listRecipes)
-	mux.HandleFunc("GET /api/recipes/{recipeID}", server.getRecipe)
-	mux.HandleFunc("GET /api/week/current", server.currentWeek)
-	mux.HandleFunc("GET /api/weeks/history", server.weekHistory)
-	mux.HandleFunc("GET /api/weeks/history/{weekID}", server.historicalWeek)
-	mux.HandleFunc("POST /api/week/current/generate", server.generateWeek)
-	mux.HandleFunc("POST /api/week/current/recipes", server.addRecipe)
-	mux.HandleFunc("DELETE /api/week/current/recipes/{occurrenceID}", server.removeRecipe)
-	mux.HandleFunc("PUT /api/week/current/recipes/{occurrenceID}", server.swapRecipe)
-	mux.HandleFunc("POST /api/week/current/recipes/{occurrenceID}/random-swap", server.randomSwapRecipe)
-	mux.HandleFunc("GET /api/week/current/groceries", server.getGroceries)
-	mux.HandleFunc("POST /api/week/current/groceries", server.addGroceryLine)
-	mux.HandleFunc("PATCH /api/week/current/groceries/{lineID}", server.updateGroceryLine)
-	mux.HandleFunc("DELETE /api/week/current/groceries/{lineID}", server.removeGroceryLine)
-	mux.HandleFunc("GET /api/week/current/groceries/{lineID}/contributions", server.getGroceryContributions)
-	server.handler = requestHeaders(mux)
+	mux.HandleFunc("GET /api/v2/households/{householdID}/recipes", server.listRecipes)
+	mux.HandleFunc("GET /api/v2/households/{householdID}/recipes/{recipeID}", server.getRecipe)
+	mux.HandleFunc("GET /api/v2/households/{householdID}/week/current", server.currentWeek)
+	mux.HandleFunc("GET /api/v2/households/{householdID}/weeks/history", server.weekHistory)
+	mux.HandleFunc("GET /api/v2/households/{householdID}/weeks/history/{weekID}", server.historicalWeek)
+	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/generate", server.generateWeek)
+	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/recipes", server.addRecipe)
+	mux.HandleFunc("DELETE /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.removeRecipe)
+	mux.HandleFunc("PUT /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.swapRecipe)
+	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}/random-swap", server.randomSwapRecipe)
+	mux.HandleFunc("GET /api/v2/households/{householdID}/week/current/groceries", server.getGroceries)
+	mux.HandleFunc("POST /api/v2/households/{householdID}/week/current/groceries", server.addGroceryLine)
+	mux.HandleFunc("PATCH /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.updateGroceryLine)
+	mux.HandleFunc("DELETE /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.removeGroceryLine)
+	mux.HandleFunc("GET /api/v2/households/{householdID}/week/current/groceries/{lineID}/contributions", server.getGroceryContributions)
+	server.handler = requestHeaders(server.requireConfiguredHousehold(mux))
 	return server
 }
 
 // Handler returns the complete API handler.
 func (server *Server) Handler() http.Handler {
 	return server.handler
+}
+
+func (server *Server) requireConfiguredHousehold(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		if request.PathValue("householdID") != server.householdID {
+			http.NotFound(response, request)
+			return
+		}
+		next.ServeHTTP(response, request)
+	})
 }
 
 type recipeSummary struct {
@@ -190,7 +201,7 @@ type apiError struct {
 }
 
 func (server *Server) listRecipes(response http.ResponseWriter, request *http.Request) {
-	recipes, err := server.queries.ListVerifiedRecipes(request.Context())
+	recipes, err := server.queries.ListVerifiedRecipes(request.Context(), server.householdID)
 	if err != nil {
 		writeInternalError(response, err)
 		return
@@ -207,7 +218,7 @@ func (server *Server) getRecipe(response http.ResponseWriter, request *http.Requ
 	if !ok {
 		return
 	}
-	recipe, err := server.queries.GetVerifiedRecipe(request.Context(), recipeID)
+	recipe, err := server.queries.GetVerifiedRecipe(request.Context(), store.GetVerifiedRecipeParams{HouseholdID: server.householdID, ID: recipeID})
 	if errors.Is(err, sql.ErrNoRows) {
 		writeError(response, http.StatusNotFound, "recipe_not_found", "The recipe was not found.")
 		return
@@ -216,17 +227,17 @@ func (server *Server) getRecipe(response http.ResponseWriter, request *http.Requ
 		writeInternalError(response, err)
 		return
 	}
-	sources, err := server.queries.ListRecipeSources(request.Context(), recipeID)
+	sources, err := server.queries.ListRecipeSources(request.Context(), store.ListRecipeSourcesParams{HouseholdID: server.householdID, RecipeID: recipeID})
 	if err != nil {
 		writeInternalError(response, err)
 		return
 	}
-	ingredientRows, err := server.queries.ListRecipeIngredients(request.Context(), recipeID)
+	ingredientRows, err := server.queries.ListRecipeIngredients(request.Context(), store.ListRecipeIngredientsParams{HouseholdID: server.householdID, RecipeID: recipeID})
 	if err != nil {
 		writeInternalError(response, err)
 		return
 	}
-	stepRows, err := server.queries.ListRecipeSteps(request.Context(), recipeID)
+	stepRows, err := server.queries.ListRecipeSteps(request.Context(), store.ListRecipeStepsParams{HouseholdID: server.householdID, RecipeID: recipeID})
 	if err != nil {
 		writeInternalError(response, err)
 		return

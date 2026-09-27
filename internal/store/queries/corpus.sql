@@ -1,42 +1,42 @@
 -- name: CreateDraftRecipe :one
 INSERT INTO recipes (
-    key, name, image_url, yield_text,
+    household_id, key, name, image_url, yield_text,
     hands_on_min_minutes, hands_on_max_minutes,
     unattended_min_minutes, unattended_max_minutes
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+) VALUES (sqlc.arg(household_id), $1, $2, $3, $4, $5, $6, $7, $8)
 RETURNING *;
 
 -- name: GetRecipe :one
-SELECT * FROM recipes WHERE id = $1;
+SELECT * FROM recipes WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
 
 -- name: GetVerifiedRecipe :one
-SELECT * FROM recipes WHERE id = $1 AND status = 'verified';
+SELECT * FROM recipes WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND status = 'verified';
 
 -- name: GetRecipeByKey :one
-SELECT * FROM recipes WHERE key = $1;
+SELECT * FROM recipes WHERE household_id = sqlc.arg(household_id) AND key = sqlc.arg(key);
 
 -- name: ListVerifiedRecipes :many
-SELECT * FROM recipes WHERE status = 'verified' ORDER BY name;
+SELECT * FROM recipes WHERE household_id = $1 AND status = 'verified' ORDER BY name;
 
 -- name: MarkRecipeReviewable :one
 UPDATE recipes
 SET status = 'reviewable', verified_at = NULL,
     updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE id = $1 AND status = 'draft'
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND status = 'draft'
 RETURNING *;
 
 -- name: ReturnRecipeToDraft :one
 UPDATE recipes
 SET status = 'draft', verified_at = NULL,
     updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE id = $1 AND status IN ('reviewable', 'verified')
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND status IN ('reviewable', 'verified')
 RETURNING *;
 
 -- name: VerifyRecipe :one
 UPDATE recipes
 SET status = 'verified', verified_at = $1,
     updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE id = $2 AND status = 'reviewable'
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND status = 'reviewable'
 RETURNING *;
 
 -- name: CreateRecipeSource :one
@@ -46,17 +46,20 @@ INSERT INTO recipe_sources (
 RETURNING *;
 
 -- name: ListRecipeSources :many
-SELECT * FROM recipe_sources WHERE recipe_id = $1 ORDER BY position;
+SELECT rs.* FROM recipe_sources rs
+JOIN recipes r ON r.id = rs.recipe_id
+WHERE r.household_id = sqlc.arg(household_id) AND rs.recipe_id = sqlc.arg(recipe_id)
+ORDER BY position;
 
 -- name: CreateStoreSection :one
-INSERT INTO store_sections (key, name) VALUES ($1, $2)
+INSERT INTO store_sections (household_id, key, name) VALUES (sqlc.arg(household_id), $1, $2)
 RETURNING *;
 
 -- name: GetStoreSectionByKey :one
-SELECT * FROM store_sections WHERE key = $1;
+SELECT * FROM store_sections WHERE household_id = sqlc.arg(household_id) AND key = sqlc.arg(key);
 
 -- name: ListStoreSections :many
-SELECT * FROM store_sections ORDER BY name;
+SELECT * FROM store_sections WHERE household_id = $1 ORDER BY name;
 
 -- name: CreateUnit :one
 INSERT INTO units (
@@ -71,17 +74,18 @@ SELECT * FROM units WHERE key = $1;
 SELECT * FROM units ORDER BY dimension, name;
 
 -- name: CreateGroceryItem :one
-INSERT INTO grocery_items (key, name, store_section_id, shopping_mode)
-VALUES ($1, $2, $3, $4)
+INSERT INTO grocery_items (household_id, key, name, store_section_id, shopping_mode)
+VALUES (sqlc.arg(household_id), $1, $2, $3, $4)
 RETURNING *;
 
 -- name: GetGroceryItemByKey :one
-SELECT * FROM grocery_items WHERE key = $1;
+SELECT * FROM grocery_items WHERE household_id = sqlc.arg(household_id) AND key = sqlc.arg(key);
 
 -- name: ListGroceryItems :many
 SELECT gi.*, ss.name AS store_section_name
 FROM grocery_items gi
-JOIN store_sections ss ON ss.id = gi.store_section_id
+JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+WHERE gi.household_id = $1
 ORDER BY gi.name;
 
 -- name: CreateIngredientSection :one
@@ -90,7 +94,10 @@ VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: ListIngredientSections :many
-SELECT * FROM recipe_ingredient_sections WHERE recipe_id = $1 ORDER BY position;
+SELECT ris.* FROM recipe_ingredient_sections ris
+JOIN recipes r ON r.id = ris.recipe_id
+WHERE r.household_id = sqlc.arg(household_id) AND ris.recipe_id = sqlc.arg(recipe_id)
+ORDER BY position;
 
 -- name: CreateRecipeIngredient :one
 INSERT INTO recipe_ingredients (
@@ -120,10 +127,11 @@ SELECT
 FROM recipe_ingredients ri
 JOIN recipe_ingredient_sections ris ON ris.id = ri.section_id
 LEFT JOIN grocery_items gi ON gi.id = ri.grocery_item_id
-LEFT JOIN store_sections ss ON ss.id = gi.store_section_id
+LEFT JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
-WHERE ris.recipe_id = $1
+WHERE ris.recipe_id = sqlc.arg(recipe_id)
+    AND EXISTS (SELECT 1 FROM recipes r WHERE r.id = ris.recipe_id AND r.household_id = sqlc.arg(household_id))
 ORDER BY ris.position, ri.position;
 
 -- name: CreateInstructionSection :one
@@ -132,7 +140,10 @@ VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: ListInstructionSections :many
-SELECT * FROM recipe_instruction_sections WHERE recipe_id = $1 ORDER BY position;
+SELECT ris.* FROM recipe_instruction_sections ris
+JOIN recipes r ON r.id = ris.recipe_id
+WHERE r.household_id = sqlc.arg(household_id) AND ris.recipe_id = sqlc.arg(recipe_id)
+ORDER BY position;
 
 -- name: CreateRecipeStep :one
 INSERT INTO recipe_steps (section_id, position, instruction)
@@ -143,7 +154,8 @@ RETURNING *;
 SELECT rs.*, ris.recipe_id, ris.name AS section_name, ris.position AS section_position
 FROM recipe_steps rs
 JOIN recipe_instruction_sections ris ON ris.id = rs.section_id
-WHERE ris.recipe_id = $1
+WHERE ris.recipe_id = sqlc.arg(recipe_id)
+    AND EXISTS (SELECT 1 FROM recipes r WHERE r.id = ris.recipe_id AND r.household_id = sqlc.arg(household_id))
 ORDER BY ris.position, rs.position;
 
 -- name: CreateReviewFlag :one
@@ -157,7 +169,12 @@ WHERE id = $1
 RETURNING *;
 
 -- name: ListRecipeReviewFlags :many
-SELECT * FROM recipe_review_flags WHERE recipe_id = $1 ORDER BY field_path, kind;
+SELECT f.* FROM recipe_review_flags f
+JOIN recipes r ON r.id = f.recipe_id
+WHERE r.household_id = sqlc.arg(household_id) AND f.recipe_id = sqlc.arg(recipe_id)
+ORDER BY field_path, kind;
 
 -- name: CountUnapprovedReviewFlags :one
-SELECT count(*) FROM recipe_review_flags WHERE recipe_id = $1 AND approved = 0;
+SELECT count(*) FROM recipe_review_flags f
+JOIN recipes r ON r.id = f.recipe_id
+WHERE r.household_id = sqlc.arg(household_id) AND f.recipe_id = sqlc.arg(recipe_id) AND approved = 0;

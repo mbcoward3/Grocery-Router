@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { AuthGate } from './features/auth/auth-gate'
 import { router } from './router'
 import './styles.css'
 
@@ -22,7 +23,9 @@ if (!root) throw new Error('Missing application root')
 createRoot(root).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} context={{ queryClient }} />
+      <AuthGate>
+        <RouterProvider router={router} context={{ queryClient }} />
+      </AuthGate>
     </QueryClientProvider>
   </StrictMode>,
 )

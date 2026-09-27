@@ -25,13 +25,13 @@ func (zeroPicker) IntN(int) (int, error) { return 0, nil }
 func TestWeekAPIEmptyGenerateAndMutate(t *testing.T) {
 	handler := testHandler(t)
 
-	empty := request(t, handler, http.MethodGet, "/api/week/current", "")
+	empty := request(t, handler, http.MethodGet, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current", "")
 	if empty.Code != http.StatusNotFound {
 		t.Fatalf("empty week status = %d, body %s", empty.Code, empty.Body.String())
 	}
 	assertErrorCode(t, empty, "no_current_week")
 
-	generated := request(t, handler, http.MethodPost, "/api/week/current/generate", `{"recipeCount":3}`)
+	generated := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", `{"recipeCount":3}`)
 	if generated.Code != http.StatusOK {
 		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
 	}
@@ -49,7 +49,7 @@ func TestWeekAPIEmptyGenerateAndMutate(t *testing.T) {
 		t.Fatalf("recipe summary = %#v", firstRecipe)
 	}
 
-	added := request(t, handler, http.MethodPost, "/api/week/current/recipes",
+	added := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/recipes",
 		fmt.Sprintf(`{"recipeId":%.0f}`, firstRecipe["id"].(float64)))
 	if added.Code != http.StatusOK {
 		t.Fatalf("add status = %d, body %s", added.Code, added.Body.String())
@@ -61,7 +61,7 @@ func TestWeekAPIEmptyGenerateAndMutate(t *testing.T) {
 
 	occurrenceID := int64(addedRecipes[1].(map[string]any)["id"].(float64))
 	removed := request(t, handler, http.MethodDelete,
-		fmt.Sprintf("/api/week/current/recipes/%d", occurrenceID), "")
+		fmt.Sprintf("/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/recipes/%d", occurrenceID), "")
 	if removed.Code != http.StatusOK || len(decodeObject(t, removed)["recipes"].([]any)) != 3 {
 		t.Fatalf("remove status = %d, body %s", removed.Code, removed.Body.String())
 	}
@@ -69,13 +69,13 @@ func TestWeekAPIEmptyGenerateAndMutate(t *testing.T) {
 
 func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 	handler := testHandler(t)
-	generated := request(t, handler, http.MethodPost, "/api/week/current/generate", `{"recipeCount":2}`)
+	generated := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", `{"recipeCount":2}`)
 	if generated.Code != http.StatusOK {
 		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
 	}
 	firstRecipe := decodeObject(t, generated)["recipes"].([]any)[0].(map[string]any)["recipe"].(map[string]any)
 	recipeID := int64(firstRecipe["id"].(float64))
-	detail := request(t, handler, http.MethodGet, fmt.Sprintf("/api/recipes/%d", recipeID), "")
+	detail := request(t, handler, http.MethodGet, fmt.Sprintf("/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/recipes/%d", recipeID), "")
 	if detail.Code != http.StatusOK {
 		t.Fatalf("detail status = %d, body %s", detail.Code, detail.Body.String())
 	}
@@ -84,7 +84,7 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 		t.Fatalf("incomplete recipe detail = %#v", detailBody)
 	}
 
-	groceries := request(t, handler, http.MethodGet, "/api/week/current/groceries", "")
+	groceries := request(t, handler, http.MethodGet, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries", "")
 	groceryBody := decodeObject(t, groceries)
 	lines := groceryBody["lines"].([]any)
 	if groceries.Code != http.StatusOK || len(lines) == 0 {
@@ -93,16 +93,16 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 	line := lines[0].(map[string]any)
 	lineID := int64(line["id"].(float64))
 	contributions := request(t, handler, http.MethodGet,
-		fmt.Sprintf("/api/week/current/groceries/%d/contributions", lineID), "")
+		fmt.Sprintf("/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries/%d/contributions", lineID), "")
 	if contributions.Code != http.StatusOK || len(decodeObject(t, contributions)["contributions"].([]any)) == 0 {
 		t.Fatalf("contributions status = %d, body %s", contributions.Code, contributions.Body.String())
 	}
 	completed := request(t, handler, http.MethodPatch,
-		fmt.Sprintf("/api/week/current/groceries/%d", lineID), `{"completed":true}`)
+		fmt.Sprintf("/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries/%d", lineID), `{"completed":true}`)
 	if completed.Code != http.StatusOK {
 		t.Fatalf("complete status = %d, body %s", completed.Code, completed.Body.String())
 	}
-	added := request(t, handler, http.MethodPost, "/api/week/current/groceries", `{"name":"Paper towels"}`)
+	added := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries", `{"name":"Paper towels"}`)
 	if added.Code != http.StatusOK || len(decodeObject(t, added)["lines"].([]any)) != len(lines)+1 {
 		t.Fatalf("manual add status = %d, body %s", added.Code, added.Body.String())
 	}
@@ -110,7 +110,7 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 
 func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 	db := testDB(t)
-	service := week.NewService(db, zeroPicker{})
+	service := week.NewService(db, zeroPicker{}, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5")
 	past := time.Date(2026, time.August, 12, 12, 0, 0, 0, time.Local)
 	view, err := service.Generate(context.Background(), past, 2)
 	if err != nil {
@@ -137,7 +137,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 	}
 
 	handler := handlerForDB(db)
-	history := request(t, handler, http.MethodGet, "/api/weeks/history", "")
+	history := request(t, handler, http.MethodGet, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/weeks/history", "")
 	if history.Code != http.StatusOK {
 		t.Fatalf("history status = %d, body %s", history.Code, history.Body.String())
 	}
@@ -150,7 +150,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 		t.Fatalf("history summary = %#v", summary)
 	}
 
-	detail := request(t, handler, http.MethodGet, fmt.Sprintf("/api/weeks/history/%d", view.Week.ID), "")
+	detail := request(t, handler, http.MethodGet, fmt.Sprintf("/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/weeks/history/%d", view.Week.ID), "")
 	if detail.Code != http.StatusOK {
 		t.Fatalf("history detail status = %d, body %s", detail.Code, detail.Body.String())
 	}
@@ -175,7 +175,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 func TestRecipesAPIAndRequestValidation(t *testing.T) {
 	handler := testHandler(t)
 
-	response := request(t, handler, http.MethodGet, "/api/recipes", "")
+	response := request(t, handler, http.MethodGet, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/recipes", "")
 	if response.Code != http.StatusOK {
 		t.Fatalf("recipes status = %d, body %s", response.Code, response.Body.String())
 	}
@@ -183,13 +183,13 @@ func TestRecipesAPIAndRequestValidation(t *testing.T) {
 		t.Fatalf("verified recipes = %d", len(recipes))
 	}
 
-	invalid := request(t, handler, http.MethodPost, "/api/week/current/generate", `{"recipeCount":3,"surprise":true}`)
+	invalid := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", `{"recipeCount":3,"surprise":true}`)
 	if invalid.Code != http.StatusBadRequest {
 		t.Fatalf("invalid request status = %d, body %s", invalid.Code, invalid.Body.String())
 	}
 	assertErrorCode(t, invalid, "invalid_json")
 
-	wrongMethod := request(t, handler, http.MethodDelete, "/api/week/current/generate", "")
+	wrongMethod := request(t, handler, http.MethodDelete, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", "")
 	if wrongMethod.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("wrong method status = %d", wrongMethod.Code)
 	}
@@ -207,18 +207,18 @@ func testDB(t *testing.T) *sql.DB {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := ingest.Import(context.Background(), db, documents); err != nil {
+	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
 		t.Fatal(err)
 	}
 	return db
 }
 
 func handlerForDB(db *sql.DB) http.Handler {
-	service := week.NewService(db, zeroPicker{})
+	service := week.NewService(db, zeroPicker{}, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5")
 	now := func() time.Time {
 		return time.Date(2026, time.August, 19, 12, 0, 0, 0, time.Local)
 	}
-	return httpapi.New(db, service, now).Handler()
+	return httpapi.New(db, service, now, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5").Handler()
 }
 
 func request(t *testing.T, handler http.Handler, method, path, body string) *httptest.ResponseRecorder {

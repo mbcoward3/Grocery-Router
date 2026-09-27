@@ -59,6 +59,25 @@ func (handler *HTTPHandler) RequireSession(next http.Handler) http.Handler {
 	})
 }
 
+// RequireHousehold authorizes the explicit path tenant without disclosing other households.
+func (handler *HTTPHandler) RequireHousehold(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		session, ok := SessionFromContext(request.Context())
+		if !ok {
+			writeAuthError(response, http.StatusUnauthorized, "authentication_required", "Sign in is required.")
+			return
+		}
+		householdID := request.PathValue("householdID")
+		for _, membership := range session.Memberships {
+			if membership.HouseholdID == householdID {
+				next.ServeHTTP(response, request)
+				return
+			}
+		}
+		response.WriteHeader(http.StatusNotFound)
+	})
+}
+
 func (handler *HTTPHandler) googleStart(response http.ResponseWriter, request *http.Request) {
 	if !handler.limiter.Allow(clientAddress(request)) {
 		writeAuthError(response, http.StatusTooManyRequests, "rate_limited", "Try again later.")

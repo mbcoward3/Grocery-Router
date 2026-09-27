@@ -55,7 +55,7 @@ func ReadDirectory(path string) ([]Document, error) {
 
 // Import inserts a complete approved document set into an empty migrated corpus. It is
 // intentionally not an upsert path: bootstrap import either commits every recipe or none.
-func Import(ctx context.Context, db *sql.DB, documents []Document) error {
+func Import(ctx context.Context, db *sql.DB, householdID string, documents []Document) error {
 	if len(documents) == 0 {
 		return fmt.Errorf("no recipe documents to import")
 	}
@@ -72,7 +72,7 @@ func Import(ctx context.Context, db *sql.DB, documents []Document) error {
 	defer tx.Rollback()
 
 	var existing int
-	if err := tx.QueryRowContext(ctx, "SELECT count(*) FROM recipes").Scan(&existing); err != nil {
+	if err := tx.QueryRowContext(ctx, "SELECT count(*) FROM recipes WHERE household_id = $1", householdID).Scan(&existing); err != nil {
 		return fmt.Errorf("count existing recipes: %w", err)
 	}
 	if existing != 0 {
@@ -84,7 +84,7 @@ func Import(ctx context.Context, db *sql.DB, documents []Document) error {
 	items := make(map[string]store.GroceryItem)
 	units := make(map[string]store.Unit)
 	for _, document := range documents {
-		if err := importDocument(ctx, queries, document, sections, items, units); err != nil {
+		if err := importDocument(ctx, queries, householdID, document, sections, items, units); err != nil {
 			return fmt.Errorf("import recipe %s: %w", document.Key, err)
 		}
 	}
@@ -97,12 +97,14 @@ func Import(ctx context.Context, db *sql.DB, documents []Document) error {
 func importDocument(
 	ctx context.Context,
 	queries *store.Queries,
+	householdID string,
 	document Document,
 	sections map[string]store.StoreSection,
 	items map[string]store.GroceryItem,
 	units map[string]store.Unit,
 ) error {
 	recipe, err := queries.CreateDraftRecipe(ctx, store.CreateDraftRecipeParams{
+		HouseholdID:          householdID,
 		Key:                  document.Key,
 		Name:                 document.Name,
 		ImageUrl:             nullString(document.ImageURL),
@@ -137,7 +139,7 @@ func importDocument(
 			return err
 		}
 		for ingredientPosition, ingredient := range ingredientSection.Ingredients {
-			item, err := ensureGroceryItem(ctx, queries, ingredient.GroceryItem, sections, items)
+			item, err := ensureGroceryItem(ctx, queries, householdID, ingredient.GroceryItem, sections, items)
 			if err != nil {
 				return err
 			}
@@ -187,12 +189,12 @@ func importDocument(
 			}
 		}
 	}
-	if _, err := queries.MarkRecipeReviewable(ctx, recipe.ID); err != nil {
+	if _, err := queries.MarkRecipeReviewable(ctx, store.MarkRecipeReviewableParams{HouseholdID: householdID, ID: recipe.ID}); err != nil {
 		return err
 	}
 	_, err = queries.VerifyRecipe(ctx, store.VerifyRecipeParams{
-		VerifiedAt: sql.NullString{String: document.ApprovedOn + "T00:00:00Z", Valid: true},
-		ID:         recipe.ID,
+		HouseholdID: householdID, VerifiedAt: sql.NullString{String: document.ApprovedOn + "T00:00:00Z", Valid: true},
+		ID: recipe.ID,
 	})
 	return err
 }
@@ -200,6 +202,7 @@ func importDocument(
 func ensureGroceryItem(
 	ctx context.Context,
 	queries *store.Queries,
+	householdID string,
 	wanted GroceryItem,
 	sections map[string]store.StoreSection,
 	items map[string]store.GroceryItem,
@@ -207,10 +210,10 @@ func ensureGroceryItem(
 	section, ok := sections[wanted.StoreSection.Key]
 	if !ok {
 		var err error
-		section, err = queries.GetStoreSectionByKey(ctx, wanted.StoreSection.Key)
+		section, err = queries.GetStoreSectionByKey(ctx, store.GetStoreSectionByKeyParams{HouseholdID: householdID, Key: wanted.StoreSection.Key})
 		if errors.Is(err, sql.ErrNoRows) {
 			section, err = queries.CreateStoreSection(ctx, store.CreateStoreSectionParams{
-				Key: wanted.StoreSection.Key, Name: wanted.StoreSection.Name,
+				HouseholdID: householdID, Key: wanted.StoreSection.Key, Name: wanted.StoreSection.Name,
 			})
 		}
 		if err != nil {
@@ -225,10 +228,10 @@ func ensureGroceryItem(
 	item, ok := items[wanted.Key]
 	if !ok {
 		var err error
-		item, err = queries.GetGroceryItemByKey(ctx, wanted.Key)
+		item, err = queries.GetGroceryItemByKey(ctx, store.GetGroceryItemByKeyParams{HouseholdID: householdID, Key: wanted.Key})
 		if errors.Is(err, sql.ErrNoRows) {
 			item, err = queries.CreateGroceryItem(ctx, store.CreateGroceryItemParams{
-				Key: wanted.Key, Name: wanted.Name, StoreSectionID: section.ID, ShoppingMode: wanted.ShoppingMode,
+				HouseholdID: householdID, Key: wanted.Key, Name: wanted.Name, StoreSectionID: section.ID, ShoppingMode: wanted.ShoppingMode,
 			})
 		}
 		if err != nil {
