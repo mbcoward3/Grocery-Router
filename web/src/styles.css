@@ -28,6 +28,22 @@
 html, body, #root { min-height: 100%; }
 body { margin: 0; min-width: 320px; background: var(--background); }
 button, select, input { font: inherit; }
+
+.auth-shell {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 20%, #12312a 0, transparent 34%), var(--background);
+}
+.auth-card { width: min(420px, 100%); padding: 36px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: 0 24px 80px #0008; }
+.auth-card h1 { margin: 10px 0 0; font-size: clamp(25px, 5vw, 34px); line-height: 1.15; }
+.auth-mark { width: 38px; height: 38px; margin-bottom: 28px; display: grid; place-items: center; border-radius: 9px; color: var(--accent-ink); background: var(--accent); }
+.auth-mark svg { width: 31px; height: 31px; }
+.auth-actions { margin-top: 28px; }
+.auth-actions p { color: var(--muted); }
+.auth-actions .button { width: 100%; min-height: 44px; }
+
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
 
@@ -104,11 +120,15 @@ a { color: inherit; }
   margin-top: auto;
   padding: 12px 8px 2px;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
   color: #737881;
   border-top: 1px solid var(--line);
   font-size: 11px;
 }
+.sidebar-footer > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sign-out { margin-left: auto; padding: 2px 0; color: var(--muted); border: 0; background: none; cursor: pointer; }
+.sign-out:hover { color: var(--text); }
 
 .main-canvas {
   grid-column: 2;

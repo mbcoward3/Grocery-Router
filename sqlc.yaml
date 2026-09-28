@@ -12,3 +12,6 @@ sql:
         emit_interface: true
         emit_empty_slices: true
         sql_package: "database/sql"
+        overrides:
+          - db_type: "uuid"
+            go_type: "string"

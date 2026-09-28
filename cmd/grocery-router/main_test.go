@@ -28,6 +28,13 @@ func TestRunUsesRepositoryRelativeDefaults(t *testing.T) {
 	}
 }
 
+func TestServeFailsClosedWithoutAuthenticationConfiguration(t *testing.T) {
+	err := run([]string{"serve", "--web-root="}, io.Discard, io.Discard)
+	if err == nil || !strings.Contains(err.Error(), "authentication configuration") {
+		t.Fatalf("serve error = %v, want authentication configuration failure", err)
+	}
+}
+
 func TestRunReportsUnknownCommand(t *testing.T) {
 	err := run([]string{"unknown"}, io.Discard, io.Discard)
 	if err == nil {

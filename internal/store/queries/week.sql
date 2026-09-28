@@ -1,9 +1,9 @@
 -- name: CreateWeek :one
-INSERT INTO weeks (starts_on) VALUES ($1)
+INSERT INTO weeks (household_id, starts_on) VALUES (sqlc.arg(household_id), sqlc.arg(starts_on))
 RETURNING *;
 
 -- name: GetWeekByStart :one
-SELECT * FROM weeks WHERE starts_on = $1;
+SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND starts_on = sqlc.arg(starts_on);
 
 -- name: ListPastWeeks :many
 SELECT
@@ -16,21 +16,24 @@ SELECT
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
         WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
 FROM weeks w
-WHERE w.starts_on < $1
+WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on < sqlc.arg(starts_on)
 ORDER BY w.starts_on DESC;
 
 -- name: GetPastWeek :one
-SELECT * FROM weeks WHERE id = $1 AND starts_on < $2;
+SELECT * FROM weeks
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND starts_on < sqlc.arg(starts_on);
 
 -- name: TouchWeek :exec
-UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') WHERE id = $1;
+UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
 
 -- name: CreateWeekRecipe :one
-INSERT INTO week_recipes (week_id, recipe_id, position) VALUES ($1, $2, $3)
+INSERT INTO week_recipes (household_id, week_id, recipe_id, position)
+VALUES (sqlc.arg(household_id), $1, $2, $3)
 RETURNING *;
 
 -- name: GetWeekRecipe :one
-SELECT * FROM week_recipes WHERE id = $1;
+SELECT * FROM week_recipes WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
 
 -- name: ListWeekRecipes :many
 SELECT
@@ -45,31 +48,36 @@ SELECT
     r.unattended_max_minutes
 FROM week_recipes wr
 JOIN recipes r ON r.id = wr.recipe_id
-WHERE wr.week_id = $1
+WHERE wr.household_id = sqlc.arg(household_id) AND wr.week_id = sqlc.arg(week_id)
 ORDER BY wr.position, wr.id;
 
 -- name: ListWeekRecipeIDs :many
-SELECT recipe_id FROM week_recipes WHERE week_id = $1;
+SELECT recipe_id FROM week_recipes
+WHERE household_id = sqlc.arg(household_id) AND week_id = sqlc.arg(week_id);
 
 -- name: NextWeekRecipePosition :one
-SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes WHERE week_id = $1;
+SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes
+WHERE household_id = sqlc.arg(household_id) AND week_id = sqlc.arg(week_id);
 
 -- name: UpdateWeekRecipeRecipe :one
-UPDATE week_recipes SET recipe_id = $1 WHERE id = $2
+UPDATE week_recipes SET recipe_id = sqlc.arg(recipe_id)
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id)
 RETURNING *;
 
 -- name: DeleteWeekRecipe :execrows
-DELETE FROM week_recipes WHERE id = $1;
+DELETE FROM week_recipes WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
 
 -- name: DeleteWeekRecipes :exec
-DELETE FROM week_recipes WHERE week_id = $1;
+DELETE FROM week_recipes
+WHERE household_id = sqlc.arg(household_id) AND week_id = sqlc.arg(week_id);
 
 -- name: CreateShoppingList :one
-INSERT INTO shopping_lists (week_id) VALUES ($1)
+INSERT INTO shopping_lists (household_id, week_id) VALUES (sqlc.arg(household_id), sqlc.arg(week_id))
 RETURNING *;
 
 -- name: GetShoppingListByWeek :one
-SELECT * FROM shopping_lists WHERE week_id = $1;
+SELECT * FROM shopping_lists
+WHERE household_id = sqlc.arg(household_id) AND week_id = sqlc.arg(week_id);
 
 -- name: ListWeekIngredientRequirements :many
 SELECT
@@ -107,8 +115,9 @@ JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredient_sections ris ON ris.recipe_id = r.id
 JOIN recipe_ingredients ri ON ri.section_id = ris.id
 JOIN grocery_items gi ON gi.id = ri.grocery_item_id
-JOIN store_sections ss ON ss.id = gi.store_section_id
+JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
-WHERE wr.week_id = $1 AND ri.include_on_grocery_list = 1
+WHERE wr.household_id = sqlc.arg(household_id) AND wr.week_id = sqlc.arg(week_id)
+    AND ri.include_on_grocery_list = 1
 ORDER BY wr.position, wr.id, ris.position, ri.position;

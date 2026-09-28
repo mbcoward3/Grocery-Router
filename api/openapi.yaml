@@ -1,12 +1,32 @@
 openapi: 3.1.0
 info:
   title: Grocery Router API
-  version: 0.1.0
-  description: Local API for the current recipe week and its grocery checklist.
+  version: 0.2.0
+  description: Authenticated household API for Grocery Router.
 servers:
-  - url: /api
+  - url: /api/v2
 paths:
-  /recipes:
+  /session:
+    get:
+      operationId: getSession
+      summary: Return the current application user and household memberships.
+      responses:
+        "200":
+          description: Current session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: Revoke the current application session.
+      responses:
+        "204": { description: Session revoked. }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /households/{householdID}/recipes:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: listRecipes
       summary: List every verified recipe eligible for selection.
@@ -23,8 +43,9 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/RecipeSummary" }
         "500": { $ref: "#/components/responses/InternalError" }
-  /recipes/{recipeID}:
+  /households/{householdID}/recipes/{recipeID}:
     parameters:
+      - $ref: "#/components/parameters/HouseholdID"
       - name: recipeID
         in: path
         required: true
@@ -40,14 +61,18 @@ paths:
               schema: { $ref: "#/components/schemas/RecipeDetail" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
-  /week/current:
+  /households/{householdID}/week/current:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: getCurrentWeek
       summary: Return the explicitly generated current week.
       responses:
         "200": { $ref: "#/components/responses/Week" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
-  /weeks/history:
+  /households/{householdID}/weeks/history:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: listWeekHistory
       summary: List earlier generated weeks, newest first.
@@ -64,8 +89,9 @@ paths:
                     type: array
                     items: { $ref: "#/components/schemas/WeekHistorySummary" }
         "500": { $ref: "#/components/responses/InternalError" }
-  /weeks/history/{weekID}:
+  /households/{householdID}/weeks/history/{weekID}:
     parameters:
+      - $ref: "#/components/parameters/HouseholdID"
       - name: weekID
         in: path
         required: true
@@ -81,7 +107,9 @@ paths:
               schema: { $ref: "#/components/schemas/HistoricalWeek" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
-  /week/current/generate:
+  /households/{householdID}/week/current/generate:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
     post:
       operationId: generateCurrentWeek
       summary: Create or fully regenerate the current week.
@@ -101,7 +129,9 @@ paths:
         "200": { $ref: "#/components/responses/Week" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
-  /week/current/recipes:
+  /households/{householdID}/week/current/recipes:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
     post:
       operationId: addCurrentWeekRecipe
       summary: Append a specific verified recipe occurrence.
@@ -112,8 +142,9 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
-  /week/current/recipes/{occurrenceID}:
+  /households/{householdID}/week/current/recipes/{occurrenceID}:
     parameters:
+      - $ref: "#/components/parameters/HouseholdID"
       - $ref: "#/components/parameters/OccurrenceID"
     delete:
       operationId: removeCurrentWeekRecipe
@@ -133,8 +164,9 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
-  /week/current/recipes/{occurrenceID}/random-swap:
+  /households/{householdID}/week/current/recipes/{occurrenceID}/random-swap:
     parameters:
+      - $ref: "#/components/parameters/HouseholdID"
       - $ref: "#/components/parameters/OccurrenceID"
     post:
       operationId: randomSwapCurrentWeekRecipe
@@ -144,7 +176,9 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
-  /week/current/groceries:
+  /households/{householdID}/week/current/groceries:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: getCurrentGroceries
       summary: Return the current grouped grocery checklist.
@@ -167,8 +201,9 @@ paths:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
-  /week/current/groceries/{lineID}:
+  /households/{householdID}/week/current/groceries/{lineID}:
     parameters:
+      - $ref: "#/components/parameters/HouseholdID"
       - name: lineID
         in: path
         required: true
@@ -200,8 +235,9 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
-  /week/current/groceries/{lineID}/contributions:
+  /households/{householdID}/week/current/groceries/{lineID}/contributions:
     parameters:
+      - $ref: "#/components/parameters/HouseholdID"
       - name: lineID
         in: path
         required: true
@@ -224,6 +260,11 @@ paths:
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
 components:
   parameters:
+    HouseholdID:
+      name: householdID
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
     OccurrenceID:
       name: occurrenceID
       in: path
@@ -245,6 +286,29 @@ components:
                 type: integer
                 minimum: 1
   schemas:
+    SessionUser:
+      type: object
+      required: [id, email, displayName, avatarUrl]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        avatarUrl: { type: [string, "null"], format: uri }
+    HouseholdMembership:
+      type: object
+      required: [householdID, householdName, role]
+      properties:
+        householdID: { type: string, format: uuid }
+        householdName: { type: string }
+        role: { type: string, enum: [owner, admin, member] }
+    Session:
+      type: object
+      required: [user, households]
+      properties:
+        user: { $ref: "#/components/schemas/SessionUser" }
+        households:
+          type: array
+          items: { $ref: "#/components/schemas/HouseholdMembership" }
     DurationRange:
       type: object
       required: [minimumMinutes, maximumMinutes]
@@ -395,6 +459,16 @@ components:
             code: { type: string }
             message: { type: string }
   responses:
+    Unauthenticated:
+      description: A valid application session is required.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    Forbidden:
+      description: The request origin or household access was denied.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
     Week:
       description: Canonical current week after the operation.
       content:

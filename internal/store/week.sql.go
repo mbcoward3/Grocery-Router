@@ -11,52 +11,71 @@ import (
 )
 
 const createShoppingList = `-- name: CreateShoppingList :one
-INSERT INTO shopping_lists (week_id) VALUES ($1)
-RETURNING id, week_id, created_at, updated_at
+INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)
+RETURNING id, week_id, created_at, updated_at, household_id
 `
 
-func (q *Queries) CreateShoppingList(ctx context.Context, weekID int64) (ShoppingList, error) {
-	row := q.db.QueryRowContext(ctx, createShoppingList, weekID)
+type CreateShoppingListParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
+
+func (q *Queries) CreateShoppingList(ctx context.Context, arg CreateShoppingListParams) (ShoppingList, error) {
+	row := q.db.QueryRowContext(ctx, createShoppingList, arg.HouseholdID, arg.WeekID)
 	var i ShoppingList
 	err := row.Scan(
 		&i.ID,
 		&i.WeekID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const createWeek = `-- name: CreateWeek :one
-INSERT INTO weeks (starts_on) VALUES ($1)
-RETURNING id, starts_on, created_at, updated_at
+INSERT INTO weeks (household_id, starts_on) VALUES ($1, $2)
+RETURNING id, starts_on, created_at, updated_at, household_id
 `
 
-func (q *Queries) CreateWeek(ctx context.Context, startsOn string) (Week, error) {
-	row := q.db.QueryRowContext(ctx, createWeek, startsOn)
+type CreateWeekParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	StartsOn    string `db:"starts_on" json:"starts_on"`
+}
+
+func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, error) {
+	row := q.db.QueryRowContext(ctx, createWeek, arg.HouseholdID, arg.StartsOn)
 	var i Week
 	err := row.Scan(
 		&i.ID,
 		&i.StartsOn,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const createWeekRecipe = `-- name: CreateWeekRecipe :one
-INSERT INTO week_recipes (week_id, recipe_id, position) VALUES ($1, $2, $3)
-RETURNING id, week_id, recipe_id, position, created_at
+INSERT INTO week_recipes (household_id, week_id, recipe_id, position)
+VALUES ($4, $1, $2, $3)
+RETURNING id, week_id, recipe_id, position, created_at, household_id
 `
 
 type CreateWeekRecipeParams struct {
-	WeekID   int64 `db:"week_id" json:"week_id"`
-	RecipeID int64 `db:"recipe_id" json:"recipe_id"`
-	Position int64 `db:"position" json:"position"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	Position    int64  `db:"position" json:"position"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateWeekRecipe(ctx context.Context, arg CreateWeekRecipeParams) (WeekRecipe, error) {
-	row := q.db.QueryRowContext(ctx, createWeekRecipe, arg.WeekID, arg.RecipeID, arg.Position)
+	row := q.db.QueryRowContext(ctx, createWeekRecipe,
+		arg.WeekID,
+		arg.RecipeID,
+		arg.Position,
+		arg.HouseholdID,
+	)
 	var i WeekRecipe
 	err := row.Scan(
 		&i.ID,
@@ -64,16 +83,22 @@ func (q *Queries) CreateWeekRecipe(ctx context.Context, arg CreateWeekRecipePara
 		&i.RecipeID,
 		&i.Position,
 		&i.CreatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const deleteWeekRecipe = `-- name: DeleteWeekRecipe :execrows
-DELETE FROM week_recipes WHERE id = $1
+DELETE FROM week_recipes WHERE household_id = $1 AND id = $2
 `
 
-func (q *Queries) DeleteWeekRecipe(ctx context.Context, id int64) (int64, error) {
-	result, err := q.db.ExecContext(ctx, deleteWeekRecipe, id)
+type DeleteWeekRecipeParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) DeleteWeekRecipe(ctx context.Context, arg DeleteWeekRecipeParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteWeekRecipe, arg.HouseholdID, arg.ID)
 	if err != nil {
 		return 0, err
 	}
@@ -81,73 +106,100 @@ func (q *Queries) DeleteWeekRecipe(ctx context.Context, id int64) (int64, error)
 }
 
 const deleteWeekRecipes = `-- name: DeleteWeekRecipes :exec
-DELETE FROM week_recipes WHERE week_id = $1
+DELETE FROM week_recipes
+WHERE household_id = $1 AND week_id = $2
 `
 
-func (q *Queries) DeleteWeekRecipes(ctx context.Context, weekID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteWeekRecipes, weekID)
+type DeleteWeekRecipesParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
+
+func (q *Queries) DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesParams) error {
+	_, err := q.db.ExecContext(ctx, deleteWeekRecipes, arg.HouseholdID, arg.WeekID)
 	return err
 }
 
 const getPastWeek = `-- name: GetPastWeek :one
-SELECT id, starts_on, created_at, updated_at FROM weeks WHERE id = $1 AND starts_on < $2
+SELECT id, starts_on, created_at, updated_at, household_id FROM weeks
+WHERE household_id = $1 AND id = $2 AND starts_on < $3
 `
 
 type GetPastWeekParams struct {
-	ID       int64  `db:"id" json:"id"`
-	StartsOn string `db:"starts_on" json:"starts_on"`
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+	StartsOn    string `db:"starts_on" json:"starts_on"`
 }
 
 func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, getPastWeek, arg.ID, arg.StartsOn)
+	row := q.db.QueryRowContext(ctx, getPastWeek, arg.HouseholdID, arg.ID, arg.StartsOn)
 	var i Week
 	err := row.Scan(
 		&i.ID,
 		&i.StartsOn,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const getShoppingListByWeek = `-- name: GetShoppingListByWeek :one
-SELECT id, week_id, created_at, updated_at FROM shopping_lists WHERE week_id = $1
+SELECT id, week_id, created_at, updated_at, household_id FROM shopping_lists
+WHERE household_id = $1 AND week_id = $2
 `
 
-func (q *Queries) GetShoppingListByWeek(ctx context.Context, weekID int64) (ShoppingList, error) {
-	row := q.db.QueryRowContext(ctx, getShoppingListByWeek, weekID)
+type GetShoppingListByWeekParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
+
+func (q *Queries) GetShoppingListByWeek(ctx context.Context, arg GetShoppingListByWeekParams) (ShoppingList, error) {
+	row := q.db.QueryRowContext(ctx, getShoppingListByWeek, arg.HouseholdID, arg.WeekID)
 	var i ShoppingList
 	err := row.Scan(
 		&i.ID,
 		&i.WeekID,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const getWeekByStart = `-- name: GetWeekByStart :one
-SELECT id, starts_on, created_at, updated_at FROM weeks WHERE starts_on = $1
+SELECT id, starts_on, created_at, updated_at, household_id FROM weeks WHERE household_id = $1 AND starts_on = $2
 `
 
-func (q *Queries) GetWeekByStart(ctx context.Context, startsOn string) (Week, error) {
-	row := q.db.QueryRowContext(ctx, getWeekByStart, startsOn)
+type GetWeekByStartParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	StartsOn    string `db:"starts_on" json:"starts_on"`
+}
+
+func (q *Queries) GetWeekByStart(ctx context.Context, arg GetWeekByStartParams) (Week, error) {
+	row := q.db.QueryRowContext(ctx, getWeekByStart, arg.HouseholdID, arg.StartsOn)
 	var i Week
 	err := row.Scan(
 		&i.ID,
 		&i.StartsOn,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const getWeekRecipe = `-- name: GetWeekRecipe :one
-SELECT id, week_id, recipe_id, position, created_at FROM week_recipes WHERE id = $1
+SELECT id, week_id, recipe_id, position, created_at, household_id FROM week_recipes WHERE household_id = $1 AND id = $2
 `
 
-func (q *Queries) GetWeekRecipe(ctx context.Context, id int64) (WeekRecipe, error) {
-	row := q.db.QueryRowContext(ctx, getWeekRecipe, id)
+type GetWeekRecipeParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (WeekRecipe, error) {
+	row := q.db.QueryRowContext(ctx, getWeekRecipe, arg.HouseholdID, arg.ID)
 	var i WeekRecipe
 	err := row.Scan(
 		&i.ID,
@@ -155,13 +207,14 @@ func (q *Queries) GetWeekRecipe(ctx context.Context, id int64) (WeekRecipe, erro
 		&i.RecipeID,
 		&i.Position,
 		&i.CreatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }
 
 const listPastWeeks = `-- name: ListPastWeeks :many
 SELECT
-    w.id, w.starts_on, w.created_at, w.updated_at,
+    w.id, w.starts_on, w.created_at, w.updated_at, w.household_id,
     CAST((SELECT count(*) FROM week_recipes wr WHERE wr.week_id = w.id) AS BIGINT) AS recipe_count,
     CAST((SELECT count(*) FROM shopping_lines sl
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
@@ -170,22 +223,28 @@ SELECT
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
         WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
 FROM weeks w
-WHERE w.starts_on < $1
+WHERE w.household_id = $1 AND w.starts_on < $2
 ORDER BY w.starts_on DESC
 `
+
+type ListPastWeeksParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	StartsOn    string `db:"starts_on" json:"starts_on"`
+}
 
 type ListPastWeeksRow struct {
 	ID             int64  `db:"id" json:"id"`
 	StartsOn       string `db:"starts_on" json:"starts_on"`
 	CreatedAt      string `db:"created_at" json:"created_at"`
 	UpdatedAt      string `db:"updated_at" json:"updated_at"`
+	HouseholdID    string `db:"household_id" json:"household_id"`
 	RecipeCount    int64  `db:"recipe_count" json:"recipe_count"`
 	GroceryCount   int64  `db:"grocery_count" json:"grocery_count"`
 	CompletedCount int64  `db:"completed_count" json:"completed_count"`
 }
 
-func (q *Queries) ListPastWeeks(ctx context.Context, startsOn string) ([]ListPastWeeksRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPastWeeks, startsOn)
+func (q *Queries) ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([]ListPastWeeksRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPastWeeks, arg.HouseholdID, arg.StartsOn)
 	if err != nil {
 		return nil, err
 	}
@@ -198,6 +257,7 @@ func (q *Queries) ListPastWeeks(ctx context.Context, startsOn string) ([]ListPas
 			&i.StartsOn,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.HouseholdID,
 			&i.RecipeCount,
 			&i.GroceryCount,
 			&i.CompletedCount,
@@ -251,12 +311,18 @@ JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredient_sections ris ON ris.recipe_id = r.id
 JOIN recipe_ingredients ri ON ri.section_id = ris.id
 JOIN grocery_items gi ON gi.id = ri.grocery_item_id
-JOIN store_sections ss ON ss.id = gi.store_section_id
+JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
-WHERE wr.week_id = $1 AND ri.include_on_grocery_list = 1
+WHERE wr.household_id = $1 AND wr.week_id = $2
+    AND ri.include_on_grocery_list = 1
 ORDER BY wr.position, wr.id, ris.position, ri.position
 `
+
+type ListWeekIngredientRequirementsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
 
 type ListWeekIngredientRequirementsRow struct {
 	WeekRecipeID           int64          `db:"week_recipe_id" json:"week_recipe_id"`
@@ -290,8 +356,8 @@ type ListWeekIngredientRequirementsRow struct {
 	PackageSizeUnitKey     sql.NullString `db:"package_size_unit_key" json:"package_size_unit_key"`
 }
 
-func (q *Queries) ListWeekIngredientRequirements(ctx context.Context, weekID int64) ([]ListWeekIngredientRequirementsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listWeekIngredientRequirements, weekID)
+func (q *Queries) ListWeekIngredientRequirements(ctx context.Context, arg ListWeekIngredientRequirementsParams) ([]ListWeekIngredientRequirementsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listWeekIngredientRequirements, arg.HouseholdID, arg.WeekID)
 	if err != nil {
 		return nil, err
 	}
@@ -344,11 +410,17 @@ func (q *Queries) ListWeekIngredientRequirements(ctx context.Context, weekID int
 }
 
 const listWeekRecipeIDs = `-- name: ListWeekRecipeIDs :many
-SELECT recipe_id FROM week_recipes WHERE week_id = $1
+SELECT recipe_id FROM week_recipes
+WHERE household_id = $1 AND week_id = $2
 `
 
-func (q *Queries) ListWeekRecipeIDs(ctx context.Context, weekID int64) ([]int64, error) {
-	rows, err := q.db.QueryContext(ctx, listWeekRecipeIDs, weekID)
+type ListWeekRecipeIDsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
+
+func (q *Queries) ListWeekRecipeIDs(ctx context.Context, arg ListWeekRecipeIDsParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, listWeekRecipeIDs, arg.HouseholdID, arg.WeekID)
 	if err != nil {
 		return nil, err
 	}
@@ -372,7 +444,7 @@ func (q *Queries) ListWeekRecipeIDs(ctx context.Context, weekID int64) ([]int64,
 
 const listWeekRecipes = `-- name: ListWeekRecipes :many
 SELECT
-    wr.id, wr.week_id, wr.recipe_id, wr.position, wr.created_at,
+    wr.id, wr.week_id, wr.recipe_id, wr.position, wr.created_at, wr.household_id,
     r.key AS recipe_key,
     r.name AS recipe_name,
     r.image_url,
@@ -383,9 +455,14 @@ SELECT
     r.unattended_max_minutes
 FROM week_recipes wr
 JOIN recipes r ON r.id = wr.recipe_id
-WHERE wr.week_id = $1
+WHERE wr.household_id = $1 AND wr.week_id = $2
 ORDER BY wr.position, wr.id
 `
+
+type ListWeekRecipesParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
 
 type ListWeekRecipesRow struct {
 	ID                   int64          `db:"id" json:"id"`
@@ -393,6 +470,7 @@ type ListWeekRecipesRow struct {
 	RecipeID             int64          `db:"recipe_id" json:"recipe_id"`
 	Position             int64          `db:"position" json:"position"`
 	CreatedAt            string         `db:"created_at" json:"created_at"`
+	HouseholdID          string         `db:"household_id" json:"household_id"`
 	RecipeKey            string         `db:"recipe_key" json:"recipe_key"`
 	RecipeName           string         `db:"recipe_name" json:"recipe_name"`
 	ImageUrl             sql.NullString `db:"image_url" json:"image_url"`
@@ -403,8 +481,8 @@ type ListWeekRecipesRow struct {
 	UnattendedMaxMinutes sql.NullInt64  `db:"unattended_max_minutes" json:"unattended_max_minutes"`
 }
 
-func (q *Queries) ListWeekRecipes(ctx context.Context, weekID int64) ([]ListWeekRecipesRow, error) {
-	rows, err := q.db.QueryContext(ctx, listWeekRecipes, weekID)
+func (q *Queries) ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams) ([]ListWeekRecipesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listWeekRecipes, arg.HouseholdID, arg.WeekID)
 	if err != nil {
 		return nil, err
 	}
@@ -418,6 +496,7 @@ func (q *Queries) ListWeekRecipes(ctx context.Context, weekID int64) ([]ListWeek
 			&i.RecipeID,
 			&i.Position,
 			&i.CreatedAt,
+			&i.HouseholdID,
 			&i.RecipeKey,
 			&i.RecipeName,
 			&i.ImageUrl,
@@ -441,37 +520,51 @@ func (q *Queries) ListWeekRecipes(ctx context.Context, weekID int64) ([]ListWeek
 }
 
 const nextWeekRecipePosition = `-- name: NextWeekRecipePosition :one
-SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes WHERE week_id = $1
+SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes
+WHERE household_id = $1 AND week_id = $2
 `
 
-func (q *Queries) NextWeekRecipePosition(ctx context.Context, weekID int64) (int64, error) {
-	row := q.db.QueryRowContext(ctx, nextWeekRecipePosition, weekID)
+type NextWeekRecipePositionParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
+
+func (q *Queries) NextWeekRecipePosition(ctx context.Context, arg NextWeekRecipePositionParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, nextWeekRecipePosition, arg.HouseholdID, arg.WeekID)
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err
 }
 
 const touchWeek = `-- name: TouchWeek :exec
-UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') WHERE id = $1
+UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE household_id = $1 AND id = $2
 `
 
-func (q *Queries) TouchWeek(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, touchWeek, id)
+type TouchWeekParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) TouchWeek(ctx context.Context, arg TouchWeekParams) error {
+	_, err := q.db.ExecContext(ctx, touchWeek, arg.HouseholdID, arg.ID)
 	return err
 }
 
 const updateWeekRecipeRecipe = `-- name: UpdateWeekRecipeRecipe :one
-UPDATE week_recipes SET recipe_id = $1 WHERE id = $2
-RETURNING id, week_id, recipe_id, position, created_at
+UPDATE week_recipes SET recipe_id = $1
+WHERE household_id = $2 AND id = $3
+RETURNING id, week_id, recipe_id, position, created_at, household_id
 `
 
 type UpdateWeekRecipeRecipeParams struct {
-	RecipeID int64 `db:"recipe_id" json:"recipe_id"`
-	ID       int64 `db:"id" json:"id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
 }
 
 func (q *Queries) UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekRecipeRecipeParams) (WeekRecipe, error) {
-	row := q.db.QueryRowContext(ctx, updateWeekRecipeRecipe, arg.RecipeID, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateWeekRecipeRecipe, arg.RecipeID, arg.HouseholdID, arg.ID)
 	var i WeekRecipe
 	err := row.Scan(
 		&i.ID,
@@ -479,6 +572,7 @@ func (q *Queries) UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekReci
 		&i.RecipeID,
 		&i.Position,
 		&i.CreatedAt,
+		&i.HouseholdID,
 	)
 	return i, err
 }

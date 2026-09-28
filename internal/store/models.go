@@ -6,7 +6,31 @@ package store
 
 import (
 	"database/sql"
+	"time"
 )
+
+type AppUser struct {
+	ID           string         `db:"id" json:"id"`
+	PrimaryEmail string         `db:"primary_email" json:"primary_email"`
+	DisplayName  string         `db:"display_name" json:"display_name"`
+	AvatarUrl    sql.NullString `db:"avatar_url" json:"avatar_url"`
+	CreatedAt    time.Time      `db:"created_at" json:"created_at"`
+	UpdatedAt    time.Time      `db:"updated_at" json:"updated_at"`
+	LastSeenAt   time.Time      `db:"last_seen_at" json:"last_seen_at"`
+	DisabledAt   sql.NullTime   `db:"disabled_at" json:"disabled_at"`
+}
+
+type AuthSession struct {
+	ID                string         `db:"id" json:"id"`
+	UserID            string         `db:"user_id" json:"user_id"`
+	TokenDigest       []byte         `db:"token_digest" json:"token_digest"`
+	CreatedAt         time.Time      `db:"created_at" json:"created_at"`
+	LastSeenAt        time.Time      `db:"last_seen_at" json:"last_seen_at"`
+	IdleExpiresAt     time.Time      `db:"idle_expires_at" json:"idle_expires_at"`
+	AbsoluteExpiresAt time.Time      `db:"absolute_expires_at" json:"absolute_expires_at"`
+	RevokedAt         sql.NullTime   `db:"revoked_at" json:"revoked_at"`
+	ClientMetadata    sql.NullString `db:"client_metadata" json:"client_metadata"`
+}
 
 type GroceryItem struct {
 	ID             int64  `db:"id" json:"id"`
@@ -16,6 +40,21 @@ type GroceryItem struct {
 	ShoppingMode   string `db:"shopping_mode" json:"shopping_mode"`
 	CreatedAt      string `db:"created_at" json:"created_at"`
 	UpdatedAt      string `db:"updated_at" json:"updated_at"`
+	HouseholdID    string `db:"household_id" json:"household_id"`
+}
+
+type Household struct {
+	ID        string    `db:"id" json:"id"`
+	Name      string    `db:"name" json:"name"`
+	CreatedAt time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type HouseholdMembership struct {
+	HouseholdID string    `db:"household_id" json:"household_id"`
+	UserID      string    `db:"user_id" json:"user_id"`
+	Role        string    `db:"role" json:"role"`
+	CreatedAt   time.Time `db:"created_at" json:"created_at"`
 }
 
 type Recipe struct {
@@ -32,6 +71,7 @@ type Recipe struct {
 	VerifiedAt           sql.NullString `db:"verified_at" json:"verified_at"`
 	CreatedAt            string         `db:"created_at" json:"created_at"`
 	UpdatedAt            string         `db:"updated_at" json:"updated_at"`
+	HouseholdID          string         `db:"household_id" json:"household_id"`
 }
 
 type RecipeIngredient struct {
@@ -122,6 +162,7 @@ type ShoppingLine struct {
 	OverrideText           sql.NullString `db:"override_text" json:"override_text"`
 	CreatedAt              string         `db:"created_at" json:"created_at"`
 	UpdatedAt              string         `db:"updated_at" json:"updated_at"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
 type ShoppingLineContribution struct {
@@ -140,19 +181,22 @@ type ShoppingLineContribution struct {
 	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
 type ShoppingList struct {
-	ID        int64  `db:"id" json:"id"`
-	WeekID    int64  `db:"week_id" json:"week_id"`
-	CreatedAt string `db:"created_at" json:"created_at"`
-	UpdatedAt string `db:"updated_at" json:"updated_at"`
+	ID          int64  `db:"id" json:"id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+	CreatedAt   string `db:"created_at" json:"created_at"`
+	UpdatedAt   string `db:"updated_at" json:"updated_at"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 type StoreSection struct {
-	ID   int64  `db:"id" json:"id"`
-	Key  string `db:"key" json:"key"`
-	Name string `db:"name" json:"name"`
+	ID          int64  `db:"id" json:"id"`
+	Key         string `db:"key" json:"key"`
+	Name        string `db:"name" json:"name"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 type Unit struct {
@@ -165,17 +209,31 @@ type Unit struct {
 	ToBaseDenominator int64  `db:"to_base_denominator" json:"to_base_denominator"`
 }
 
+type UserIdentity struct {
+	ID                    string    `db:"id" json:"id"`
+	UserID                string    `db:"user_id" json:"user_id"`
+	Provider              string    `db:"provider" json:"provider"`
+	Issuer                string    `db:"issuer" json:"issuer"`
+	Subject               string    `db:"subject" json:"subject"`
+	ProviderEmail         string    `db:"provider_email" json:"provider_email"`
+	ProviderEmailVerified bool      `db:"provider_email_verified" json:"provider_email_verified"`
+	CreatedAt             time.Time `db:"created_at" json:"created_at"`
+	LastSeenAt            time.Time `db:"last_seen_at" json:"last_seen_at"`
+}
+
 type Week struct {
-	ID        int64  `db:"id" json:"id"`
-	StartsOn  string `db:"starts_on" json:"starts_on"`
-	CreatedAt string `db:"created_at" json:"created_at"`
-	UpdatedAt string `db:"updated_at" json:"updated_at"`
+	ID          int64  `db:"id" json:"id"`
+	StartsOn    string `db:"starts_on" json:"starts_on"`
+	CreatedAt   string `db:"created_at" json:"created_at"`
+	UpdatedAt   string `db:"updated_at" json:"updated_at"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 type WeekRecipe struct {
-	ID        int64  `db:"id" json:"id"`
-	WeekID    int64  `db:"week_id" json:"week_id"`
-	RecipeID  int64  `db:"recipe_id" json:"recipe_id"`
-	Position  int64  `db:"position" json:"position"`
-	CreatedAt string `db:"created_at" json:"created_at"`
+	ID          int64  `db:"id" json:"id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	Position    int64  `db:"position" json:"position"`
+	CreatedAt   string `db:"created_at" json:"created_at"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
