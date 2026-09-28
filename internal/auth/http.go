@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -102,27 +103,37 @@ func (handler *HTTPHandler) googleCallback(response http.ResponseWriter, request
 		return
 	}
 	cookie, err := request.Cookie(handler.transactionCookieName())
-	if err != nil || request.URL.Query().Get("error") != "" {
+	if err != nil {
+		log.Printf("authentication callback rejected: transaction cookie missing")
+		handler.authFailure(response, http.StatusUnauthorized)
+		return
+	}
+	if request.URL.Query().Get("error") != "" {
+		log.Printf("authentication callback rejected: provider returned an error")
 		handler.authFailure(response, http.StatusUnauthorized)
 		return
 	}
 	transaction, err := handler.service.parseLoginTransaction(cookie.Value, request.URL.Query().Get("state"))
 	if err != nil {
+		log.Printf("authentication callback rejected: protected transaction invalid")
 		handler.authFailure(response, http.StatusUnauthorized)
 		return
 	}
 	identity, err := handler.provider.Authenticate(request.Context(), request.URL.Query().Get("code"), transaction.Verifier, transaction.Nonce)
 	if err != nil {
+		log.Printf("authentication callback rejected: %v", err)
 		handler.authFailure(response, http.StatusUnauthorized)
 		return
 	}
 	user, err := handler.service.ResolveIdentity(request.Context(), identity)
 	if err != nil {
+		log.Printf("authentication identity resolution failed: %v", err)
 		handler.authFailure(response, http.StatusForbidden)
 		return
 	}
 	token, err := handler.service.CreateSession(request.Context(), user.ID, request.UserAgent())
 	if err != nil {
+		log.Printf("authentication session creation failed: %v", err)
 		handler.authFailure(response, http.StatusInternalServerError)
 		return
 	}
