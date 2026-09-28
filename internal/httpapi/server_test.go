@@ -91,6 +91,9 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 		t.Fatalf("groceries status = %d, body %s", groceries.Code, groceries.Body.String())
 	}
 	line := lines[0].(map[string]any)
+	if recipeNames, ok := line["recipeNames"].([]any); !ok || len(recipeNames) == 0 {
+		t.Fatalf("grocery line does not expose recipe names: %#v", line)
+	}
 	lineID := int64(line["id"].(float64))
 	contributions := request(t, handler, http.MethodGet,
 		fmt.Sprintf("/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries/%d/contributions", lineID), "")
@@ -103,8 +106,23 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 		t.Fatalf("complete status = %d, body %s", completed.Code, completed.Body.String())
 	}
 	added := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries", `{"name":"Paper towels"}`)
-	if added.Code != http.StatusOK || len(decodeObject(t, added)["lines"].([]any)) != len(lines)+1 {
+	addedLines := decodeObject(t, added)["lines"].([]any)
+	if added.Code != http.StatusOK || len(addedLines) != len(lines)+1 {
 		t.Fatalf("manual add status = %d, body %s", added.Code, added.Body.String())
+	}
+	var manualLine map[string]any
+	for _, value := range addedLines {
+		candidate := value.(map[string]any)
+		if candidate["name"] == "Paper towels" {
+			manualLine = candidate
+			break
+		}
+	}
+	if manualLine == nil {
+		t.Fatal("manual grocery line was not returned")
+	}
+	if recipeNames, ok := manualLine["recipeNames"].([]any); !ok || len(recipeNames) != 0 {
+		t.Fatalf("manual grocery line recipe names = %#v", manualLine["recipeNames"])
 	}
 }
 

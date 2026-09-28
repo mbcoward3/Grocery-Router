@@ -43,6 +43,8 @@ button, select, input { font: inherit; }
 .auth-actions { margin-top: 28px; }
 .auth-actions p { color: var(--muted); }
 .auth-actions .button { width: 100%; min-height: 44px; }
+.auth-actions .auth-legal { margin: 14px 4px 0; color: var(--faint); font-size: 11px; line-height: 1.5; text-align: center; }
+.auth-legal a { color: var(--muted); }
 
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; }
@@ -416,6 +418,7 @@ select {
 .grocery-main { min-width: 0; }
 .grocery-name { display: flex; align-items: center; gap: 7px; color: #e5e7ea; font-size: 13px; font-weight: 530; }
 .grocery-main > small { color: var(--faint); font-size: 10px; }
+.grocery-main > .recipe-associations { display: block; overflow: hidden; color: #828891; text-overflow: ellipsis; white-space: nowrap; }
 .grocery-quantity { justify-self: end; display: grid; justify-items: end; color: #b5bac2; font-size: 12px; }
 .grocery-quantity small { color: var(--accent-text); font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
 .grocery-actions { display: flex; gap: 3px; }

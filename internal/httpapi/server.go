@@ -179,16 +179,17 @@ type historicalWeekResponse struct {
 }
 
 type groceryLine struct {
-	ID                int64   `json:"id"`
-	Section           string  `json:"section"`
-	Name              string  `json:"name"`
-	Quantity          *string `json:"quantity"`
-	GeneratedQuantity *string `json:"generatedQuantity"`
-	Origin            string  `json:"origin"`
-	Optional          bool    `json:"optional"`
-	Removed           bool    `json:"removed"`
-	Completed         bool    `json:"completed"`
-	HasContributions  bool    `json:"hasContributions"`
+	ID                int64    `json:"id"`
+	Section           string   `json:"section"`
+	Name              string   `json:"name"`
+	Quantity          *string  `json:"quantity"`
+	GeneratedQuantity *string  `json:"generatedQuantity"`
+	Origin            string   `json:"origin"`
+	Optional          bool     `json:"optional"`
+	Removed           bool     `json:"removed"`
+	Completed         bool     `json:"completed"`
+	HasContributions  bool     `json:"hasContributions"`
+	RecipeNames       []string `json:"recipeNames"`
 }
 
 type groceryContribution struct {
@@ -479,11 +480,15 @@ func groceryResponseFromChecklist(checklist week.Checklist, startsOn string) gro
 		if row.OverrideText.Valid {
 			quantity = &row.OverrideText.String
 		}
+		recipeNames := checklist.RecipeNames[row.ID]
+		if recipeNames == nil {
+			recipeNames = make([]string, 0)
+		}
 		result.Lines = append(result.Lines, groceryLine{
 			ID: row.ID, Section: row.StoreSectionName, Name: row.DisplayName,
 			Quantity: quantity, GeneratedQuantity: generated, Origin: row.Origin,
 			Optional: row.IsOptional == 1, Removed: row.IsRemoved == 1, Completed: row.IsCompleted == 1,
-			HasContributions: row.Origin == "generated",
+			HasContributions: row.Origin == "generated", RecipeNames: recipeNames,
 		})
 	}
 	return result

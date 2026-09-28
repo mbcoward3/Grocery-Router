@@ -357,6 +357,7 @@ export interface components {
             removed: boolean;
             completed: boolean;
             hasContributions: boolean;
+            recipeNames: string[];
         };
         Groceries: {
             /** Format: date */

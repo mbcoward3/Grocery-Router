@@ -130,6 +130,7 @@ function GroceryRow({ line, expanded, pending, onExpand, onComplete, onEdit, onR
       </button>
       <div className="grocery-main">
         <div className="grocery-name">{line.name}{line.optional && <span className="optional-label">Optional</span>}</div>
+        {line.recipeNames.length > 0 && <small className="recipe-associations" title={line.recipeNames.join(', ')}>For {line.recipeNames.join(' · ')}</small>}
         {line.origin === 'manual' && <small>Manual item</small>}
       </div>
       <div className="grocery-quantity">

@@ -110,15 +110,11 @@ func (service *Service) PastWeek(ctx context.Context, now time.Time, weekID int6
 	if err != nil {
 		return HistoricalView{}, err
 	}
-	list, err := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: service.householdID, WeekID: weekRow.ID})
+	checklist, err := loadChecklist(ctx, queries, service.householdID, weekRow.ID)
 	if err != nil {
 		return HistoricalView{}, err
 	}
-	lines, err := queries.ListShoppingLines(ctx, store.ListShoppingLinesParams{HouseholdID: service.householdID, ShoppingListID: list.ID})
-	if err != nil {
-		return HistoricalView{}, err
-	}
-	return HistoricalView{View: view, Checklist: Checklist{List: list, Lines: lines}}, nil
+	return HistoricalView{View: view, Checklist: checklist}, nil
 }
 
 // Generate creates or fully regenerates the current week with unique verified recipes.
@@ -535,8 +531,9 @@ func (service *Service) AddManualLine(ctx context.Context, now time.Time, name s
 
 // Checklist is the current week's store-section-ordered grocery list.
 type Checklist struct {
-	List  store.ShoppingList
-	Lines []store.ListShoppingLinesRow
+	List        store.ShoppingList
+	Lines       []store.ListShoppingLinesRow
+	RecipeNames map[int64][]string
 }
 
 // Checklist returns the current week's compact grocery lines in store-section order.
@@ -549,15 +546,29 @@ func (service *Service) Checklist(ctx context.Context, now time.Time) (Checklist
 	if err != nil {
 		return Checklist{}, err
 	}
-	list, err := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: service.householdID, WeekID: weekRow.ID})
+	return loadChecklist(ctx, queries, service.householdID, weekRow.ID)
+}
+
+func loadChecklist(ctx context.Context, queries *store.Queries, householdID string, weekID int64) (Checklist, error) {
+	list, err := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: householdID, WeekID: weekID})
 	if err != nil {
 		return Checklist{}, err
 	}
-	lines, err := queries.ListShoppingLines(ctx, store.ListShoppingLinesParams{HouseholdID: service.householdID, ShoppingListID: list.ID})
+	lines, err := queries.ListShoppingLines(ctx, store.ListShoppingLinesParams{HouseholdID: householdID, ShoppingListID: list.ID})
 	if err != nil {
 		return Checklist{}, err
 	}
-	return Checklist{List: list, Lines: lines}, nil
+	associations, err := queries.ListShoppingLineRecipeNames(ctx, store.ListShoppingLineRecipeNamesParams{
+		HouseholdID: householdID, ShoppingListID: list.ID,
+	})
+	if err != nil {
+		return Checklist{}, err
+	}
+	recipeNames := make(map[int64][]string)
+	for _, association := range associations {
+		recipeNames[association.ShoppingLineID] = append(recipeNames[association.ShoppingLineID], association.RecipeName)
+	}
+	return Checklist{List: list, Lines: lines, RecipeNames: recipeNames}, nil
 }
 
 // Contributions returns the recipe traces behind a current generated line.
