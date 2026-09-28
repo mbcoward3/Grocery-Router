@@ -11,7 +11,11 @@ ALTER TABLE shopping_line_contributions ADD COLUMN household_id UUID REFERENCES 
 
 UPDATE store_sections SET household_id = 'c0a7a2d8-669b-4e47-91c1-4d9a32f339d5';
 UPDATE grocery_items SET household_id = 'c0a7a2d8-669b-4e47-91c1-4d9a32f339d5';
+-- The v1 lifecycle trigger intentionally rejects every in-place edit of a verified recipe.
+-- Disable only that trigger while adding ownership; recipe content and status remain unchanged.
+ALTER TABLE recipes DISABLE TRIGGER enforce_recipe_lifecycle;
 UPDATE recipes SET household_id = 'c0a7a2d8-669b-4e47-91c1-4d9a32f339d5';
+ALTER TABLE recipes ENABLE TRIGGER enforce_recipe_lifecycle;
 UPDATE weeks SET household_id = 'c0a7a2d8-669b-4e47-91c1-4d9a32f339d5';
 UPDATE week_recipes SET household_id = 'c0a7a2d8-669b-4e47-91c1-4d9a32f339d5';
 UPDATE shopping_lists SET household_id = 'c0a7a2d8-669b-4e47-91c1-4d9a32f339d5';
