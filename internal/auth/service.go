@@ -312,7 +312,7 @@ func validReturnPath(value string) bool {
 		return true
 	}
 	parsed, err := url.Parse(value)
-	return err == nil && strings.HasPrefix(value, "/") && !strings.HasPrefix(value, "//") && parsed.IsAbs() == false && parsed.Host == ""
+	return err == nil && strings.HasPrefix(value, "/") && !strings.HasPrefix(value, "//") && !parsed.IsAbs() && parsed.Host == ""
 }
 
 func randomToken(bytes int) (string, error) {

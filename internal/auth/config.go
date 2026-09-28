@@ -36,7 +36,7 @@ func ParseConfig(raw RawConfig) (Config, error) {
 		return Config{}, errors.New("GROCERY_ROUTER_AUTH_ORIGIN must be an origin without a path, query, or fragment")
 	}
 	secure := origin.Scheme == "https"
-	if !secure && !(origin.Scheme == "http" && (origin.Hostname() == "localhost" || origin.Hostname() == "127.0.0.1")) {
+	if !secure && (origin.Scheme != "http" || (origin.Hostname() != "localhost" && origin.Hostname() != "127.0.0.1")) {
 		return Config{}, errors.New("GROCERY_ROUTER_AUTH_ORIGIN must use HTTPS except on localhost")
 	}
 	issuer := strings.TrimSuffix(strings.TrimSpace(raw.Issuer), "/")
@@ -45,7 +45,7 @@ func ParseConfig(raw RawConfig) (Config, error) {
 		return Config{}, errors.New("GROCERY_ROUTER_AUTH_OIDC_ISSUER must be an HTTPS URL")
 	}
 	if strings.TrimSpace(raw.ClientID) == "" || strings.TrimSpace(raw.ClientSecret) == "" {
-		return Config{}, errors.New("Google OIDC client ID and secret are required")
+		return Config{}, errors.New("google OIDC client ID and secret are required")
 	}
 	key, err := base64.RawURLEncoding.DecodeString(strings.TrimSpace(raw.SessionSecret))
 	if err != nil || len(key) < 32 {
