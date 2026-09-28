@@ -51,6 +51,7 @@ type Querier interface {
 	ListRecipeSources(ctx context.Context, arg ListRecipeSourcesParams) ([]RecipeSource, error)
 	ListRecipeSteps(ctx context.Context, arg ListRecipeStepsParams) ([]ListRecipeStepsRow, error)
 	ListShoppingLineContributions(ctx context.Context, arg ListShoppingLineContributionsParams) ([]ListShoppingLineContributionsRow, error)
+	ListShoppingLineRecipeNames(ctx context.Context, arg ListShoppingLineRecipeNamesParams) ([]ListShoppingLineRecipeNamesRow, error)
 	ListShoppingLines(ctx context.Context, arg ListShoppingLinesParams) ([]ListShoppingLinesRow, error)
 	ListStoreSections(ctx context.Context, householdID string) ([]StoreSection, error)
 	ListUnits(ctx context.Context) ([]Unit, error)

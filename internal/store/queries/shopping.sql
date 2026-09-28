@@ -41,6 +41,24 @@ WHERE sl.household_id = sqlc.arg(household_id)
     AND sl.shopping_list_id = sqlc.arg(shopping_list_id)
 ORDER BY ss.name, sl.display_position, sl.display_name, sl.id;
 
+-- name: ListShoppingLineRecipeNames :many
+SELECT
+    c.shopping_line_id,
+    r.id AS recipe_id,
+    r.name AS recipe_name
+FROM shopping_line_contributions AS c
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = c.household_id AND sl.id = c.shopping_line_id
+INNER JOIN week_recipes AS wr
+    ON wr.household_id = c.household_id AND wr.id = c.week_recipe_id
+INNER JOIN recipes AS r
+    ON r.household_id = wr.household_id AND r.id = wr.recipe_id
+WHERE
+    c.household_id = sqlc.arg(household_id)
+    AND sl.shopping_list_id = sqlc.arg(shopping_list_id)
+GROUP BY c.shopping_line_id, r.id, r.name
+ORDER BY c.shopping_line_id, min(wr.position), r.name, r.id;
+
 -- name: ListShoppingLineContributions :many
 SELECT c.*, r.id AS recipe_id, r.name AS recipe_name, ri.source_text, ri.preparation,
     u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol

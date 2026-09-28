@@ -24,6 +24,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
           <a className="button primary" href={`/api/v2/auth/google/start?returnTo=${encodeURIComponent(returnTo)}`}>
             Continue with Google
           </a>
+          <p className="auth-legal">By continuing, you agree to the <a href="/terms/">Terms of Service</a> and acknowledge the <a href="/privacy/">Privacy Policy</a>.</p>
         </AuthState>
       )
     }

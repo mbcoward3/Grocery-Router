@@ -53,6 +53,12 @@ func TestApplicationHandlerServesSPAAndAPI(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(webRoot, "asset.js"), []byte("asset"), 0o644); err != nil {
 		t.Fatalf("write asset: %v", err)
 	}
+	if err := os.Mkdir(filepath.Join(webRoot, "privacy"), 0o755); err != nil {
+		t.Fatalf("create privacy directory: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(webRoot, "privacy", "index.html"), []byte("privacy policy"), 0o644); err != nil {
+		t.Fatalf("write privacy policy: %v", err)
+	}
 	api := http.HandlerFunc(func(response http.ResponseWriter, _ *http.Request) {
 		_, _ = response.Write([]byte("api"))
 	})
@@ -65,6 +71,7 @@ func TestApplicationHandlerServesSPAAndAPI(t *testing.T) {
 		"/api/week/current": "api",
 		"/asset.js":         "asset",
 		"/groceries":        "application shell",
+		"/privacy/":         "privacy policy",
 		"/healthz":          "ok\n",
 	} {
 		request := httptest.NewRequest(http.MethodGet, path, nil)

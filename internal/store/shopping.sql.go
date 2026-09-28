@@ -396,6 +396,59 @@ func (q *Queries) ListShoppingLineContributions(ctx context.Context, arg ListSho
 	return items, nil
 }
 
+const listShoppingLineRecipeNames = `-- name: ListShoppingLineRecipeNames :many
+SELECT
+    c.shopping_line_id,
+    r.id AS recipe_id,
+    r.name AS recipe_name
+FROM shopping_line_contributions AS c
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = c.household_id AND sl.id = c.shopping_line_id
+INNER JOIN week_recipes AS wr
+    ON wr.household_id = c.household_id AND wr.id = c.week_recipe_id
+INNER JOIN recipes AS r
+    ON r.household_id = wr.household_id AND r.id = wr.recipe_id
+WHERE
+    c.household_id = $1
+    AND sl.shopping_list_id = $2
+GROUP BY c.shopping_line_id, r.id, r.name
+ORDER BY c.shopping_line_id, min(wr.position), r.name, r.id
+`
+
+type ListShoppingLineRecipeNamesParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
+
+type ListShoppingLineRecipeNamesRow struct {
+	ShoppingLineID int64  `db:"shopping_line_id" json:"shopping_line_id"`
+	RecipeID       int64  `db:"recipe_id" json:"recipe_id"`
+	RecipeName     string `db:"recipe_name" json:"recipe_name"`
+}
+
+func (q *Queries) ListShoppingLineRecipeNames(ctx context.Context, arg ListShoppingLineRecipeNamesParams) ([]ListShoppingLineRecipeNamesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listShoppingLineRecipeNames, arg.HouseholdID, arg.ShoppingListID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListShoppingLineRecipeNamesRow{}
+	for rows.Next() {
+		var i ListShoppingLineRecipeNamesRow
+		if err := rows.Scan(&i.ShoppingLineID, &i.RecipeID, &i.RecipeName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listShoppingLines = `-- name: ListShoppingLines :many
 SELECT sl.id, sl.shopping_list_id, sl.grocery_item_id, sl.store_section_id, sl.aggregation_key, sl.origin, sl.display_name, sl.quantity_kind, sl.amount_min_numerator, sl.amount_min_denominator, sl.amount_max_numerator, sl.amount_max_denominator, sl.unit_id, sl.package_type, sl.package_size_numerator, sl.package_size_denominator, sl.package_size_unit_id, sl.is_optional, sl.is_removed, sl.is_completed, sl.display_position, sl.override_text, sl.created_at, sl.updated_at, sl.household_id, ss.name AS store_section_name, u.key AS unit_key, u.symbol AS unit_symbol,
     psu.key AS package_size_unit_key, psu.symbol AS package_size_unit_symbol

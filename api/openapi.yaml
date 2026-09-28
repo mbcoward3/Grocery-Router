@@ -387,7 +387,7 @@ components:
               items: { $ref: "#/components/schemas/RecipeInstructionSection" }
     GroceryLine:
       type: object
-      required: [id, section, name, quantity, generatedQuantity, origin, optional, removed, completed, hasContributions]
+      required: [id, section, name, quantity, generatedQuantity, origin, optional, removed, completed, hasContributions, recipeNames]
       properties:
         id: { type: integer }
         section: { type: string }
@@ -399,6 +399,9 @@ components:
         removed: { type: boolean }
         completed: { type: boolean }
         hasContributions: { type: boolean }
+        recipeNames:
+          type: array
+          items: { type: string }
     Groceries:
       type: object
       required: [startsOn, lines]

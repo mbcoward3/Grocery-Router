@@ -329,9 +329,16 @@ func applicationHandler(api http.Handler, webRoot string) (http.Handler, error) 
 		}
 		relativePath := strings.TrimPrefix(filepath.Clean(request.URL.Path), string(filepath.Separator))
 		if relativePath != "." {
-			if info, err := os.Stat(filepath.Join(webRoot, relativePath)); err == nil && !info.IsDir() {
-				files.ServeHTTP(response, request)
-				return
+			staticPath := filepath.Join(webRoot, relativePath)
+			if info, err := os.Stat(staticPath); err == nil {
+				if !info.IsDir() {
+					files.ServeHTTP(response, request)
+					return
+				}
+				if _, err := os.Stat(filepath.Join(staticPath, "index.html")); err == nil {
+					files.ServeHTTP(response, request)
+					return
+				}
 			}
 		}
 		http.ServeFile(response, request, indexPath)
