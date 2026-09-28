@@ -32,7 +32,7 @@ func TestGoogleStartCreatesProtectedTransaction(t *testing.T) {
 		t.Fatalf("unexpected response: %d %s", response.Code, response.Header().Get("Location"))
 	}
 	cookies := response.Result().Cookies()
-	if len(cookies) != 1 || cookies[0].Name != "__Host-grocery_auth" || !cookies[0].HttpOnly || !cookies[0].Secure {
+	if len(cookies) != 1 || cookies[0].Name != "__Host-grocery_auth" || cookies[0].Path != "/" || !cookies[0].HttpOnly || !cookies[0].Secure {
 		t.Fatalf("unexpected transaction cookie: %+v", cookies)
 	}
 }

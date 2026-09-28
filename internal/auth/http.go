@@ -90,7 +90,7 @@ func (handler *HTTPHandler) googleStart(response http.ResponseWriter, request *h
 		return
 	}
 	http.SetCookie(response, &http.Cookie{
-		Name: handler.transactionCookieName(), Value: protected, Path: "/api/v2/auth/google/callback",
+		Name: handler.transactionCookieName(), Value: protected, Path: "/",
 		Secure: handler.config.SecureCookies, HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: 600,
 	})
 	response.Header().Set("Cache-Control", "no-store")
@@ -185,7 +185,7 @@ func (handler *HTTPHandler) transactionCookieName() string {
 }
 
 func (handler *HTTPHandler) clearTransaction(response http.ResponseWriter) {
-	http.SetCookie(response, &http.Cookie{Name: handler.transactionCookieName(), Value: "", Path: "/api/v2/auth/google/callback", Secure: handler.config.SecureCookies, HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: -1, Expires: time.Unix(1, 0)})
+	http.SetCookie(response, &http.Cookie{Name: handler.transactionCookieName(), Value: "", Path: "/", Secure: handler.config.SecureCookies, HttpOnly: true, SameSite: http.SameSiteLaxMode, MaxAge: -1, Expires: time.Unix(1, 0)})
 }
 
 func writeAuthError(response http.ResponseWriter, status int, code, message string) {
