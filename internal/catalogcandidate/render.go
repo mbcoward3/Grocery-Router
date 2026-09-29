@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// RenderMarkdown produces the deterministic human review representation.
 func RenderMarkdown(c Candidate) []byte {
 	var b bytes.Buffer
 	fmt.Fprintf(&b, "# %s\n\n", c.Name.Value)

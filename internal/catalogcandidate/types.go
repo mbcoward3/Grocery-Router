@@ -5,12 +5,14 @@ package catalogcandidate
 
 import "time"
 
+// Candidate format limits and implementation identity are stable artifact provenance.
 const (
 	FormatVersion  = 1
 	MaxBatchSize   = 25
 	Implementation = "grocery-router-catalog-candidate/v1"
 )
 
+// Candidate is one unapproved structured recipe proposal.
 type Candidate struct {
 	FormatVersion       int                  `json:"format_version"`
 	CandidateID         string               `json:"candidate_id"`
@@ -30,6 +32,7 @@ type Candidate struct {
 	Decisions           []Decision           `json:"decisions"`
 }
 
+// SourceIdentity pins the exact source-pilot evidence and selected Recipe node.
 type SourceIdentity struct {
 	PilotImplementation string    `json:"pilot_implementation"`
 	PilotFormatVersion  int       `json:"pilot_format_version"`
@@ -45,6 +48,7 @@ type SourceIdentity struct {
 	Selected            Selection `json:"selected"`
 }
 
+// Selection identifies one Recipe node and its immutable digests.
 type Selection struct {
 	CandidateIndex     int    `json:"candidate_index"`
 	ScriptIndex        int    `json:"script_index"`
@@ -54,6 +58,7 @@ type Selection struct {
 	RecipeRawCanonical string `json:"recipe_raw_canonical_sha256"`
 }
 
+// AgentProvenance identifies the untrusted standardization proposal.
 type AgentProvenance struct {
 	Kind         string    `json:"kind"`
 	Provider     string    `json:"provider"`
@@ -64,6 +69,7 @@ type AgentProvenance struct {
 	RunAt        time.Time `json:"run_at"`
 }
 
+// Field carries a candidate value and its review state.
 type Field[T any] struct {
 	State      string `json:"state"`
 	Value      T      `json:"value,omitempty"`
@@ -71,16 +77,19 @@ type Field[T any] struct {
 	Provenance string `json:"provenance"`
 }
 
+// Duration is an inclusive minute range.
 type Duration struct {
 	Min int64 `json:"min"`
 	Max int64 `json:"max"`
 }
 
+// IngredientSection is an ordered candidate ingredient group.
 type IngredientSection struct {
 	Name        string       `json:"name"`
 	Ingredients []Ingredient `json:"ingredients"`
 }
 
+// Ingredient preserves one source line and its proposed interpretation.
 type Ingredient struct {
 	SourceLineIndex int             `json:"source_line_index"`
 	SourceText      string          `json:"source_text"`
@@ -94,6 +103,7 @@ type Ingredient struct {
 	Issues          []Issue         `json:"issues,omitempty"`
 }
 
+// Quantity is an exact candidate amount, range, package, or unspecified requirement.
 type Quantity struct {
 	Kind        string   `json:"kind"`
 	Amount      string   `json:"amount,omitempty"`
@@ -103,6 +113,7 @@ type Quantity struct {
 	Package     *Package `json:"package,omitempty"`
 }
 
+// Package preserves proposed package count and size.
 type Package struct {
 	Count string `json:"count,omitempty"`
 	Type  string `json:"type"`
@@ -110,6 +121,7 @@ type Package struct {
 	Unit  string `json:"unit,omitempty"`
 }
 
+// GroceryProposal proposes an exact match or reviewed new grocery definition.
 type GroceryProposal struct {
 	State        string `json:"state"`
 	Key          string `json:"key,omitempty"`
@@ -119,23 +131,27 @@ type GroceryProposal struct {
 	Rationale    string `json:"rationale,omitempty"`
 }
 
+// InstructionSection is an ordered source instruction group.
 type InstructionSection struct {
 	Name  string   `json:"name"`
 	Steps []string `json:"steps"`
 }
 
+// Issue routes an ambiguity, blocker, or informational finding to review.
 type Issue struct {
 	Severity string `json:"severity"`
 	Field    string `json:"field"`
 	Message  string `json:"message"`
 }
 
+// SourceNote preserves a referenced source note and its resolution state.
 type SourceNote struct {
 	Reference string `json:"reference"`
 	Text      string `json:"text,omitempty"`
 	State     string `json:"state"`
 }
 
+// Decision records a proposed or human-approved interpretation.
 type Decision struct {
 	Field     string `json:"field"`
 	State     string `json:"state"`

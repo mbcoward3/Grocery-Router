@@ -17,14 +17,20 @@ import (
 	"github.com/mbcoward3/grocery-router/internal/store"
 )
 
-var ErrConflict = errors.New("catalog conflict")
-var ErrNotVerified = errors.New("catalog recipe is not verified")
+var (
+	// ErrConflict means an immutable release or recipe identity already has different content.
+	ErrConflict = errors.New("catalog conflict")
+	// ErrNotVerified means a reviewable candidate cannot enter a household collection.
+	ErrNotVerified = errors.New("catalog recipe is not verified")
+)
 
 // Service owns catalog publication and household membership transactions.
 type Service struct{ db *sql.DB }
 
+// NewService constructs transactional catalog publication and adoption services.
 func NewService(db *sql.DB) *Service { return &Service{db: db} }
 
+// Release is one immutable approved catalog publication batch.
 type Release struct {
 	ID       string
 	Digest   string
@@ -32,6 +38,7 @@ type Release struct {
 	Recipes  []ReleaseRecipe
 }
 
+// ReleaseRecipe combines approved recipe truth, semantic profile, and evidence digests.
 type ReleaseRecipe struct {
 	Document             ingest.Document
 	Status               string
@@ -42,8 +49,10 @@ type ReleaseRecipe struct {
 	SelectedRecipeDigest string
 }
 
+// PublishResult reports whether an exact release caused database writes.
 type PublishResult struct{ Applied bool }
 
+// PublishRelease validates and transactionally applies an approved catalog release.
 func (s *Service) PublishRelease(ctx context.Context, rel Release) (PublishResult, error) {
 	if rel.ID == "" || rel.Digest == "" || len(rel.Recipes) == 0 {
 		return PublishResult{}, fmt.Errorf("release id, digest, and recipes are required")
@@ -134,12 +143,14 @@ func (s *Service) ensureNoConflicts(ctx context.Context, q *store.Queries, r Rel
 	return nil
 }
 
+// AdoptionResult returns the tenant membership and materialized household recipe.
 type AdoptionResult struct {
 	Membership         store.HouseholdCatalogMembership
 	MaterializedRecipe store.Recipe
 	Created            bool
 }
 
+// AddToHousehold atomically trials or adopts one verified catalog recipe.
 func (s *Service) AddToHousehold(ctx context.Context, householdID string, catalogRecipeID int64, state string) (AdoptionResult, error) {
 	if state != "trial" && state != "adopted" {
 		return AdoptionResult{}, fmt.Errorf("invalid membership state %q", state)
@@ -292,17 +303,17 @@ func ensureItem(ctx context.Context, q *store.Queries, householdID string, wante
 func ingredientParams(ctx context.Context, q *store.Queries, ing ingest.Ingredient, sectionID, itemID, position int64, units map[string]store.Unit) (store.CreateRecipeIngredientParams, error) {
 	p := store.CreateRecipeIngredientParams{SectionID: sectionID, GroceryItemID: sql.NullInt64{Int64: itemID, Valid: true}, Position: position, SourceText: ing.SourceText, QuantityKind: ing.Quantity.Kind, Preparation: nullString(ing.Preparation), IsOptional: boolInt(ing.Optional), IncludeOnGroceryList: boolInt(!ing.NonShopping), DisplayNote: nullString(ing.Note)}
 	if ing.Quantity.Kind != "unspecified" {
-		min, err := parseRat(ing.Quantity.Amount)
+		minimum, err := parseRat(ing.Quantity.Amount)
 		if err != nil {
 			return p, err
 		}
-		p.AmountMinNumerator, p.AmountMinDenominator = ratInts(min)
+		p.AmountMinNumerator, p.AmountMinDenominator = ratInts(minimum)
 		if ing.Quantity.Kind == "range" {
-			max, err := parseRat(ing.Quantity.Maximum)
+			maximum, err := parseRat(ing.Quantity.Maximum)
 			if err != nil {
 				return p, err
 			}
-			p.AmountMaxNumerator, p.AmountMaxDenominator = ratInts(max)
+			p.AmountMaxNumerator, p.AmountMaxDenominator = ratInts(maximum)
 		}
 		if ing.Quantity.Unit != "" {
 			u, err := ensureUnit(ctx, q, ing.Quantity.Unit, units)
@@ -340,11 +351,20 @@ func ensureUnit(ctx context.Context, q *store.Queries, key string, units map[str
 	return u, nil
 }
 func parseRat(v string) (*big.Rat, error) {
-	r, ok := new(big.Rat).SetString(strings.TrimSpace(v))
-	if !ok {
-		return nil, fmt.Errorf("invalid rational %q", v)
+	parts := strings.Fields(v)
+	if len(parts) == 1 {
+		r, ok := new(big.Rat).SetString(parts[0])
+		if ok {
+			return r, nil
+		}
+	} else if len(parts) == 2 {
+		whole, wholeOK := new(big.Rat).SetString(parts[0])
+		fraction, fractionOK := new(big.Rat).SetString(parts[1])
+		if wholeOK && fractionOK {
+			return new(big.Rat).Add(whole, fraction), nil
+		}
 	}
-	return r, nil
+	return nil, fmt.Errorf("invalid rational %q", v)
 }
 func ratInts(r *big.Rat) (sql.NullInt64, sql.NullInt64) {
 	return sql.NullInt64{Int64: r.Num().Int64(), Valid: true}, sql.NullInt64{Int64: r.Denom().Int64(), Valid: true}

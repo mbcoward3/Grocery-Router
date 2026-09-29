@@ -21,6 +21,21 @@ SELECT * FROM catalog_recipes WHERE id = $1;
 -- name: ListVerifiedCatalogRecipes :many
 SELECT * FROM catalog_recipes WHERE status = 'verified' ORDER BY name;
 
+-- name: ListFamilyRecipes :many
+SELECT r.*, hcm.state AS catalog_state
+FROM recipes r
+LEFT JOIN household_catalog_memberships hcm
+    ON hcm.household_id = r.household_id AND hcm.materialized_recipe_id = r.id
+WHERE r.household_id = sqlc.arg(household_id) AND r.status = 'verified'
+ORDER BY r.name;
+
+-- name: ListCatalogRecipes :many
+SELECT cr.*, hcm.state AS membership_state, hcm.materialized_recipe_id
+FROM catalog_recipes cr
+LEFT JOIN household_catalog_memberships hcm
+    ON hcm.catalog_recipe_id = cr.id AND hcm.household_id = sqlc.arg(household_id)
+ORDER BY cr.name;
+
 -- name: CreateCatalogRecipe :one
 INSERT INTO catalog_recipes (
     key, name, status, recipe_document, source_identity, semantic_profile,
@@ -38,6 +53,11 @@ INSERT INTO household_catalog_memberships (
     household_id, catalog_recipe_id, materialized_recipe_id, state, catalog_document_digest
 ) VALUES (sqlc.arg(household_id), $1, $2, $3, $4)
 RETURNING *;
+
+-- name: ListHouseholdCatalogMemberships :many
+SELECT * FROM household_catalog_memberships
+WHERE household_id = $1
+ORDER BY created_at;
 
 -- name: PromoteHouseholdCatalogMembership :one
 UPDATE household_catalog_memberships

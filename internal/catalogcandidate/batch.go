@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// BuildOptions identifies local evidence, untrusted proposals, and artifact output.
 type BuildOptions struct {
 	SourceRunDir string
 	ProposalDir  string
@@ -18,11 +19,13 @@ type BuildOptions struct {
 	Now          func() time.Time
 }
 
+// BatchReport returns the validated candidates and review index location.
 type BatchReport struct {
 	Candidates []Candidate
 	IndexPath  string
 }
 
+// ReviewIndex summarizes a deterministic candidate batch.
 type ReviewIndex struct {
 	FormatVersion  int               `json:"format_version"`
 	Implementation string            `json:"implementation"`
@@ -32,6 +35,7 @@ type ReviewIndex struct {
 	Candidates     []ReviewIndexItem `json:"candidates"`
 }
 
+// ReviewIndexItem points to one candidate and rendered review.
 type ReviewIndexItem struct {
 	CandidateID string `json:"candidate_id"`
 	CatalogKey  string `json:"catalog_key"`
@@ -43,6 +47,7 @@ type ReviewIndexItem struct {
 	Blockers    int    `json:"blockers"`
 }
 
+// BuildBatch validates source coverage and writes deterministic review artifacts.
 func BuildBatch(opts BuildOptions) (BatchReport, error) {
 	if opts.SourceRunDir == "" || opts.ProposalDir == "" || opts.OutputDir == "" {
 		return BatchReport{}, fmt.Errorf("source run, proposal, and output directories are required")
@@ -61,6 +66,10 @@ func BuildBatch(opts BuildOptions) (BatchReport, error) {
 	if len(proposalFiles) != len(nodes) {
 		return BatchReport{}, fmt.Errorf("proposal count %d does not match selected source recipes %d", len(proposalFiles), len(nodes))
 	}
+	proposalsByName := make(map[string]string, len(proposalFiles))
+	for _, proposalFile := range proposalFiles {
+		proposalsByName[filepath.Base(proposalFile)] = proposalFile
+	}
 	if err := os.MkdirAll(opts.OutputDir, 0o755); err != nil {
 		return BatchReport{}, fmt.Errorf("create output dir: %w", err)
 	}
@@ -71,14 +80,23 @@ func BuildBatch(opts BuildOptions) (BatchReport, error) {
 	review := ReviewIndex{FormatVersion: FormatVersion, Implementation: Implementation, GeneratedAt: generatedAt, SourceRunDir: opts.SourceRunDir, ProposalDir: opts.ProposalDir, Candidates: make([]ReviewIndexItem, 0, len(nodes))}
 	seenKeys := make(map[string]bool)
 	outCandidates := make([]Candidate, 0, len(nodes))
-	for i, node := range nodes {
-		proposalData, err := os.ReadFile(proposalFiles[i])
+	for _, node := range nodes {
+		proposalName := fmt.Sprintf("%s--%d.json", node.Artifact.Source.ID, node.Index)
+		proposalFile, ok := proposalsByName[proposalName]
+		if !ok && len(nodes) == 1 && len(proposalFiles) == 1 {
+			// A single-candidate fixture or handoff is unambiguous even when its file is renamed.
+			proposalFile, ok = proposalFiles[0], true
+		}
+		if !ok {
+			return BatchReport{}, fmt.Errorf("selected source recipe %s has no proposal %s", node.Artifact.Source.ID, proposalName)
+		}
+		proposalData, err := os.ReadFile(proposalFile)
 		if err != nil {
-			return BatchReport{}, fmt.Errorf("read proposal %s: %w", filepath.Base(proposalFiles[i]), err)
+			return BatchReport{}, fmt.Errorf("read proposal %s: %w", proposalName, err)
 		}
 		proposal, err := proposalFromBytes(proposalData)
 		if err != nil {
-			return BatchReport{}, fmt.Errorf("%s: %w", filepath.Base(proposalFiles[i]), err)
+			return BatchReport{}, fmt.Errorf("%s: %w", proposalName, err)
 		}
 		artifactData, err := os.ReadFile(filepath.Join(opts.SourceRunDir, node.ArtifactFile))
 		if err != nil {

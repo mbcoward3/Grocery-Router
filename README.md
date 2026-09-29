@@ -16,8 +16,9 @@ strict Markdown bootstrap and explicitly excludes Chicken and Dumplings.
 2. [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) — approved authentication phase
 3. [`RECIPE_SOURCE_PILOT_SPEC.md`](RECIPE_SOURCE_PILOT_SPEC.md) — approved standalone public-URL JSON-LD extraction pilot
 4. [`RECIPE_INTELLIGENCE_SPEC.md`](RECIPE_INTELLIGENCE_SPEC.md) — import-time Jev assessment contract
-5. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
-6. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
+5. [`RECIPE_ONBOARDING_SPEC.md`](RECIPE_ONBOARDING_SPEC.md) — shared catalog, review, publication, and household adoption
+6. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
+7. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
 
 The raw interview is archived at
 [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md). It is
@@ -53,6 +54,10 @@ task corpus-audit         # validate approved Markdown recipes
 task corpus-ingest        # migrate and load an empty PostgreSQL database
 task recipe-source-pilot       # fetch manifested Recipe JSON-LD to local inspectable output
 task recipe-intelligence-pilot # assess fetched and approved recipes with Jev
+task catalog-agent-inputs      # create compact inputs for bounded Pi workers
+task catalog-amplify           # run isolated low-cost Pi standardization workers
+task catalog-candidate-build   # validate and render reviewable candidates
+task catalog-publish           # transactionally publish a catalog release
 task migrate                   # migrate without loading the corpus
 task serve                # start the local JSON API
 task web-install          # install locked frontend dependencies

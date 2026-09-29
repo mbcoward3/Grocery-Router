@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Proposal is the strict untrusted JSON returned by a standardization worker.
 type Proposal struct {
 	Key                 string                      `json:"key"`
 	Name                string                      `json:"name"`
@@ -23,11 +24,13 @@ type Proposal struct {
 	Agent               AgentProvenance             `json:"agent,omitempty"`
 }
 
+// ProposalIngredientSection groups proposed ingredient interpretations.
 type ProposalIngredientSection struct {
 	Name        string               `json:"name"`
 	Ingredients []ProposalIngredient `json:"ingredients"`
 }
 
+// ProposalIngredient is one worker interpretation retaining its source line.
 type ProposalIngredient struct {
 	SourceText      string          `json:"source_text"`
 	SourceLine      string          `json:"source_line"`
@@ -42,6 +45,7 @@ type ProposalIngredient struct {
 	Issues          []Issue         `json:"issues"`
 }
 
+// DecodeProposal strictly decodes one untrusted worker response.
 func DecodeProposal(r io.Reader) (Proposal, error) {
 	data, err := io.ReadAll(r)
 	if err != nil {

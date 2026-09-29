@@ -2,6 +2,8 @@ import type { components } from './schema'
 
 export type ApiError = components['schemas']['APIError']
 export type RecipeSummary = components['schemas']['RecipeSummary']
+export type CatalogRecipeSummary = components['schemas']['CatalogRecipeSummary']
+export type CatalogRecipeDetail = components['schemas']['CatalogRecipeDetail']
 export type Week = components['schemas']['Week']
 export type RecipeDetail = components['schemas']['RecipeDetail']
 export type Groceries = components['schemas']['Groceries']
@@ -78,6 +80,21 @@ export function listRecipes(): Promise<{ recipes: RecipeSummary[] }> {
 
 export function getRecipe(recipeId: number): Promise<RecipeDetail> {
   return request(householdPath(`/recipes/${recipeId}`))
+}
+
+export function listCatalogRecipes(query = ''): Promise<{ recipes: CatalogRecipeSummary[] }> {
+  const suffix = query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ''
+  return request(`/catalog/recipes${suffix}`)
+}
+
+export function getCatalogRecipe(catalogRecipeId: number): Promise<CatalogRecipeDetail> {
+  return request(`/catalog/recipes/${catalogRecipeId}`)
+}
+
+export function setCatalogMembership(catalogRecipeId: number, state: 'trial' | 'adopted'): Promise<{ catalogRecipeId: number; state: 'trial' | 'adopted'; recipeId: number }> {
+  return request(householdPath(`/catalog/recipes/${catalogRecipeId}/membership`), {
+    method: 'POST', body: JSON.stringify({ state }),
+  })
 }
 
 export async function getCurrentWeek(): Promise<Week | null> {

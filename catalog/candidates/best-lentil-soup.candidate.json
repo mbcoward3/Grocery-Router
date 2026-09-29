@@ -1,0 +1,520 @@
+{
+  "format_version": 1,
+  "candidate_id": "lentil-soup#$/@graph[7]",
+  "catalog_key": "best-lentil-soup",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "lentil-soup",
+    "manifest_url": "https://cookieandkate.com/best-lentil-soup-recipe/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "lentil-soup.json",
+    "artifact_sha256": "501182d5f4b60aff86f040fa9de19a403351b4b4979a99398e48a0534e2c1015",
+    "requested_url": "https://cookieandkate.com/best-lentil-soup-recipe/",
+    "final_url": "https://cookieandkate.com/best-lentil-soup-recipe/",
+    "fetched_at": "2026-09-29T01:45:03.968760555Z",
+    "response_body_sha256": "19641f2f6d5e4198223cf3d0ca3c901938d84d7dad2ea427bb85995e338a9f31",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "5e9a86bcc30e064d79bc1f73f0cf73ad6c5e8a0c91d458b372950b269513e576",
+      "recipe_raw_sha256": "23f3d633aca42864db7ebbc9ef5e4c19c6ffd9765695ff2c718a1e70c1d62447",
+      "recipe_raw_canonical_sha256": "d22ffac4a93f026cf0c85a04b0c9b24678ec8c450e1d23685e2b21369a72176b"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "58e72cd048605732f8c5e2c5720ca202e0a2869d18956c4556ed151e4912f5f6",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Best Lentil Soup",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://cookieandkate.com/images/2019/01/best-lentil-soup-recipe-4-225x225.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "4 servings",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 10,
+      "max": 10
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "unresolved",
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "\u0026frac14; cup extra virgin olive oil",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "cup"
+          },
+          "item_phrase": "Olive Oil",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "olive-oil",
+            "name": "Olive Oil",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "extra virgin"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1 medium yellow or white onion, chopped",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Yellow Onion",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "yellow-onion",
+            "name": "Yellow Onion",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "medium; yellow or white onion"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "2 carrots, peeled and chopped",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Carrots",
+          "preparation": "peeled and chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "carrots",
+            "name": "Carrots",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "4 garlic cloves, pressed or minced",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "clove"
+          },
+          "item_phrase": "Garlic",
+          "preparation": "pressed or minced",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "2 teaspoons ground cumin",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Ground Cumin",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "ground-cumin",
+            "name": "Ground Cumin",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "1 teaspoon curry powder",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Curry Powder",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "curry-powder",
+            "name": "Curry Powder",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "\u0026frac12; teaspoon dried thyme",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Dried Thyme",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "dried-thyme",
+            "name": "Dried Thyme",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "1 large can (28 ounces) diced tomatoes, lightly drained",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "package": {
+              "count": "1",
+              "type": "can",
+              "size": "28",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Diced Tomatoes",
+          "preparation": "lightly drained",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "diced-tomatoes",
+            "name": "Diced Tomatoes",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[7]",
+              "message": "large can"
+            }
+          ]
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "1 cup brown or green lentils, picked over and rinsed",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "cup"
+          },
+          "item_phrase": "Brown Lentils",
+          "preparation": "picked over and rinsed",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "brown-lentils",
+            "name": "Brown Lentils",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[8]",
+              "message": "brown or green lentils"
+            }
+          ]
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "4 cups vegetable broth",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "cup"
+          },
+          "item_phrase": "Vegetable Broth",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "vegetable-broth",
+            "name": "Vegetable Broth",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "2 cups water",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Water",
+          "non_shopping": true,
+          "grocery_proposal": {
+            "state": "match",
+            "key": "water",
+            "name": "Water",
+            "store_section": "Non-shopping",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 11,
+          "source_text": "1 teaspoon salt, more to taste",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[11]",
+              "message": "more to taste"
+            }
+          ]
+        },
+        {
+          "source_line_index": 12,
+          "source_text": "Pinch of red pepper flakes",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Crushed Red Pepper",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "crushed-red-pepper",
+            "name": "Crushed Red Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[12]",
+              "message": "pinch"
+            }
+          ]
+        },
+        {
+          "source_line_index": 13,
+          "source_text": "Freshly ground black pepper, to taste",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Black Pepper",
+          "preparation": "freshly ground",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-pepper",
+            "name": "Black Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[13]",
+              "message": "to taste"
+            }
+          ]
+        },
+        {
+          "source_line_index": 14,
+          "source_text": "1 cup chopped fresh collard greens or kale, tough ribs removed",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "cup"
+          },
+          "item_phrase": "Collard Greens",
+          "preparation": "chopped; tough ribs removed",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "collard-greens",
+            "name": "Collard Greens",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[14]",
+              "message": "fresh collard greens or kale"
+            }
+          ]
+        },
+        {
+          "source_line_index": 15,
+          "source_text": "1 to 2 tablespoons lemon juice (\u0026frac12; to 1 medium lemon), to taste",
+          "quantity": {
+            "kind": "range",
+            "amount": "1",
+            "maximum": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Lemon Juice",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "lemon-juice",
+            "name": "Lemon Juice",
+            "store_section": "Condiments",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[15]",
+              "message": "½ to 1 medium lemon; to taste"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Warm the olive oil in a large Dutch oven or pot over medium heat. One-fourth cup olive oil may seem like a lot, but it adds a lovely richness and heartiness to this nutritious soup.",
+        "Once the oil is shimmering, add the chopped onion and carrot and cook, stirring often, until the onion has softened and is turning translucent, about 5 minutes.",
+        "Add the garlic, cumin, curry powder and thyme. Cook until fragrant while stirring constantly, about 30 seconds. Pour in the drained diced tomatoes and cook for a few more minutes, stirring often, in order to enhance their flavor.",
+        "Pour in the lentils, broth and the water. Add 1 teaspoon salt and a pinch of red pepper flakes. Season generously with freshly ground black pepper. Raise heat and bring the mixture to a boil, then partially cover the pot and reduce the heat to maintain a gentle simmer. Cook for 25 to 30 minutes, or until the lentils are tender but still hold their shape.",
+        "Transfer 2 cups of the soup to a blender. Securely fasten the lid, protect your hand from steam with a tea towel placed over the lid, and purée the soup until smooth. Pour the puréed soup back into the pot. (Or, use an immersion blender to blend a portion of the soup.)",
+        "Add the chopped greens and cook for 5 more minutes, or until the greens have softened to your liking. Remove the pot from the heat and stir in 1 tablespoon of lemon juice. Taste and season with more salt, pepper and/or lemon juice until the flavors really sing. For spicier soup, add another pinch or two of red pepper flakes.",
+        "Serve while hot. Leftovers will keep well for about 4 days in the refrigerator, or can be frozen for several months (just defrost before serving)."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[1]",
+      "message": "alternative: Source lists yellow or white onion; selected first-listed yellow onion as baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[5].grocery_item",
+      "message": "backfill: No exact existing item for curry powder; proposed new grocery item."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[7].grocery_item",
+      "message": "backfill: No exact existing item for diced tomatoes; proposed new grocery item."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[8]",
+      "message": "alternative: Source lists brown or green lentils; selected first-listed brown lentils as baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[8].grocery_item",
+      "message": "backfill: No exact existing item for brown lentils; proposed new grocery item."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[9].grocery_item",
+      "message": "backfill: No exact existing item for vegetable broth; proposed new grocery item."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[12].quantity",
+      "message": "unresolved: Pinch is not an allowed unit; quantity left unspecified."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[13].quantity",
+      "message": "unresolved: No exact quantity provided; to taste."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[14]",
+      "message": "alternative: Source lists collard greens or kale; selected first-listed collard greens as baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[14].grocery_item",
+      "message": "backfill: No exact existing item for collard greens; proposed new grocery item."
+    },
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[15]",
+      "message": "dual-unit: Source includes lemon juice tablespoons and medium lemon equivalent; used tablespoons as primary quantity."
+    },
+    {
+      "severity": "blocker",
+      "field": "unattended",
+      "message": "ambiguous: Cook time includes active stovetop work and simmering; unattended portion not clearly separable."
+    }
+  ],
+  "source_notes": [],
+  "decisions": [
+    {
+      "field": "yield",
+      "state": "unresolved",
+      "rationale": "rewritten: Used useful source yield '4 servings' from recipeYield array."
+    },
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed prepTime PT10M as hands-on time."
+    }
+  ]
+}

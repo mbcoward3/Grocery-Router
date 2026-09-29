@@ -20,11 +20,13 @@ var knownUnits = map[string]bool{
 	"ml": true, "milliliter": true, "milliliters": true, "l": true, "liter": true, "liters": true,
 	"oz": true, "ounce": true, "ounces": true, "lb": true, "lbs": true, "pound": true, "pounds": true,
 	"g": true, "gram": true, "grams": true, "kg": true, "kilogram": true, "kilograms": true,
-	"count": true, "clove": true, "cloves": true, "slice": true, "slices": true,
+	"count": true, "each": true, "clove": true, "cloves": true, "slice": true, "slices": true,
+	"leaf": true, "leaves": true,
 	"pinch": true, "pinches": true, "dash": true, "dashes": true, "bunch": true, "bunches": true,
 	"sprig": true, "sprigs": true, "can": true, "cans": true, "jar": true, "jars": true, "package": true, "packages": true,
 }
 
+// Validate enforces candidate structure and optional exact source-line coverage.
 func (c Candidate) Validate(sourceIngredientLines []string) error {
 	if c.FormatVersion != FormatVersion {
 		return fmt.Errorf("format_version = %d, want %d", c.FormatVersion, FormatVersion)
@@ -136,6 +138,7 @@ func (c Candidate) Validate(sourceIngredientLines []string) error {
 	return nil
 }
 
+// DecodeCandidate strictly decodes one committed candidate.
 func DecodeCandidate(data []byte) (Candidate, error) {
 	var c Candidate
 	dec := json.NewDecoder(strings.NewReader(string(data)))
@@ -208,12 +211,12 @@ func (q Quantity) validate() error {
 		}
 		return fmt.Errorf("invalid kind %q", q.Kind)
 	}
-	amount, ok := new(big.Rat).SetString(q.Amount)
+	amount, ok := parseCandidateRational(q.Amount)
 	if !ok || amount.Sign() <= 0 {
 		return fmt.Errorf("invalid amount %q", q.Amount)
 	}
 	if q.Kind == "range" {
-		maximum, ok := new(big.Rat).SetString(q.Maximum)
+		maximum, ok := parseCandidateRational(q.Maximum)
 		if !ok || maximum.Sign() <= 0 || amount.Cmp(maximum) > 0 {
 			return fmt.Errorf("invalid maximum %q", q.Maximum)
 		}
@@ -234,17 +237,36 @@ func (q Quantity) validate() error {
 			return fmt.Errorf("unknown package unit %q", q.Package.Unit)
 		}
 		if q.Package.Count != "" {
-			if _, ok := new(big.Rat).SetString(q.Package.Count); !ok {
+			if _, ok := parseCandidateRational(q.Package.Count); !ok {
 				return fmt.Errorf("invalid package count %q", q.Package.Count)
 			}
 		}
 		if q.Package.Size != "" {
-			if _, ok := new(big.Rat).SetString(q.Package.Size); !ok {
+			if _, ok := parseCandidateRational(q.Package.Size); !ok {
 				return fmt.Errorf("invalid package size %q", q.Package.Size)
 			}
 		}
 	}
 	return nil
+}
+
+func parseCandidateRational(value string) (*big.Rat, bool) {
+	parts := strings.Fields(value)
+	if len(parts) == 1 {
+		return new(big.Rat).SetString(parts[0])
+	}
+	if len(parts) != 2 {
+		return nil, false
+	}
+	whole, ok := new(big.Rat).SetString(parts[0])
+	if !ok {
+		return nil, false
+	}
+	fraction, ok := new(big.Rat).SetString(parts[1])
+	if !ok {
+		return nil, false
+	}
+	return new(big.Rat).Add(whole, fraction), true
 }
 
 func (g GroceryProposal) validate() error {

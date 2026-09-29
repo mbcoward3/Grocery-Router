@@ -1,0 +1,152 @@
+{
+  "format_version": 1,
+  "candidate_id": "three-ingredient-teriyaki-chicken#$",
+  "catalog_key": "3-ingredient-teriyaki-chicken",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "three-ingredient-teriyaki-chicken",
+    "manifest_url": "https://tasty.co/recipe/3-ingredient-teriyaki-chicken",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "three-ingredient-teriyaki-chicken.json",
+    "artifact_sha256": "5e15d1259e95a9e89438cb38ad3db76f5cf1504c795369b660c80ccb9b3074cf",
+    "requested_url": "https://tasty.co/recipe/3-ingredient-teriyaki-chicken",
+    "final_url": "https://tasty.co/recipe/3-ingredient-teriyaki-chicken",
+    "fetched_at": "2026-09-29T01:45:03.438002903Z",
+    "response_body_sha256": "40831d1424f24efcca7c76a1e2e1571be0659013e1f88f1d76dab1a2d6edb233",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$",
+      "json_ld_block_sha256": "2bc57d7058f948b9b9d3f17610de7980be370ec56c0de1b477462e6399d84907",
+      "recipe_raw_sha256": "0d11b4fbc18ea7b48d90d064726e9708ce6fd4b9b8422f5115bfb643e0a12860",
+      "recipe_raw_canonical_sha256": "12b092be2c6d85c87a1449277c20bb9f46ad9822eca1e7980141ee45a76e49fa"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "c2fecdb66dd2b7fc9ec1b03b9ba06c94057c5ef1450b7a74c5409133effac9b0",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "3-Ingredient Teriyaki Chicken Recipe by Tasty",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://img.buzzfeed.com/thumbnailer-prod-us-east-1/1d47125afffa461a9711758f632306b8/BFV12484_3-IngredientDinners-FB1080SQ.jpg?resize=1200:*",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "4 serving",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 30,
+      "max": 30
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "unresolved",
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2 lb boneless, skinless chicken thighs, cubed",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "lb"
+          },
+          "item_phrase": "Boneless Skinless Chicken Thighs",
+          "preparation": "cubed",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "boneless-skinless-chicken-thighs",
+            "name": "Boneless Skinless Chicken Thighs",
+            "store_section": "Meat",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "boneless, skinless"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1 cup soy sauce",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "cup"
+          },
+          "item_phrase": "Soy Sauce",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "soy-sauce",
+            "name": "Soy Sauce",
+            "store_section": "Condiments",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "½ cup brown sugar",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Brown Sugar",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "brown-sugar",
+            "name": "Brown Sugar",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Heat a large nonstick pan over medium-high heat. Add the chicken and sear until golden brown on both sides.",
+        "Add the soy sauce and brown sugar and stir to combine, then bring to a boil. Cook until the sauce reduces and coats the chicken.",
+        "Serve with rice, if desired.",
+        "Enjoy!"
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "hands_on",
+      "message": "ambiguous: Cook time is active stovetop work; prep time and cook time were combined as hands-on."
+    }
+  ],
+  "source_notes": [],
+  "decisions": []
+}

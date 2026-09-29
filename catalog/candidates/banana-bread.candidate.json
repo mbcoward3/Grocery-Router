@@ -1,0 +1,395 @@
+{
+  "format_version": 1,
+  "candidate_id": "love-and-lemons-banana-bread#$/@graph[7]",
+  "catalog_key": "banana-bread",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "love-and-lemons-banana-bread",
+    "manifest_url": "https://www.loveandlemons.com/banana-bread/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "love-and-lemons-banana-bread.json",
+    "artifact_sha256": "2e43a856f42b1e4437e2efb04ebda4a4792c55077b36096daa80c2cb83073986",
+    "requested_url": "https://www.loveandlemons.com/banana-bread/",
+    "final_url": "https://www.loveandlemons.com/banana-bread/",
+    "fetched_at": "2026-09-29T01:45:09.376325874Z",
+    "response_body_sha256": "2312b423a85fa84e4116b650be3f8e7d28bcc120f4d32509c7acd9a9a2d14f76",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "58f2c82829cb8620a420e9eea6aee16ecd42a5f89bdb15ee8979b78e8d779bac",
+      "recipe_raw_sha256": "8b7da6eb474b40e25642e498ed018e813ac33095688f221677a1e2d81e0a4f51",
+      "recipe_raw_canonical_sha256": "91f191e59a7749fbcf7dd8768c89bce87766f4a56d7813a88293ed57c9fdb1da"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "44c53e9e96058404a028584bf4055a7400eae0c1c72172350b62eb96a560fb13",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Banana Bread",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://cdn.loveandlemons.com/wp-content/uploads/2023/07/banana-bread-recipe-500x500.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "8",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 15,
+      "max": 15
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 55,
+      "max": 55
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2 cups mashed very ripe banana (about 4 large)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Banana",
+          "preparation": "mashed very ripe",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "banana",
+            "name": "Banana",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "about 4 large"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "½ cup cane sugar or brown sugar",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Cane Sugar",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "cane-sugar",
+            "name": "Cane Sugar",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "brown sugar alternative"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "½ cup melted butter or vegetable oil (plus more for the pan)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Butter",
+          "preparation": "melted",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "butter",
+            "name": "Butter",
+            "store_section": "Dairy",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[2]",
+              "message": "vegetable oil alternative; plus more for the pan"
+            }
+          ]
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "2  large eggs",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Eggs",
+          "preparation": "large",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "eggs",
+            "name": "Eggs",
+            "store_section": "Dairy",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "1 teaspoon vanilla extract",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Vanilla Extract",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "vanilla-extract",
+            "name": "Vanilla Extract",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "1½ cups all-purpose flour (spooned and leveled)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1 1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "All-Purpose Flour",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "all-purpose-flour",
+            "name": "All-Purpose Flour",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[5]",
+              "message": "spooned and leveled"
+            }
+          ]
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "1 teaspoon baking soda",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Baking Soda",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "baking-soda",
+            "name": "Baking Soda",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "½ teaspoon sea salt",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "preparation": "sea",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "½ teaspoon cinnamon",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Cinnamon",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "cinnamon",
+            "name": "Cinnamon",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "¼ teaspoon nutmeg",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "tsp"
+          },
+          "item_phrase": "Nutmeg",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "nutmeg",
+            "name": "Nutmeg",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "½ cup chopped walnuts (plus 2 tablespoons for topping)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Walnuts",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "walnuts",
+            "name": "Walnuts",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[10]",
+              "message": "plus 2 tablespoons for topping"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Preheat the oven to 350°F and grease an 8x4 or 9x5-inch loaf pan.",
+        "In a large bowl, whisk together the mashed banana, sugar, butter, eggs, and vanilla.",
+        "In a medium bowl, whisk together the flour, baking soda, salt, cinnamon, and nutmeg.",
+        "Add the dry ingredients to the wet ingredients and stir until just combined. Don’t overmix. Fold in the ½ cup walnuts.",
+        "Pour the batter into the prepared pan and top with the remaining 2 tablespoons walnuts.",
+        "Bake for 50 to 60 minutes, or until a toothpick inserted comes out clean and the top springs back to the touch. I like to check the loaf after 40 minutes. If the top is golden brown, I cover it with foil for the remaining bake time to prevent further browning."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[0].grocery_item",
+      "message": "backfill: Proposed new grocery item for banana."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[1]",
+      "message": "alternative: Source lists cane sugar or brown sugar; selected cane sugar as first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[1].grocery_item",
+      "message": "backfill: Proposed new grocery item for cane sugar."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[2]",
+      "message": "alternative: Source lists melted butter or vegetable oil; selected butter as first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[4].grocery_item",
+      "message": "backfill: Proposed new grocery item for vanilla extract."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[6].grocery_item",
+      "message": "backfill: Proposed new grocery item for baking soda."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[8].grocery_item",
+      "message": "backfill: Proposed new grocery item for cinnamon."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[9].grocery_item",
+      "message": "backfill: Proposed new grocery item for nutmeg."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[10].grocery_item",
+      "message": "backfill: Proposed new grocery item for walnuts."
+    }
+  ],
+  "source_notes": [],
+  "decisions": [
+    {
+      "field": "$.hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed prepTime PT15M as hands-on time."
+    },
+    {
+      "field": "$.unattended",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed cookTime PT55M as unattended baking time."
+    },
+    {
+      "field": "$.ingredient_sections[0].ingredients[2].grocery_item",
+      "state": "unresolved",
+      "rationale": "conflict-resolved: Used existing butter item for first-listed butter alternative rather than existing vegetable oil."
+    },
+    {
+      "field": "$.ingredient_sections[0].ingredients[7].grocery_item",
+      "state": "unresolved",
+      "rationale": "conflict-resolved: Used existing salt item for sea salt because semantics match the source ingredient."
+    }
+  ]
+}

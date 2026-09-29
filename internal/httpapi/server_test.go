@@ -2,7 +2,9 @@ package httpapi_test
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -12,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mbcoward3/grocery-router/internal/catalog"
 	"github.com/mbcoward3/grocery-router/internal/httpapi"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
 	"github.com/mbcoward3/grocery-router/internal/testdatabase"
@@ -190,6 +193,69 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 	}
 }
 
+func TestSharedCatalogPreviewTrialAndGroceryProvenance(t *testing.T) {
+	db := testDB(t)
+	service := catalog.NewService(db)
+	preview := catalogTestRelease("preview-release", "review-cake", "reviewable")
+	if _, err := service.PublishRelease(context.Background(), preview); err != nil {
+		t.Fatal(err)
+	}
+	verified := catalogTestRelease("verified-release", "shared-cake", "verified")
+	if _, err := service.PublishRelease(context.Background(), verified); err != nil {
+		t.Fatal(err)
+	}
+	handler := handlerForDB(db)
+	list := request(t, handler, http.MethodGet, "/api/v2/catalog/recipes", "")
+	if list.Code != http.StatusOK || len(decodeObject(t, list)["recipes"].([]any)) != 2 {
+		t.Fatalf("catalog list status=%d body=%s", list.Code, list.Body.String())
+	}
+	var previewID, verifiedID int64
+	for _, value := range decodeObject(t, list)["recipes"].([]any) {
+		row := value.(map[string]any)
+		if row["status"] == "reviewable" {
+			previewID = int64(row["catalogId"].(float64))
+		} else {
+			verifiedID = int64(row["catalogId"].(float64))
+		}
+	}
+	rejected := request(t, handler, http.MethodPost, fmt.Sprintf("/api/v2/households/%s/catalog/recipes/%d/membership", cowardID, previewID), `{"state":"trial"}`)
+	if rejected.Code != http.StatusConflict {
+		t.Fatalf("reviewable trial status=%d body=%s", rejected.Code, rejected.Body.String())
+	}
+	trial := request(t, handler, http.MethodPost, fmt.Sprintf("/api/v2/households/%s/catalog/recipes/%d/membership", cowardID, verifiedID), `{"state":"trial"}`)
+	if trial.Code != http.StatusOK {
+		t.Fatalf("verified trial status=%d body=%s", trial.Code, trial.Body.String())
+	}
+	recipeID := int64(decodeObject(t, trial)["recipeId"].(float64))
+	family := request(t, handler, http.MethodGet, fmt.Sprintf("/api/v2/households/%s/recipes", cowardID), "")
+	foundTrial := false
+	for _, value := range decodeObject(t, family)["recipes"].([]any) {
+		row := value.(map[string]any)
+		foundTrial = foundTrial || (int64(row["id"].(float64)) == recipeID && row["collectionState"] == "trial")
+	}
+	if !foundTrial {
+		t.Fatal("materialized trial was not visible in the family collection")
+	}
+	if response := request(t, handler, http.MethodPost, fmt.Sprintf("/api/v2/households/%s/week/current/generate", cowardID), `{"recipeCount":1}`); response.Code != http.StatusOK {
+		t.Fatalf("generate week: %s", response.Body.String())
+	}
+	added := request(t, handler, http.MethodPost, fmt.Sprintf("/api/v2/households/%s/week/current/recipes", cowardID), fmt.Sprintf(`{"recipeId":%d}`, recipeID))
+	if added.Code != http.StatusOK {
+		t.Fatalf("add catalog trial: %s", added.Body.String())
+	}
+	groceries := request(t, handler, http.MethodGet, fmt.Sprintf("/api/v2/households/%s/week/current/groceries", cowardID), "")
+	foundContribution := false
+	for _, value := range decodeObject(t, groceries)["lines"].([]any) {
+		line := value.(map[string]any)
+		if line["name"] == "Catalog Test Flour" {
+			foundContribution = len(line["recipeNames"].([]any)) == 1
+		}
+	}
+	if !foundContribution {
+		t.Fatal("catalog trial grocery requirement or recipe provenance was lost")
+	}
+}
+
 func TestRecipesAPIAndRequestValidation(t *testing.T) {
 	handler := testHandler(t)
 
@@ -211,6 +277,19 @@ func TestRecipesAPIAndRequestValidation(t *testing.T) {
 	if wrongMethod.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("wrong method status = %d", wrongMethod.Code)
 	}
+}
+
+const cowardID = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+
+func catalogTestRelease(id, key, status string) catalog.Release {
+	document := ingest.Document{FormatVersion: 1, Key: key, Name: "Catalog " + key, Status: "verified", ApprovedOn: "2026-09-29", Source: ingest.Source{Relationship: "source", Attribution: "Catalog test", URL: "https://example.com/" + key, CheckedOn: "2026-09-29"}, IngredientSections: []ingest.IngredientSection{{Name: "Ingredients", Ingredients: []ingest.Ingredient{{SourceText: "1 cup catalog test flour", GroceryItem: ingest.GroceryItem{Key: "catalog-test-flour", Name: "Catalog Test Flour", StoreSection: ingest.StoreSection{Key: "baking", Name: "Baking"}, ShoppingMode: "measured"}, Quantity: ingest.Quantity{Kind: "exact", Amount: "1", Unit: "cup"}}}}}, InstructionSections: []ingest.InstructionSection{{Name: "Method", Steps: []string{"Mix."}}}}
+	documentJSON, _ := json.Marshal(document)
+	return catalog.Release{ID: id, Digest: testDigest([]byte(id)), Manifest: json.RawMessage(`{"format_version":1}`), Recipes: []catalog.ReleaseRecipe{{Document: document, Status: status, SourceIdentity: json.RawMessage(`{"kind":"test"}`), SemanticProfile: json.RawMessage(`{"answers":{}}`), DocumentDigest: testDigest(documentJSON), SourceIdentityDigest: testDigest([]byte(id + "source")), SelectedRecipeDigest: testDigest([]byte(id + "selected"))}}}
+}
+
+func testDigest(value []byte) string {
+	digest := sha256.Sum256(value)
+	return "sha256:" + hex.EncodeToString(digest[:])
 }
 
 func testHandler(t *testing.T) http.Handler {

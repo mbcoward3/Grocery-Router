@@ -576,3 +576,21 @@ allergen and dietary safety are not delegated to Jev. Runtime semantic reranking
 
 **Revisit when:** Import-time results have been labeled and calibrated, and observed search or
 planning limitations justify a separately approved runtime phase.
+
+## D041 — Separate the shared recipe catalog from household adoption
+
+**Decision:** Reviewed recipes discovered after the initial PDF corpus enter a global authenticated
+catalog first. A household explicitly adds a verified catalog recipe as a trial or adopts it; the
+adoption transaction materializes the approved snapshot through the existing household recipe and
+grocery model.
+
+**Why:** Future tenants should be able to browse useful, semantically rich recipes without every
+candidate immediately becoming family truth. A reviewed snapshot preserves deterministic groceries
+and retained weeks while allowing catalog discovery to be shared.
+
+**Consequence:** Generated candidates and reviewable development previews cannot enter weeks. Catalog
+publication is versioned and model-free; household trial/adoption is separately tenant-scoped. The
+PDF ledger continues controlling only initial Coward-household membership.
+
+**Revisit when:** Catalog revision synchronization, household recipe customization, or public
+anonymous access receives its own conflict and provenance contract.

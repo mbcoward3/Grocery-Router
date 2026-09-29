@@ -12,6 +12,7 @@ import (
 	"github.com/mbcoward3/grocery-router/internal/recipepilot"
 )
 
+// SourceNode associates one selected Recipe node with its source artifact.
 type SourceNode struct {
 	ArtifactFile string
 	Artifact     recipepilot.SourceArtifact
@@ -19,6 +20,7 @@ type SourceNode struct {
 	Recipe       recipepilot.RecipeCandidate
 }
 
+// ReadSourceRun validates a completed pilot run and returns every selected Recipe node.
 func ReadSourceRun(dir string) ([]byte, recipepilot.RunIndex, []SourceNode, error) {
 	indexPath := filepath.Join(dir, "index.json")
 	indexData, err := os.ReadFile(indexPath)
@@ -62,6 +64,7 @@ func ReadSourceRun(dir string) ([]byte, recipepilot.RunIndex, []SourceNode, erro
 	return indexData, index, nodes, nil
 }
 
+// BuildSourceIdentity computes immutable evidence provenance and literal ingredient lines.
 func BuildSourceIdentity(indexData []byte, index recipepilot.RunIndex, node SourceNode, artifactBytes []byte) (SourceIdentity, []string, error) {
 	if node.Artifact.Fetch == nil {
 		return SourceIdentity{}, nil, fmt.Errorf("artifact %s has no fetch metadata", node.ArtifactFile)
@@ -125,6 +128,13 @@ func sortedJSONFiles(dir string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	sort.Strings(matches)
-	return matches, nil
+	filtered := matches[:0]
+	for _, match := range matches {
+		if filepath.Base(match) == "run.json" {
+			continue
+		}
+		filtered = append(filtered, match)
+	}
+	sort.Strings(filtered)
+	return filtered, nil
 }

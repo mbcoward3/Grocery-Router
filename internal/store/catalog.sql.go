@@ -9,6 +9,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"time"
 )
 
 const createCatalogAppliedRelease = `-- name: CreateCatalogAppliedRelease :one
@@ -280,6 +281,178 @@ func (q *Queries) GetHouseholdCatalogMembership(ctx context.Context, arg GetHous
 		&i.UpdatedAt,
 	)
 	return i, err
+}
+
+const listCatalogRecipes = `-- name: ListCatalogRecipes :many
+SELECT cr.id, cr.key, cr.name, cr.status, cr.recipe_document, cr.source_identity, cr.semantic_profile, cr.source_url, cr.source_attribution, cr.document_digest, cr.source_identity_digest, cr.selected_recipe_digest, cr.release_id, cr.release_digest, cr.published_at, hcm.state AS membership_state, hcm.materialized_recipe_id
+FROM catalog_recipes cr
+LEFT JOIN household_catalog_memberships hcm
+    ON hcm.catalog_recipe_id = cr.id AND hcm.household_id = $1
+ORDER BY cr.name
+`
+
+type ListCatalogRecipesRow struct {
+	ID                   int64           `db:"id" json:"id"`
+	Key                  string          `db:"key" json:"key"`
+	Name                 string          `db:"name" json:"name"`
+	Status               string          `db:"status" json:"status"`
+	RecipeDocument       json.RawMessage `db:"recipe_document" json:"recipe_document"`
+	SourceIdentity       json.RawMessage `db:"source_identity" json:"source_identity"`
+	SemanticProfile      json.RawMessage `db:"semantic_profile" json:"semantic_profile"`
+	SourceUrl            sql.NullString  `db:"source_url" json:"source_url"`
+	SourceAttribution    string          `db:"source_attribution" json:"source_attribution"`
+	DocumentDigest       string          `db:"document_digest" json:"document_digest"`
+	SourceIdentityDigest string          `db:"source_identity_digest" json:"source_identity_digest"`
+	SelectedRecipeDigest string          `db:"selected_recipe_digest" json:"selected_recipe_digest"`
+	ReleaseID            string          `db:"release_id" json:"release_id"`
+	ReleaseDigest        string          `db:"release_digest" json:"release_digest"`
+	PublishedAt          time.Time       `db:"published_at" json:"published_at"`
+	MembershipState      sql.NullString  `db:"membership_state" json:"membership_state"`
+	MaterializedRecipeID sql.NullInt64   `db:"materialized_recipe_id" json:"materialized_recipe_id"`
+}
+
+func (q *Queries) ListCatalogRecipes(ctx context.Context, householdID string) ([]ListCatalogRecipesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCatalogRecipes, householdID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListCatalogRecipesRow{}
+	for rows.Next() {
+		var i ListCatalogRecipesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Key,
+			&i.Name,
+			&i.Status,
+			&i.RecipeDocument,
+			&i.SourceIdentity,
+			&i.SemanticProfile,
+			&i.SourceUrl,
+			&i.SourceAttribution,
+			&i.DocumentDigest,
+			&i.SourceIdentityDigest,
+			&i.SelectedRecipeDigest,
+			&i.ReleaseID,
+			&i.ReleaseDigest,
+			&i.PublishedAt,
+			&i.MembershipState,
+			&i.MaterializedRecipeID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listFamilyRecipes = `-- name: ListFamilyRecipes :many
+SELECT r.id, r.key, r.name, r.status, r.image_url, r.yield_text, r.hands_on_min_minutes, r.hands_on_max_minutes, r.unattended_min_minutes, r.unattended_max_minutes, r.verified_at, r.created_at, r.updated_at, r.household_id, hcm.state AS catalog_state
+FROM recipes r
+LEFT JOIN household_catalog_memberships hcm
+    ON hcm.household_id = r.household_id AND hcm.materialized_recipe_id = r.id
+WHERE r.household_id = $1 AND r.status = 'verified'
+ORDER BY r.name
+`
+
+type ListFamilyRecipesRow struct {
+	ID                   int64          `db:"id" json:"id"`
+	Key                  string         `db:"key" json:"key"`
+	Name                 string         `db:"name" json:"name"`
+	Status               string         `db:"status" json:"status"`
+	ImageUrl             sql.NullString `db:"image_url" json:"image_url"`
+	YieldText            sql.NullString `db:"yield_text" json:"yield_text"`
+	HandsOnMinMinutes    sql.NullInt64  `db:"hands_on_min_minutes" json:"hands_on_min_minutes"`
+	HandsOnMaxMinutes    sql.NullInt64  `db:"hands_on_max_minutes" json:"hands_on_max_minutes"`
+	UnattendedMinMinutes sql.NullInt64  `db:"unattended_min_minutes" json:"unattended_min_minutes"`
+	UnattendedMaxMinutes sql.NullInt64  `db:"unattended_max_minutes" json:"unattended_max_minutes"`
+	VerifiedAt           sql.NullString `db:"verified_at" json:"verified_at"`
+	CreatedAt            string         `db:"created_at" json:"created_at"`
+	UpdatedAt            string         `db:"updated_at" json:"updated_at"`
+	HouseholdID          string         `db:"household_id" json:"household_id"`
+	CatalogState         sql.NullString `db:"catalog_state" json:"catalog_state"`
+}
+
+func (q *Queries) ListFamilyRecipes(ctx context.Context, householdID string) ([]ListFamilyRecipesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listFamilyRecipes, householdID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListFamilyRecipesRow{}
+	for rows.Next() {
+		var i ListFamilyRecipesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Key,
+			&i.Name,
+			&i.Status,
+			&i.ImageUrl,
+			&i.YieldText,
+			&i.HandsOnMinMinutes,
+			&i.HandsOnMaxMinutes,
+			&i.UnattendedMinMinutes,
+			&i.UnattendedMaxMinutes,
+			&i.VerifiedAt,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.HouseholdID,
+			&i.CatalogState,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listHouseholdCatalogMemberships = `-- name: ListHouseholdCatalogMemberships :many
+SELECT household_id, catalog_recipe_id, materialized_recipe_id, state, catalog_document_digest, created_at, updated_at FROM household_catalog_memberships
+WHERE household_id = $1
+ORDER BY created_at
+`
+
+func (q *Queries) ListHouseholdCatalogMemberships(ctx context.Context, householdID string) ([]HouseholdCatalogMembership, error) {
+	rows, err := q.db.QueryContext(ctx, listHouseholdCatalogMemberships, householdID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []HouseholdCatalogMembership{}
+	for rows.Next() {
+		var i HouseholdCatalogMembership
+		if err := rows.Scan(
+			&i.HouseholdID,
+			&i.CatalogRecipeID,
+			&i.MaterializedRecipeID,
+			&i.State,
+			&i.CatalogDocumentDigest,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listVerifiedCatalogRecipes = `-- name: ListVerifiedCatalogRecipes :many

@@ -9,6 +9,7 @@ import { AppShell } from './ui/app-shell'
 import { GroceriesPage } from './features/groceries/groceries-page'
 import { HistoricalWeekPage, HistoryPage } from './features/history/history-page'
 import { RecipePage } from './features/recipe/recipe-page'
+import { SharedRecipePage } from './features/recipe/shared-recipe-page'
 import { RecipesPage } from './features/recipes/recipes-page'
 import { WeekPage } from './features/week/week-page'
 
@@ -40,9 +41,10 @@ const groceriesRoute = createRoute({
 const recipesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/recipes',
-  validateSearch: (search: Record<string, unknown>): { q?: string } => (
-    typeof search.q === 'string' && search.q.length > 0 ? { q: search.q } : {}
-  ),
+  validateSearch: (search: Record<string, unknown>): { q?: string; scope?: 'family' | 'shared' } => ({
+    ...(typeof search.q === 'string' && search.q.length > 0 ? { q: search.q } : {}),
+    ...(search.scope === 'shared' || search.scope === 'family' ? { scope: search.scope } : {}),
+  }),
   component: RecipesPage,
 })
 
@@ -56,6 +58,15 @@ const historicalWeekRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/history/$weekId',
   component: HistoricalWeekPage,
+})
+
+const sharedRecipeRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/recipes/shared/$catalogRecipeId',
+  validateSearch: (search: Record<string, unknown>): { q?: string } => (
+    typeof search.q === 'string' && search.q.length > 0 ? { q: search.q } : {}
+  ),
+  component: SharedRecipePage,
 })
 
 const recipeRoute = createRoute({
@@ -92,6 +103,7 @@ const routeTree = rootRoute.addChildren([
   recipesRoute,
   historyRoute,
   historicalWeekRoute,
+  sharedRecipeRoute,
   recipeRoute,
 ])
 
