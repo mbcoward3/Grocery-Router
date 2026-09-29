@@ -196,8 +196,11 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 func TestSharedCatalogPreviewTrialAndGroceryProvenance(t *testing.T) {
 	db := testDB(t)
 	service := catalog.NewService(db)
-	preview := catalogTestRelease("preview-release", "review-cake", "reviewable")
-	if _, err := service.PublishRelease(context.Background(), preview); err != nil {
+	preview, manifestBytes, err := catalog.LoadReviewManifest("../..", "catalog/releases/initial-review-2026-09-29.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.PublishReviewManifest(context.Background(), "../..", preview, manifestBytes); err != nil {
 		t.Fatal(err)
 	}
 	verified := catalogTestRelease("verified-release", "shared-cake", "verified")
@@ -206,7 +209,7 @@ func TestSharedCatalogPreviewTrialAndGroceryProvenance(t *testing.T) {
 	}
 	handler := handlerForDB(db)
 	list := request(t, handler, http.MethodGet, "/api/v2/catalog/recipes", "")
-	if list.Code != http.StatusOK || len(decodeObject(t, list)["recipes"].([]any)) != 2 {
+	if list.Code != http.StatusOK || len(decodeObject(t, list)["recipes"].([]any)) != 18 {
 		t.Fatalf("catalog list status=%d body=%s", list.Code, list.Body.String())
 	}
 	var previewID, verifiedID int64

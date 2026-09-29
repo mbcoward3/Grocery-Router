@@ -141,14 +141,24 @@ func catalogSummaryFromRow(row store.ListCatalogRecipesRow) (catalogRecipeSummar
 func catalogSummary(id int64, key, name, status string, document, profile json.RawMessage) (catalogRecipeSummary, error) {
 	result := catalogRecipeSummary{CatalogID: id, Key: key, Name: name, Status: status, Facets: semanticFacets(profile)}
 	if status == "reviewable" {
-		candidate, err := catalogcandidate.DecodeCandidate(document)
-		if err != nil {
-			return result, err
+		candidate, candidateErr := catalogcandidate.DecodeCandidate(document)
+		if candidateErr == nil {
+			result.ImageURL = stringPointer(candidate.ImageURL.Value)
+			result.Yield = stringPointer(candidate.Yield.Value)
+			result.HandsOn = candidateDuration(candidate.HandsOn.Value)
+			result.Unattended = candidateDuration(candidate.Unattended.Value)
+			return result, nil
 		}
-		result.ImageURL = stringPointer(candidate.ImageURL.Value)
-		result.Yield = stringPointer(candidate.Yield.Value)
-		result.HandsOn = candidateDuration(candidate.HandsOn.Value)
-		result.Unattended = candidateDuration(candidate.Unattended.Value)
+		// Programmatic review fixtures and future review migrations may use the
+		// approved document shape while the outer catalog status remains reviewable.
+		var doc ingest.Document
+		if err := json.Unmarshal(document, &doc); err != nil {
+			return result, candidateErr
+		}
+		result.ImageURL = stringPointer(doc.ImageURL)
+		result.Yield = stringPointer(doc.Yield)
+		result.HandsOn = ingestDuration(doc.HandsOn)
+		result.Unattended = ingestDuration(doc.Unattended)
 		return result, nil
 	}
 	var doc ingest.Document
@@ -169,29 +179,28 @@ func catalogDetailFromRow(row store.CatalogRecipe) (catalogRecipeDetail, error) 
 	}
 	detail := catalogRecipeDetail{catalogRecipeSummary: summary, Sources: []recipeSource{{Relationship: "source", Attribution: row.SourceAttribution, URL: nullableString(row.SourceUrl), Primary: true}}, Ingredients: []recipeIngredientSection{}, Instructions: []recipeInstructionSection{}}
 	if row.Status == "reviewable" {
-		candidate, err := catalogcandidate.DecodeCandidate(row.RecipeDocument)
-		if err != nil {
-			return detail, err
-		}
-		id := int64(1)
-		for _, section := range candidate.IngredientSections {
-			out := recipeIngredientSection{Name: section.Name, Ingredients: []recipeIngredient{}}
-			for _, ingredient := range section.Ingredients {
-				item := ingredient.GroceryProposal.Name
-				out.Ingredients = append(out.Ingredients, recipeIngredient{ID: id, SourceText: ingredient.SourceText, Preparation: stringPointer(ingredient.Preparation), Optional: ingredient.Optional, ShoppingItem: stringPointer(item)})
-				id++
+		candidate, candidateErr := catalogcandidate.DecodeCandidate(row.RecipeDocument)
+		if candidateErr == nil {
+			id := int64(1)
+			for _, section := range candidate.IngredientSections {
+				out := recipeIngredientSection{Name: section.Name, Ingredients: []recipeIngredient{}}
+				for _, ingredient := range section.Ingredients {
+					item := ingredient.GroceryProposal.Name
+					out.Ingredients = append(out.Ingredients, recipeIngredient{ID: id, SourceText: ingredient.SourceText, Preparation: stringPointer(ingredient.Preparation), Optional: ingredient.Optional, ShoppingItem: stringPointer(item)})
+					id++
+				}
+				detail.Ingredients = append(detail.Ingredients, out)
 			}
-			detail.Ingredients = append(detail.Ingredients, out)
-		}
-		for _, section := range candidate.InstructionSections {
-			out := recipeInstructionSection{Name: section.Name, Steps: []recipeStep{}}
-			for _, step := range section.Steps {
-				out.Steps = append(out.Steps, recipeStep{ID: id, Instruction: step})
-				id++
+			for _, section := range candidate.InstructionSections {
+				out := recipeInstructionSection{Name: section.Name, Steps: []recipeStep{}}
+				for _, step := range section.Steps {
+					out.Steps = append(out.Steps, recipeStep{ID: id, Instruction: step})
+					id++
+				}
+				detail.Instructions = append(detail.Instructions, out)
 			}
-			detail.Instructions = append(detail.Instructions, out)
+			return detail, nil
 		}
-		return detail, nil
 	}
 	var doc ingest.Document
 	if err := json.Unmarshal(row.RecipeDocument, &doc); err != nil {
