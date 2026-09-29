@@ -6,8 +6,10 @@ Read in this order:
 
 1. `V1_SPEC.md` for the completed base product contract
 2. `AUTH_HOUSEHOLDS_SPEC.md` for the current approved post-v1 authentication phase
-3. `UP_NEXT.md`
-4. `PRODUCT_DECISIONS.md` for rationale
+3. `RECIPE_SOURCE_PILOT_SPEC.md` for the approved standalone source-extraction pilot
+4. `RECIPE_INTELLIGENCE_SPEC.md` for the approved import-time Jev assessment pilot
+5. `UP_NEXT.md`
+6. `PRODUCT_DECISIONS.md` for rationale
 
 The completed true-up ledger is archived at `archive/trueup/recipes.csv`; it is evidence, not
 an active planning authority.
@@ -25,7 +27,11 @@ completed disposition of all 25 PDF recipes. Completed household re-review inclu
 bootstrap recipes under `corpus/recipes/` and explicitly excludes Chicken and Dumplings. The
 frontend is React/TypeScript/Vite with TanStack Router and TanStack Query; the Week vertical
 slice is runnable.
-Runtime AI, pantry inference, scaling, and recipe discovery remain out of scope. Authentication
+Runtime AI, pantry inference, scaling, and recipe discovery remain out of scope. A standalone,
+manifest-driven Go pilot may fetch public pages and preserve source-provided Recipe JSON-LD as
+local evidence only; it does not onboard or ingest recipes. A separate operator-invoked pilot may
+assess fetched and approved recipes against the versioned Jev catalog as local review evidence; it
+makes no runtime model calls and does not alter PostgreSQL or approved corpus truth. Authentication
 is still excluded from the original v1 contract, but direct Google OIDC and the shared `Coward`
 household are now authorized as the focused post-v1 phase in `AUTH_HOUSEHOLDS_SPEC.md`. Public
 signup, invitations, additional identity providers, and additional-household creation remain
@@ -53,6 +59,7 @@ go run ./cmd/grocery-router trueup-inventory
 go run ./cmd/grocery-router corpus-render
 go run ./cmd/grocery-router corpus-audit
 go run ./cmd/grocery-router corpus-ingest
+go run ./cmd/grocery-router recipe-intelligence-pilot
 go run ./cmd/grocery-router migrate
 task dev
 ```

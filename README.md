@@ -12,9 +12,12 @@ strict Markdown bootstrap and explicitly excludes Chicken and Dumplings.
 
 ## Start here
 
-1. [`V1_SPEC.md`](V1_SPEC.md) — product, behavior, data model, architecture, and acceptance
-2. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
-3. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
+1. [`V1_SPEC.md`](V1_SPEC.md) — completed base product contract
+2. [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) — approved authentication phase
+3. [`RECIPE_SOURCE_PILOT_SPEC.md`](RECIPE_SOURCE_PILOT_SPEC.md) — approved standalone public-URL JSON-LD extraction pilot
+4. [`RECIPE_INTELLIGENCE_SPEC.md`](RECIPE_INTELLIGENCE_SPEC.md) — import-time Jev assessment contract
+5. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
+6. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
 
 The raw interview is archived at
 [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md). It is
@@ -48,7 +51,9 @@ task trueup-inventory     # validate all 25 PDF inventory rows
 task corpus-render        # refresh checked human-readable recipe sections
 task corpus-audit         # validate approved Markdown recipes
 task corpus-ingest        # migrate and load an empty PostgreSQL database
-task migrate              # migrate without loading the corpus
+task recipe-source-pilot       # fetch manifested Recipe JSON-LD to local inspectable output
+task recipe-intelligence-pilot # assess fetched and approved recipes with Jev
+task migrate                   # migrate without loading the corpus
 task serve                # start the local JSON API
 task web-install          # install locked frontend dependencies
 task web-dev              # start Vite with an API development proxy
@@ -58,7 +63,9 @@ task web-ci               # generate, type-check, test, and build the frontend
 Start local PostgreSQL with `task db-up`. Pass command flags after `--`, for example
 `task migrate -- --database-url "$GROCERY_ROUTER_DATABASE_URL"`. The CLI also accepts
 `GROCERY_ROUTER_DATABASE_URL`, `GROCERY_ROUTER_ROOT`, `GROCERY_ROUTER_CORPUS`, and
-`GROCERY_ROUTER_INVENTORY`; command-line flags take precedence. Run
+`GROCERY_ROUTER_INVENTORY`; command-line flags take precedence. The operator-only recipe
+intelligence pilot additionally requires `TYPESAFE_API_KEY`; never commit or pass that secret as a
+command-line flag. Run
 `go run ./cmd/grocery-router --help` for command-specific help.
 
 GitHub Actions runs `task ci` for pull requests and pushes to `main`. Local Go integration tests

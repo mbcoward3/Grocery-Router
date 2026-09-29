@@ -542,3 +542,37 @@ count, and D026 only where it says past weeks are not exposed.
 
 **Revisit when:** The household repeatedly wants to reuse an earlier pool or needs an audit trail
 of changes within a week.
+
+## D039 — Pilot source-faithful Recipe JSON-LD acquisition before onboarding
+
+**Decision:** Evaluate public recipe acquisition with a manifest-driven Go pilot that preserves
+source-provided Schema.org Recipe JSON-LD and fetch provenance as local evidence only.
+
+**Why:** Linked-recipe onboarding needs an inspectable acquisition baseline before choosing a
+larger extraction stack or interpreting ingredients. A narrow pilot can measure real source
+coverage without coupling web variability to approved corpus or runtime data.
+
+**Consequence:** The pilot performs bounded, SSRF-resistant HTTPS fetching and literal JSON-LD
+extraction. It adds no database, UI, categorization, ingredient interpretation, inferred values,
+or Python dependency. Python `recipe-scrapers` may be compared later against the same manifest.
+
+**Revisit when:** Pilot artifacts have been reviewed across representative sources and recipe
+onboarding receives a separately approved interpretation and verification contract.
+
+## D040 — Evaluate recipe semantics with Jev at import time
+
+**Decision:** Run a versioned catalog of atomic Choice, Score, and Noul questions over compact
+projections of fetched and approved recipes through operator-invoked tooling. Preserve complete
+answers, distributions, confidence, model identity, and input/catalog digests as local review
+evidence.
+
+**Why:** Rich search and future planning need stable, inspectable semantic facets beyond source
+keywords. Jev can efficiently evaluate many bounded judgments without pretending to generate or
+approve recipe truth.
+
+**Consequence:** The first phase runs only during import/review work, uses a pinned model, makes no
+schema or runtime application changes, and cannot promote recipes. Exact facts remain deterministic;
+allergen and dietary safety are not delegated to Jev. Runtime semantic reranking remains deferred.
+
+**Revisit when:** Import-time results have been labeled and calibrated, and observed search or
+planning limitations justify a separately approved runtime phase.

@@ -119,3 +119,13 @@ tasks:
     desc: Migrate and ingest the approved corpus (pass CLI flags after --)
     cmds:
       - go run ./cmd/grocery-router corpus-ingest {{.CLI_ARGS}}
+
+  recipe-source-pilot:
+    desc: Fetch manifested public recipe JSON-LD into inspectable local output
+    cmds:
+      - go run ./cmd/grocery-router recipe-source-pilot {{.CLI_ARGS}}
+
+  recipe-intelligence-pilot:
+    desc: Assess fetched and approved recipes with the import-time Jev catalog
+    cmds:
+      - go run ./cmd/grocery-router recipe-intelligence-pilot {{.CLI_ARGS}}
