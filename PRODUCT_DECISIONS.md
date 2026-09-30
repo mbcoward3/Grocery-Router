@@ -594,3 +594,23 @@ PDF ledger continues controlling only initial Coward-household membership.
 
 **Revisit when:** Catalog revision synchronization, household recipe customization, or public
 anonymous access receives its own conflict and provenance contract.
+
+## D042 — Keep pipeline state and semantic metadata out of the recipe UI
+
+**Decision:** Present catalog recipes through the user-facing `Explore` view without review-state
+badges, catalog terminology, or visible semantic tag collections. Review remains an operator process.
+Search uses the complete positive semantic profile and ordinary-language retrieval aliases even
+though those signals are not displayed.
+
+**Why:** Stable-development use showed that pipeline labels such as `Needs review`, `Shared catalog`,
+and raw facet pills made an internal ingestion process feel like the product. The first UI also
+truncated the rich assessment to eight alphabetical labels, causing valid concepts such as `poultry`
+to disappear from search despite existing in the profile.
+
+**Consequence:** The Recipes screen uses `Your recipes` and `Explore`; reviewable previews silently
+omit unavailable household actions. Recipe source attribution is linked directly. Retrieval and
+presentation are separate: a recipe may match rich hidden signals without wearing those signals as
+tags.
+
+**Revisit when:** Users need an explicit match explanation or a separately designed operator review
+interface.

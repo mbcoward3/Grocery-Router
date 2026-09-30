@@ -21,12 +21,16 @@ export function RecipesPage() {
   const scope: Scope = search.scope === 'shared' ? 'shared' : 'family'
   const query = search.q ?? ''
   const recipesQuery = useQuery(recipesQueryOptions)
-  const catalogQuery = useQuery({ queryKey: ['catalog', 'recipes'], queryFn: () => listCatalogRecipes() })
+  const catalogQuery = useQuery({
+    queryKey: ['catalog', 'recipes', query.trim().toLocaleLowerCase()],
+    queryFn: () => listCatalogRecipes(query),
+    placeholderData: (previous) => previous,
+  })
   const weekQuery = useQuery(currentWeekQueryOptions)
   const [notice, setNotice] = useState<string | null>(null)
 
   const family = useMemo(() => filterRecipesByName(recipesQuery.data?.recipes ?? [], query), [query, recipesQuery.data])
-  const shared = useMemo(() => filterCatalogRecipes(catalogQuery.data?.recipes ?? [], query), [query, catalogQuery.data])
+  const explore = catalogQuery.data?.recipes ?? []
 
   const addMutation = useMutation({
     mutationKey: ['week', 'add-from-recipes'],
@@ -55,23 +59,23 @@ export function RecipesPage() {
     return <div className="error-panel" role="alert"><div><strong>Couldn’t load recipes.</strong><p>{error.message}</p></div><button className="button" type="button" onClick={() => void queryClient.invalidateQueries()}>Try again</button></div>
   }
 
-  const total = scope === 'family' ? family.length : shared.length
+  const total = scope === 'family' ? family.length : explore.length
   const pending = addMutation.isPending || membershipMutation.isPending
   return (
     <section aria-labelledby="recipes-heading" aria-busy={pending}>
       <header className="page-heading recipe-browser-heading">
-        <div><div className="eyebrow">Recipe library</div><h1 id="recipes-heading">Recipes</h1><p>Keep family favorites close and explore the shared catalog.</p></div>
+        <div><div className="eyebrow">Library</div><h1 id="recipes-heading">Recipes</h1></div>
         <span className="corpus-count">{total} {total === 1 ? 'recipe' : 'recipes'}</span>
       </header>
 
       <div className="recipe-scope-tabs" role="tablist" aria-label="Recipe collection">
-        <button role="tab" aria-selected={scope === 'family'} onClick={() => void navigate({ to: '/recipes', search: { scope: 'family', q: query || undefined }, replace: true })}>Family <span>{recipesQuery.data?.recipes.length ?? 0}</span></button>
-        <button role="tab" aria-selected={scope === 'shared'} onClick={() => void navigate({ to: '/recipes', search: { scope: 'shared', q: query || undefined }, replace: true })}>Shared <span>{catalogQuery.data?.recipes.length ?? 0}</span></button>
+        <button role="tab" aria-selected={scope === 'family'} onClick={() => void navigate({ to: '/recipes', search: { scope: 'family', q: query || undefined }, replace: true })}>Your recipes</button>
+        <button role="tab" aria-selected={scope === 'shared'} onClick={() => void navigate({ to: '/recipes', search: { scope: 'shared', q: query || undefined }, replace: true })}>Explore</button>
       </div>
 
       <label className="recipe-search">
         <span className="sr-only">Search recipes</span><span aria-hidden="true">⌕</span>
-        <input type="search" value={query} placeholder={scope === 'family' ? 'Search family recipes…' : 'Search names or smart facets…'} autoComplete="off" onChange={(event) => { setNotice(null); void navigate({ to: '/recipes', search: { scope, q: event.target.value || undefined }, replace: true }) }} />
+        <input type="search" value={query} placeholder="Search recipes…" autoComplete="off" onChange={(event) => { setNotice(null); void navigate({ to: '/recipes', search: { scope, q: event.target.value || undefined }, replace: true }) }} />
         {query && <span className="search-result-count">{total} found</span>}
       </label>
 
@@ -81,23 +85,23 @@ export function RecipesPage() {
       {scope === 'family' ? (
         family.length ? <div className="recipe-browser-list">{family.map((recipe) => <FamilyRow key={recipe.id} recipe={recipe} query={query} hasWeek={weekQuery.data !== null} pending={pending} onAdd={() => addMutation.mutate({ recipeId: recipe.id, recipeName: recipe.name })} />)}</div> : <Empty />
       ) : (
-        shared.length ? <div className="recipe-browser-list">{shared.map((recipe) => <SharedRow key={recipe.catalogId} recipe={recipe} query={query} hasWeek={weekQuery.data !== null} pending={pending} onMembership={(state) => membershipMutation.mutate({ catalogId: recipe.catalogId, name: recipe.name, state })} onAdd={() => recipe.materializedRecipeId && addMutation.mutate({ recipeId: recipe.materializedRecipeId, recipeName: recipe.name })} />)}</div> : <Empty />
+        explore.length ? <div className="recipe-browser-list">{explore.map((recipe) => <SharedRow key={recipe.catalogId} recipe={recipe} query={query} hasWeek={weekQuery.data !== null} pending={pending} onMembership={(state) => membershipMutation.mutate({ catalogId: recipe.catalogId, name: recipe.name, state })} onAdd={() => recipe.materializedRecipeId && addMutation.mutate({ recipeId: recipe.materializedRecipeId, recipeName: recipe.name })} />)}</div> : <Empty />
       )}
     </section>
   )
 }
 
 function FamilyRow({ recipe, query, hasWeek, pending, onAdd }: { recipe: RecipeSummary; query: string; hasWeek: boolean; pending: boolean; onAdd: () => void }) {
-  return <article className="recipe-browser-row"><Link className="recipe-browser-main" to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} search={{ from: 'recipes', q: query || undefined }}><div><div className="shared-name-line"><h2>{recipe.name}</h2>{recipe.collectionState && <span className={`catalog-state ${recipe.collectionState}`}>{recipe.collectionState}</span>}</div><div className="recipe-browser-meta"><span>{duration('Hands-on', recipe.handsOn)}</span><span>{duration('Unattended', recipe.unattended)}</span>{recipe.yield && <span>{recipe.yield}</span>}</div></div><ArrowIcon /></Link><button className="button recipe-browser-add" type="button" disabled={!hasWeek || pending} onClick={onAdd}><PlusIcon /><span>Add to week</span></button></article>
+  return <article className="recipe-browser-row"><Link className="recipe-browser-main" to="/recipes/$recipeId" params={{ recipeId: String(recipe.id) }} search={{ from: 'recipes', q: query || undefined }}><div><h2>{recipe.name}</h2><div className="recipe-browser-meta"><span>{duration('Hands-on', recipe.handsOn)}</span><span>{duration('Unattended', recipe.unattended)}</span>{recipe.yield && <span>{recipe.yield}</span>}</div></div><ArrowIcon /></Link><button className="button recipe-browser-add" type="button" disabled={!hasWeek || pending} onClick={onAdd}><PlusIcon /><span>Add to week</span></button></article>
 }
 
 function SharedRow({ recipe, query, hasWeek, pending, onMembership, onAdd }: { recipe: CatalogRecipeSummary; query: string; hasWeek: boolean; pending: boolean; onMembership: (state: 'trial' | 'adopted') => void; onAdd: () => void }) {
   const reviewable = recipe.status === 'reviewable'
   return <article className="recipe-browser-row shared-recipe-row">
     <Link className="recipe-browser-main" to="/recipes/shared/$catalogRecipeId" params={{ catalogRecipeId: String(recipe.catalogId) }} search={{ q: query || undefined }}>
-      <div><div className="shared-name-line"><h2>{recipe.name}</h2><span className={`catalog-state ${reviewable ? 'review' : recipe.householdState ?? 'shared'}`}>{reviewable ? 'Needs review' : recipe.householdState ?? 'Shared'}</span></div><div className="recipe-browser-meta">{recipe.facets.slice(0, 3).map((facet) => <span key={facet}>{facet}</span>)}{recipe.yield && <span>{recipe.yield}</span>}</div></div><ArrowIcon />
+      <div><h2>{recipe.name}</h2><div className="recipe-browser-meta"><span>{duration('Hands-on', recipe.handsOn)}</span><span>{duration('Unattended', recipe.unattended)}</span>{recipe.yield && <span>{recipe.yield}</span>}</div></div><ArrowIcon />
     </Link>
-    {reviewable ? <button className="button recipe-browser-add" disabled title="Human approval is required">Reviewing</button>
+    {reviewable ? null
       : recipe.householdState === null ? <button className="button recipe-browser-add" disabled={pending} onClick={() => onMembership('trial')}>Try with family</button>
       : recipe.householdState === 'trial' ? <button className="button recipe-browser-add" disabled={pending} onClick={() => onMembership('adopted')}>Adopt</button>
       : <button className="button recipe-browser-add" disabled={!hasWeek || pending} onClick={onAdd}><PlusIcon /><span>Add to week</span></button>}
@@ -115,4 +119,3 @@ function duration(label: string, value: RecipeSummary['handsOn']): string {
 }
 function formatMinutes(minutes: number): string { if (minutes < 60) return `${minutes} min`; const hours = Math.floor(minutes / 60); const remainder = minutes % 60; return remainder === 0 ? `${hours} hr` : `${hours} hr ${remainder} min` }
 export function filterRecipesByName(recipes: RecipeSummary[], query: string): RecipeSummary[] { const q = query.trim().toLocaleLowerCase(); return q ? recipes.filter((recipe) => recipe.name.toLocaleLowerCase().includes(q)) : recipes }
-export function filterCatalogRecipes(recipes: CatalogRecipeSummary[], query: string): CatalogRecipeSummary[] { const q = query.trim().toLocaleLowerCase(); return q ? recipes.filter((recipe) => recipe.name.toLocaleLowerCase().includes(q) || recipe.facets.some((facet) => facet.toLocaleLowerCase().includes(q))) : recipes }

@@ -197,6 +197,19 @@ The parser and Pi may propose but cannot approve a missing noun, amount, unit, a
 state, or non-shopping decision. Source-note references absent from JSON-LD remain explicit and must
 be dispositioned during review. No ingredient may disappear because parsing failed.
 
+Source text remains immutable evidence, but it is not the default recipe presentation. A deterministic
+renderer builds proposed household wording from the structured amount, unit or package, item phrase,
+and preparation. Review compares that rendering with source evidence and corrects the structured
+fields; reviewers do not maintain an unrelated display string. Fractions use compact glyphs where
+unambiguous, package requirements use forms such as `2 × 15 oz cans black beans`, preparation follows
+the item after a comma, and the approved baseline is shown instead of unresolved source alternatives.
+Exact source equivalents and alternatives remain in provenance. No renderer performs approximate
+conversion or repairs an unresolved quantity by guessing.
+
+Development previews show the normalized proposal so visual review evaluates the eventual product
+wording. Approval freezes the reviewed structured values, and both recipe display and grocery
+materialization derive from those values. Search indexes normalized wording and preserved source text.
+
 ## 9. Grocery standardization
 
 Catalog candidates use reviewed canonical grocery definitions: stable key, display name, store
@@ -311,10 +324,21 @@ Required operations are:
 - promote trial to adopted; and
 - add trial/adopted materialized recipes to a week through existing week operations.
 
-The Recipes screen provides `Family` and `Shared` views. Rows clearly show direct, trial, adopted, or
-review-only development state. Shared recipe detail provides `Try with family` or `Adopt` as
-appropriate. Reviewable development entries disable these actions and explain that approval is
-required. Controls are accessible and mobile-capable.
+The Recipes screen provides user-facing `Your recipes` and `Explore` views. Catalog and pipeline
+terms are implementation language and do not appear in ordinary product copy. Semantic signals
+support retrieval but are not rendered as tag collections on recipe rows or detail headers. Source
+attribution is a descriptive hyperlink rather than a generic source action.
+
+Review is an operator process, not a user workflow. Reviewable development entries may be exposed on
+the stable development environment for visual inspection, but the UI does not label them `Needs
+review`, present disabled review controls, or explain the publication lifecycle. They simply omit
+household actions until approved. Verified recipe detail provides the appropriate household action.
+Controls are accessible and mobile-capable.
+
+Search uses the complete positive semantic profile together with recipe names, source descriptions,
+normalized ingredients, and user-language aliases. Display limits must never truncate retrieval
+signals. Semantic signals remain hidden unless a later user-facing explanation is deliberately
+specified.
 
 No UI performs source fetching, candidate editing, model execution, approval, or release publication.
 

@@ -63,7 +63,7 @@ func (server *Server) listCatalogRecipes(response http.ResponseWriter, request *
 			writeInternalError(response, err)
 			return
 		}
-		if query != "" && !strings.Contains(strings.ToLower(summary.Name), query) && !containsFacet(summary.Facets, query) {
+		if query != "" && !catalogSearchMatch(summary, row.RecipeDocument, row.SourceAttribution, query) {
 			continue
 		}
 		result = append(result, summary)
@@ -186,7 +186,7 @@ func catalogDetailFromRow(row store.CatalogRecipe) (catalogRecipeDetail, error) 
 				out := recipeIngredientSection{Name: section.Name, Ingredients: []recipeIngredient{}}
 				for _, ingredient := range section.Ingredients {
 					item := ingredient.GroceryProposal.Name
-					out.Ingredients = append(out.Ingredients, recipeIngredient{ID: id, SourceText: ingredient.SourceText, Preparation: stringPointer(ingredient.Preparation), Optional: ingredient.Optional, ShoppingItem: stringPointer(item)})
+					out.Ingredients = append(out.Ingredients, recipeIngredient{ID: id, SourceText: candidateIngredientDisplay(ingredient), Preparation: stringPointer(ingredient.Preparation), Optional: ingredient.Optional, ShoppingItem: stringPointer(item)})
 					id++
 				}
 				detail.Ingredients = append(detail.Ingredients, out)
@@ -244,19 +244,95 @@ func semanticFacets(data json.RawMessage) []string {
 		}
 	}
 	sort.Strings(facets)
-	if len(facets) > 8 {
-		facets = facets[:8]
-	}
 	return facets
 }
 
-func containsFacet(facets []string, query string) bool {
-	for _, facet := range facets {
-		if strings.Contains(strings.ToLower(facet), query) {
-			return true
+func catalogSearchMatch(summary catalogRecipeSummary, document json.RawMessage, attribution, query string) bool {
+	terms := []string{summary.Name, summary.Key, attribution, string(document)}
+	for _, facet := range summary.Facets {
+		terms = append(terms, facet)
+		terms = append(terms, semanticSearchAliases[facet]...)
+	}
+	haystack := strings.ToLower(strings.Join(terms, " "))
+	for _, word := range strings.Fields(strings.ToLower(query)) {
+		if !strings.Contains(haystack, word) {
+			return false
 		}
 	}
-	return false
+	return true
+}
+
+// semanticSearchAliases translate assessment vocabulary into ordinary ways a cook
+// might ask for the same idea. They are retrieval terms only and never appear as
+// recipe claims or visible tags.
+var semanticSearchAliases = map[string][]string{
+	"holiday celebration": {"thanksgiving", "christmas", "easter", "holiday dinner", "festive"},
+	"potluck dish":        {"thanksgiving", "bring a dish", "shared meal"},
+	"poultry":             {"chicken", "turkey"},
+	"red meat":            {"beef", "pork", "lamb"},
+	"cold weather":        {"fall", "autumn", "winter"},
+	"warm weather":        {"spring", "summer"},
+	"weeknight friendly":  {"weeknight", "after work"},
+	"busy night friendly": {"busy night", "low effort"},
+	"slow cooker":         {"crock pot", "crockpot"},
+}
+
+func candidateIngredientDisplay(ingredient catalogcandidate.Ingredient) string {
+	item := strings.ToLower(strings.TrimSpace(ingredient.ItemPhrase))
+	if item == "" {
+		return ingredient.SourceText
+	}
+	quantity := ingredient.Quantity
+	prefix := ""
+	switch {
+	case quantity.Package != nil:
+		count := quantity.Package.Count
+		if count == "" {
+			count = quantity.Amount
+		}
+		packageType := quantity.Package.Type
+		if count != "1" {
+			packageType = pluralPackageType(packageType)
+		}
+		if quantity.Package.Size != "" {
+			prefix = formatDisplayNumber(count) + " × " + formatDisplayNumber(quantity.Package.Size) + " " + quantity.Package.Unit + " " + packageType
+		} else {
+			prefix = formatDisplayNumber(count) + " " + packageType
+		}
+	case quantity.Kind == "range":
+		prefix = formatDisplayNumber(quantity.Amount) + "–" + formatDisplayNumber(quantity.Maximum)
+		if quantity.Unit != "" && quantity.Unit != "each" {
+			prefix += " " + quantity.Unit
+		}
+	case quantity.Kind == "exact":
+		prefix = formatDisplayNumber(quantity.Amount)
+		if quantity.Unit != "" && quantity.Unit != "each" {
+			prefix += " " + quantity.Unit
+		}
+	}
+	result := strings.TrimSpace(prefix + " " + item)
+	if preparation := strings.TrimSpace(ingredient.Preparation); preparation != "" {
+		result += ", " + preparation
+	}
+	return result
+}
+
+func formatDisplayNumber(value string) string {
+	replacer := strings.NewReplacer(
+		"1/8", "⅛", "1/4", "¼", "1/3", "⅓", "3/8", "⅜", "1/2", "½",
+		"5/8", "⅝", "2/3", "⅔", "3/4", "¾", "7/8", "⅞",
+	)
+	return replacer.Replace(value)
+}
+
+func pluralPackageType(value string) string {
+	if strings.HasSuffix(value, "s") {
+		return value
+	}
+	if strings.HasSuffix(value, "x") || strings.HasSuffix(value, "ch") || strings.HasSuffix(value, "sh") {
+		return value + "es"
+	}
+	return value + "s"
 }
 
 func stringPointer(value string) *string {
