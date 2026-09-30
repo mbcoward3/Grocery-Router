@@ -610,7 +610,9 @@ to disappear from search despite existing in the profile.
 **Consequence:** The Recipes screen uses `Your recipes` and `Explore`; reviewable previews silently
 omit unavailable household actions. Recipe source attribution is linked directly. Retrieval and
 presentation are separate: a recipe may match rich hidden signals without wearing those signals as
-tags.
+tags. Search derives a compact typed document from intentional recipe fields and ranks that document
+with the existing semantic profile; raw candidate JSON and grocery store-section metadata are not
+searchable text.
 
 **Revisit when:** Users need an explicit match explanation or a separately designed operator review
 interface.

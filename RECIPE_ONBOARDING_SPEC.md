@@ -335,10 +335,15 @@ review`, present disabled review controls, or explain the publication lifecycle.
 household actions until approved. Verified recipe detail provides the appropriate household action.
 Controls are accessible and mobile-capable.
 
-Search uses the complete positive semantic profile together with recipe names, source descriptions,
-normalized ingredients, and user-language aliases. Display limits must never truncate retrieval
-signals. Semantic signals remain hidden unless a later user-facing explanation is deliberately
-specified.
+Search builds a compact deterministic document from the recipe title, normalized ingredient names,
+and instruction text, then ranks it with the existing typed semantic profile. Store sections,
+provenance, review issues, and raw candidate JSON are never lexical search input. Title, ingredient,
+semantic, and incidental instruction evidence receive distinct weights; instruction text alone does
+not qualify a weak result. Versioned user-language concepts map terms such as `spice`, `poultry`,
+`cold`, and `Thanksgiving` to existing Choice, Noul, and Score assessments. Assessment probability
+and confidence control ranking and minimum relevance thresholds suppress incidental matches.
+Display limits must never truncate retrieval signals. Semantic signals remain hidden unless a later
+user-facing explanation is deliberately specified.
 
 No UI performs source fetching, candidate editing, model execution, approval, or release publication.
 

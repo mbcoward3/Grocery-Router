@@ -40,13 +40,16 @@ type catalogMembershipRequest struct {
 }
 
 type compactSemanticProfile struct {
-	Answers map[string]struct {
-		Type        string   `json:"type"`
-		Noul        *float64 `json:"noul"`
-		Choice      string   `json:"choice"`
-		Score       *float64 `json:"score"`
-		Disposition string   `json:"disposition"`
-	} `json:"answers"`
+	Answers map[string]compactSemanticAnswer `json:"answers"`
+}
+
+type compactSemanticAnswer struct {
+	Type        string   `json:"type"`
+	Noul        *float64 `json:"noul"`
+	Choice      string   `json:"choice"`
+	Score       *float64 `json:"score"`
+	Confidence  float64  `json:"confidence"`
+	Disposition string   `json:"disposition"`
 }
 
 func (server *Server) listCatalogRecipes(response http.ResponseWriter, request *http.Request) {
@@ -56,17 +59,25 @@ func (server *Server) listCatalogRecipes(response http.ResponseWriter, request *
 		return
 	}
 	query := strings.ToLower(strings.TrimSpace(request.URL.Query().Get("q")))
-	result := make([]catalogRecipeSummary, 0, len(rows))
+	results := make([]scoredCatalogRecipe, 0, len(rows))
 	for _, row := range rows {
 		summary, err := catalogSummaryFromRow(row)
 		if err != nil {
 			writeInternalError(response, err)
 			return
 		}
-		if query != "" && !catalogSearchMatch(summary, row.RecipeDocument, row.SourceAttribution, query) {
+		score := catalogSearchScore(summary, row.RecipeDocument, row.SemanticProfile, query)
+		if query != "" && score == 0 {
 			continue
 		}
-		result = append(result, summary)
+		results = append(results, scoredCatalogRecipe{Summary: summary, Score: score})
+	}
+	if query != "" {
+		sortCatalogSearchResults(results)
+	}
+	result := make([]catalogRecipeSummary, 0, len(results))
+	for _, match := range results {
+		result = append(result, match.Summary)
 	}
 	writeJSON(response, http.StatusOK, map[string]any{"recipes": result})
 }
@@ -245,36 +256,6 @@ func semanticFacets(data json.RawMessage) []string {
 	}
 	sort.Strings(facets)
 	return facets
-}
-
-func catalogSearchMatch(summary catalogRecipeSummary, document json.RawMessage, attribution, query string) bool {
-	terms := []string{summary.Name, summary.Key, attribution, string(document)}
-	for _, facet := range summary.Facets {
-		terms = append(terms, facet)
-		terms = append(terms, semanticSearchAliases[facet]...)
-	}
-	haystack := strings.ToLower(strings.Join(terms, " "))
-	for _, word := range strings.Fields(strings.ToLower(query)) {
-		if !strings.Contains(haystack, word) {
-			return false
-		}
-	}
-	return true
-}
-
-// semanticSearchAliases translate assessment vocabulary into ordinary ways a cook
-// might ask for the same idea. They are retrieval terms only and never appear as
-// recipe claims or visible tags.
-var semanticSearchAliases = map[string][]string{
-	"holiday celebration": {"thanksgiving", "christmas", "easter", "holiday dinner", "festive"},
-	"potluck dish":        {"thanksgiving", "bring a dish", "shared meal"},
-	"poultry":             {"chicken", "turkey"},
-	"red meat":            {"beef", "pork", "lamb"},
-	"cold weather":        {"fall", "autumn", "winter"},
-	"warm weather":        {"spring", "summer"},
-	"weeknight friendly":  {"weeknight", "after work"},
-	"busy night friendly": {"busy night", "low effort"},
-	"slow cooker":         {"crock pot", "crockpot"},
 }
 
 func candidateIngredientDisplay(ingredient catalogcandidate.Ingredient) string {
