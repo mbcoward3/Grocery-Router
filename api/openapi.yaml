@@ -24,6 +24,44 @@ paths:
       responses:
         "204": { description: Session revoked. }
         "403": { $ref: "#/components/responses/Forbidden" }
+  /catalog/recipes:
+    get:
+      operationId: listCatalogRecipes
+      summary: List shared catalog recipes visible to authenticated users.
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Shared recipes ordered by name.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [recipes]
+                properties:
+                  recipes:
+                    type: array
+                    items: { $ref: "#/components/schemas/CatalogRecipeSummary" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+  /catalog/recipes/{catalogRecipeID}:
+    parameters:
+      - name: catalogRecipeID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    get:
+      operationId: getCatalogRecipe
+      summary: Fetch one shared recipe, including reviewable development previews.
+      responses:
+        "200":
+          description: Shared recipe detail.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CatalogRecipeDetail" }
+        "404": { $ref: "#/components/responses/NotFound" }
   /households/{householdID}/recipes:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -61,6 +99,40 @@ paths:
               schema: { $ref: "#/components/schemas/RecipeDetail" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
+  /households/{householdID}/catalog/recipes/{catalogRecipeID}/membership:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+      - name: catalogRecipeID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    post:
+      operationId: setCatalogRecipeMembership
+      summary: Add a verified shared recipe as a trial or adopt it.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [state]
+              properties:
+                state: { type: string, enum: [trial, adopted] }
+      responses:
+        "200":
+          description: Household catalog membership.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [catalogRecipeId, state, recipeId]
+                properties:
+                  catalogRecipeId: { type: integer }
+                  state: { type: string, enum: [trial, adopted] }
+                  recipeId: { type: integer }
+        "409": { $ref: "#/components/responses/Conflict" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
   /households/{householdID}/week/current:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -321,7 +393,7 @@ components:
           minimum: 0
     RecipeSummary:
       type: object
-      required: [id, key, name, imageUrl, yield, handsOn, unattended]
+      required: [id, key, name, imageUrl, yield, handsOn, unattended, collectionState]
       properties:
         id: { type: integer }
         key: { type: string }
@@ -330,6 +402,39 @@ components:
         yield: { type: [string, "null"] }
         handsOn: { $ref: "#/components/schemas/DurationRange" }
         unattended: { $ref: "#/components/schemas/DurationRange" }
+        collectionState: { type: [string, "null"], enum: [trial, adopted, null] }
+    CatalogRecipeSummary:
+      type: object
+      required: [catalogId, key, name, status, householdState, materializedRecipeId, imageUrl, yield, handsOn, unattended, facets]
+      properties:
+        catalogId: { type: integer }
+        key: { type: string }
+        name: { type: string }
+        status: { type: string, enum: [reviewable, verified] }
+        householdState: { type: [string, "null"], enum: [trial, adopted, null] }
+        materializedRecipeId: { type: [integer, "null"] }
+        imageUrl: { type: [string, "null"], format: uri }
+        yield: { type: [string, "null"] }
+        handsOn: { $ref: "#/components/schemas/DurationRange" }
+        unattended: { $ref: "#/components/schemas/DurationRange" }
+        facets:
+          type: array
+          items: { type: string }
+    CatalogRecipeDetail:
+      allOf:
+        - { $ref: "#/components/schemas/CatalogRecipeSummary" }
+        - type: object
+          required: [sources, ingredientSections, instructionSections]
+          properties:
+            sources:
+              type: array
+              items: { $ref: "#/components/schemas/RecipeSource" }
+            ingredientSections:
+              type: array
+              items: { $ref: "#/components/schemas/RecipeIngredientSection" }
+            instructionSections:
+              type: array
+              items: { $ref: "#/components/schemas/RecipeInstructionSection" }
     RecipeSource:
       type: object
       required: [relationship, attribution, url, primary]
@@ -469,6 +574,11 @@ components:
           schema: { $ref: "#/components/schemas/APIError" }
     Forbidden:
       description: The request origin or household access was denied.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    Conflict:
+      description: The requested state conflicts with current catalog approval or membership.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }

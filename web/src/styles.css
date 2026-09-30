@@ -295,6 +295,10 @@ select {
 
 /* Recipe browser */
 .recipe-browser-heading { align-items: center; }
+.recipe-scope-tabs { width: fit-content; margin-bottom: 14px; padding: 3px; display: flex; gap: 2px; background: #101215; border: 1px solid var(--line); border-radius: 8px; }
+.recipe-scope-tabs button { min-height: 32px; padding: 0 13px; color: var(--muted); background: transparent; border: 0; border-radius: 5px; cursor: pointer; }
+.recipe-scope-tabs button[aria-selected="true"] { color: var(--text); background: #202329; box-shadow: inset 0 0 0 1px #343840; }
+.recipe-scope-tabs span { margin-left: 5px; color: var(--faint); font-size: 10px; }
 .corpus-count { margin-left: auto; color: var(--muted); font-size: 12px; }
 .recipe-search { height: 45px; margin-bottom: 18px; padding: 0 13px; display: flex; align-items: center; gap: 10px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
 .recipe-search:focus-within { border-color: #44685f; box-shadow: 0 0 0 1px #234d43; }
@@ -315,6 +319,7 @@ select {
 .recipe-browser-main h2 { margin: 0 0 6px; overflow: hidden; font-size: 14px; font-weight: 590; text-overflow: ellipsis; white-space: nowrap; }
 .recipe-browser-meta { display: flex; gap: 6px 14px; flex-wrap: wrap; color: var(--muted); font-size: 11px; }
 .recipe-browser-add { min-width: 111px; }
+.shared-detail-actions { margin-top: 20px; }
 .recipe-browser-empty { min-height: 230px; display: grid; place-content: center; justify-items: center; gap: 4px; color: var(--muted); border: 1px dashed var(--line-strong); border-radius: 9px; }
 .recipe-browser-empty strong { color: var(--text); font-size: 14px; }
 .recipe-browser-empty span { font-size: 12px; }

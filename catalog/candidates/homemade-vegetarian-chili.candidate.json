@@ -1,0 +1,630 @@
+{
+  "format_version": 1,
+  "candidate_id": "vegetarian-chili#$/@graph[7]",
+  "catalog_key": "homemade-vegetarian-chili",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "vegetarian-chili",
+    "manifest_url": "https://cookieandkate.com/vegetarian-chili-recipe/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "vegetarian-chili.json",
+    "artifact_sha256": "592156b00caaa2922c406b20a256dc7e7104d9ff6a68a9e90943b4534835c336",
+    "requested_url": "https://cookieandkate.com/vegetarian-chili-recipe/",
+    "final_url": "https://cookieandkate.com/vegetarian-chili-recipe/",
+    "fetched_at": "2026-09-29T01:45:09.611028256Z",
+    "response_body_sha256": "7725be2674e09315b40e8b87ef02b8d8ea5f6a895d22140e5e3dfd557f19c0a1",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "d89321ee5fafc152af66c06d9736185c0e22d74e2142404dd0fe316f615de1b6",
+      "recipe_raw_sha256": "ced0a06da579154494c5e317b56cfe3e6d0d87839a87aec9ba578e8c3a669748",
+      "recipe_raw_canonical_sha256": "4f4050634caef3cc507305588b370be36a4085c9a0485230788547304d6f86d1"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "80ae095d2d03826ba4fdffb6a46cb4f24c7cae83efad2125e6d47c0100f12e9a",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Homemade Vegetarian Chili",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://cookieandkate.com/images/2015/11/best-vegetarian-chili-1-1-225x225.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "4 to 6 servings",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 21,
+      "max": 21
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 30,
+      "max": 30
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2 tablespoons extra-virgin olive oil",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Olive Oil",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "olive-oil",
+            "name": "Olive Oil",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1 medium red onion, chopped",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Red Onion",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "red-onion",
+            "name": "Red Onion",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "medium"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1 large red bell pepper, chopped",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Red Bell Pepper",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "red-bell-pepper",
+            "name": "Red Bell Pepper",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[2]",
+              "message": "large"
+            }
+          ]
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "2 medium carrots, chopped",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Carrots",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "carrots",
+            "name": "Carrots",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[3]",
+              "message": "medium"
+            }
+          ]
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "2 ribs celery, chopped",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Celery",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "celery",
+            "name": "Celery",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[4]",
+              "message": "ribs"
+            }
+          ]
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "\u0026frac12; teaspoon salt, divided",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "preparation": "divided",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "4 cloves garlic, pressed or minced",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "clove"
+          },
+          "item_phrase": "Garlic",
+          "preparation": "pressed or minced",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "2 tablespoons chili powder*",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Chili Powder",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chili-powder",
+            "name": "Chili Powder",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[7]",
+              "message": "*"
+            }
+          ]
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "2 teaspoons ground cumin",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Ground Cumin",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "ground-cumin",
+            "name": "Ground Cumin",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "1 \u0026frac12; teaspoons smoked paprika*",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1 1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Smoked Paprika",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "smoked-paprika",
+            "name": "Smoked Paprika",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[9]",
+              "message": "*"
+            }
+          ]
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "1 teaspoon dried oregano",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Dried Oregano",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "dried-oregano",
+            "name": "Dried Oregano",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 11,
+          "source_text": "1 large can (28 ounces) or 2 small cans (15 ounces each) diced tomatoes**, with their juices",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "package": {
+              "count": "1",
+              "type": "can",
+              "size": "28",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Diced Tomatoes",
+          "preparation": "with their juices",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "diced-tomatoes",
+            "name": "Diced Tomatoes",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[11]",
+              "message": "large can; alternative 2 small cans (15 ounces each); **"
+            }
+          ]
+        },
+        {
+          "source_line_index": 12,
+          "source_text": "2 cans (15 ounces each) black beans, rinsed and drained",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "package": {
+              "count": "2",
+              "type": "can",
+              "size": "15",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Black Beans",
+          "preparation": "rinsed and drained",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-beans",
+            "name": "Black Beans",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 13,
+          "source_text": "1 can (15 ounces) pinto beans, rinsed and drained",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "package": {
+              "count": "1",
+              "type": "can",
+              "size": "15",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Pinto Beans",
+          "preparation": "rinsed and drained",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "pinto-beans",
+            "name": "Pinto Beans",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 14,
+          "source_text": "2 cups vegetable broth or water",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Vegetable Broth",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "vegetable-broth",
+            "name": "Vegetable Broth",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[14]",
+              "message": "or water"
+            }
+          ]
+        },
+        {
+          "source_line_index": 15,
+          "source_text": "1 bay leaf",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "leaf"
+          },
+          "item_phrase": "Bay Leaves",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "bay-leaves",
+            "name": "Bay Leaves",
+            "store_section": "Spices",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 16,
+          "source_text": "2 tablespoons chopped fresh cilantro, plus more for garnishing",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Fresh Cilantro",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "fresh-cilantro",
+            "name": "Fresh Cilantro",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[16]",
+              "message": "plus more for garnishing"
+            }
+          ]
+        },
+        {
+          "source_line_index": 17,
+          "source_text": "1 to 2 teaspoons sherry vinegar or red wine vinegar or lime juice, to taste",
+          "quantity": {
+            "kind": "range",
+            "amount": "1",
+            "maximum": "2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Sherry Vinegar",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "sherry-vinegar",
+            "name": "Sherry Vinegar",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[17]",
+              "message": "or red wine vinegar or lime juice, to taste"
+            }
+          ]
+        },
+        {
+          "source_line_index": 18,
+          "source_text": "Garnishes: chopped cilantro, sliced avocado, tortilla chips, sour cream or crème fraîche, grated cheddar cheese, etc.",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Chili Garnishes",
+          "preparation": "chopped cilantro, sliced avocado, tortilla chips, sour cream or crème fraîche, grated cheddar cheese, etc.",
+          "optional": true,
+          "grocery_proposal": {
+            "state": "create",
+            "key": "chili-garnishes",
+            "name": "Chili Garnishes",
+            "store_section": "Other",
+            "shopping_mode": "presence-only",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[18]",
+              "message": "garnishes"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "In a large Dutch oven or heavy-bottomed pot over medium heat, warm the olive oil until shimmering. Add the chopped onion, bell pepper, carrot, celery and 1/4 teaspoon of the salt. Stir to combine and cook, stirring occasionally, until the vegetables are tender and the onion is translucent, about 7 to 10 minutes.",
+        "Add the garlic, chili powder, cumin, smoked paprika and oregano. Cook until fragrant while stirring constantly, about 1 minute.",
+        "Add the diced tomatoes and their juices, the drained black beans and pinto beans, vegetable broth and bay leaf. Stir to combine and let the mixture come to a simmer. Continue cooking, stirring occasionally and reducing heat as necessary to maintain a gentle simmer, for 30 minutes.",
+        "Remove the chili from the heat and discard the bay leaf. For the best texture and flavor, transfer 1 1/2 cups of the chili to a blender, making sure to get some of the liquid portion. Securely fasten the lid and blend until smooth (watch out for hot steam), then pour the blended mixture back into the pot. (Or, you can blend the chili briefly with an immersion blender, or mash the chili with a potato masher until it reaches a thicker, more chili-like consistency.)",
+        "Add the chopped cilantro, stir to combine, and then mix in the vinegar, to taste. Add salt to taste, too—I added 1/4 teaspoon more at this point. Divide the mixture into individual bowls and serve with garnishes of your choice. This chili will keep well in the refrigerator for about 4 days or you can freeze it for longer-term storage."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[7].note",
+      "message": "source-note: Ingredient references * but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[9].grocery_item",
+      "message": "backfill: Proposed new grocery item smoked-paprika."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[9].note",
+      "message": "source-note: Ingredient references * but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[11].source_text",
+      "message": "alternative: Source gives 1 large can (28 ounces) or 2 small cans (15 ounces each); selected first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[11].grocery_item",
+      "message": "backfill: Proposed new grocery item diced-tomatoes."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[11].note",
+      "message": "source-note: Ingredient references ** but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[14].source_text",
+      "message": "alternative: Source gives vegetable broth or water; selected first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[14].grocery_item",
+      "message": "backfill: Proposed new grocery item vegetable-broth."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[16].grocery_item",
+      "message": "backfill: Proposed new grocery item fresh-cilantro."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[17].source_text",
+      "message": "alternative: Source gives sherry vinegar or red wine vinegar or lime juice; selected first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[17].grocery_item",
+      "message": "backfill: Proposed new grocery item sherry-vinegar."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[18].grocery_item",
+      "message": "backfill: Grouped garnish line contains multiple possible items; proposed aggregate grocery item to preserve single source ingredient line."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[18].quantity",
+      "message": "unresolved: Garnish quantities are unspecified."
+    },
+    {
+      "severity": "blocker",
+      "field": "unattended",
+      "message": "ambiguous: Cook time includes active stovetop work and a 30-minute gentle simmer with occasional stirring; proposed simmer as unattended."
+    }
+  ],
+  "source_notes": [
+    {
+      "reference": "*",
+      "state": "unresolved"
+    },
+    {
+      "reference": "**",
+      "state": "unresolved"
+    }
+  ],
+  "decisions": [
+    {
+      "field": "yield",
+      "state": "unresolved",
+      "rationale": "conflict-resolved: Used descriptive recipeYield value '4 to 6 servings' rather than numeric-only '4'."
+    },
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed prepTime PT20M plus approximately 1 minute active stovetop spice cooking from instructions."
+    },
+    {
+      "field": "unattended",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed 30-minute gentle simmer as unattended because it is maintained with only occasional stirring."
+    }
+  ]
+}

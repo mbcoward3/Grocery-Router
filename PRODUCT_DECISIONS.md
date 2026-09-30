@@ -542,3 +542,77 @@ count, and D026 only where it says past weeks are not exposed.
 
 **Revisit when:** The household repeatedly wants to reuse an earlier pool or needs an audit trail
 of changes within a week.
+
+## D039 — Pilot source-faithful Recipe JSON-LD acquisition before onboarding
+
+**Decision:** Evaluate public recipe acquisition with a manifest-driven Go pilot that preserves
+source-provided Schema.org Recipe JSON-LD and fetch provenance as local evidence only.
+
+**Why:** Linked-recipe onboarding needs an inspectable acquisition baseline before choosing a
+larger extraction stack or interpreting ingredients. A narrow pilot can measure real source
+coverage without coupling web variability to approved corpus or runtime data.
+
+**Consequence:** The pilot performs bounded, SSRF-resistant HTTPS fetching and literal JSON-LD
+extraction. It adds no database, UI, categorization, ingredient interpretation, inferred values,
+or Python dependency. Python `recipe-scrapers` may be compared later against the same manifest.
+
+**Revisit when:** Pilot artifacts have been reviewed across representative sources and recipe
+onboarding receives a separately approved interpretation and verification contract.
+
+## D040 — Evaluate recipe semantics with Jev at import time
+
+**Decision:** Run a versioned catalog of atomic Choice, Score, and Noul questions over compact
+projections of fetched and approved recipes through operator-invoked tooling. Preserve complete
+answers, distributions, confidence, model identity, and input/catalog digests as local review
+evidence.
+
+**Why:** Rich search and future planning need stable, inspectable semantic facets beyond source
+keywords. Jev can efficiently evaluate many bounded judgments without pretending to generate or
+approve recipe truth.
+
+**Consequence:** The first phase runs only during import/review work, uses a pinned model, makes no
+schema or runtime application changes, and cannot promote recipes. Exact facts remain deterministic;
+allergen and dietary safety are not delegated to Jev. Runtime semantic reranking remains deferred.
+
+**Revisit when:** Import-time results have been labeled and calibrated, and observed search or
+planning limitations justify a separately approved runtime phase.
+
+## D041 — Separate the shared recipe catalog from household adoption
+
+**Decision:** Reviewed recipes discovered after the initial PDF corpus enter a global authenticated
+catalog first. A household explicitly adds a verified catalog recipe as a trial or adopts it; the
+adoption transaction materializes the approved snapshot through the existing household recipe and
+grocery model.
+
+**Why:** Future tenants should be able to browse useful, semantically rich recipes without every
+candidate immediately becoming family truth. A reviewed snapshot preserves deterministic groceries
+and retained weeks while allowing catalog discovery to be shared.
+
+**Consequence:** Generated candidates and reviewable development previews cannot enter weeks. Catalog
+publication is versioned and model-free; household trial/adoption is separately tenant-scoped. The
+PDF ledger continues controlling only initial Coward-household membership.
+
+**Revisit when:** Catalog revision synchronization, household recipe customization, or public
+anonymous access receives its own conflict and provenance contract.
+
+## D042 — Keep pipeline state and semantic metadata out of the recipe UI
+
+**Decision:** Present catalog recipes through the user-facing `Explore` view without review-state
+badges, catalog terminology, or visible semantic tag collections. Review remains an operator process.
+Search uses the complete positive semantic profile and ordinary-language retrieval aliases even
+though those signals are not displayed.
+
+**Why:** Stable-development use showed that pipeline labels such as `Needs review`, `Shared catalog`,
+and raw facet pills made an internal ingestion process feel like the product. The first UI also
+truncated the rich assessment to eight alphabetical labels, causing valid concepts such as `poultry`
+to disappear from search despite existing in the profile.
+
+**Consequence:** The Recipes screen uses `Your recipes` and `Explore`; reviewable previews silently
+omit unavailable household actions. Recipe source attribution is linked directly. Retrieval and
+presentation are separate: a recipe may match rich hidden signals without wearing those signals as
+tags. Search derives a compact typed document from intentional recipe fields and ranks that document
+with the existing semantic profile; raw candidate JSON and grocery store-section metadata are not
+searchable text.
+
+**Revisit when:** Users need an explicit match explanation or a separately designed operator review
+interface.

@@ -14,9 +14,13 @@ import (
 
 	"github.com/alecthomas/kong"
 	"github.com/mbcoward3/grocery-router/internal/auth"
+	"github.com/mbcoward3/grocery-router/internal/catalog"
+	"github.com/mbcoward3/grocery-router/internal/catalogcandidate"
 	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/httpapi"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
+	"github.com/mbcoward3/grocery-router/internal/recipeintel"
+	"github.com/mbcoward3/grocery-router/internal/recipepilot"
 	"github.com/mbcoward3/grocery-router/internal/tenant"
 	"github.com/mbcoward3/grocery-router/internal/trueup"
 	"github.com/mbcoward3/grocery-router/internal/week"
@@ -100,6 +104,149 @@ func (command *serveCommand) Run() error {
 	return serve(command.DatabaseURL, command.Address, command.WebRoot, config)
 }
 
+type catalogAuditCommand struct {
+	Root    string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	Release string `help:"Catalog release manifest, relative to root." default:"catalog/releases/initial-review-2026-09-29.yaml"`
+}
+
+func (command *catalogAuditCommand) Run() error {
+	manifest, _, err := catalog.LoadReviewManifest(command.Root, command.Release)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("catalog release valid: %d %s recipes in %s\n", len(manifest.Recipes), manifest.Status, manifest.ReleaseID)
+	return nil
+}
+
+type catalogPublishCommand struct {
+	Root    string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	Release string `help:"Review release manifest, relative to root." required:""`
+	DatabaseConfig
+}
+
+func (command *catalogPublishCommand) Run() error {
+	if err := migrate(command.DatabaseURL); err != nil {
+		return err
+	}
+	manifest, data, err := catalog.LoadReviewManifest(command.Root, command.Release)
+	if err != nil {
+		return err
+	}
+	db, err := database.Open(command.DatabaseURL)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	result, err := catalog.NewService(db).PublishReviewManifest(context.Background(), command.Root, manifest, data)
+	if err != nil {
+		return err
+	}
+	if result.Applied {
+		fmt.Printf("published %d reviewable catalog recipes from %s\n", len(manifest.Recipes), manifest.ReleaseID)
+	} else {
+		fmt.Printf("catalog release %s already applied exactly\n", manifest.ReleaseID)
+	}
+	return nil
+}
+
+type catalogAgentInputsCommand struct {
+	Root      string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	SourceRun string `help:"Completed source-pilot run, relative to root." required:""`
+	Corpus    string `help:"Approved household corpus used for grocery match references." default:"corpus/recipes"`
+	Output    string `help:"Ignored Pi input directory, relative to root." default:".local-run/catalog-agent/inputs"`
+}
+
+func (command *catalogAgentInputsCommand) Run() error {
+	documents, err := ingest.ReadDirectory(filepath.Join(command.Root, filepath.FromSlash(command.Corpus)))
+	if err != nil {
+		return err
+	}
+	count, err := catalogcandidate.WriteAgentPackets(
+		filepath.Join(command.Root, filepath.FromSlash(command.SourceRun)),
+		filepath.Join(command.Root, filepath.FromSlash(command.Output)), documents,
+	)
+	if err == nil {
+		fmt.Printf("wrote %d catalog Pi input packets\n", count)
+	}
+	return err
+}
+
+type catalogCandidateBuildCommand struct {
+	Root       string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	SourceRun  string `help:"Completed source-pilot run, relative to root." required:""`
+	Proposals  string `help:"Pi proposal directory, relative to root." required:""`
+	Output     string `help:"Catalog candidate output directory, relative to root." default:"catalog/candidates"`
+	Provider   string `help:"Pi proposal provider provenance." default:"openai-codex"`
+	Model      string `help:"Pi proposal model provenance." default:"gpt-5.5"`
+	PromptHash string `help:"SHA-256 of the exact Pi prompt." required:""`
+	RunAt      string `help:"UTC RFC3339 time of the Pi proposal run." required:""`
+}
+
+func (command *catalogCandidateBuildCommand) Run() error {
+	runAt, err := time.Parse(time.RFC3339, command.RunAt)
+	if err != nil {
+		return fmt.Errorf("parse --run-at: %w", err)
+	}
+	report, err := catalogcandidate.BuildBatch(catalogcandidate.BuildOptions{
+		SourceRunDir: filepath.Join(command.Root, filepath.FromSlash(command.SourceRun)),
+		ProposalDir:  filepath.Join(command.Root, filepath.FromSlash(command.Proposals)),
+		OutputDir:    filepath.Join(command.Root, filepath.FromSlash(command.Output)),
+		Agent: catalogcandidate.AgentProvenance{
+			Kind: "pi-proposed", Provider: command.Provider, Model: command.Model,
+			PromptSHA256: command.PromptHash, RunAt: runAt,
+		},
+	})
+	if report.IndexPath != "" {
+		fmt.Printf("built %d catalog candidates; review: %s\n", len(report.Candidates), report.IndexPath)
+	}
+	return err
+}
+
+type recipeSourcePilotCommand struct {
+	Root     string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	Manifest string `help:"Pilot source manifest, relative to root." default:"pilot/recipe-sources.yaml"`
+	Output   string `help:"Run output root, relative to root." default:".local-run/recipe-source-pilot"`
+}
+
+func (command *recipeSourcePilotCommand) Run() error {
+	runner := recipepilot.Runner{Fetcher: recipepilot.NewSafeFetcher()}
+	report, err := runner.Run(
+		context.Background(),
+		filepath.Join(command.Root, filepath.FromSlash(command.Manifest)),
+		filepath.Join(command.Root, filepath.FromSlash(command.Output)),
+	)
+	if report.Directory != "" {
+		fmt.Printf("recipe source pilot: %d succeeded, %d failed; output: %s\n", report.Index.Succeeded, report.Index.Failed, report.Directory)
+	}
+	return err
+}
+
+type recipeIntelligencePilotCommand struct {
+	Root       string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
+	Catalog    string `help:"Versioned assessment catalog, relative to root." default:"pilot/recipe-intelligence.yaml"`
+	SourceRun  string `help:"Source-pilot run directory or output root, relative to root." default:".local-run/recipe-source-pilot"`
+	Corpus     string `help:"Approved corpus directory, relative to root." default:"corpus/recipes"`
+	Output     string `help:"Assessment output root, relative to root." default:".local-run/recipe-intelligence"`
+	APIKey     string `help:"TypeSafe API key." env:"TYPESAFE_API_KEY" hidden:""`
+	Endpoint   string `help:"TypeSafe System One endpoint." default:"https://api.typesafe.ai/v1/systemone" env:"TYPESAFE_API_ENDPOINT"`
+	MaxRetries int    `help:"Retries for rate limiting or service overload." default:"3"`
+}
+
+func (command *recipeIntelligencePilotCommand) Run() error {
+	client := recipeintel.HTTPClient{Endpoint: command.Endpoint, APIKey: command.APIKey, MaxRetries: command.MaxRetries}
+	runner := recipeintel.Runner{Evaluator: client}
+	report, err := runner.Run(context.Background(), recipeintel.RunConfig{
+		CatalogPath: filepath.Join(command.Root, filepath.FromSlash(command.Catalog)),
+		SourcePath:  filepath.Join(command.Root, filepath.FromSlash(command.SourceRun)),
+		CorpusPath:  filepath.Join(command.Root, filepath.FromSlash(command.Corpus)),
+		OutputRoot:  filepath.Join(command.Root, filepath.FromSlash(command.Output)),
+	})
+	if report.Directory != "" {
+		fmt.Printf("recipe intelligence pilot: %d succeeded, %d failed; %d input tokens; output: %s\n", report.Index.Succeeded, report.Index.Failed, report.Index.InputTokens, report.Directory)
+	}
+	return err
+}
+
 type trueupInventoryCommand struct {
 	Root      string `help:"Repository root." default:"." env:"GROCERY_ROUTER_ROOT" type:"path"`
 	Inventory string `help:"Archived inventory path, relative to root." default:"archive/trueup/recipes.csv" env:"GROCERY_ROUTER_INVENTORY"`
@@ -110,13 +257,19 @@ func (command *trueupInventoryCommand) Run() error {
 }
 
 type cli struct {
-	Bootstrap       bootstrapCommand       `cmd:"" help:"Migrate and load the approved corpus when the database is empty."`
-	CorpusAudit     corpusAuditCommand     `cmd:"" help:"Validate the approved corpus against the PDF inventory."`
-	CorpusIngest    corpusIngestCommand    `cmd:"" help:"Migrate a database and transactionally ingest the approved corpus."`
-	CorpusRender    corpusRenderCommand    `cmd:"" help:"Regenerate checked human-readable recipe sections."`
-	Migrate         migrateCommand         `cmd:"" help:"Apply all database migrations."`
-	Serve           serveCommand           `cmd:"" help:"Start the local Grocery Router HTTP API."`
-	TrueupInventory trueupInventoryCommand `cmd:"" help:"Validate the PDF recipe inventory and its evidence paths."`
+	Bootstrap               bootstrapCommand               `cmd:"" help:"Migrate and load the approved corpus when the database is empty."`
+	CatalogAgentInputs      catalogAgentInputsCommand      `cmd:"" help:"Write compact source packets for isolated Pi standardization workers."`
+	CatalogAudit            catalogAuditCommand            `cmd:"" help:"Audit a catalog release and every referenced digest."`
+	CatalogCandidateBuild   catalogCandidateBuildCommand   `cmd:"" help:"Build strict review candidates from source evidence and Pi proposals."`
+	CatalogPublish          catalogPublishCommand          `cmd:"" help:"Transactionally publish a catalog review release to PostgreSQL."`
+	CorpusAudit             corpusAuditCommand             `cmd:"" help:"Validate the approved corpus against the PDF inventory."`
+	CorpusIngest            corpusIngestCommand            `cmd:"" help:"Migrate a database and transactionally ingest the approved corpus."`
+	CorpusRender            corpusRenderCommand            `cmd:"" help:"Regenerate checked human-readable recipe sections."`
+	Migrate                 migrateCommand                 `cmd:"" help:"Apply all database migrations."`
+	RecipeIntelligencePilot recipeIntelligencePilotCommand `cmd:"" help:"Assess source and approved recipes with the import-time Jev catalog."`
+	RecipeSourcePilot       recipeSourcePilotCommand       `cmd:"" help:"Fetch manifested public recipe JSON-LD into inspectable pilot output."`
+	Serve                   serveCommand                   `cmd:"" help:"Start the local Grocery Router HTTP API."`
+	TrueupInventory         trueupInventoryCommand         `cmd:"" help:"Validate the PDF recipe inventory and its evidence paths."`
 }
 
 func main() {
@@ -287,6 +440,7 @@ func serve(databasePath, address, webRoot string, authConfig auth.Config) error 
 	authHandler := auth.NewHTTPHandler(authConfig, authService, provider)
 	apiMux := http.NewServeMux()
 	authHandler.Register(apiMux)
+	apiMux.Handle("/api/v2/catalog/", authHandler.RequireSession(api.Handler()))
 	apiMux.Handle("/api/v2/households/", authHandler.RequireSession(api.Handler()))
 	handler, err := applicationHandler(apiMux, webRoot)
 	if err != nil {

@@ -1,0 +1,34 @@
+version: 1
+sources:
+  - id: chicken-and-biscuits-casserole
+    url: https://www.thecountrycook.net/chicken-and-biscuits-casserole/
+  - id: sausage-and-peppers
+    url: https://chefjeanpierre.com/recipes/sausage-and-peppers/
+  - id: crock-pot-italian-beef-sandwiches
+    url: https://iowagirleats.com/crock-pot-italian-beef-sandwiches/
+  - id: meatloaf
+    url: https://natashaskitchen.com/meatloaf-recipe/
+  - id: beef-stew-with-carrots-and-potatoes
+    url: https://www.onceuponachef.com/recipes/beef-stew-with-carrots-potatoes.html
+  - id: three-ingredient-teriyaki-chicken
+    url: https://tasty.co/recipe/3-ingredient-teriyaki-chicken
+  - id: slow-cooker-black-bean-soup
+    url: https://www.budgetbytes.com/slow-cooker-black-bean-soup/
+  - id: shakshuka
+    url: https://www.loveandlemons.com/shakshuka-recipe/
+  - id: lentil-soup
+    url: https://cookieandkate.com/best-lentil-soup-recipe/
+  - id: baked-chicken-breast
+    url: https://www.gimmesomeoven.com/baked-chicken-breast/
+  - id: banana-bread
+    url: https://sallysbakingaddiction.com/best-banana-bread-recipe/
+  - id: chicken-marsala
+    url: https://www.recipetineats.com/chicken-marsala/
+  - id: frittata
+    url: https://www.thekitchn.com/how-to-make-frittata-246166
+  - id: creamy-white-chicken-chili
+    url: https://www.budgetbytes.com/creamy-white-chicken-chili/
+  - id: love-and-lemons-banana-bread
+    url: https://www.loveandlemons.com/banana-bread/
+  - id: vegetarian-chili
+    url: https://cookieandkate.com/vegetarian-chili-recipe/

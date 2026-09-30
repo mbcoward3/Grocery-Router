@@ -1,0 +1,415 @@
+{
+  "format_version": 1,
+  "candidate_id": "slow-cooker-black-bean-soup#$/@graph[7]",
+  "catalog_key": "slow-cooker-black-bean-soup",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "slow-cooker-black-bean-soup",
+    "manifest_url": "https://www.budgetbytes.com/slow-cooker-black-bean-soup/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "slow-cooker-black-bean-soup.json",
+    "artifact_sha256": "40c7e4852fb298d80e9180f831fac6b89d87ad983f4be3c0e7a3c213e171e090",
+    "requested_url": "https://www.budgetbytes.com/slow-cooker-black-bean-soup/",
+    "final_url": "https://www.budgetbytes.com/slow-cooker-black-bean-soup/",
+    "fetched_at": "2026-09-29T01:45:03.56058345Z",
+    "response_body_sha256": "cd0da10393c7d09cb05ce6a67f8e01e2702e214c8f9d95e4eb5d152cfc8edc6e",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "34b19223311e6083c579099f0f4e4d67ead901625b2d0ecd10014266ec8ff05d",
+      "recipe_raw_sha256": "a2178e6c126340e827b2fa351e2852ba20b2df52db5698ab06bd765abaf7b6cd",
+      "recipe_raw_canonical_sha256": "374931f2b545c7ae79b0b0cf9405ca6015fb4393c9b68898f7e63f100664fa53"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "18dd11cd8b7f10e9bb5adec2c3d36a02d2fcfb897ae7f8d70388c5435fc0cb67",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Slow Cooker Black Bean Soup",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://www.budgetbytes.com/wp-content/uploads/2014/07/Slow-Cooker-Black-Bean-Soup.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "6; 6 1.5 cups each",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 15,
+      "max": 15
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 360,
+      "max": 360
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2 cloves garlic ($0.16)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "clove"
+          },
+          "item_phrase": "Garlic",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "$0.16"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1  yellow onion ($0.41)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Yellow Onion",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "yellow-onion",
+            "name": "Yellow Onion",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "$0.41"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "2 ribs celery ($0.33)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Celery",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "celery",
+            "name": "Celery",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[2]",
+              "message": "$0.33; source unit rib normalized to each"
+            }
+          ]
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "2  carrots ($0.28)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Carrots",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "carrots",
+            "name": "Carrots",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[3]",
+              "message": "$0.28"
+            }
+          ]
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "1 lb. black beans (uncooked) ($1.75)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "lb"
+          },
+          "item_phrase": "Black Beans",
+          "preparation": "uncooked",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-beans",
+            "name": "Black Beans",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[4]",
+              "message": "$1.75"
+            }
+          ]
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "1 cup salsa ($0.85)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "cup"
+          },
+          "item_phrase": "Chunky Salsa",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chunky-salsa",
+            "name": "Chunky Salsa",
+            "store_section": "Condiments",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[5]",
+              "message": "$0.85"
+            }
+          ]
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "1 Tbsp chili powder* ($0.30)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Chili Powder",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chili-powder",
+            "name": "Chili Powder",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[6]",
+              "message": "$0.30; referenced * note absent from JSON-LD"
+            }
+          ]
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "1/2 Tbsp ground cumin ($0.15)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Ground Cumin",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "ground-cumin",
+            "name": "Ground Cumin",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[7]",
+              "message": "$0.15"
+            }
+          ]
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "1 tsp dried oregano ($0.05)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Dried Oregano",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "dried-oregano",
+            "name": "Dried Oregano",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[8]",
+              "message": "$0.05"
+            }
+          ]
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "4 cups vegetable broth ($0.53)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "cup"
+          },
+          "item_phrase": "Vegetable Broth",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "vegetable-broth",
+            "name": "Vegetable Broth",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[9]",
+              "message": "$0.53"
+            }
+          ]
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "2 cups water ($0.00)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Water",
+          "non_shopping": true,
+          "grocery_proposal": {
+            "state": "match",
+            "key": "water",
+            "name": "Water",
+            "store_section": "Non-shopping",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[10]",
+              "message": "$0.00"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Mince the garlic, dice the onion and celery, and grate the carrots on a large holed cheese grater. Rinse the black beans in a colander under cool running water and pick out any stones or debris.",
+        "Combine the garlic, onion, celery, carrots, black beans, salsa, chili powder, cumin, oregano, vegetable broth, and water in a 5-7 quart slow cooker. Stir well.",
+        "Place the lid on the slow cooker and cook on high for 6-8 hours (you want the beans to get VERY soft). Once the beans are very soft, use an immersion blender** to blend the soup until it is thick and creamy (leave some beans whole if desired). Taste the soup and add salt if needed (this will depend on the brand of vegetable broth used)."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[6]",
+      "message": "source-note: Ingredient references * note, but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "instruction_sections[0].steps[2]",
+      "message": "source-note: Step references ** note, but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[9].grocery_item",
+      "message": "backfill: No exact existing grocery item for vegetable broth; proposed new pantry measured item."
+    }
+  ],
+  "source_notes": [
+    {
+      "reference": "*",
+      "state": "unresolved"
+    },
+    {
+      "reference": "**",
+      "state": "unresolved"
+    }
+  ],
+  "decisions": [
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed prepTime PT15M as hands-on time."
+    },
+    {
+      "field": "unattended",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed cookTime PT360M as unattended slow-cooker time."
+    },
+    {
+      "field": "ingredient_sections[0].ingredients[2].quantity.unit",
+      "state": "unresolved",
+      "rationale": "rewritten: Source unit 'ribs' for celery proposed as allowed unit 'each'."
+    },
+    {
+      "field": "ingredient_sections[0].ingredients[9].grocery_item",
+      "state": "unresolved",
+      "rationale": "backfilled: Proposed vegetable-broth item in Pantry with measured shopping mode."
+    },
+    {
+      "field": "ingredient_sections[0].ingredients[10].non_shopping",
+      "state": "unresolved",
+      "rationale": "backfilled: Marked water as non-shopping because source explicitly lists water with $0.00 cost."
+    }
+  ]
+}

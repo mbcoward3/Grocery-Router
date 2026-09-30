@@ -1,0 +1,1475 @@
+version: 1
+model: jev-1.13.0
+questions:
+- key: role.main
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: substantial centerpiece of a meal?'
+  criteria:
+    'true': 'The recipe matches: substantial centerpiece of a meal.'
+    'false': 'The recipe does not match: substantial centerpiece of a meal.'
+- key: role.side
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: accompaniment to another principal dish?'
+  criteria:
+    'true': 'The recipe matches: accompaniment to another principal dish.'
+    'false': 'The recipe does not match: accompaniment to another principal dish.'
+- key: role.complete_meal
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: ordinarily supplies the central dish and meaningful
+    accompaniments without requiring another recipe?'
+  criteria:
+    'true': 'The recipe matches: ordinarily supplies the central dish and meaningful accompaniments without requiring
+      another recipe.'
+    'false': 'The recipe does not match: ordinarily supplies the central dish and meaningful accompaniments without
+      requiring another recipe.'
+- key: role.soup_stew_chili
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: spoonable soup, stew, chowder, curry-like stew,
+    or chili?'
+  criteria:
+    'true': 'The recipe matches: spoonable soup, stew, chowder, curry-like stew, or chili.'
+    'false': 'The recipe does not match: spoonable soup, stew, chowder, curry-like stew, or chili.'
+- key: role.salad
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: salad is the prepared dish, not merely a garnish?'
+  criteria:
+    'true': 'The recipe matches: salad is the prepared dish, not merely a garnish.'
+    'false': 'The recipe does not match: salad is the prepared dish, not merely a garnish.'
+- key: role.sandwich_wrap
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: sandwich, burger, taco, wrap, or filled handheld?'
+  criteria:
+    'true': 'The recipe matches: sandwich, burger, taco, wrap, or filled handheld.'
+    'false': 'The recipe does not match: sandwich, burger, taco, wrap, or filled handheld.'
+- key: role.pasta_noodle
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: pasta or noodles are structurally central?'
+  criteria:
+    'true': 'The recipe matches: pasta or noodles are structurally central.'
+    'false': 'The recipe does not match: pasta or noodles are structurally central.'
+- key: role.rice_grain_bowl
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: rice, grain, or composed bowl is structurally
+    central?'
+  criteria:
+    'true': 'The recipe matches: rice, grain, or composed bowl is structurally central.'
+    'false': 'The recipe does not match: rice, grain, or composed bowl is structurally central.'
+- key: role.breakfast_brunch
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: conventionally suitable as breakfast or brunch?'
+  criteria:
+    'true': 'The recipe matches: conventionally suitable as breakfast or brunch.'
+    'false': 'The recipe does not match: conventionally suitable as breakfast or brunch.'
+- key: role.appetizer_snack
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: conventionally served as appetizer, party bite,
+    or snack?'
+  criteria:
+    'true': 'The recipe matches: conventionally served as appetizer, party bite, or snack.'
+    'false': 'The recipe does not match: conventionally served as appetizer, party bite, or snack.'
+- key: role.dessert
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: sweet concluding dish?'
+  criteria:
+    'true': 'The recipe matches: sweet concluding dish.'
+    'false': 'The recipe does not match: sweet concluding dish.'
+- key: role.baked_good
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: bread, cake, cookie, pastry, muffin, or similar
+    baked item?'
+  criteria:
+    'true': 'The recipe matches: bread, cake, cookie, pastry, muffin, or similar baked item.'
+    'false': 'The recipe does not match: bread, cake, cookie, pastry, muffin, or similar baked item.'
+- key: role.sauce_condiment_component
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: primarily a sauce, dressing, condiment, dough,
+    stock, filling, or reusable component?'
+  criteria:
+    'true': 'The recipe matches: primarily a sauce, dressing, condiment, dough, stock, filling, or reusable component.'
+    'false': 'The recipe does not match: primarily a sauce, dressing, condiment, dough, stock, filling, or reusable
+      component.'
+- key: role.beverage
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: prepared drink?'
+  criteria:
+    'true': 'The recipe matches: prepared drink.'
+    'false': 'The recipe does not match: prepared drink.'
+- key: role.potluck_dish
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: naturally portionable and presentable for a shared
+    spread; transport is assessed separately?'
+  criteria:
+    'true': 'The recipe matches: naturally portionable and presentable for a shared spread; transport is assessed
+      separately.'
+    'false': 'The recipe does not match: naturally portionable and presentable for a shared spread; transport is
+      assessed separately.'
+- key: identity.primary_format
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: choice
+  instructions: Which option best describes the recipe as written for primary format?
+  criteria:
+    plated: plated
+    one_vessel: one vessel
+    bowl: bowl
+    handheld: handheld
+    shareable_platter: shareable platter
+    slice_or_piece: slice or piece
+    beverage: beverage
+    component: component
+    unclear: unclear
+- key: identity.temperature
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: choice
+  instructions: Which option best describes the recipe as written for temperature?
+  criteria:
+    hot: hot
+    warm: warm
+    room_temperature: room temperature
+    cold: cold
+    flexible: flexible
+    unclear: unclear
+- key: cuisine.family
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: choice
+  instructions: Which option best describes the recipe as written for family?
+  criteria:
+    african: african
+    caribbean: caribbean
+    central_asian: central asian
+    east_asian: east asian
+    eastern_european: eastern european
+    latin_american: latin american
+    mediterranean: mediterranean
+    middle_eastern: middle eastern
+    north_american: north american
+    south_asian: south asian
+    southeast_asian: southeast asian
+    western_european: western european
+    cross_cultural_or_fusion: cross cultural or fusion
+    not_distinctive: not distinctive
+    unclear: unclear
+- key: cuisine.<family>.region
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: choice
+  enabled: false
+  instructions: Which direct regional cuisine child best describes the recipe?
+  criteria:
+    not_configured: The pinned regional taxonomy has not yet supplied options.
+    unclear: The recipe does not support a clear regional classification.
+- key: tradition.comfort_food
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: strongly resembles familiar, hearty comfort food?'
+  criteria:
+    'true': 'The recipe matches: strongly resembles familiar, hearty comfort food.'
+    'false': 'The recipe does not match: strongly resembles familiar, hearty comfort food.'
+- key: tradition.restaurant_style
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: resembles a dish commonly sought as a restaurant-style
+    meal?'
+  criteria:
+    'true': 'The recipe matches: resembles a dish commonly sought as a restaurant-style meal.'
+    'false': 'The recipe does not match: resembles a dish commonly sought as a restaurant-style meal.'
+- key: tradition.holiday_celebration
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: naturally associated with a holiday or celebratory
+    table independent of one named holiday?'
+  criteria:
+    'true': 'The recipe matches: naturally associated with a holiday or celebratory table independent of one named
+      holiday.'
+    'false': 'The recipe does not match: naturally associated with a holiday or celebratory table independent of
+      one named holiday.'
+- key: tradition.backyard_cookout
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: naturally suits grilling, barbecue, or backyard
+    cookout service?'
+  criteria:
+    'true': 'The recipe matches: naturally suits grilling, barbecue, or backyard cookout service.'
+    'false': 'The recipe does not match: naturally suits grilling, barbecue, or backyard cookout service.'
+- key: composition.center
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: choice
+  instructions: Which option best describes the recipe as written for center?
+  criteria:
+    red_meat: red meat
+    poultry: poultry
+    seafood: seafood
+    eggs: eggs
+    dairy: dairy
+    legumes: legumes
+    vegetables: vegetables
+    grain_or_pasta: grain or pasta
+    mixed: mixed
+    other: other
+    unclear: unclear
+- key: composition.plant_forward
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: vegetables, legumes, fruit, fungi, or whole grains
+    are central rather than incidental?'
+  criteria:
+    'true': 'The recipe matches: vegetables, legumes, fruit, fungi, or whole grains are central rather than incidental.'
+    'false': 'The recipe does not match: vegetables, legumes, fruit, fungi, or whole grains are central rather than
+      incidental.'
+- key: composition.protein_forward
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: a concentrated protein is the principal identity
+    of the dish?'
+  criteria:
+    'true': 'The recipe matches: a concentrated protein is the principal identity of the dish.'
+    'false': 'The recipe does not match: a concentrated protein is the principal identity of the dish.'
+- key: composition.produce_heavy
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: produce materially defines the dish and occupies
+    a large conceptual share?'
+  criteria:
+    'true': 'The recipe matches: produce materially defines the dish and occupies a large conceptual share.'
+    'false': 'The recipe does not match: produce materially defines the dish and occupies a large conceptual share.'
+- key: composition.starch_forward
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: bread, pasta, rice, potato, or another starch
+    materially defines the dish?'
+  criteria:
+    'true': 'The recipe matches: bread, pasta, rice, potato, or another starch materially defines the dish.'
+    'false': 'The recipe does not match: bread, pasta, rice, potato, or another starch materially defines the dish.'
+- key: composition.sauce_forward
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: sauce, gravy, dressing, broth, or cooking liquid
+    is central to the experience?'
+  criteria:
+    'true': 'The recipe matches: sauce, gravy, dressing, broth, or cooking liquid is central to the experience.'
+    'false': 'The recipe does not match: sauce, gravy, dressing, broth, or cooking liquid is central to the experience.'
+- key: composition.cheese_forward
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: cheese is a defining component rather than garnish
+    or minor seasoning?'
+  criteria:
+    'true': 'The recipe matches: cheese is a defining component rather than garnish or minor seasoning.'
+    'false': 'The recipe does not match: cheese is a defining component rather than garnish or minor seasoning.'
+- key: composition.uses_alcohol_materially
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: alcohol contributes meaningful volume or defining
+    flavor, not a negligible optional splash?'
+  criteria:
+    'true': 'The recipe matches: alcohol contributes meaningful volume or defining flavor, not a negligible optional
+      splash.'
+    'false': 'The recipe does not match: alcohol contributes meaningful volume or defining flavor, not a negligible
+      optional splash.'
+- key: composition.fresh_herb_forward
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: fresh herbs materially define the dish rather
+    than acting only as optional garnish?'
+  criteria:
+    'true': 'The recipe matches: fresh herbs materially define the dish rather than acting only as optional garnish.'
+    'false': 'The recipe does not match: fresh herbs materially define the dish rather than acting only as optional
+      garnish.'
+- key: composition.pantry_heavy
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: most defining ingredients are shelf-stable pantry
+    or freezer items?'
+  criteria:
+    'true': 'The recipe matches: most defining ingredients are shelf-stable pantry or freezer items.'
+    'false': 'The recipe does not match: most defining ingredients are shelf-stable pantry or freezer items.'
+- key: method.raw_assembly
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: assembly without meaningful cooking?'
+  criteria:
+    'true': 'The recipe matches: assembly without meaningful cooking.'
+    'false': 'The recipe does not match: assembly without meaningful cooking.'
+- key: method.baking
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: dry oven baking?'
+  criteria:
+    'true': 'The recipe matches: dry oven baking.'
+    'false': 'The recipe does not match: dry oven baking.'
+- key: method.roasting
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: oven roasting or high-heat browning?'
+  criteria:
+    'true': 'The recipe matches: oven roasting or high-heat browning.'
+    'false': 'The recipe does not match: oven roasting or high-heat browning.'
+- key: method.broiling
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: direct overhead heat?'
+  criteria:
+    'true': 'The recipe matches: direct overhead heat.'
+    'false': 'The recipe does not match: direct overhead heat.'
+- key: method.stovetop_saute
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: sautéing, pan cooking, or shallow frying?'
+  criteria:
+    'true': 'The recipe matches: sautéing, pan cooking, or shallow frying.'
+    'false': 'The recipe does not match: sautéing, pan cooking, or shallow frying.'
+- key: method.searing_browning
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: deliberate surface browning as a meaningful step?'
+  criteria:
+    'true': 'The recipe matches: deliberate surface browning as a meaningful step.'
+    'false': 'The recipe does not match: deliberate surface browning as a meaningful step.'
+- key: method.deep_frying
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: deep-fat frying?'
+  criteria:
+    'true': 'The recipe matches: deep-fat frying.'
+    'false': 'The recipe does not match: deep-fat frying.'
+- key: method.boiling_simmering
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: boiling, poaching, or simmering in liquid?'
+  criteria:
+    'true': 'The recipe matches: boiling, poaching, or simmering in liquid.'
+    'false': 'The recipe does not match: boiling, poaching, or simmering in liquid.'
+- key: method.braising
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: browning followed by covered or moist slow cooking?'
+  criteria:
+    'true': 'The recipe matches: browning followed by covered or moist slow cooking.'
+    'false': 'The recipe does not match: browning followed by covered or moist slow cooking.'
+- key: method.slow_cooker
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: slow cooker is a primary cooking path?'
+  criteria:
+    'true': 'The recipe matches: slow cooker is a primary cooking path.'
+    'false': 'The recipe does not match: slow cooker is a primary cooking path.'
+- key: method.pressure_cooker
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: pressure cooker is a primary cooking path?'
+  criteria:
+    'true': 'The recipe matches: pressure cooker is a primary cooking path.'
+    'false': 'The recipe does not match: pressure cooker is a primary cooking path.'
+- key: method.grilling
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: outdoor or indoor grill is a primary path?'
+  criteria:
+    'true': 'The recipe matches: outdoor or indoor grill is a primary path.'
+    'false': 'The recipe does not match: outdoor or indoor grill is a primary path.'
+- key: method.smoking
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: smoke cooking materially defines the method?'
+  criteria:
+    'true': 'The recipe matches: smoke cooking materially defines the method.'
+    'false': 'The recipe does not match: smoke cooking materially defines the method.'
+- key: method.steaming
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: steam is a primary cooking method?'
+  criteria:
+    'true': 'The recipe matches: steam is a primary cooking method.'
+    'false': 'The recipe does not match: steam is a primary cooking method.'
+- key: method.microwave
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: microwave is materially used, not merely for
+    melting or reheating?'
+  criteria:
+    'true': 'The recipe matches: microwave is materially used, not merely for melting or reheating.'
+    'false': 'The recipe does not match: microwave is materially used, not merely for melting or reheating.'
+- key: method.blending_pureeing
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: blending or pureeing is required for intended
+    texture?'
+  criteria:
+    'true': 'The recipe matches: blending or pureeing is required for intended texture.'
+    'false': 'The recipe does not match: blending or pureeing is required for intended texture.'
+- key: method.kneading_shaping
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: dough handling or repeated shaping is a meaningful
+    task?'
+  criteria:
+    'true': 'The recipe matches: dough handling or repeated shaping is a meaningful task.'
+    'false': 'The recipe does not match: dough handling or repeated shaping is a meaningful task.'
+- key: method.marination_brining
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: advance marination or brining materially affects
+    the result?'
+  criteria:
+    'true': 'The recipe matches: advance marination or brining materially affects the result.'
+    'false': 'The recipe does not match: advance marination or brining materially affects the result.'
+- key: method.chilling_setting
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: chilling or resting is needed to set, firm, or
+    finish the dish?'
+  criteria:
+    'true': 'The recipe matches: chilling or resting is needed to set, firm, or finish the dish.'
+    'false': 'The recipe does not match: chilling or resting is needed to set, firm, or finish the dish.'
+- key: method.reduction_emulsion
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: reduction or emulsion requires active technique?'
+  criteria:
+    'true': 'The recipe matches: reduction or emulsion requires active technique.'
+    'false': 'The recipe does not match: reduction or emulsion requires active technique.'
+- key: method.cookware_pattern
+  version: 1
+  projection: method
+  materialization: facet
+  type: choice
+  instructions: Which option best describes the recipe as written for cookware pattern?
+  criteria:
+    no_cook: no cook
+    one_pan_or_pot: one pan or pot
+    sheet_pan: sheet pan
+    single_appliance_vessel: single appliance vessel
+    multiple_vessels: multiple vessels
+    unclear: unclear
+- key: equipment.oven
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: conventional oven is required?'
+  criteria:
+    'true': 'The recipe matches: conventional oven is required.'
+    'false': 'The recipe does not match: conventional oven is required.'
+- key: equipment.stovetop
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: stovetop or portable burner is required?'
+  criteria:
+    'true': 'The recipe matches: stovetop or portable burner is required.'
+    'false': 'The recipe does not match: stovetop or portable burner is required.'
+- key: equipment.slow_cooker
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: slow cooker is required for the represented method?'
+  criteria:
+    'true': 'The recipe matches: slow cooker is required for the represented method.'
+    'false': 'The recipe does not match: slow cooker is required for the represented method.'
+- key: equipment.pressure_cooker
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: pressure cooker is required?'
+  criteria:
+    'true': 'The recipe matches: pressure cooker is required.'
+    'false': 'The recipe does not match: pressure cooker is required.'
+- key: equipment.outdoor_grill
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: outdoor grill is required?'
+  criteria:
+    'true': 'The recipe matches: outdoor grill is required.'
+    'false': 'The recipe does not match: outdoor grill is required.'
+- key: equipment.food_processor_blender
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: powered processor, blender, or immersion blender
+    is required?'
+  criteria:
+    'true': 'The recipe matches: powered processor, blender, or immersion blender is required.'
+    'false': 'The recipe does not match: powered processor, blender, or immersion blender is required.'
+- key: equipment.stand_or_hand_mixer
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: powered mixer is required for intended result?'
+  criteria:
+    'true': 'The recipe matches: powered mixer is required for intended result.'
+    'false': 'The recipe does not match: powered mixer is required for intended result.'
+- key: equipment.specialty_bakeware
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: specialty pan, mold, stone, or similarly uncommon
+    bakeware is required?'
+  criteria:
+    'true': 'The recipe matches: specialty pan, mold, stone, or similarly uncommon bakeware is required.'
+    'false': 'The recipe does not match: specialty pan, mold, stone, or similarly uncommon bakeware is required.'
+- key: equipment.thermometer_helpful
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: thermometer materially improves reliable doneness
+    or safety control?'
+  criteria:
+    'true': 'The recipe matches: thermometer materially improves reliable doneness or safety control.'
+    'false': 'The recipe does not match: thermometer materially improves reliable doneness or safety control.'
+- key: equipment.specialty_tool_required
+  version: 1
+  projection: method
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: a tool outside ordinary knife, board, bowls,
+    pots, pans, sheet pan, and utensils is required?'
+  criteria:
+    'true': 'The recipe matches: a tool outside ordinary knife, board, bowls, pots, pans, sheet pan, and utensils
+      is required.'
+    'false': 'The recipe does not match: a tool outside ordinary knife, board, bowls, pots, pans, sheet pan, and
+      utensils is required.'
+- key: equipment.burden
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for burden using the ordered criteria.
+  criteria:
+  - '`ordinary basics only`'
+  - '`one common appliance`'
+  - '`several common tools`'
+  - '`one specialty tool`'
+  - '`multiple specialty tools or setup`'
+- key: flavor.heat
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for heat using the ordered criteria.
+  criteria:
+  - no chile heat
+  - background warmth
+  - noticeable mild heat
+  - clearly spicy
+  - intense chile heat
+- key: flavor.sweetness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for sweetness using the ordered criteria.
+  criteria:
+  - not sweet
+  - faint sweetness
+  - balanced sweet note
+  - distinctly sweet
+  - dessert-level sweetness
+- key: flavor.richness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for richness using the ordered criteria.
+  criteria:
+  - very light
+  - light
+  - moderate
+  - rich
+  - exceptionally rich/heavy
+- key: flavor.acidity
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for acidity using the ordered criteria.
+  criteria:
+  - no evident acidity
+  - faint
+  - balancing
+  - bright/tangy
+  - sharply acidic
+- key: flavor.savoriness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for savoriness using the ordered criteria.
+  criteria:
+  - mild
+  - lightly savory
+  - clearly savory
+  - deeply savory
+  - intensely umami/savory
+- key: flavor.smokiness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for smokiness using the ordered criteria.
+  criteria:
+  - none
+  - trace
+  - supporting
+  - prominent
+  - defining
+- key: flavor.herbaceousness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for herbaceousness using the ordered criteria.
+  criteria:
+  - none
+  - light
+  - noticeable
+  - prominent
+  - defining fresh-herb character
+- key: flavor.spice_aromatic_intensity
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for spice aromatic intensity using the ordered criteria.
+  criteria:
+  - neutral
+  - lightly seasoned
+  - aromatic
+  - strongly aromatic
+  - assertive/complex spice profile
+- key: texture.crispness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for crispness using the ordered criteria.
+  criteria:
+  - none
+  - minor accent
+  - meaningful contrast
+  - prominent
+  - defining crisp/crunchy texture
+- key: texture.creaminess
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for creaminess using the ordered criteria.
+  criteria:
+  - none
+  - slight
+  - moderate
+  - prominent
+  - defining creamy texture
+- key: texture.brothiness_sauciness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for brothiness sauciness using the ordered criteria.
+  criteria:
+  - dry
+  - lightly coated
+  - saucy
+  - very saucy/brothy
+  - liquid-forward
+- key: texture.tender_softness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for tender softness using the ordered criteria.
+  criteria:
+  - firm/chewy
+  - some tenderness
+  - tender
+  - very soft
+  - fall-apart/pureed
+- key: experience.familiarity
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for familiarity using the ordered criteria.
+  criteria:
+  - highly unfamiliar to a typical US home diner
+  - somewhat unfamiliar
+  - mixed
+  - familiar
+  - highly familiar/classic
+- key: experience.flavor_assertiveness
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for flavor assertiveness using the ordered criteria.
+  criteria:
+  - very mild
+  - mild
+  - balanced
+  - bold
+  - highly assertive
+- key: effort.prep_complexity
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for prep complexity using the ordered criteria.
+  criteria:
+  - almost none
+  - simple
+  - several routine tasks
+  - many or intricate tasks
+  - elaborate multi-part prep
+- key: effort.cooking_skill
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for cooking skill using the ordered criteria.
+  criteria:
+  - assembly/basic reheating
+  - beginner
+  - comfortable home cook
+  - advanced technique
+  - expert precision
+- key: effort.active_attention
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for active attention using the ordered criteria.
+  criteria:
+  - set-and-forget
+  - occasional checks
+  - periodic attention
+  - frequent attention
+  - nearly continuous attention
+- key: effort.timing_sensitivity
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for timing sensitivity using the ordered criteria.
+  criteria:
+  - highly forgiving
+  - forgiving
+  - some timing matters
+  - timing-sensitive
+  - narrow timing window across components
+- key: effort.cleanup
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for cleanup using the ordered criteria.
+  criteria:
+  - minimal
+  - light
+  - moderate
+  - substantial
+  - extensive multi-vessel cleanup
+- key: effort.coordination
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for coordination using the ordered criteria.
+  criteria:
+  - one linear path
+  - mostly linear
+  - a few coordinated components
+  - several parallel components
+  - complex synchronized finish
+- key: effort.ingredient_prep
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for ingredient prep using the ordered criteria.
+  criteria:
+  - open/measure only
+  - limited chopping
+  - routine chopping
+  - substantial prep
+  - intricate cutting/shaping
+- key: effort.failure_sensitivity
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for failure sensitivity using the ordered criteria.
+  criteria:
+  - difficult to spoil
+  - very forgiving
+  - ordinary care
+  - easy to degrade
+  - technically fragile
+- key: effort.interruption_tolerance
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for interruption tolerance using the ordered criteria.
+  criteria:
+  - can pause freely
+  - mostly pausable
+  - some fixed windows
+  - difficult to interrupt
+  - continuous precise execution
+- key: effort.overall
+  version: 1
+  projection: method
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for overall using the ordered criteria.
+  criteria:
+  - trivial
+  - easy
+  - moderate
+  - involved
+  - project recipe
+- key: utility.weeknight_friendly
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: reasonably practical on an ordinary work night
+    considering active work, attention, and coordination—not merely total time?'
+  criteria:
+    'true': 'The recipe matches: reasonably practical on an ordinary work night considering active work, attention,
+      and coordination—not merely total time.'
+    'false': 'The recipe does not match: reasonably practical on an ordinary work night considering active work,
+      attention, and coordination—not merely total time.'
+- key: utility.busy_night_friendly
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: practical when the cook has little uninterrupted
+    attention?'
+  criteria:
+    'true': 'The recipe matches: practical when the cook has little uninterrupted attention.'
+    'false': 'The recipe does not match: practical when the cook has little uninterrupted attention.'
+- key: utility.weekend_project
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: effort or technique makes leisurely cooking part
+    of the appeal?'
+  criteria:
+    'true': 'The recipe matches: effort or technique makes leisurely cooking part of the appeal.'
+    'false': 'The recipe does not match: effort or technique makes leisurely cooking part of the appeal.'
+- key: utility.make_ahead
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: substantial work can be completed earlier without
+    meaningful quality loss?'
+  criteria:
+    'true': 'The recipe matches: substantial work can be completed earlier without meaningful quality loss.'
+    'false': 'The recipe does not match: substantial work can be completed earlier without meaningful quality loss.'
+- key: utility.assemble_ahead
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: dish can be assembled earlier and cooked or finished
+    later?'
+  criteria:
+    'true': 'The recipe matches: dish can be assembled earlier and cooked or finished later.'
+    'false': 'The recipe does not match: dish can be assembled earlier and cooked or finished later.'
+- key: utility.batch_cooking
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: naturally supports making a large batch without
+    delicate per-serving work?'
+  criteria:
+    'true': 'The recipe matches: naturally supports making a large batch without delicate per-serving work.'
+    'false': 'The recipe does not match: naturally supports making a large batch without delicate per-serving work.'
+- key: utility.leftovers
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: ordinarily retains good eating quality after
+    refrigeration and reheating or cold service?'
+  criteria:
+    'true': 'The recipe matches: ordinarily retains good eating quality after refrigeration and reheating or cold
+      service.'
+    'false': 'The recipe does not match: ordinarily retains good eating quality after refrigeration and reheating
+      or cold service.'
+- key: utility.freezer_friendly
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: finished dish or a clearly defined prepared stage
+    ordinarily freezes and recovers well?'
+  criteria:
+    'true': 'The recipe matches: finished dish or a clearly defined prepared stage ordinarily freezes and recovers
+      well.'
+    'false': 'The recipe does not match: finished dish or a clearly defined prepared stage ordinarily freezes and
+      recovers well.'
+- key: utility.meal_prep
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: portions and retains well for planned later meals?'
+  criteria:
+    'true': 'The recipe matches: portions and retains well for planned later meals.'
+    'false': 'The recipe does not match: portions and retains well for planned later meals.'
+- key: utility.scales_up
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: can serve more people without proportionally
+    increasing delicate or serial work?'
+  criteria:
+    'true': 'The recipe matches: can serve more people without proportionally increasing delicate or serial work.'
+    'false': 'The recipe does not match: can serve more people without proportionally increasing delicate or serial
+      work.'
+- key: utility.scales_down
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: can be reduced without awkward package, vessel,
+    or indivisible-component problems?'
+  criteria:
+    'true': 'The recipe matches: can be reduced without awkward package, vessel, or indivisible-component problems.'
+    'false': 'The recipe does not match: can be reduced without awkward package, vessel, or indivisible-component
+      problems.'
+- key: utility.crowd_friendly
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: service and broad practicality suit a group meal?'
+  criteria:
+    'true': 'The recipe matches: service and broad practicality suit a group meal.'
+    'false': 'The recipe does not match: service and broad practicality suit a group meal.'
+- key: utility.entertaining
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: presentation and execution suit hosting when
+    the cook wants a notable meal?'
+  criteria:
+    'true': 'The recipe matches: presentation and execution suit hosting when the cook wants a notable meal.'
+    'false': 'The recipe does not match: presentation and execution suit hosting when the cook wants a notable meal.'
+- key: utility.kid_approachable
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: flavor, format, and texture are broadly approachable
+    for children; this is never a guarantee for a specific child?'
+  criteria:
+    'true': 'The recipe matches: flavor, format, and texture are broadly approachable for children; this is never
+      a guarantee for a specific child.'
+    'false': 'The recipe does not match: flavor, format, and texture are broadly approachable for children; this
+      is never a guarantee for a specific child.'
+- key: utility.portable
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: transports without likely leakage, collapse,
+    or immediate quality loss?'
+  criteria:
+    'true': 'The recipe matches: transports without likely leakage, collapse, or immediate quality loss.'
+    'false': 'The recipe does not match: transports without likely leakage, collapse, or immediate quality loss.'
+- key: utility.holds_for_service
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: can wait after completion without a narrow quality
+    window?'
+  criteria:
+    'true': 'The recipe matches: can wait after completion without a narrow quality window.'
+    'false': 'The recipe does not match: can wait after completion without a narrow quality window.'
+- key: utility.quick_serving
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: once cooking begins, individual portions do not
+    require slow serial assembly?'
+  criteria:
+    'true': 'The recipe matches: once cooking begins, individual portions do not require slow serial assembly.'
+    'false': 'The recipe does not match: once cooking begins, individual portions do not require slow serial assembly.'
+- key: utility.lunch_suitable
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: practical and natural as lunch, including packed
+    or reheated lunch where applicable?'
+  criteria:
+    'true': 'The recipe matches: practical and natural as lunch, including packed or reheated lunch where applicable.'
+    'false': 'The recipe does not match: practical and natural as lunch, including packed or reheated lunch where
+      applicable.'
+- key: utility.warm_weather
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: preparation and eating experience naturally suit
+    warm weather?'
+  criteria:
+    'true': 'The recipe matches: preparation and eating experience naturally suit warm weather.'
+    'false': 'The recipe does not match: preparation and eating experience naturally suit warm weather.'
+- key: utility.cold_weather
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: preparation and eating experience naturally suit
+    cold weather?'
+  criteria:
+    'true': 'The recipe matches: preparation and eating experience naturally suit cold weather.'
+    'false': 'The recipe does not match: preparation and eating experience naturally suit cold weather.'
+- key: utility.comforting
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: likely to be sought for warmth, familiarity,
+    or emotional comfort?'
+  criteria:
+    'true': 'The recipe matches: likely to be sought for warmth, familiarity, or emotional comfort.'
+    'false': 'The recipe does not match: likely to be sought for warmth, familiarity, or emotional comfort.'
+- key: utility.special_occasion
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: has enough ceremony, presentation, or distinctiveness
+    for a special meal?'
+  criteria:
+    'true': 'The recipe matches: has enough ceremony, presentation, or distinctiveness for a special meal.'
+    'false': 'The recipe does not match: has enough ceremony, presentation, or distinctiveness for a special meal.'
+- key: utility.low_supervision
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: most cooking proceeds safely with infrequent
+    checks?'
+  criteria:
+    'true': 'The recipe matches: most cooking proceeds safely with infrequent checks.'
+    'false': 'The recipe does not match: most cooking proceeds safely with infrequent checks.'
+- key: utility.flexible_serving_time
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: serving can move by roughly ordinary household
+    delay without significant degradation; no exact duration is implied?'
+  criteria:
+    'true': 'The recipe matches: serving can move by roughly ordinary household delay without significant degradation;
+      no exact duration is implied.'
+    'false': 'The recipe does not match: serving can move by roughly ordinary household delay without significant
+      degradation; no exact duration is implied.'
+- key: shopping.specialty_burden
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for specialty burden using the ordered criteria.
+  criteria:
+  - standard staples
+  - mostly common
+  - one less-common item
+  - several specialty items
+  - specialty sourcing defines recipe
+- key: shopping.perishability
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for perishability using the ordered criteria.
+  criteria:
+  - mostly shelf-stable
+  - low
+  - moderate
+  - several perishables
+  - highly perishable/time-sensitive basket
+- key: shopping.package_waste_risk
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for package waste risk using the ordered criteria.
+  criteria:
+  - little likely remainder
+  - small
+  - moderate
+  - several partial packages
+  - many specialty remainders likely
+- key: shopping.relative_cost
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for relative cost using the ordered criteria.
+  criteria:
+  - very economical
+  - economical
+  - moderate
+  - expensive
+  - premium ingredients dominate
+- key: shopping.substitution_flexibility
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for substitution flexibility using the ordered criteria.
+  criteria:
+  - many easy swaps
+  - several
+  - some
+  - few
+  - defining ingredients are difficult to replace
+- key: shopping.pantry_likelihood
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for pantry likelihood using the ordered criteria.
+  criteria:
+  - mostly ordinary pantry staples
+  - many likely staples
+  - mixed
+  - mostly planned purchases
+  - specialty fresh purchases dominate
+- key: adapt.vegetarian
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for vegetarian using the ordered criteria.
+  criteria:
+  - already compatible
+  - one trivial omission/swap
+  - straightforward changes
+  - major redesign
+  - incompatible with core identity
+- key: adapt.vegan
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for vegan using the ordered criteria.
+  criteria:
+  - already compatible
+  - one trivial omission/swap
+  - straightforward changes
+  - major redesign
+  - incompatible with core identity
+- key: adapt.gluten_free
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for gluten free using the ordered criteria.
+  criteria:
+  - already compatible by ingredients
+  - one reliable swap
+  - several straightforward swaps
+  - technically difficult
+  - incompatible with core identity
+- key: adapt.dairy_free
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for dairy free using the ordered criteria.
+  criteria:
+  - already compatible
+  - one reliable swap
+  - several straightforward swaps
+  - major texture/flavor redesign
+  - incompatible with core identity
+- key: adapt.lower_heat
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for lower heat using the ordered criteria.
+  criteria:
+  - no adaptation needed
+  - omit garnish/condiment
+  - simple reduction
+  - several flavor-balancing changes
+  - chile heat defines dish
+- key: adapt.alcohol_free
+  version: 1
+  projection: ingredients
+  materialization: facet
+  type: score
+  instructions: Rate the recipe as written for alcohol free using the ordered criteria.
+  criteria:
+  - no alcohol
+  - omit without impact
+  - straightforward substitute
+  - major flavor/method impact
+  - alcohol defines dish
+- key: search.cozy
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: warm, comforting, homey eating experience?'
+  criteria:
+    'true': 'The recipe matches: warm, comforting, homey eating experience.'
+    'false': 'The recipe does not match: warm, comforting, homey eating experience.'
+- key: search.fresh_bright
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: fresh, crisp, herbaceous, or acidic character
+    dominates over richness?'
+  criteria:
+    'true': 'The recipe matches: fresh, crisp, herbaceous, or acidic character dominates over richness.'
+    'false': 'The recipe does not match: fresh, crisp, herbaceous, or acidic character dominates over richness.'
+- key: search.light_meal
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: likely experienced as a lighter meal rather than
+    rich or heavy?'
+  criteria:
+    'true': 'The recipe matches: likely experienced as a lighter meal rather than rich or heavy.'
+    'false': 'The recipe does not match: likely experienced as a lighter meal rather than rich or heavy.'
+- key: search.hearty
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: substantial, filling, and robust?'
+  criteria:
+    'true': 'The recipe matches: substantial, filling, and robust.'
+    'false': 'The recipe does not match: substantial, filling, and robust.'
+- key: search.indulgent
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: richness, sweetness, fried character, or abundance
+    makes indulgence part of appeal?'
+  criteria:
+    'true': 'The recipe matches: richness, sweetness, fried character, or abundance makes indulgence part of appeal.'
+    'false': 'The recipe does not match: richness, sweetness, fried character, or abundance makes indulgence part
+      of appeal.'
+- key: search.family_style
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: naturally served communally rather than individually
+    composed?'
+  criteria:
+    'true': 'The recipe matches: naturally served communally rather than individually composed.'
+    'false': 'The recipe does not match: naturally served communally rather than individually composed.'
+- key: search.impressive
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: likely to feel notably impressive relative to
+    ordinary home cooking?'
+  criteria:
+    'true': 'The recipe matches: likely to feel notably impressive relative to ordinary home cooking.'
+    'false': 'The recipe does not match: likely to feel notably impressive relative to ordinary home cooking.'
+- key: search.casual
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: naturally fits an informal meal?'
+  criteria:
+    'true': 'The recipe matches: naturally fits an informal meal.'
+    'false': 'The recipe does not match: naturally fits an informal meal.'
+- key: search.hands_off
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: unattended cooking materially dominates active
+    intervention?'
+  criteria:
+    'true': 'The recipe matches: unattended cooking materially dominates active intervention.'
+    'false': 'The recipe does not match: unattended cooking materially dominates active intervention.'
+- key: search.craveable
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: bold comfort, texture, richness, or familiarity
+    gives strong treat-like appeal; retained only after evaluation because this is subjective?'
+  criteria:
+    'true': 'The recipe matches: bold comfort, texture, richness, or familiarity gives strong treat-like appeal;
+      retained only after evaluation because this is subjective.'
+    'false': 'The recipe does not match: bold comfort, texture, richness, or familiarity gives strong treat-like
+      appeal; retained only after evaluation because this is subjective.'
+- key: search.customizable_at_table
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: diners can meaningfully choose toppings, fillings,
+    or components at service?'
+  criteria:
+    'true': 'The recipe matches: diners can meaningfully choose toppings, fillings, or components at service.'
+    'false': 'The recipe does not match: diners can meaningfully choose toppings, fillings, or components at service.'
+- key: search.good_for_picky_eaters
+  version: 1
+  projection: full_recipe
+  materialization: facet
+  type: noul
+  instructions: 'Does the recipe as written match this definition: simple recognizable format with separable or
+    mild components; household feedback must eventually override this generic signal?'
+  criteria:
+    'true': 'The recipe matches: simple recognizable format with separable or mild components; household feedback
+      must eventually override this generic signal.'
+    'false': 'The recipe does not match: simple recognizable format with separable or mild components; household
+      feedback must eventually override this generic signal.'

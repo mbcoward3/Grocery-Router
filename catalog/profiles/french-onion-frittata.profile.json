@@ -1,0 +1,740 @@
+{
+  "format_version": 1,
+  "status": "reviewable",
+  "catalog_key": "french-onion-frittata",
+  "candidate_digest": "sha256:6d37bfbf2949725d08ef44ca6d70e1a4a84edf8d52facc6c70d07320e922ce54",
+  "assessment_source_kind": "source_artifact",
+  "projection_input_sha256": {
+    "ingredients": "740dc366271f6f8bb06475213acfee31d1b7424f11ee549cf9307ed2a36d72f0",
+    "method": "118a90841bc97a2f0172ef5396d42876751c891d0903c6a033e6e3e6b9d45a02",
+    "full_recipe": "118a90841bc97a2f0172ef5396d42876751c891d0903c6a033e6e3e6b9d45a02"
+  },
+  "catalog_version": 1,
+  "catalog_sha256": "c27212a09c9b6d77a0c77710405c047e5a7a2ace2d1590af19d4cbfd20c433a8",
+  "model": "jev-1.13.0",
+  "assessment_artifact_sha256": "sha256:2fef26a0232f6c993ad1aa0aa4b7a5a132609f2a89e63c6bddd80187c1e857e3",
+  "answers": {
+    "adapt.alcohol_free": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.38,
+      "confidence": 0.69
+    },
+    "adapt.dairy_free": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.6,
+      "confidence": 0.48
+    },
+    "adapt.gluten_free": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.53,
+      "confidence": 0.55
+    },
+    "adapt.lower_heat": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.42,
+      "confidence": 0.65
+    },
+    "adapt.vegan": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 3.73,
+      "confidence": 0.78
+    },
+    "adapt.vegetarian": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.15,
+      "confidence": 0.88
+    },
+    "composition.center": {
+      "type": "choice",
+      "disposition": "needs_review",
+      "choice": "eggs",
+      "confidence": 0.96
+    },
+    "composition.cheese_forward": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.89
+    },
+    "composition.fresh_herb_forward": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.2
+    },
+    "composition.pantry_heavy": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.16
+    },
+    "composition.plant_forward": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.62
+    },
+    "composition.produce_heavy": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.67
+    },
+    "composition.protein_forward": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.65
+    },
+    "composition.sauce_forward": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.07
+    },
+    "composition.starch_forward": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.26
+    },
+    "composition.uses_alcohol_materially": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.04
+    },
+    "cuisine.family": {
+      "type": "choice",
+      "disposition": "needs_review",
+      "choice": "western_european",
+      "confidence": 1.0
+    },
+    "effort.active_attention": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.3,
+      "confidence": 0.7
+    },
+    "effort.cleanup": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.03,
+      "confidence": 0.66
+    },
+    "effort.cooking_skill": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.21,
+      "confidence": 0.81
+    },
+    "effort.coordination": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.64,
+      "confidence": 0.55
+    },
+    "effort.failure_sensitivity": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.78,
+      "confidence": 0.62
+    },
+    "effort.ingredient_prep": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.41,
+      "confidence": 0.62
+    },
+    "effort.interruption_tolerance": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.23,
+      "confidence": 0.67
+    },
+    "effort.overall": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.34,
+      "confidence": 0.58
+    },
+    "effort.prep_complexity": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.48,
+      "confidence": 0.58
+    },
+    "effort.timing_sensitivity": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.65,
+      "confidence": 0.58
+    },
+    "equipment.burden": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.17,
+      "confidence": 0.65
+    },
+    "equipment.food_processor_blender": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "equipment.outdoor_grill": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.01
+    },
+    "equipment.oven": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.84
+    },
+    "equipment.pressure_cooker": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "equipment.slow_cooker": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "equipment.specialty_bakeware": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.13
+    },
+    "equipment.specialty_tool_required": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.14
+    },
+    "equipment.stand_or_hand_mixer": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "equipment.stovetop": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.89
+    },
+    "equipment.thermometer_helpful": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.35
+    },
+    "experience.familiarity": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.33,
+      "confidence": 0.42
+    },
+    "experience.flavor_assertiveness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.96,
+      "confidence": 0.87
+    },
+    "flavor.acidity": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.66,
+      "confidence": 0.7
+    },
+    "flavor.heat": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.04,
+      "confidence": 0.97
+    },
+    "flavor.herbaceousness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.07,
+      "confidence": 0.94
+    },
+    "flavor.richness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 2.99,
+      "confidence": 0.94
+    },
+    "flavor.savoriness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 3.04,
+      "confidence": 0.93
+    },
+    "flavor.smokiness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.27,
+      "confidence": 0.78
+    },
+    "flavor.spice_aromatic_intensity": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.36,
+      "confidence": 0.65
+    },
+    "flavor.sweetness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.96,
+      "confidence": 0.79
+    },
+    "identity.primary_format": {
+      "type": "choice",
+      "disposition": "needs_review",
+      "choice": "slice_or_piece",
+      "confidence": 0.95
+    },
+    "identity.temperature": {
+      "type": "choice",
+      "disposition": "needs_review",
+      "choice": "warm",
+      "confidence": 0.72
+    },
+    "method.baking": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.22
+    },
+    "method.blending_pureeing": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.03
+    },
+    "method.boiling_simmering": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.03
+    },
+    "method.braising": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.13
+    },
+    "method.broiling": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.15
+    },
+    "method.chilling_setting": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.39
+    },
+    "method.cookware_pattern": {
+      "type": "choice",
+      "disposition": "needs_review",
+      "choice": "multiple_vessels",
+      "confidence": 0.53
+    },
+    "method.deep_frying": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.01
+    },
+    "method.grilling": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "method.kneading_shaping": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.03
+    },
+    "method.marination_brining": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.03
+    },
+    "method.microwave": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "method.pressure_cooker": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.01
+    },
+    "method.raw_assembly": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "method.reduction_emulsion": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.22
+    },
+    "method.roasting": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.66
+    },
+    "method.searing_browning": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.96
+    },
+    "method.slow_cooker": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.01
+    },
+    "method.smoking": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "method.steaming": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "method.stovetop_saute": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.81
+    },
+    "role.appetizer_snack": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.11
+    },
+    "role.baked_good": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.15
+    },
+    "role.beverage": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.01
+    },
+    "role.breakfast_brunch": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.88
+    },
+    "role.complete_meal": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.67
+    },
+    "role.dessert": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "role.main": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.88
+    },
+    "role.pasta_noodle": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.01
+    },
+    "role.potluck_dish": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.77
+    },
+    "role.rice_grain_bowl": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.04
+    },
+    "role.salad": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "role.sandwich_wrap": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "role.sauce_condiment_component": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.04
+    },
+    "role.side": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.05
+    },
+    "role.soup_stew_chili": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.02
+    },
+    "search.casual": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.89
+    },
+    "search.cozy": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.93
+    },
+    "search.craveable": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.82
+    },
+    "search.customizable_at_table": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.05
+    },
+    "search.family_style": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.84
+    },
+    "search.fresh_bright": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.08
+    },
+    "search.good_for_picky_eaters": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.64
+    },
+    "search.hands_off": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.43
+    },
+    "search.hearty": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.86
+    },
+    "search.impressive": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.56
+    },
+    "search.indulgent": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.85
+    },
+    "search.light_meal": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.16
+    },
+    "shopping.package_waste_risk": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.87,
+      "confidence": 0.04
+    },
+    "shopping.pantry_likelihood": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.98,
+      "confidence": 0.55
+    },
+    "shopping.perishability": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 3.28,
+      "confidence": 0.68
+    },
+    "shopping.relative_cost": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.54,
+      "confidence": 0.59
+    },
+    "shopping.specialty_burden": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.74,
+      "confidence": 0.31
+    },
+    "shopping.substitution_flexibility": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.9,
+      "confidence": 0.47
+    },
+    "texture.brothiness_sauciness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 0.2,
+      "confidence": 0.84
+    },
+    "texture.creaminess": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.83,
+      "confidence": 0.61
+    },
+    "texture.crispness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.99,
+      "confidence": 0.79
+    },
+    "texture.tender_softness": {
+      "type": "score",
+      "disposition": "needs_review",
+      "score": 1.84,
+      "confidence": 0.76
+    },
+    "tradition.backyard_cookout": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.08
+    },
+    "tradition.comfort_food": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.91
+    },
+    "tradition.holiday_celebration": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.17
+    },
+    "tradition.restaurant_style": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.74
+    },
+    "utility.assemble_ahead": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.7
+    },
+    "utility.batch_cooking": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.62
+    },
+    "utility.busy_night_friendly": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.36
+    },
+    "utility.cold_weather": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.66
+    },
+    "utility.comforting": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.81
+    },
+    "utility.crowd_friendly": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.84
+    },
+    "utility.entertaining": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.75
+    },
+    "utility.flexible_serving_time": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.83
+    },
+    "utility.freezer_friendly": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.64
+    },
+    "utility.holds_for_service": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.83
+    },
+    "utility.kid_approachable": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.35
+    },
+    "utility.leftovers": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.84
+    },
+    "utility.low_supervision": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.63
+    },
+    "utility.lunch_suitable": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.9
+    },
+    "utility.make_ahead": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.94
+    },
+    "utility.meal_prep": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.89
+    },
+    "utility.portable": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.7
+    },
+    "utility.quick_serving": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.92
+    },
+    "utility.scales_down": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.65
+    },
+    "utility.scales_up": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.55
+    },
+    "utility.special_occasion": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.51
+    },
+    "utility.warm_weather": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.15
+    },
+    "utility.weekend_project": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.74
+    },
+    "utility.weeknight_friendly": {
+      "type": "noul",
+      "disposition": "needs_review",
+      "noul": 0.52
+    }
+  }
+}
