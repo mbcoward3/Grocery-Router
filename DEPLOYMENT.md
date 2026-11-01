@@ -31,12 +31,14 @@ https://<environment-host>/api/v2/auth/google/callback
 
 The reusable application-secret helper is `scripts/configure-auth-secrets.sh`. Secret values must not be committed.
 
-Deployment resources are owned by the separate GitOps repository. Before application cutover that repository must provide stable development with its own CNPG `Cluster`, application `Deployment`, `Service`, and HTTPS `HTTPRoute`, wired to the development `grocery-router-auth` and database Secrets. Stable-dev acceptance must cover both owners on desktop and iPhone before any production image or route is changed.
+Application packaging is owned by this repository through `charts/grocery-router`. The homelab GitOps repository owns namespaces, CNPG databases, authentication Secrets, network policy, Gateway listeners, and the small Flux OCIRepository/HelmRelease registration. Before application cutover that repository must provide stable development with its own CNPG `Cluster`, application release, and environment-specific Secrets. Stable-dev acceptance must cover both owners on desktop and iPhone before any production route is changed.
 
 At production cutover, first rehearse migrations against a production backup and verify row counts, grocery contribution integrity, overrides, removed/completed state, and both owner claims. Roll out the authenticated image and configuration atomically. The application exposes product operations only below authenticated `/api/v2/households/{householdID}` routes; legacy unauthenticated `/api` product routes return 404.
 
 Dynamic PR hosts have no Google callback. They must remain fail-closed unless a separately approved test issuer and preview-only trust configuration are added.
 
-## Image publication
+## Signed OCI Helm publication
 
-GitHub Actions publishes commit-SHA and default-branch tags to `ghcr.io/mbcoward3/grocery-router`. GitOps controls promotion and rollout; application work in this repository must not directly deploy or mutate production resources.
+Pull requests publish commit-SHA images for preview compatibility. Successful `main` builds publish and keylessly sign the image, package the chart with that exact image digest, publish and sign an immutable chart version, and only then promote `ghcr.io/mbcoward3/charts/grocery-router:latest`. Flux verifies that the chart was signed by this repository's `container.yml` workflow on `main` before Helm applies it.
+
+The application workflow does not clone or mutate a GitOps repository. The separate legacy preview workflow still uses `GITOPS_DEPLOY_KEY`; disable or migrate that workflow before removing the secret. The chart intentionally owns only the Deployment, Service, and optional HTTPRoute; platform resources and secret values remain outside the chart.

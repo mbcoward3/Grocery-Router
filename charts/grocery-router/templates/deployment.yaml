@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: grocery-router
+    app.kubernetes.io/instance: {{ .Values.instance | quote }}
+spec:
+  replicas: {{ .Values.replicas }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: grocery-router
+      app.kubernetes.io/instance: {{ .Values.instance | quote }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: grocery-router
+        app.kubernetes.io/instance: {{ .Values.instance | quote }}
+    spec:
+      automountServiceAccountToken: false
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: grocery-router
+          image: {{ printf "%s@%s" .Values.image.repository (required "image.digest is required" .Values.image.digest) | quote }}
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: {{ required "authSecret.name is required" .Values.authSecret.name }}
+          env:
+            - name: GROCERY_ROUTER_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ required "database.secretName is required" .Values.database.secretName }}
+                  key: {{ required "database.secretKey is required" .Values.database.secretKey }}
+            {{- if .Values.catalogRelease }}
+            - name: GROCERY_ROUTER_CATALOG_RELEASE
+              value: {{ .Values.catalogRelease | quote }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 2
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 30
+            timeoutSeconds: 2
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+            failureThreshold: 24
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+            readOnlyRootFilesystem: true
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 128Mi
