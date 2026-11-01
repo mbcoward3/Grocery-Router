@@ -1,0 +1,27 @@
+replicas: 1
+instance: prod
+image:
+  repository: ghcr.io/mbcoward3/grocery-router
+  # CI packages the chart with the digest from that release's image build.
+  digest: ""
+imagePullSecrets: []
+authSecret:
+  name: grocery-router-auth
+database:
+  secretName: grocery-router-db-app
+  secretKey: uri
+catalogRelease: ""
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: "1"
+    memory: 512Mi
+httpRoute:
+  enabled: false
+  hostname: ""
+  parentRef:
+    name: public
+    namespace: gateway-system
+    sectionName: groceries

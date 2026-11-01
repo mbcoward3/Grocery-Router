@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["replicas", "instance", "image", "authSecret", "database", "resources", "httpRoute"],
+  "properties": {
+    "replicas": {"type": "integer", "minimum": 1},
+    "instance": {"type": "string", "minLength": 1},
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "digest"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "imagePullSecrets": {"type": "array", "items": {"type": "object"}},
+    "authSecret": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {"name": {"type": "string", "minLength": 1}}
+    },
+    "database": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["secretName", "secretKey"],
+      "properties": {
+        "secretName": {"type": "string", "minLength": 1},
+        "secretKey": {"type": "string", "minLength": 1}
+      }
+    },
+    "catalogRelease": {"type": "string"},
+    "resources": {"type": "object"},
+    "httpRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["enabled", "hostname", "parentRef"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "hostname": {"type": "string"},
+        "parentRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "namespace", "sectionName"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "namespace": {"type": "string", "minLength": 1},
+            "sectionName": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    }
+  }
+}

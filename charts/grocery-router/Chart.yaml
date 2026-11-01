@@ -1,0 +1,6 @@
+apiVersion: v2
+name: grocery-router
+description: Grocery Router web application and API
+type: application
+version: 0.1.0
+appVersion: development

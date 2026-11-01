@@ -1,4 +1,4 @@
-name: Container
+name: Container and Helm release
 
 on:
   push:
@@ -9,86 +9,141 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
+# Serialize main promotion so an older build cannot move latest after a newer one.
 concurrency:
-  group: container-${{ github.ref }}
-  cancel-in-progress: true
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.4-alpine
+        env:
+          POSTGRES_DB: grocery_router_test
+          POSTGRES_USER: grocery_router
+          POSTGRES_PASSWORD: grocery_router
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U grocery_router -d grocery_router_test"
+          --health-interval 2s
+          --health-timeout 2s
+          --health-retries 15
+    env:
+      GROCERY_ROUTER_TEST_DATABASE_URL: postgres://grocery_router:grocery_router@localhost:5432/grocery_router_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: azure/setup-helm@v4.3.0
+        with:
+          version: v4.3.1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install PyYAML==6.0.3
+      - run: go test ./...
+      - run: npm ci && npm test && npm run build
+        working-directory: web
+      - run: python3 tools/test_chart.py
+
+  publish:
+    needs: validate
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
-
       - uses: docker/setup-buildx-action@v3
-
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - id: metadata
-        uses: docker/metadata-action@v5
+      - uses: azure/setup-helm@v4.3.0
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         with:
-          images: ghcr.io/mbcoward3/grocery-router
-          tags: |
-            type=sha,format=long
-            type=ref,event=branch
-            type=ref,event=pr
-            type=raw,value=sha-${{ github.event.pull_request.head.sha }},enable=${{ github.event_name == 'pull_request' }}
-            type=raw,value=latest,enable={{is_default_branch}}
+          version: v4.3.1
+      - uses: sigstore/cosign-installer@v3
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          cosign-release: v2.6.1
+      - uses: imjasonh/setup-crane@v0.4
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        with:
+          version: v0.22.1
 
       - id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ steps.metadata.outputs.tags }}
-          labels: ${{ steps.metadata.outputs.labels }}
+          tags: |
+            ghcr.io/mbcoward3/grocery-router:sha-${{ github.event.pull_request.head.sha || github.sha }}
+            ${{ (github.ref == 'refs/heads/main' && github.event_name != 'pull_request') && 'ghcr.io/mbcoward3/grocery-router:latest' || '' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64
 
-      - name: Configure GitOps deploy key
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        env:
-          DEPLOY_KEY: ${{ secrets.GITOPS_DEPLOY_KEY }}
-        run: |
-          install -d -m 0700 ~/.ssh
-          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/grocery-router-gitops
-          chmod 0600 ~/.ssh/grocery-router-gitops
-          ssh-keyscan -H github.com > ~/.ssh/known_hosts
-
-      - name: Update production image
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Sign image, package and sign chart, then promote latest
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         env:
           IMAGE_DIGEST: ${{ steps.build.outputs.digest }}
-          GIT_SSH_COMMAND: ssh -i ~/.ssh/grocery-router-gitops -o IdentitiesOnly=yes
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
         run: |
-          git clone git@github.com:mbcoward3/talos-cluster.git gitops
-          cd gitops
+          set -euo pipefail
+          image=ghcr.io/mbcoward3/grocery-router
+          chart=ghcr.io/mbcoward3/charts/grocery-router
+          version="0.${GITHUB_RUN_NUMBER}.${GITHUB_RUN_ATTEMPT}"
+          identity="https://github.com/${GITHUB_REPOSITORY}/.github/workflows/container.yml@refs/heads/main"
+          issuer=https://token.actions.githubusercontent.com
+
+          cosign sign --yes "$image@$IMAGE_DIGEST"
+          cosign verify --certificate-identity "$identity" \
+            --certificate-oidc-issuer "$issuer" "$image@$IMAGE_DIGEST" >/dev/null
+
+          mkdir -p build/chart build/packages
+          cp -R charts/grocery-router build/chart/grocery-router
           python3 - "$IMAGE_DIGEST" <<'PY'
           import pathlib, re, sys
-          path = pathlib.Path('apps/grocery-router/prod/deployment.yaml')
-          text = path.read_text()
-          image = f'ghcr.io/mbcoward3/grocery-router@{sys.argv[1]}'
-          updated, count = re.subn(r'ghcr\.io/mbcoward3/grocery-router@sha256:[0-9a-f]{64}', image, text)
+          digest = sys.argv[1]
+          if not re.fullmatch(r'sha256:[0-9a-f]{64}', digest):
+              raise SystemExit('invalid build digest')
+          path = pathlib.Path('build/chart/grocery-router/values.yaml')
+          text, count = re.subn(r'(?m)^  digest: ""$', f'  digest: "{digest}"', path.read_text())
           if count != 1:
-              raise SystemExit(f'expected one production image, replaced {count}')
-          path.write_text(updated)
+              raise SystemExit('expected one digest placeholder')
+          path.write_text(text)
           PY
-          if git diff --quiet; then
-            echo 'Production already uses this image'
-            exit 0
-          fi
-          git config user.name 'grocery-router-deploy-bot'
-          git config user.email 'grocery-router-deploy-bot@users.noreply.github.com'
-          git add apps/grocery-router/prod/deployment.yaml
-          git commit -m "chore: deploy Grocery Router ${GITHUB_SHA::12}"
-          git pull --rebase origin main
-          git push origin main
+          helm lint build/chart/grocery-router --strict
+          helm package build/chart/grocery-router --destination build/packages \
+            --version "$version" --app-version "$GITHUB_SHA"
+          printf '%s' "$GH_TOKEN" | helm registry login ghcr.io \
+            --username "$GITHUB_ACTOR" --password-stdin
+          helm push "build/packages/grocery-router-$version.tgz" oci://ghcr.io/mbcoward3/charts
+          digest=$(crane digest "$chart:$version")
+          cosign sign --yes "$chart@$digest"
+          cosign verify --certificate-identity "$identity" \
+            --certificate-oidc-issuer "$issuer" "$chart@$digest" >/dev/null
+          crane tag "$chart@$digest" latest
+          # shellcheck disable=SC2016
+          printf '### Published\n- Image: `%s@%s`\n- Chart: `%s:%s`\n- Chart digest: `%s`\n- Promoted chart tag: `latest`\n' \
+            "$image" "$IMAGE_DIGEST" "$chart" "$version" "$digest" >> "$GITHUB_STEP_SUMMARY"
