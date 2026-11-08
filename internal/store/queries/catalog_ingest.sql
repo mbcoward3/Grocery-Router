@@ -322,3 +322,16 @@ SELECT
 FROM ingest.source_nodes
 GROUP BY site_id
 ORDER BY site_id;
+
+-- Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
+-- name: CountIngestNoRecipePagesBySite :many
+SELECT p.site_id, count(*) AS page_count
+FROM ingest.source_pages AS p
+WHERE
+    p.state = 'fetched'
+    AND NOT EXISTS (
+        SELECT 1 FROM ingest.source_nodes AS n
+        WHERE n.evidence_id = p.latest_evidence_id
+    )
+GROUP BY p.site_id
+ORDER BY p.site_id;
