@@ -23,9 +23,10 @@ func Interval(siteInterval, crawlDelay time.Duration) time.Duration {
 // Limiter grants exclusive, spaced access to a host. The database-backed
 // implementation shares state across commands; Memory serves tests.
 type Limiter interface {
-	// Acquire blocks until host has no request in flight and interval has
-	// elapsed since the previous request on host finished. The caller must
-	// call release exactly once when its request is complete.
+	// Acquire blocks until host has no request in flight and the larger of
+	// interval and the previous holder's interval has elapsed since the
+	// previous request on host finished. The caller must call release once
+	// its request is complete; extra calls are ignored.
 	Acquire(ctx context.Context, host string, interval time.Duration) (release func(), err error)
 }
 
@@ -37,9 +38,10 @@ type Memory struct {
 }
 
 type hostState struct {
-	inFlight    bool
-	nextAllowed time.Time
-	wake        chan struct{}
+	inFlight     bool
+	lastFinished time.Time
+	lastInterval time.Duration
+	wake         chan struct{}
 }
 
 // NewMemory returns a Memory limiter using clk.
@@ -67,7 +69,7 @@ func (memory *Memory) Acquire(ctx context.Context, host string, interval time.Du
 			}
 			continue
 		}
-		wait := state.nextAllowed.Sub(memory.clock.Now())
+		wait := state.lastFinished.Add(max(interval, state.lastInterval)).Sub(memory.clock.Now())
 		if wait <= 0 {
 			state.inFlight = true
 			memory.mu.Unlock()
@@ -86,7 +88,8 @@ func (memory *Memory) release(host string, interval time.Duration) {
 	defer memory.mu.Unlock()
 	state := memory.hosts[host]
 	state.inFlight = false
-	state.nextAllowed = memory.clock.Now().Add(interval)
+	state.lastFinished = memory.clock.Now()
+	state.lastInterval = interval
 	close(state.wake)
 	state.wake = make(chan struct{})
 }
