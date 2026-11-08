@@ -38,69 +38,69 @@ type Document struct {
 
 // Source records the approved recipe's relationship to its source evidence.
 type Source struct {
-	Relationship string `yaml:"relationship"`
-	Attribution  string `yaml:"attribution"`
-	URL          string `yaml:"url,omitempty"`
-	CheckedOn    string `yaml:"checked_on,omitempty"`
+	Relationship string `yaml:"relationship" json:"relationship"`
+	Attribution  string `yaml:"attribution" json:"attribution"`
+	URL          string `yaml:"url,omitempty" json:"url,omitempty"`
+	CheckedOn    string `yaml:"checked_on,omitempty" json:"checked_on,omitempty"`
 }
 
 // Duration is an inclusive duration range in minutes.
 type Duration struct {
-	Min int64 `yaml:"min"`
-	Max int64 `yaml:"max"`
+	Min int64 `yaml:"min" json:"min"`
+	Max int64 `yaml:"max" json:"max"`
 }
 
 // IngredientSection is an ordered group of recipe ingredients.
 type IngredientSection struct {
-	Name        string       `yaml:"name"`
-	Ingredients []Ingredient `yaml:"ingredients"`
+	Name        string       `yaml:"name" json:"name"`
+	Ingredients []Ingredient `yaml:"ingredients" json:"ingredients"`
 }
 
 // Ingredient preserves one source requirement and its approved grocery mapping.
 type Ingredient struct {
-	SourceText  string      `yaml:"source_text"`
-	GroceryItem GroceryItem `yaml:"grocery_item"`
-	Quantity    Quantity    `yaml:"quantity"`
-	Preparation string      `yaml:"preparation,omitempty"`
-	Optional    bool        `yaml:"optional,omitempty"`
-	NonShopping bool        `yaml:"non_shopping,omitempty"`
-	Note        string      `yaml:"note,omitempty"`
+	SourceText  string      `yaml:"source_text" json:"source_text"`
+	GroceryItem GroceryItem `yaml:"grocery_item" json:"grocery_item"`
+	Quantity    Quantity    `yaml:"quantity" json:"quantity"`
+	Preparation string      `yaml:"preparation,omitempty" json:"preparation,omitempty"`
+	Optional    bool        `yaml:"optional,omitempty" json:"optional,omitempty"`
+	NonShopping bool        `yaml:"non_shopping,omitempty" json:"non_shopping,omitempty"`
+	Note        string      `yaml:"note,omitempty" json:"note,omitempty"`
 }
 
 // GroceryItem is the canonical shoppable identity for an ingredient.
 type GroceryItem struct {
-	Key          string       `yaml:"key"`
-	Name         string       `yaml:"name"`
-	StoreSection StoreSection `yaml:"store_section"`
-	ShoppingMode string       `yaml:"shopping_mode"`
+	Key          string       `yaml:"key" json:"key"`
+	Name         string       `yaml:"name" json:"name"`
+	StoreSection StoreSection `yaml:"store_section" json:"store_section"`
+	ShoppingMode string       `yaml:"shopping_mode" json:"shopping_mode"`
 }
 
 // StoreSection identifies where a grocery item is grouped for shopping.
 type StoreSection struct {
-	Key  string `yaml:"key"`
-	Name string `yaml:"name"`
+	Key  string `yaml:"key" json:"key"`
+	Name string `yaml:"name" json:"name"`
 }
 
 // Quantity is an exact measured, counted, or unspecified recipe requirement.
 type Quantity struct {
-	Kind    string   `yaml:"kind"`
-	Amount  string   `yaml:"amount,omitempty"`
-	Maximum string   `yaml:"maximum,omitempty"`
-	Unit    string   `yaml:"unit,omitempty"`
-	Package *Package `yaml:"package,omitempty"`
+	Kind    string   `yaml:"kind" json:"kind"`
+	Amount  string   `yaml:"amount,omitempty" json:"amount,omitempty"`
+	Maximum string   `yaml:"maximum,omitempty" json:"maximum,omitempty"`
+	Unit    string   `yaml:"unit,omitempty" json:"unit,omitempty"`
+	Package *Package `yaml:"package,omitempty" json:"package,omitempty"`
 }
 
 // Package preserves a source package type and optional exact size.
 type Package struct {
-	Type string `yaml:"type"`
-	Size string `yaml:"size,omitempty"`
-	Unit string `yaml:"unit,omitempty"`
+	Type string `yaml:"type" json:"type"`
+	Size string `yaml:"size,omitempty" json:"size,omitempty"`
+	Unit string `yaml:"unit,omitempty" json:"unit,omitempty"`
 }
 
 // InstructionSection is an ordered group of cooking steps.
 type InstructionSection struct {
-	Name  string   `yaml:"name"`
-	Steps []string `yaml:"steps"`
+	Name  string   `yaml:"name" json:"name"`
+	Steps []string `yaml:"steps" json:"steps"`
 }
 
 // ReviewDecision records a human-approved true-up interpretation.
