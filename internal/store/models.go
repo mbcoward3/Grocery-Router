@@ -6,6 +6,7 @@ package store
 
 import (
 	"database/sql"
+	"encoding/json"
 	"time"
 )
 
@@ -55,6 +56,141 @@ type HouseholdMembership struct {
 	UserID      string    `db:"user_id" json:"user_id"`
 	Role        string    `db:"role" json:"role"`
 	CreatedAt   time.Time `db:"created_at" json:"created_at"`
+}
+
+type IngestEvidence struct {
+	ID             int64           `db:"id" json:"id"`
+	FetchAttemptID int64           `db:"fetch_attempt_id" json:"fetch_attempt_id"`
+	SiteID         string          `db:"site_id" json:"site_id"`
+	SourcePageID   int64           `db:"source_page_id" json:"source_page_id"`
+	RequestedUrl   string          `db:"requested_url" json:"requested_url"`
+	FinalUrl       string          `db:"final_url" json:"final_url"`
+	RedirectChain  json.RawMessage `db:"redirect_chain" json:"redirect_chain"`
+	HttpStatus     int32           `db:"http_status" json:"http_status"`
+	FetchedAt      time.Time       `db:"fetched_at" json:"fetched_at"`
+	MediaType      string          `db:"media_type" json:"media_type"`
+	BodySha256     []byte          `db:"body_sha256" json:"body_sha256"`
+	BodySize       int32           `db:"body_size" json:"body_size"`
+	BodyEncoding   string          `db:"body_encoding" json:"body_encoding"`
+	BodyCompressed []byte          `db:"body_compressed" json:"body_compressed"`
+	CanonicalLink  sql.NullString  `db:"canonical_link" json:"canonical_link"`
+	CreatedAt      time.Time       `db:"created_at" json:"created_at"`
+}
+
+type IngestEvidenceJsonldBlock struct {
+	ID          int64          `db:"id" json:"id"`
+	EvidenceID  int64          `db:"evidence_id" json:"evidence_id"`
+	Position    int32          `db:"position" json:"position"`
+	RawText     string         `db:"raw_text" json:"raw_text"`
+	ParseStatus string         `db:"parse_status" json:"parse_status"`
+	ParseError  sql.NullString `db:"parse_error" json:"parse_error"`
+	CreatedAt   time.Time      `db:"created_at" json:"created_at"`
+}
+
+type IngestFetchAttempt struct {
+	ID           int64          `db:"id" json:"id"`
+	RunID        sql.NullInt64  `db:"run_id" json:"run_id"`
+	SiteID       string         `db:"site_id" json:"site_id"`
+	SourcePageID sql.NullInt64  `db:"source_page_id" json:"source_page_id"`
+	Kind         string         `db:"kind" json:"kind"`
+	RequestedUrl string         `db:"requested_url" json:"requested_url"`
+	FinalUrl     sql.NullString `db:"final_url" json:"final_url"`
+	HttpStatus   sql.NullInt32  `db:"http_status" json:"http_status"`
+	Outcome      string         `db:"outcome" json:"outcome"`
+	Error        sql.NullString `db:"error" json:"error"`
+	StartedAt    time.Time      `db:"started_at" json:"started_at"`
+	FinishedAt   time.Time      `db:"finished_at" json:"finished_at"`
+}
+
+type IngestHostRateLimit struct {
+	Host           string         `db:"host" json:"host"`
+	NextAllowedAt  time.Time      `db:"next_allowed_at" json:"next_allowed_at"`
+	LeaseToken     sql.NullString `db:"lease_token" json:"lease_token"`
+	LeaseExpiresAt sql.NullTime   `db:"lease_expires_at" json:"lease_expires_at"`
+	UpdatedAt      time.Time      `db:"updated_at" json:"updated_at"`
+}
+
+type IngestRun struct {
+	ID         int64           `db:"id" json:"id"`
+	Command    string          `db:"command" json:"command"`
+	SiteID     sql.NullString  `db:"site_id" json:"site_id"`
+	Parameters json.RawMessage `db:"parameters" json:"parameters"`
+	Counters   json.RawMessage `db:"counters" json:"counters"`
+	State      string          `db:"state" json:"state"`
+	Error      sql.NullString  `db:"error" json:"error"`
+	StartedAt  time.Time       `db:"started_at" json:"started_at"`
+	FinishedAt sql.NullTime    `db:"finished_at" json:"finished_at"`
+}
+
+type IngestSite struct {
+	ID                     string          `db:"id" json:"id"`
+	AttributionName        string          `db:"attribution_name" json:"attribution_name"`
+	RegistryPosition       int32           `db:"registry_position" json:"registry_position"`
+	IncludePatterns        json.RawMessage `db:"include_patterns" json:"include_patterns"`
+	ExcludePatterns        json.RawMessage `db:"exclude_patterns" json:"exclude_patterns"`
+	MinIntervalMs          sql.NullInt32   `db:"min_interval_ms" json:"min_interval_ms"`
+	MeasurementConvention  string          `db:"measurement_convention" json:"measurement_convention"`
+	Active                 bool            `db:"active" json:"active"`
+	EligibilityIntendedUse sql.NullString  `db:"eligibility_intended_use" json:"eligibility_intended_use"`
+	EligibilityReviewedOn  sql.NullTime    `db:"eligibility_reviewed_on" json:"eligibility_reviewed_on"`
+	EligibilityNotes       string          `db:"eligibility_notes" json:"eligibility_notes"`
+	RemovedAt              sql.NullTime    `db:"removed_at" json:"removed_at"`
+	CreatedAt              time.Time       `db:"created_at" json:"created_at"`
+	UpdatedAt              time.Time       `db:"updated_at" json:"updated_at"`
+}
+
+type IngestSiteHost struct {
+	Host     string `db:"host" json:"host"`
+	SiteID   string `db:"site_id" json:"site_id"`
+	Position int32  `db:"position" json:"position"`
+}
+
+type IngestSitePause struct {
+	ID             int64          `db:"id" json:"id"`
+	SiteID         string         `db:"site_id" json:"site_id"`
+	Reason         string         `db:"reason" json:"reason"`
+	Detail         string         `db:"detail" json:"detail"`
+	FetchAttemptID sql.NullInt64  `db:"fetch_attempt_id" json:"fetch_attempt_id"`
+	RunID          sql.NullInt64  `db:"run_id" json:"run_id"`
+	PausedAt       time.Time      `db:"paused_at" json:"paused_at"`
+	ResumedAt      sql.NullTime   `db:"resumed_at" json:"resumed_at"`
+	ResumeNote     sql.NullString `db:"resume_note" json:"resume_note"`
+}
+
+type IngestSiteSitemap struct {
+	SiteID   string `db:"site_id" json:"site_id"`
+	Position int32  `db:"position" json:"position"`
+	Url      string `db:"url" json:"url"`
+}
+
+type IngestSourceNode struct {
+	ID                   int64           `db:"id" json:"id"`
+	SiteID               string          `db:"site_id" json:"site_id"`
+	EvidenceID           int64           `db:"evidence_id" json:"evidence_id"`
+	JsonldBlockID        int64           `db:"jsonld_block_id" json:"jsonld_block_id"`
+	Location             string          `db:"location" json:"location"`
+	NodeID               sql.NullString  `db:"node_id" json:"node_id"`
+	NormalizationVersion int32           `db:"normalization_version" json:"normalization_version"`
+	ContentDigest        []byte          `db:"content_digest" json:"content_digest"`
+	RawNode              json.RawMessage `db:"raw_node" json:"raw_node"`
+	CreatedAt            time.Time       `db:"created_at" json:"created_at"`
+}
+
+type IngestSourcePage struct {
+	ID               int64          `db:"id" json:"id"`
+	SiteID           string         `db:"site_id" json:"site_id"`
+	Url              string         `db:"url" json:"url"`
+	DiscoveredVia    string         `db:"discovered_via" json:"discovered_via"`
+	FirstRunID       sql.NullInt64  `db:"first_run_id" json:"first_run_id"`
+	SitemapLastmod   sql.NullTime   `db:"sitemap_lastmod" json:"sitemap_lastmod"`
+	FirstSeenAt      time.Time      `db:"first_seen_at" json:"first_seen_at"`
+	LastSeenAt       time.Time      `db:"last_seen_at" json:"last_seen_at"`
+	State            string         `db:"state" json:"state"`
+	StateReason      sql.NullString `db:"state_reason" json:"state_reason"`
+	AttemptCount     int32          `db:"attempt_count" json:"attempt_count"`
+	NextAttemptAt    time.Time      `db:"next_attempt_at" json:"next_attempt_at"`
+	LatestEvidenceID sql.NullInt64  `db:"latest_evidence_id" json:"latest_evidence_id"`
+	UpdatedAt        time.Time      `db:"updated_at" json:"updated_at"`
 }
 
 type Recipe struct {

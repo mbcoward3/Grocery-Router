@@ -15,3 +15,8 @@ sql:
         overrides:
           - db_type: "uuid"
             go_type: "string"
+          - db_type: "uuid"
+            nullable: true
+            go_type:
+              import: "database/sql"
+              type: "NullString"

@@ -9,7 +9,13 @@ import (
 )
 
 type Querier interface {
+	// Atomically takes the host's single request lease when the lease is free (or expired) and the
+	// next-allowed time has passed. Returns sql.ErrNoRows when the caller must wait; read
+	// GetIngestHostRateLimit to learn how long. Safe across concurrent processes.
+	AcquireIngestHostSlot(ctx context.Context, arg AcquireIngestHostSlotParams) (AcquireIngestHostSlotRow, error)
 	ApproveReviewFlag(ctx context.Context, id int64) (RecipeReviewFlag, error)
+	CountIngestSourceNodesBySite(ctx context.Context) ([]CountIngestSourceNodesBySiteRow, error)
+	CountIngestSourcePagesByState(ctx context.Context) ([]CountIngestSourcePagesByStateRow, error)
 	CountUnapprovedReviewFlags(ctx context.Context, arg CountUnapprovedReviewFlagsParams) (int64, error)
 	CreateDraftRecipe(ctx context.Context, arg CreateDraftRecipeParams) (Recipe, error)
 	CreateGeneratedShoppingLine(ctx context.Context, arg CreateGeneratedShoppingLineParams) (ShoppingLine, error)
@@ -27,10 +33,22 @@ type Querier interface {
 	CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, error)
 	CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, error)
 	CreateWeekRecipe(ctx context.Context, arg CreateWeekRecipeParams) (WeekRecipe, error)
+	// Pushes the next allowed time later (for example after a retryable failure); never earlier.
+	DeferIngestHost(ctx context.Context, arg DeferIngestHostParams) error
+	DeleteAllIngestSiteHosts(ctx context.Context) error
 	DeleteGeneratedShoppingLines(ctx context.Context, arg DeleteGeneratedShoppingLinesParams) error
+	DeleteIngestSiteSitemaps(ctx context.Context, siteID string) error
 	DeleteWeekRecipe(ctx context.Context, arg DeleteWeekRecipeParams) (int64, error)
 	DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesParams) error
+	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
+	GetIngestEvidence(ctx context.Context, id int64) (IngestEvidence, error)
+	GetIngestHostRateLimit(ctx context.Context, host string) (GetIngestHostRateLimitRow, error)
+	GetIngestRun(ctx context.Context, id int64) (IngestRun, error)
+	GetIngestSite(ctx context.Context, id string) (IngestSite, error)
+	GetIngestSiteByHost(ctx context.Context, host string) (IngestSite, error)
+	GetIngestSourcePage(ctx context.Context, id int64) (IngestSourcePage, error)
+	GetOpenIngestSitePause(ctx context.Context, siteID string) (IngestSitePause, error)
 	GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error)
 	GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error)
 	GetRecipe(ctx context.Context, arg GetRecipeParams) (Recipe, error)
@@ -41,15 +59,34 @@ type Querier interface {
 	GetVerifiedRecipe(ctx context.Context, arg GetVerifiedRecipeParams) (Recipe, error)
 	GetWeekByStart(ctx context.Context, arg GetWeekByStartParams) (Week, error)
 	GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (WeekRecipe, error)
+	InsertIngestEvidence(ctx context.Context, arg InsertIngestEvidenceParams) (int64, error)
+	InsertIngestFetchAttempt(ctx context.Context, arg InsertIngestFetchAttemptParams) (int64, error)
+	InsertIngestJSONLDBlock(ctx context.Context, arg InsertIngestJSONLDBlockParams) (int64, error)
+	InsertIngestSiteHost(ctx context.Context, arg InsertIngestSiteHostParams) error
+	InsertIngestSiteSitemap(ctx context.Context, arg InsertIngestSiteSitemapParams) error
+	InsertIngestSourceNode(ctx context.Context, arg InsertIngestSourceNodeParams) (int64, error)
+	// Next queued pages for one site whose retry time has passed, oldest first.
+	ListDueIngestSourcePages(ctx context.Context, arg ListDueIngestSourcePagesParams) ([]IngestSourcePage, error)
+	// Sites that may be fetched now: listed, active, eligible, and not paused.
+	ListFetchableIngestSites(ctx context.Context) ([]IngestSite, error)
 	ListGeneratedShoppingLineStates(ctx context.Context, arg ListGeneratedShoppingLineStatesParams) ([]ListGeneratedShoppingLineStatesRow, error)
 	ListGroceryItems(ctx context.Context, householdID string) ([]ListGroceryItemsRow, error)
+	// Evidence in ID order for offline extraction replay; pages through with after_id.
+	ListIngestEvidenceForReplay(ctx context.Context, arg ListIngestEvidenceForReplayParams) ([]IngestEvidence, error)
+	ListIngestJSONLDBlocks(ctx context.Context, evidenceID int64) ([]IngestEvidenceJsonldBlock, error)
+	ListIngestSiteHosts(ctx context.Context) ([]IngestSiteHost, error)
+	ListIngestSiteSitemaps(ctx context.Context) ([]IngestSiteSitemap, error)
+	ListIngestSites(ctx context.Context) ([]IngestSite, error)
+	ListIngestSourceNodesForEvidence(ctx context.Context, evidenceID int64) ([]IngestSourceNode, error)
 	ListIngredientSections(ctx context.Context, arg ListIngredientSectionsParams) ([]RecipeIngredientSection, error)
 	ListInstructionSections(ctx context.Context, arg ListInstructionSectionsParams) ([]RecipeInstructionSection, error)
+	ListOpenIngestSitePauses(ctx context.Context) ([]IngestSitePause, error)
 	ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([]ListPastWeeksRow, error)
 	ListRecipeIngredients(ctx context.Context, arg ListRecipeIngredientsParams) ([]ListRecipeIngredientsRow, error)
 	ListRecipeReviewFlags(ctx context.Context, arg ListRecipeReviewFlagsParams) ([]RecipeReviewFlag, error)
 	ListRecipeSources(ctx context.Context, arg ListRecipeSourcesParams) ([]RecipeSource, error)
 	ListRecipeSteps(ctx context.Context, arg ListRecipeStepsParams) ([]ListRecipeStepsRow, error)
+	ListRunningIngestRuns(ctx context.Context) ([]IngestRun, error)
 	ListShoppingLineContributions(ctx context.Context, arg ListShoppingLineContributionsParams) ([]ListShoppingLineContributionsRow, error)
 	ListShoppingLineRecipeNames(ctx context.Context, arg ListShoppingLineRecipeNamesParams) ([]ListShoppingLineRecipeNamesRow, error)
 	ListShoppingLines(ctx context.Context, arg ListShoppingLinesParams) ([]ListShoppingLinesRow, error)
@@ -59,15 +96,39 @@ type Querier interface {
 	ListWeekIngredientRequirements(ctx context.Context, arg ListWeekIngredientRequirementsParams) ([]ListWeekIngredientRequirementsRow, error)
 	ListWeekRecipeIDs(ctx context.Context, arg ListWeekRecipeIDsParams) ([]int64, error)
 	ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams) ([]ListWeekRecipesRow, error)
+	MarkIngestSourcePageFailed(ctx context.Context, arg MarkIngestSourcePageFailedParams) error
+	MarkIngestSourcePageFetched(ctx context.Context, arg MarkIngestSourcePageFetchedParams) error
+	// A retryable failure: stays queued until next_attempt_at.
+	MarkIngestSourcePageRetry(ctx context.Context, arg MarkIngestSourcePageRetryParams) error
 	MarkRecipeReviewable(ctx context.Context, arg MarkRecipeReviewableParams) (Recipe, error)
 	NextManualShoppingLinePosition(ctx context.Context, arg NextManualShoppingLinePositionParams) (int64, error)
 	NextWeekRecipePosition(ctx context.Context, arg NextWeekRecipePositionParams) (int64, error)
+	// Opens a persistent pause. Returns 0 rows affected when the site is already paused; the first
+	// open pause and its reason are kept.
+	PauseIngestSite(ctx context.Context, arg PauseIngestSiteParams) (int64, error)
+	// Releases a lease and sets the next allowed request time at least interval_ms (never less than
+	// 5 seconds) from now. Returns 0 rows affected when the lease was lost to expiry.
+	ReleaseIngestHostSlot(ctx context.Context, arg ReleaseIngestHostSlotParams) (int64, error)
+	ReleaseIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
+	// Explicitly queues a page again; a re-fetch creates new evidence and never edits the old.
+	RequeueIngestSourcePage(ctx context.Context, id int64) error
+	ResumeIngestSite(ctx context.Context, arg ResumeIngestSiteParams) (int64, error)
+	// Deactivates a site the registry no longer lists. Its evidence, pages, and pauses stay.
+	RetireIngestSite(ctx context.Context, id string) (int64, error)
 	ReturnRecipeToDraft(ctx context.Context, arg ReturnRecipeToDraftParams) (Recipe, error)
 	SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error)
 	SetShoppingLineOverride(ctx context.Context, arg SetShoppingLineOverrideParams) (int64, error)
 	SetShoppingLineRemoved(ctx context.Context, arg SetShoppingLineRemovedParams) (int64, error)
+	StartIngestRun(ctx context.Context, arg StartIngestRunParams) (IngestRun, error)
 	TouchWeek(ctx context.Context, arg TouchWeekParams) error
+	// Stage locks (§7.3). Session-level: call on one *sql.Conn and unlock on the same connection.
+	TryIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
+	UpdateIngestRunCounters(ctx context.Context, arg UpdateIngestRunCountersParams) error
 	UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekRecipeRecipeParams) (WeekRecipe, error)
+	UpsertIngestSite(ctx context.Context, arg UpsertIngestSiteParams) error
+	// Records a page found in a registered sitemap. A known URL keeps its queue state; only sighting
+	// metadata changes. Returns the page and whether it was newly inserted.
+	UpsertIngestSourcePage(ctx context.Context, arg UpsertIngestSourcePageParams) (UpsertIngestSourcePageRow, error)
 	VerifyRecipe(ctx context.Context, arg VerifyRecipeParams) (Recipe, error)
 }
 
