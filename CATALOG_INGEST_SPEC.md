@@ -1,9 +1,9 @@
 # Grocery Router — Shared Recipe Catalog Ingest Pipeline
 
-Status: **revision 3, draft for approval.** On approval, slices 1–2 are authorized. Slices 3–5 stay
-gated until the conditions in §8 are met.  
+Status: **revision 3, approved 2026-11-08. Slices 1–2 are authorized.** Slices 3–5 stay gated until
+the conditions in §8 are met. The §11 defaults are accepted.  
 Depends on: [`V1_SPEC.md`](V1_SPEC.md), [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md)  
-Rationale: [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) D039–D043 (proposed)  
+Rationale: [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) D039–D043  
 Review history: [`archive/reviews/catalog-ingest-astra-2026-11-08.md`](archive/reviews/catalog-ingest-astra-2026-11-08.md)
 (non-authoritative)  
 Supersedes: the unmerged `feat/recipe-intelligence-pilot` specs. That branch is reference code only.
@@ -103,6 +103,9 @@ Tasks:
 - [ ] Identity layers (§7.5).
 - [ ] Commands: `catalog-sites`, `catalog-discover`, `catalog-fetch`, `catalog-site-resume`,
   `catalog-report` (acquisition metrics only).
+
+Where it runs: slice 2 runs from an operator machine against the local development PostgreSQL
+(`task db-up`). Running against the cluster database is decided before slice 4.
 
 Done when: a few hundred source nodes are captured from the active sites; an interrupted run
 resumes without re-fetching; a paused site stays paused across runs; extraction replays from stored

@@ -543,12 +543,11 @@ count, and D026 only where it says past weeks are not exposed.
 **Revisit when:** The household repeatedly wants to reuse an earlier pool or needs an audit trail
 of changes within a week.
 
-D039–D043 are proposed with the draft [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md) and
-become decisions only when that specification is approved.
+D039–D043 were approved with [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md) on 2026-11-08.
 
-## D039 — Shared catalog plus household-owned copies (proposed)
+## D039 — Shared catalog plus household-owned copies
 
-**Proposed decision:** Grocery Router is built for one known household but shaped so other households can
+**Decision:** Grocery Router is built for one known household but shaped so other households can
 join later. Every new table is either shared catalog data with no household, or household-owned
 data scoped like the existing tenant tables. A household adopts a catalog recipe by receiving its
 own editable copy; catalog recipes are never edited by households.
@@ -565,9 +564,9 @@ the same adoption path as a single suggested recipe.
 **Revisit when:** A second household is actually admitted or catalog sharing needs per-household
 visibility rules.
 
-## D040 — Release-qualified publication for catalog recipes (proposed)
+## D040 — Release-qualified publication for catalog recipes
 
-**Proposed decision:** Catalog recipes publish automatically, but only under a pipeline release
+**Decision:** Catalog recipes publish automatically, but only under a pipeline release
 that has passed qualification against a reviewed evaluation set, with sampled audits and stop rules
 after publication. Catalog trust is recorded as release provenance, never as `verified`. The
 household corpus keeps its human-approval rule.
@@ -584,9 +583,9 @@ week or edit their own copy, so no confirmation step is added when a catalog rec
 **Revisit when:** Qualification or audits repeatedly fail, or household use shows grocery errors
 from catalog recipes.
 
-## D041 — AI runs offline only (proposed)
+## D041 — AI runs offline only
 
-**Proposed decision:** Models may be called only from operator-run pipeline commands. No user request, week
+**Decision:** Models may be called only from operator-run pipeline commands. No user request, week
 operation, or grocery operation calls a model. Recipe suggestions are computed from data prepared
 offline, such as embeddings, without runtime AI.
 
@@ -601,10 +600,10 @@ suggestion hide-and-recover evaluation) and a per-household spend cap.
 **Revisit when:** The AI-free recommender measurably fails to produce good suggestions, or new-user
 onboarding is scoped.
 
-## D042 — OpenAI through the official Go SDK (proposed)
+## D042 — OpenAI through the official Go SDK
 
-**Proposed decision:** Use OpenAI through the official `openai-go` SDK behind a narrow internal interface.
-Do not adopt Google ADK for structured extraction and embeddings. Once approved, this supersedes
+**Decision:** Use OpenAI through the official `openai-go` SDK behind a narrow internal interface.
+Do not adopt Google ADK for structured extraction and embeddings. This supersedes
 the ADK direction in D003's revisit condition.
 
 **Why:** The pipeline needs structured outputs, embeddings, and later batch jobs, not multi-step
@@ -616,9 +615,9 @@ real conversational agent is scoped.
 **Revisit when:** An agent workflow with tools and memory is approved, or another provider is
 clearly better for the pipeline's tasks.
 
-## D043 — Suggested recipes enter the week marked, and join when kept (proposed)
+## D043 — Suggested recipes enter the week marked, and join when kept
 
-**Proposed direction (later phase):** A household sets how many new recipes it wants per
+**Decision (direction for a later phase):** A household sets how many new recipes it wants per
 week. Suggested catalog recipes appear in the week with a subtle "picked for you" marker and can be
 swapped like any other meal. A suggestion that stays in the week joins the household collection; one
 swapped out does not and counts as a mild negative signal.

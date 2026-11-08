@@ -6,8 +6,8 @@ Read in this order:
 
 1. `V1_SPEC.md` for the completed base product contract
 2. `AUTH_HOUSEHOLDS_SPEC.md` for the current approved post-v1 authentication phase
-3. `CATALOG_INGEST_SPEC.md` for the proposed shared recipe catalog pipeline (draft; once
-   approved, only slices 1–2 are authorized, and later slices follow its §8 gates)
+3. `CATALOG_INGEST_SPEC.md` for the approved shared recipe catalog pipeline (slices 1–2
+   authorized; later slices follow its §8 gates)
 4. `UP_NEXT.md`
 5. `PRODUCT_DECISIONS.md` for rationale
 
