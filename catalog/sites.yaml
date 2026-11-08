@@ -1,0 +1,149 @@
+# Shared recipe catalog site registry (CATALOG_INGEST_SPEC.md §7.1).
+#
+# Strictly parsed by internal/catalog/registry and synced into ingest.sites with
+# `go run ./cmd/grocery-router catalog-sites`. Order is registry order (§7.6 tie-break).
+#
+# Fields per site:
+#   id                      stable lowercase slug; never reuse or rename
+#   name                    attribution name shown with recipes
+#   hosts                   explicit HTTPS hosts; no implicit subdomains
+#   sitemaps                registered HTTPS sitemap URLs on the site's hosts
+#   include / exclude       RE2 patterns matched against a page's path and query;
+#                           no include patterns means every path; exclude wins
+#   min_interval            optional per-host interval stricter than the 5s floor
+#   measurement_convention  us | metric (§5.8)
+#   active                  required; an active site needs an eligibility record
+#   eligibility             intended_use, reviewed_on (YYYY-MM-DD), notes
+#
+# Hosts and sitemaps were taken from each origin's robots.txt, fetched once on 2026-11-08.
+# Inactive sites have no eligibility record yet; one must be reviewed before activation.
+version: 1
+sites:
+  - id: budget-bytes
+    name: Budget Bytes
+    hosts: [www.budgetbytes.com]
+    sitemaps: [https://www.budgetbytes.com/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    exclude: ['^/(about|contact|privacy-policy|terms-of-use|accessibility|search|login)/$']
+    measurement_convention: us
+    active: true
+    eligibility:
+      intended_use: private household use; store recipe data and instructions; display with attribution and source link
+      reviewed_on: 2026-11-08
+      notes: robots.txt allows recipe paths for all agents.
+
+  - id: once-upon-a-chef
+    name: Once Upon a Chef
+    hosts: [www.onceuponachef.com]
+    sitemaps: [https://www.onceuponachef.com/sitemap_index.xml]
+    include: ['^/recipes/[a-z0-9]+(-[a-z0-9]+)*\.html$']
+    measurement_convention: us
+    active: true
+    eligibility:
+      intended_use: private household use; store recipe data and instructions; display with attribution and source link
+      reviewed_on: 2026-11-08
+      notes: robots.txt allows recipe paths for all agents; it disallows GPTBot by name.
+
+  - id: natashas-kitchen
+    name: Natasha's Kitchen
+    hosts: [natashaskitchen.com]
+    sitemaps: [https://natashaskitchen.com/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    exclude: ['^/(about|contact|privacy-policy|terms-of-use|accessibility|search)/$']
+    measurement_convention: us
+    active: true
+    eligibility:
+      intended_use: private household use; store recipe data and instructions; display with attribution and source link
+      reviewed_on: 2026-11-08
+      notes: robots.txt allows recipe paths for all agents.
+
+  - id: cookie-and-kate
+    name: Cookie and Kate
+    hosts: [cookieandkate.com]
+    sitemaps: [https://cookieandkate.com/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    exclude: ['^/(about|contact|privacy-policy|terms-of-use|accessibility|search)/$']
+    measurement_convention: us
+    active: true
+    eligibility:
+      intended_use: private household use; store recipe data and instructions; display with attribution and source link
+      reviewed_on: 2026-11-08
+      notes: >-
+        robots.txt allows recipe paths for all agents but disallows named AI crawlers
+        (anthropic-ai, Claude-Web, GPTBot, CCbot, Google-Extended). Grocery Router is not one of
+        them; confirm before slice 3 sends this site's text to a model.
+
+  - id: the-country-cook
+    name: The Country Cook
+    hosts: [www.thecountrycook.net]
+    sitemaps: [https://www.thecountrycook.net/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    measurement_convention: us
+    active: false
+
+  - id: chef-jean-pierre
+    name: Chef Jean-Pierre
+    hosts: [chefjeanpierre.com]
+    sitemaps: []
+    include: ['^/recipes/[a-z0-9]+(-[a-z0-9]+)*/$']
+    measurement_convention: us
+    active: false
+
+  - id: iowa-girl-eats
+    name: Iowa Girl Eats
+    hosts: [iowagirleats.com]
+    sitemaps: [https://iowagirleats.com/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    measurement_convention: us
+    active: false
+
+  - id: tasty
+    name: Tasty
+    hosts: [tasty.co]
+    sitemaps: [https://tasty.co/sitemaps/tasty/sitemap.xml]
+    include: ['^/recipe/[a-z0-9]+(-[a-z0-9]+)*$']
+    min_interval: 20s
+    measurement_convention: us
+    active: false
+
+  - id: love-and-lemons
+    name: Love and Lemons
+    hosts: [www.loveandlemons.com]
+    sitemaps: [https://www.loveandlemons.com/sitemap.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    measurement_convention: us
+    active: false
+
+  - id: gimme-some-oven
+    name: Gimme Some Oven
+    hosts: [www.gimmesomeoven.com]
+    # robots.txt lists a malformed sitemap URL; this is the conventional index, not yet verified.
+    sitemaps: [https://www.gimmesomeoven.com/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    measurement_convention: us
+    active: false
+
+  - id: sallys-baking-addiction
+    name: Sally's Baking Addiction
+    hosts: [sallysbakingaddiction.com]
+    sitemaps: [https://sallysbakingaddiction.com/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    min_interval: 30s
+    measurement_convention: us
+    active: false
+
+  - id: recipetin-eats
+    name: RecipeTin Eats
+    hosts: [www.recipetineats.com]
+    sitemaps: [https://www.recipetineats.com/sitemap_index.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*/$']
+    measurement_convention: metric
+    active: false
+
+  - id: the-kitchn
+    name: The Kitchn
+    hosts: [www.thekitchn.com]
+    sitemaps: [https://www.thekitchn.com/sitemap.xml]
+    include: ['^/[a-z0-9]+(-[a-z0-9]+)*-[0-9]+$']
+    measurement_convention: us
+    active: false
