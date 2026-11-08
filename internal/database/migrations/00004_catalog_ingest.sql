@@ -50,7 +50,7 @@ CREATE TABLE ingest.host_rate_limits (
     host TEXT PRIMARY KEY CHECK (
         host ~ '^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$'
     ),
-    next_allowed_at TIMESTAMPTZ NOT NULL DEFAULT '-infinity',
+    next_allowed_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     lease_token UUID,
     lease_expires_at TIMESTAMPTZ,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
@@ -86,7 +86,7 @@ CREATE TABLE ingest.source_pages (
     state TEXT NOT NULL DEFAULT 'queued' CHECK (state IN ('queued', 'fetched', 'failed')),
     state_reason TEXT CHECK (state_reason IS NULL OR trim(state_reason) <> ''),
     attempt_count INTEGER NOT NULL DEFAULT 0 CHECK (attempt_count >= 0),
-    next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT '-infinity',
+    next_attempt_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     latest_evidence_id BIGINT,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
     UNIQUE (id, site_id),

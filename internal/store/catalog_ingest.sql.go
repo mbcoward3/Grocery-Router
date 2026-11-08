@@ -1112,7 +1112,7 @@ UPDATE ingest.source_pages SET
     state = 'queued',
     state_reason = NULL,
     attempt_count = 0,
-    next_attempt_at = '-infinity',
+    next_attempt_at = clock_timestamp(),
     updated_at = clock_timestamp()
 WHERE id = $1
 `
@@ -1126,13 +1126,13 @@ func (q *Queries) RequeueIngestSourcePage(ctx context.Context, id int64) error {
 const resumeIngestSite = `-- name: ResumeIngestSite :execrows
 UPDATE ingest.site_pauses SET
     resumed_at = clock_timestamp(),
-    resume_note = $1
+    resume_note = $1::TEXT
 WHERE site_id = $2 AND resumed_at IS NULL
 `
 
 type ResumeIngestSiteParams struct {
-	ResumeNote sql.NullString `db:"resume_note" json:"resume_note"`
-	SiteID     string         `db:"site_id" json:"site_id"`
+	ResumeNote string `db:"resume_note" json:"resume_note"`
+	SiteID     string `db:"site_id" json:"site_id"`
 }
 
 func (q *Queries) ResumeIngestSite(ctx context.Context, arg ResumeIngestSiteParams) (int64, error) {

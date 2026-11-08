@@ -91,7 +91,7 @@ ON CONFLICT (site_id) WHERE resumed_at IS NULL DO NOTHING;
 -- name: ResumeIngestSite :execrows
 UPDATE ingest.site_pauses SET
     resumed_at = clock_timestamp(),
-    resume_note = sqlc.arg(resume_note)
+    resume_note = sqlc.arg(resume_note)::TEXT
 WHERE site_id = sqlc.arg(site_id) AND resumed_at IS NULL;
 
 -- name: GetOpenIngestSitePause :one
@@ -242,7 +242,7 @@ UPDATE ingest.source_pages SET
     state = 'queued',
     state_reason = NULL,
     attempt_count = 0,
-    next_attempt_at = '-infinity',
+    next_attempt_at = clock_timestamp(),
     updated_at = clock_timestamp()
 WHERE id = sqlc.arg(id);
 
