@@ -6,11 +6,13 @@ Read in this order:
 
 1. `V1_SPEC.md` for the completed base product contract
 2. `AUTH_HOUSEHOLDS_SPEC.md` for the current approved post-v1 authentication phase
-3. `UP_NEXT.md`
-4. `PRODUCT_DECISIONS.md` for rationale
+3. `CATALOG_INGEST_SPEC.md` for the proposed shared recipe catalog pipeline (draft; once
+   approved, only slices 1–2 are authorized, and later slices follow its §8 gates)
+4. `UP_NEXT.md`
+5. `PRODUCT_DECISIONS.md` for rationale
 
 The completed true-up ledger is archived at `archive/trueup/recipes.csv`; it is evidence, not
-an active planning authority.
+an active planning authority. Reviews under `archive/reviews/` are history, not requirements.
 
 `archive/interviews/v1-scope-interview.md` is historical and non-authoritative. Do not load it
 as routine context; consult it only to recover nuance not settled by the current documents.

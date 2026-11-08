@@ -15,8 +15,9 @@ scope requires a new phase with its own acceptance criteria.
 
 ## 2. Planning intelligence
 
-- **Agent-generated weeks.** Replace or augment uniform random selection with OpenAI-backed
-  planning through Google ADK for Go.
+- **Agent-generated weeks.** Replace or augment uniform random selection with planning over the
+  shared catalog. Direction: suggestions computed without runtime AI (D041), OpenAI through
+  `openai-go` for offline work (D042), and marked suggestions that join when kept (D043).
 - **Planner constraints.** Guests, serving targets, busy nights, effort limits, desired
   leftovers, proteins, cuisines, and must-include constraints beyond direct manual editing.
 - **History-aware selection.** Recency, repetition avoidance, favorites, breadth, and other
@@ -27,7 +28,8 @@ scope requires a new phase with its own acceptance criteria.
   justifies it.
 - **Leftovers.** Model extra batches, repeat meals, and the distinction between recipes and
   eating occasions.
-- **Recipe discovery.** Search for recipes outside the family corpus and propose additions.
+- **Recipe discovery.** Search for recipes outside the family corpus and propose additions. The
+  shared catalog this depends on is proposed in [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md).
 
 ## 3. Quantity and shopping intelligence
 
