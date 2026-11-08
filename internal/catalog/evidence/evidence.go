@@ -23,16 +23,23 @@ const BodyEncodingGzip = "gzip"
 // Evidence is one immutable fetch. A re-fetch creates new evidence.
 type Evidence struct {
 	// ID is assigned by the Store on insert.
-	ID           int64
-	SiteID       string
-	RequestedURL string
-	FinalURL     string
-	Redirects    []safefetch.Redirect
-	Status       int
-	MediaType    string
-	ETag         string
-	LastModified string
-	FetchedAt    time.Time
+	ID     int64
+	SiteID string
+	// FetchAttemptID and SourcePageID link evidence to the attempt that
+	// produced it and the queued page it answers; set by the caller.
+	FetchAttemptID int64
+	SourcePageID   int64
+	// CanonicalLink is the page's first rel=canonical href exactly as found,
+	// valid or not; empty when absent.
+	CanonicalLink string
+	RequestedURL  string
+	FinalURL      string
+	Redirects     []safefetch.Redirect
+	Status        int
+	MediaType     string
+	ETag          string
+	LastModified  string
+	FetchedAt     time.Time
 	// DecodedBytes and BodySHA256 describe the decoded (uncompressed) body.
 	DecodedBytes   int64
 	BodySHA256     string
