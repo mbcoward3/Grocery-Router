@@ -1,6 +1,6 @@
 # Grocery Router — Product Decision Record
 
-Status: **durable rationale for the v1 direction**  
+Status: **durable rationale for the v1 direction and later approved phases**  
 Behavioral authority: [`V1_SPEC.md`](V1_SPEC.md)  
 Historical source: [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md)
 
@@ -542,3 +542,91 @@ count, and D026 only where it says past weeks are not exposed.
 
 **Revisit when:** The household repeatedly wants to reuse an earlier pool or needs an audit trail
 of changes within a week.
+
+D039–D043 were approved with [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md) on 2026-11-08.
+
+## D039 — Shared catalog plus household-owned copies
+
+**Decision:** Grocery Router is built for one known household but shaped so other households can
+join later. Every new table is either shared catalog data with no household, or household-owned
+data scoped like the existing tenant tables. A household adopts a catalog recipe by receiving its
+own editable copy; catalog recipes are never edited by households.
+
+**Why:** The family is the only consumer, but the authentication phase already made all product
+data household-owned. Keeping catalog work (fetching, tagging, mapping) shared means its cost is
+paid once per recipe regardless of household count, while copies let each household correct or
+tune recipes without affecting others.
+
+**Consequence:** Signup, invitations, billing, and administration stay deferred. New work must not
+add product data that is neither catalog nor household-owned. Onboarding a future household reuses
+the same adoption path as a single suggested recipe.
+
+**Revisit when:** A second household is actually admitted or catalog sharing needs per-household
+visibility rules.
+
+## D040 — Release-qualified publication for catalog recipes
+
+**Decision:** Catalog recipes publish automatically, but only under a pipeline release
+that has passed qualification against a reviewed evaluation set, with sampled audits and stop rules
+after publication. Catalog trust is recorded as release provenance, never as `verified`. The
+household corpus keeps its human-approval rule.
+
+**Why:** The pilot produced 17 web candidates and every one had blockers. Per-recipe review cannot
+reach tens of thousands of recipes, but the blockers were not all trivial: some would have produced
+wrong grocery lists. Trust therefore moves from each recipe to each measured pipeline release.
+
+**Consequence:** Rejection is normal and is fixed through rules or overrides, not manual review of
+each recipe. No requirement may be dropped or inferred to pass a gate. A failing site or release
+stops publishing and can be withdrawn or rolled back. Users can swap a suggested recipe out of a
+week or edit their own copy, so no confirmation step is added when a catalog recipe enters a week.
+
+**Revisit when:** Qualification or audits repeatedly fail, or household use shows grocery errors
+from catalog recipes.
+
+## D041 — AI runs offline only
+
+**Decision:** Models may be called only from operator-run pipeline commands. No user request, week
+operation, or grocery operation calls a model. Recipe suggestions are computed from data prepared
+offline, such as embeddings, without runtime AI.
+
+**Why:** Runtime AI adds per-user cost with no payment structure to cover it, which is risky for a
+multi-household shape. Offline AI is a one-time cost per recipe or ingredient name and benefits
+every household.
+
+**Consequence:** Plain-language requests and interactive onboarding chat remain deferred. A runtime
+model may be added later only for a specific feature, with a measured benefit (for example, the
+suggestion hide-and-recover evaluation) and a per-household spend cap.
+
+**Revisit when:** The AI-free recommender measurably fails to produce good suggestions, or new-user
+onboarding is scoped.
+
+## D042 — OpenAI through the official Go SDK
+
+**Decision:** Use OpenAI through the official `openai-go` SDK behind a narrow internal interface.
+Do not adopt Google ADK for structured extraction and embeddings. This supersedes
+the ADK direction in D003's revisit condition.
+
+**Why:** The pipeline needs structured outputs, embeddings, and later batch jobs, not multi-step
+agents. A direct SDK is simpler, and the Batch API lowers bulk cost when the pipeline scales.
+
+**Consequence:** Provider or model changes stay local to one package. ADK may be reconsidered if a
+real conversational agent is scoped.
+
+**Revisit when:** An agent workflow with tools and memory is approved, or another provider is
+clearly better for the pipeline's tasks.
+
+## D043 — Suggested recipes enter the week marked, and join when kept
+
+**Decision (direction for a later phase):** A household sets how many new recipes it wants per
+week. Suggested catalog recipes appear in the week with a subtle "picked for you" marker and can be
+swapped like any other meal. A suggestion that stays in the week joins the household collection; one
+swapped out does not and counts as a mild negative signal.
+
+**Why:** It keeps the collection from filling with recipes nobody cooked, uses existing week
+editing instead of a new review step, and produces feedback for later suggestions.
+
+**Consequence:** Ratings and the exact signal model are decided in the suggestion phase spec. A
+suggestion needs a household snapshot before it can generate groceries, and a recipe kept in a week
+is evidence of retention, not proof it was cooked or liked.
+
+**Revisit when:** That spec is written.
