@@ -1,0 +1,14 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject: "½
+  tsp seasoning salt or seasoning blend (or to taste)" offers an unnamed "seasoning blend" and
+  the step says "your favorite seasoning salt or seasoning blend". Also decide whether "1/2 lb.
+  frozen peppers and onions" is one product (a frozen blend) or a compound line.
+outcome: reject
+categories: [alternative]
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [ambiguous_item]

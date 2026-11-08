@@ -1,0 +1,15 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Expected to reject because line 2 "2 cups seasoned, (cooked vegetables or greens)" names no
+  grocery item, and line 7 "1¼ cup shredded cheese, (such as Cheddar or Gruyere)" names a
+  category with examples rather than an item; both are unresolved (reason drafted as
+  ambiguous_item). Never guess the first example.
+outcome: reject
+categories: [presence_only]
+instructions_complete: true
+instructions_note: >-
+  Complete, but the cooked vegetables are a leftover component, not a purchase.
+reject:
+  codes: [ambiguous_item]

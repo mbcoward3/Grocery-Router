@@ -1,0 +1,290 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/sauteed-beef-cabbage-and-rice/",
+  "note": "Copied from local ingest.source_nodes id 121 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Sautéed Beef, Cabbage, and Rice",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Sautéed Beef, Cabbage, and Rice is a simple yet delicious comfort food that will keep you full without draining your wallet.",
+    "datePublished": "2022-06-13T14:27:17+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Sautéed-Cabbage-Beef-and-Rice.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Sautéed-Cabbage-Beef-and-Rice-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Sautéed-Cabbage-Beef-and-Rice-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Sautéed-Cabbage-Beef-and-Rice-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4",
+      "4 1.5 cups each"
+    ],
+    "prepTime": "PT10M",
+    "cookTime": "PT25M",
+    "totalTime": "PT35M",
+    "recipeIngredient": [
+      "1 yellow onion ($0.32)",
+      "1\/2 head green cabbage (5 cups chopped) ($1.08)",
+      "1 Tbsp cooking oil ($0.04)",
+      "1\/2 lb. ground beef ($3.50)",
+      "1 Tbsp steak seasoning ($0.30)",
+      "1\/4 cup water ($0.00)",
+      "2 cups cooked rice* ($0.41)",
+      "2 Tbsp butter ($0.41)",
+      "1\/2 Tbsp soy sauce ($0.03)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Dice the onion and chop the cabbage into ½-inch pieces.",
+        "name": "Dice the onion and chop the cabbage into ½-inch pieces.",
+        "url": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#wprm-recipe-66565-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the onion and cooking oil to a large skillet and sauté over medium heat until the onions are soft.",
+        "name": "Add the onion and cooking oil to a large skillet and sauté over medium heat until the onions are soft.",
+        "url": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#wprm-recipe-66565-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the ground beef and steak seasoning to the skillet and continue to sauté until the beef is fully cooked. If using a higher fat content beef, drain the excess fat from the skillet.",
+        "name": "Add the ground beef and steak seasoning to the skillet and continue to sauté until the beef is fully cooked. If using a higher fat content beef, drain the excess fat from the skillet.",
+        "url": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#wprm-recipe-66565-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the chopped cabbage and water to the skillet. Continue to sauté until the cabbage has softened to your desired level of tenderness.",
+        "name": "Add the chopped cabbage and water to the skillet. Continue to sauté until the cabbage has softened to your desired level of tenderness.",
+        "url": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#wprm-recipe-66565-step-0-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the cooked rice and butter to the skillet. Fold the rice and butter into the beef and cabbage until the butter has melted, everything is evenly combined, and the rice is heated through.",
+        "name": "Add the cooked rice and butter to the skillet. Fold the rice and butter into the beef and cabbage until the butter has melted, everything is evenly combined, and the rice is heated through.",
+        "url": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#wprm-recipe-66565-step-0-4"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Finally, season the skillet with soy sauce to taste. Start with 1 tsp and add more to your liking (I added ½ Tbsp, or 1.5 tsp). Serve hot and enjoy!",
+        "name": "Finally, season the skillet with soy sauce to taste. Start with 1 tsp and add more to your liking (I added ½ Tbsp, or 1.5 tsp). Serve hot and enjoy!",
+        "url": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#wprm-recipe-66565-step-0-5"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "30",
+      "reviewCount": "29"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Fantastic! The steak seasoning with the beef and onions is awesomeness.  I added some grated carrots and a can of italian diced tomatoes with the cabbage. Also added a can of drained rinsed black beans \r\nat the end to up the protein.  This is a great basic recipe that you can add any veggie to.  We did not add the soy sauce at the end and it was still flavorful and packed with flavor. Thank you for posting!!!",
+        "author": {
+          "@type": "Person",
+          "name": "Veronica"
+        },
+        "datePublished": "2026-05-24"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was actually delicious. I was feeling lazy and just happened to have the ingredients. I thought “oh just ground beef and cabbage..? That’s gotta suck.” But oh boy did I eat those words. I will definitely be making this again. Easily a new favorite.",
+        "author": {
+          "@type": "Person",
+          "name": "Kaylie Edwards"
+        },
+        "datePublished": "2026-05-14"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I made this dish without changing anything and we absolutely loved it. It’s simple yet comforting. This is going a be a regular meal in my home. Thank you.",
+        "author": {
+          "@type": "Person",
+          "name": "Thomas"
+        },
+        "datePublished": "2025-07-11"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "rice beef",
+        "author": {
+          "@type": "Person",
+          "name": "LabDex"
+        },
+        "datePublished": "2024-07-03"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "rice",
+        "author": {
+          "@type": "Person",
+          "name": "LabDex"
+        },
+        "datePublished": "2024-06-18"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "nice rice",
+        "author": {
+          "@type": "Person",
+          "name": "LabDex"
+        },
+        "datePublished": "2024-05-06"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "One of my favorite recipes I’ve tried this year.  So simple and it gets lots of vegetables in for one meal.  My husband and even my 11 year old love this recipe too!",
+        "author": {
+          "@type": "Person",
+          "name": "Kristen"
+        },
+        "datePublished": "2024-05-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "gazab rice",
+        "author": {
+          "@type": "Person",
+          "name": "LabDex"
+        },
+        "datePublished": "2024-04-11"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "gazb rice",
+        "author": {
+          "@type": "Person",
+          "name": "LabDex"
+        },
+        "datePublished": "2024-03-14"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "nice rice",
+        "author": {
+          "@type": "Person",
+          "name": "LabDex"
+        },
+        "datePublished": "2024-02-07"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Made this 2x now. Other than using close to 1lb of beef, I didn't change anything. It's delicious! We really enjoy this dish.",
+        "author": {
+          "@type": "Person",
+          "name": "Arlene L"
+        },
+        "datePublished": "2023-09-10"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was amazing! This is kind of a slow' stir fry. So using what I had on hand I made a few changes. I had the bottom half of a Napa Cabbage ( thick ribs) and half a Boc Choi in the crisper and they yielded about 4 cups chopped. Close enough. Removed the green tops of the Boc Choi to add with the rice near the end. The only steak seasoning blend I had was Montana Steak Seasoning from Weber, which I had never used before so  \"Now's the time\".   OMG!!!!!!!!! It made this recipe. I did add a little more at the table, but I am 78 and had Covid in December so the tongue is pretty dead right now.\r\nSo now I'm wondering what else I might try here with the Cabbage, beef and rice. Celery? Turnip and Rutabaga? Sub roast pork for beef? Who knows. \r\nBeth is the best.  Play with your food America!   Oh wait, ramen noodles instead of rice!     John",
+        "author": {
+          "@type": "Person",
+          "name": "John Sealander"
+        },
+        "datePublished": "2023-04-24"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Very very good,  I didn't change a thing!",
+        "author": {
+          "@type": "Person",
+          "name": "Jimmie Busby"
+        },
+        "datePublished": "2023-03-27"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is so fast, so easy, *so* delicious, and so customizable! I tried to stick as close to the recipe as written my fist time around, and only subbed red cabbage for green, Beyond Beef for regular, and Trader Joe’s everything seasoning for steak seasoning, all depending on what I had on hand (plus a couple of cloves of minced garlic, because Beth is right: when can you *not* add garlic?). It came out amazing - the texture of the cabbage, silky from the butter but with some bite to it, was incredible! I can’t wait to mix this up even further - Worcestershire sauce, garlic salt, mushrooms, the sky is the limit!",
+        "author": {
+          "@type": "Person",
+          "name": "Rose"
+        },
+        "datePublished": "2023-03-06"
+      }
+    ],
+    "recipeCategory": [
+      "Dinner",
+      "Main Course"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Beef and Cabbage, Cabbage and Rice, cheap meals",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1.5 cups",
+      "calories": "372 kcal",
+      "carbohydrateContent": "32 g",
+      "proteinContent": "14 g",
+      "fatContent": "21 g",
+      "sodiumContent": "232 mg",
+      "fiberContent": "4 g"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/sauteed-beef-cabbage-and-rice\/"
+  }
+}

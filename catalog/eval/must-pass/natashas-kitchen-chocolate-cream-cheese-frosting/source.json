@@ -1,0 +1,153 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/chocolate-cream-cheese-frosting/",
+  "note": "Copied from local ingest.source_nodes id 325 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Best Chocolate Frosting! Whipped Chocolate Cream Cheese Frosting",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "This chocolate cream cheese frosting is a chocolate lovers dream. Frosts 18-24 cupcakes or an 8 or 9-inch two layer round cake.",
+    "datePublished": "2015-03-07T07:00:39+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/03\/Whipped-Chocolate-Cream-Cheese-Frosting-7.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/03\/Whipped-Chocolate-Cream-Cheese-Frosting-7-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/03\/Whipped-Chocolate-Cream-Cheese-Frosting-7-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/03\/Whipped-Chocolate-Cream-Cheese-Frosting-7-480x270.jpg"
+    ],
+    "recipeYield": [
+      "3",
+      "3 cups frosting"
+    ],
+    "prepTime": "PT8M",
+    "totalTime": "PT8M",
+    "recipeIngredient": [
+      "8 oz package cream cheese (room temp)",
+      "8 Tbsp 1\/2 cup unsalted butter, room temp",
+      "3 cups powdered sugar",
+      "1\/2 cup unsweetened cocoa powder",
+      "1\/4 tsp salt",
+      "1 tsp vanilla extract"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "In the bowl of an electric mixer using paddle attachment (or using an electric hand mixer with a large bowl), beat together 8 oz cream cheese with 8 Tbsp butter on medium\/high speed until creamy (3 min), scraping down the bowl as needed.",
+        "name": "In the bowl of an electric mixer using paddle attachment (or using an electric hand mixer with a large bowl), beat together 8 oz cream cheese with 8 Tbsp butter on medium\/high speed until creamy (3 min), scraping down the bowl as needed.",
+        "url": "https:\/\/natashaskitchen.com\/chocolate-cream-cheese-frosting\/#wprm-recipe-54577-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Sift in 3 cups powdered sugar with 1\/2 cup cocoa powder to ensure there are no lumps then add 1\/4 tsp salt. Mix on low speed until well combined, scrape down the bowl well then increase to medium\/high speed and beat until smooth and whipped (1 min).",
+        "name": "Sift in 3 cups powdered sugar with 1\/2 cup cocoa powder to ensure there are no lumps then add 1\/4 tsp salt. Mix on low speed until well combined, scrape down the bowl well then increase to medium\/high speed and beat until smooth and whipped (1 min).",
+        "url": "https:\/\/natashaskitchen.com\/chocolate-cream-cheese-frosting\/#wprm-recipe-54577-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add 1 tsp vanilla and beat on medium\/high until smooth (1 min). Now it's ready to be piped onto cooled cupcakes.",
+        "name": "Add 1 tsp vanilla and beat on medium\/high until smooth (1 min). Now it's ready to be piped onto cooled cupcakes.",
+        "url": "https:\/\/natashaskitchen.com\/chocolate-cream-cheese-frosting\/#wprm-recipe-54577-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.91",
+      "ratingCount": "177",
+      "reviewCount": "6"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Absolutely love this recipe 😋.  So delicious, not sweet and so creamy.\r\nSo easy and comes together beautifully.",
+        "author": {
+          "@type": "Person",
+          "name": "Donna"
+        },
+        "datePublished": "2026-10-20"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I’ve made this frosting a lot - it always is a hit",
+        "author": {
+          "@type": "Person",
+          "name": "Sarah s"
+        },
+        "datePublished": "2026-07-17"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Everyone absolutely loved this. It's my go-to now, especially for birthday parties. \r\nHow long can you keep the frosting? I have a birthday the week before a birthday party. Can I keep the extra frosting that long?",
+        "author": {
+          "@type": "Person",
+          "name": "Angelia Hardy"
+        },
+        "datePublished": "2026-03-31"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Thank you! I’m not a fan of buttercream frosting so I use this recipe when frosting chocolate cake. Loved by all❤️.",
+        "author": {
+          "@type": "Person",
+          "name": "Susan"
+        },
+        "datePublished": "2025-09-21"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "What icing tip do you use to get the swirls ?",
+        "author": {
+          "@type": "Person",
+          "name": "Peggy Davidson"
+        },
+        "datePublished": "2025-01-27"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is my favorite frosting to make. It's a hit whenever I make it",
+        "author": {
+          "@type": "Person",
+          "name": "Brad"
+        },
+        "datePublished": "2024-12-22"
+      }
+    ],
+    "recipeCategory": [
+      "Dessert"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Chocolate Frosting, Whipped Chocolate Cream Cheese Frosting",
+    "@id": "https:\/\/natashaskitchen.com\/chocolate-cream-cheese-frosting\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/chocolate-cream-cheese-frosting\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/chocolate-cream-cheese-frosting\/"
+  }
+}

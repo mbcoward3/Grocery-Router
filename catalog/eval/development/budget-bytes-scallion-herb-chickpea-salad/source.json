@@ -1,0 +1,283 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/scallion-herb-chickpea-salad/",
+  "note": "Copied from local ingest.source_nodes id 126 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Scallion Herb Chickpea Salad",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Light, bright, and full of spring flavors, this Scallion Herb Chickpea Salad will keep you full all afternoon. Serve as a sandwich, wrap, or salad!&nbsp;",
+    "datePublished": "2019-03-10T20:39:12+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2019\/03\/Scallion-Herb-Chickpea-Salad-Sandwich-hand.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2019\/03\/Scallion-Herb-Chickpea-Salad-Sandwich-hand-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2019\/03\/Scallion-Herb-Chickpea-Salad-Sandwich-hand-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2019\/03\/Scallion-Herb-Chickpea-Salad-Sandwich-hand-480x270.jpg"
+    ],
+    "video": {
+      "name": "Scallion Herb Chickpea Salad",
+      "description": "Light, bright, and full of spring flavors, this Scallion Herb Chickpea Salad will keep you full all afternoon. Serve as a sandwich, wrap, or salad! FULL RECIPE BELOW.\n\nPRINTABLE RECIPE:\n\nFull Recipe 👇👇👇\n\nINGREDIENTS\n1 avocado\n1\/2 cup Greek yogurt\n1 tsp lemon juice\n1\/4 tsp salt\n1\/4 cup chopped fresh parsley\n1\/4 cup chopped fresh cilantro\n1\/4 cup sliced scallions (about two)\n1 15oz. can chickpeas\n\nINSTRUCTIONS\n1. Place the avocado, yogurt, lemon juice, salt, parsley, cilantro, and scallions in a bowl. Mash the ingredients together until combined. It's okay if the avocado is a bit chunky still.\n2. Drain the can of chickpeas, then add them to the bowl with the avocado dressing. Stir and mash the chickpeas into the dressing. Taste the salad and add salt if needed.\n3. Serve the salad over a bed of greens, between two slices of bread, in a pita, or wrapped in a tortilla.\n\nInstagram: budgetbytes\nFacebook: budgetbytes1\nPinterest: budgetbytes\nTwitter: budget_bytes",
+      "uploadDate": "2019-05-04T14:25:02+00:00",
+      "creator": {
+        "@type": "Organization",
+        "name": "Budget Bytes",
+        "url": "https:\/\/www.youtube.com\/channel\/UC17vdVOZBVxTSDcldUBBlRg"
+      },
+      "duration": "PT47S",
+      "interactionStatistic": [
+        {
+          "@type": "InteractionCounter",
+          "interactionType": {
+            "@type": "WatchAction"
+          },
+          "userInteractionCount": 1917
+        },
+        {
+          "@type": "InteractionCounter",
+          "interactionType": {
+            "@type": "LikeAction"
+          },
+          "userInteractionCount": 69
+        },
+        {
+          "@type": "InteractionCounter",
+          "interactionType": {
+            "@type": "CommentAction"
+          },
+          "userInteractionCount": 4
+        }
+      ],
+      "thumbnailUrl": "https:\/\/i.ytimg.com\/vi\/lRpae6fDONA\/hqdefault.jpg",
+      "embedUrl": "https:\/\/www.youtube.com\/embed\/lRpae6fDONA?feature=oembed",
+      "contentUrl": "https:\/\/www.youtube.com\/watch?v=lRpae6fDONA",
+      "@type": "VideoObject"
+    },
+    "recipeYield": [
+      "2",
+      "2 1.5 cups each"
+    ],
+    "prepTime": "PT10M",
+    "totalTime": "PT10M",
+    "recipeIngredient": [
+      "1 avocado ($0.79)",
+      "1\/2 cup Greek yogurt ($0.44)",
+      "1 tsp lemon juice ($0.04)",
+      "1\/4 tsp salt ($0.02)",
+      "1\/4 cup chopped fresh parsley ($0.25)",
+      "1\/4 cup chopped fresh cilantro ($0.20)",
+      "1\/4 cup sliced scallions (about two) ($0.23)",
+      "1 15oz. can chickpeas ($0.49)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Place the avocado, yogurt, lemon juice, salt, parsley, cilantro, and scallions in a bowl. Mash the ingredients together until combined. It's okay if the avocado is a bit chunky still.",
+        "name": "Place the avocado, yogurt, lemon juice, salt, parsley, cilantro, and scallions in a bowl. Mash the ingredients together until combined. It's okay if the avocado is a bit chunky still.",
+        "url": "https:\/\/www.budgetbytes.com\/scallion-herb-chickpea-salad\/#wprm-recipe-42991-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Drain the can of chickpeas, then add them to the bowl with the avocado dressing. Stir and mash the chickpeas into the dressing. Taste the salad and add salt if needed.",
+        "name": "Drain the can of chickpeas, then add them to the bowl with the avocado dressing. Stir and mash the chickpeas into the dressing. Taste the salad and add salt if needed.",
+        "url": "https:\/\/www.budgetbytes.com\/scallion-herb-chickpea-salad\/#wprm-recipe-42991-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Serve the salad over a bed of greens, between two slices of bread, in a pita, or wrapped in a tortilla.",
+        "name": "Serve the salad over a bed of greens, between two slices of bread, in a pita, or wrapped in a tortilla.",
+        "url": "https:\/\/www.budgetbytes.com\/scallion-herb-chickpea-salad\/#wprm-recipe-42991-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.83",
+      "ratingCount": "57",
+      "reviewCount": "57"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Really enjoyed this salad. I used a spicy guacamole in it and it turned out great!",
+        "author": {
+          "@type": "Person",
+          "name": "Liz"
+        },
+        "datePublished": "2025-09-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is a phenomenal base recipe! I made some tweaks like adding chopped tomatoes and large chunks of red onion because that was what was in my fridge. I also threw in a few different herbs from what I had in my garden. I added a couple of different spice blends and served this on my homemade white bread and I LOVED it. I really don’t like chickpeas or beans in general but I eat them because they’re cheap and healthy but I loved everything about this recipe. I am seriously going to make this atleast twice a month, maybe every week",
+        "author": {
+          "@type": "Person",
+          "name": "Kelsey"
+        },
+        "datePublished": "2025-07-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Love this one - so excellent leftover too. On our menu for this week!",
+        "author": {
+          "@type": "Person",
+          "name": "Claire WB"
+        },
+        "datePublished": "2025-02-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "So delicious!!! And Fast!!!!\r\nThank you!",
+        "author": {
+          "@type": "Person",
+          "name": "Debbie"
+        },
+        "datePublished": "2025-01-25"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "Really refreshing for summer but a bit light on flavor. Next time I’ll add more lemon as some commenters suggested. I also added some chili seasoning (I used a blend from New Mexico but tajin is similar) and that did perk it up a bit.",
+        "author": {
+          "@type": "Person",
+          "name": "Melissa"
+        },
+        "datePublished": "2024-06-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I really loved this salad.  But I was wondering if there's a substitute for the avocado?  It's delicious but turns brown if not eaten right away, and my daughter can't eat avocado but would like it otherwise.",
+        "author": {
+          "@type": "Person",
+          "name": "Miranda"
+        },
+        "datePublished": "2024-04-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "It was simple to make. It was also super yummy. I found a new staple.",
+        "author": {
+          "@type": "Person",
+          "name": "Lauren"
+        },
+        "datePublished": "2024-03-30"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "I like the basic concept on this one and I think it is good as written, but I have a few tweaks that I think really upped the flavor:\r\n- a tbsp of olive oil drizzled in\r\n- some chili powder or smoked paprika for a bit of heat\r\n- a bit more lemon juice, 1.5 to 2 tsp for my taste",
+        "author": {
+          "@type": "Person",
+          "name": "Ernie"
+        },
+        "datePublished": "2024-02-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was delicious and light!! I accidentally used parsley but was still so good.",
+        "author": {
+          "@type": "Person",
+          "name": "Amy"
+        },
+        "datePublished": "2023-09-10"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "2"
+        },
+        "reviewBody": "I found this recipe quite bland. I added some soy sauce and garlic salt and more acid to try to bump up the flavor more, but still not my favorite.",
+        "author": {
+          "@type": "Person",
+          "name": "Kay"
+        },
+        "datePublished": "2023-06-27"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Love this recipe as-is, but also delicious to mix with a bit of tuna for yummy take on a tuna salad!",
+        "author": {
+          "@type": "Person",
+          "name": "Emily"
+        },
+        "datePublished": "2023-06-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "Love this! Always come back to it. Goes perfectly on some seedy crackers for an easy at-work lunch snack.",
+        "author": {
+          "@type": "Person",
+          "name": "Guy"
+        },
+        "datePublished": "2023-05-02"
+      }
+    ],
+    "recipeCategory": [
+      "Lunch",
+      "Salad",
+      "Sandwich"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "cold lunch, Hot Sandwich, meal prep",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1.5 Cups",
+      "calories": "415.85 kcal",
+      "carbohydrateContent": "49.5 g",
+      "proteinContent": "17.7 g",
+      "fatContent": "19 g",
+      "fiberContent": "18.9 g",
+      "sodiumContent": "702.9 mg"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/scallion-herb-chickpea-salad\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/scallion-herb-chickpea-salad\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/scallion-herb-chickpea-salad\/"
+  }
+}

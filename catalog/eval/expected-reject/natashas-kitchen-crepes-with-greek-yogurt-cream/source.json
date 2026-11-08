@@ -1,0 +1,195 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/crepes-with-greek-yogurt-cream/",
+  "note": "Copied from local ingest.source_nodes id 342 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Crepes with Greek Yogurt Cream",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "I can't seem to get enough of these crepes. This basic crepes recipe is the same one I've used for years. I've tried other crepes recipes but nothing compares to these or gives consistent results. The Greek yogurt cream, apricot preserves and fresh fruit make these quite a treat! The secret to a perfect crepe (besides the right recipe), is having a great non-stick skillet. You also want to use a thin-edged spatula.",
+    "datePublished": "2014-07-28T23:15:12+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/Crepes-with-Greek-Yogurt-Cream-8.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/Crepes-with-Greek-Yogurt-Cream-8-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/Crepes-with-Greek-Yogurt-Cream-8-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/Crepes-with-Greek-Yogurt-Cream-8-480x270.jpg"
+    ],
+    "recipeYield": [
+      "6",
+      "6 -8"
+    ],
+    "prepTime": "PT30M",
+    "cookTime": "PT30M",
+    "totalTime": "PT60M",
+    "recipeIngredient": [
+      "P.S. If you want to speed up the process",
+      "Crepes Batter:",
+      "½ cup lukewarm water",
+      "1 cup milk (room temp)",
+      "4 large eggs",
+      "4 Tbsp unsalted butter (melted. Plus more to sauté.)",
+      "1 cup all-purpose flour (you can use 1\/2 cup whole wheat flour and 1\/2 cup all-purpose)",
+      "2 Tbsp sugar",
+      "Pinch salt",
+      "Greek Yogurt Filling:",
+      "1 cups Greek Yogurt ((low fat or fat free will work))",
+      "6 oz 3\/4 of a package of cream cheese, at room temperature",
+      "1\/3 cup granulated sugar"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Place all of your ingredients for the crepes batter into your blender in the order they are listed: 1\/2 cup water, 1 cup milk, 4 eggs, 4 Tbsp melted butter, 1 cup flour, 2 Tbsp sugar and a pinch of salt. Blend together for 1 minute or until smooth and well combined.",
+        "name": "Place all of your ingredients for the crepes batter into your blender in the order they are listed: 1\/2 cup water, 1 cup milk, 4 eggs, 4 Tbsp melted butter, 1 cup flour, 2 Tbsp sugar and a pinch of salt. Blend together for 1 minute or until smooth and well combined.",
+        "url": "https:\/\/natashaskitchen.com\/crepes-with-greek-yogurt-cream\/#wprm-recipe-54706-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Melt a small dot of butter in a good non-stick skillet over medium heat. Add about 3 Tbsp of crepes batter and swirl the pan right away to distribute the batter evenly and form a thin crepe. Cook until golden on the first side (about 1 min) then rotate and cook another 15 seconds on the second side. Repeat with the remaining batter.",
+        "name": "Melt a small dot of butter in a good non-stick skillet over medium heat. Add about 3 Tbsp of crepes batter and swirl the pan right away to distribute the batter evenly and form a thin crepe. Cook until golden on the first side (about 1 min) then rotate and cook another 15 seconds on the second side. Repeat with the remaining batter.",
+        "url": "https:\/\/natashaskitchen.com\/crepes-with-greek-yogurt-cream\/#wprm-recipe-54706-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "In the bowl of your mixer, cream together 6 oz cream cheese and 1\/3 cup granulated sugar. Mix in 1 cup Greek Yogurt and beat on medium\/high speed with the whisk attachment, or until smooth and creamy. Set aside until ready to use. Refrigerate if not using right away.",
+        "name": "In the bowl of your mixer, cream together 6 oz cream cheese and 1\/3 cup granulated sugar. Mix in 1 cup Greek Yogurt and beat on medium\/high speed with the whisk attachment, or until smooth and creamy. Set aside until ready to use. Refrigerate if not using right away.",
+        "url": "https:\/\/natashaskitchen.com\/crepes-with-greek-yogurt-cream\/#wprm-recipe-54706-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Spread a thin layer of Greek Yogurt cream over the top of your crepe and roll the crepe or fold each crepe into quarters with the cream on the inside. Top with apricot raspberry sauce and serve with fresh berries.",
+        "name": "Spread a thin layer of Greek Yogurt cream over the top of your crepe and roll the crepe or fold each crepe into quarters with the cream on the inside. Top with apricot raspberry sauce and serve with fresh berries.",
+        "url": "https:\/\/natashaskitchen.com\/crepes-with-greek-yogurt-cream\/#wprm-recipe-54706-step-0-3"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "25",
+      "reviewCount": "8"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "The crepes  are to die for!\r\nThis filling is perfect, I made it with non fat Greek yogurt!\r\nThe sauce was another challenge since I didn't have apricots so I used one can of sliced peaches. I finely chopped them and used the liquid as well. I did use fresh raspberries so I had to strain it all to remove the seeds! It came out amazing for a great drizzle!\r\nThank you",
+        "author": {
+          "@type": "Person",
+          "name": "Tricia"
+        },
+        "datePublished": "2026-04-17"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I made your crepes, Greek yogurt cream and strawberry sauce today and they are delicious! Thank you for sharing.",
+        "author": {
+          "@type": "Person",
+          "name": "Vicky"
+        },
+        "datePublished": "2024-07-02"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "These were amazing! My husband, who doesn't cook often, whipped these up this morning for breakfast. He melded in another recipe for apple cinnamon topping instead of the fresh fruit and apricot preserves. These were easy to make and the cream is incredible. Highly recommend!",
+        "author": {
+          "@type": "Person",
+          "name": "Barbie"
+        },
+        "datePublished": "2023-04-02"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Everyone loves these, and mixing the batter in a blender is a brilliant  idea! Thanks for yet another fantastic recipe!",
+        "author": {
+          "@type": "Person",
+          "name": "Lilly"
+        },
+        "datePublished": "2022-09-07"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Hi, can I freeze or refrigerate these and warm them up in the oven before serving? Will the yogurt cream still have the same texture? Thanks for all these amazing recipes!",
+        "author": {
+          "@type": "Person",
+          "name": "Ali"
+        },
+        "datePublished": "2021-07-20"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "These were amazing! I made the crepes and then added some sour cream and jam. Delicious. So easy. Turned out perfect. Spacibo!",
+        "author": {
+          "@type": "Person",
+          "name": "Michelle"
+        },
+        "datePublished": "2021-04-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Love how the crepes turned out!\r\nThank you so much for the recipe &lt;3",
+        "author": {
+          "@type": "Person",
+          "name": "Velda"
+        },
+        "datePublished": "2020-07-06"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This crepe batter is the best I’ve ever made!! Most of the recipes that I’ve made the crepes turned out to be dry. But not this one, so soft!! I made again so many times. Thank you so much for sharing such a delicious and easy crepe recipe!!",
+        "author": {
+          "@type": "Person",
+          "name": "Pinku"
+        },
+        "datePublished": "2019-11-29"
+      }
+    ],
+    "recipeCategory": [
+      "Breakfast",
+      "Dessert"
+    ],
+    "recipeCuisine": [
+      "Russian",
+      "Ukrainian"
+    ],
+    "keywords": "Crepes with Greek Yogurt Cream",
+    "@id": "https:\/\/natashaskitchen.com\/crepes-with-greek-yogurt-cream\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/crepes-with-greek-yogurt-cream\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/crepes-with-greek-yogurt-cream\/"
+  }
+}

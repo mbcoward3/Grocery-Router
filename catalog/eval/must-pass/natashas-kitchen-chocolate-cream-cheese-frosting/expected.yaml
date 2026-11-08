@@ -1,0 +1,110 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Check: (1) "8 oz package cream cheese" is one 8 oz package. (2) "8 Tbsp 1/2 cup unsalted
+  butter" is an equivalent line: 8 tbsp, with 1/2 cup as a note. (3) unsweetened cocoa powder
+  keeps the protected descriptor. Salt and black pepper map to the presence-only catalog items
+  (spec §5.9, §11 default), so the list shows them with no amount even though the requirement
+  keeps it; the household corpus still has them as measured items. New grocery items not in the
+  household vocabulary (check name, section, and shopping mode): powdered-sugar,
+  unsweetened-cocoa-powder, vanilla-extract.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Best Chocolate Frosting! Whipped Chocolate Cream Cheese Frosting"
+  source:
+    relationship: source
+    attribution: "Natasha's Kitchen"
+    url: https://natashaskitchen.com/chocolate-cream-cheese-frosting/
+    checked_on: 2026-11-08
+  image_url: https://natashaskitchen.com/wp-content/uploads/2015/03/Whipped-Chocolate-Cream-Cheese-Frosting-7.jpg
+  yield: "3"
+  hands_on: {min: 8, max: 8}
+  source_lines:
+    - "8 oz package cream cheese (room temp)"
+    - "8 Tbsp 1/2 cup unsalted butter, room temp"
+    - "3 cups powdered sugar"
+    - "1/2 cup unsweetened cocoa powder"
+    - "1/4 tsp salt"
+    - "1 tsp vanilla extract"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 37}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: cream-cheese, name: "Cream Cheese", store_section: {key: dairy, name: "Dairy"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", package: {type: package, size: "8", unit: oz}}
+          note: "room temp"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 41}}
+          relationship: equivalent
+          state: resolved
+          grocery_item: {key: unsalted-butter, name: "Unsalted Butter", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "8", unit: "tbsp"}
+          note: "1/2 cup; room temp"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 21}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: powdered-sugar, name: "Powdered Sugar", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "3", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 32}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: unsweetened-cocoa-powder, name: "Unsweetened Cocoa Powder", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 12}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/4", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 21}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: vanilla-extract, name: "Vanilla Extract", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tsp"}
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "In the bowl of an electric mixer using paddle attachment (or using an electric hand mixer with a large bowl), beat together 8 oz cream cheese with 8 Tbsp butter on medium/high speed until creamy (3 min), scraping down the bowl as needed."
+        - "Sift in 3 cups powdered sugar with 1/2 cup cocoa powder to ensure there are no lumps then add 1/4 tsp salt. Mix on low speed until well combined, scrape down the bowl well then increase to medium/high speed and beat until smooth and whipped (1 min)."
+        - "Add 1 tsp vanilla and beat on medium/high until smooth (1 min). Now it's ready to be piped onto cooled cupcakes."
+grocery:
+  - item: cream-cheese
+    section: dairy
+    kind: exact
+    amount: "1"
+    package:
+      type: package
+      size: "8"
+      unit: oz
+    source_lines: [0]
+  - item: unsalted-butter
+    section: dairy
+    kind: exact
+    amount: "8"
+    unit: tbsp
+    source_lines: [1]
+  - item: powdered-sugar
+    section: baking
+    kind: exact
+    amount: "3"
+    unit: cup
+    source_lines: [2]
+  - item: unsweetened-cocoa-powder
+    section: baking
+    kind: exact
+    amount: 1/2
+    unit: cup
+    source_lines: [3]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [4]
+  - item: vanilla-extract
+    section: baking
+    kind: exact
+    amount: "1"
+    unit: tsp
+    source_lines: [5]

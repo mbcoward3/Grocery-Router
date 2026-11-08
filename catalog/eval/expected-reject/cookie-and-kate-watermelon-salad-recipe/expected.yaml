@@ -1,0 +1,16 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Expected to reject because line 7 "Small handful of fresh mint and/or basil leaves, torn if
+  large, for garnish" is "and/or", which is neither one option nor both, so no first option is a
+  coherent default (incoherent_alternative), and a handful is not a unit. Line 0 "shallot or ½
+  small red onion" is a coherent alternative (each option has its own quantity; the steps say
+  shallot).
+outcome: reject
+categories: [alternative, presence_only]
+instructions_complete: true
+instructions_note: >-
+  Three complete steps.
+reject:
+  codes: [incoherent_alternative, unsupported_quantity]

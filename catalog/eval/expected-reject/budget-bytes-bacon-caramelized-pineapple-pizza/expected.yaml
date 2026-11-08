@@ -1,0 +1,14 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Expected to reject with missing_note_dependency: "3 oz. bacon*" and "1 large pizza dough**"
+  point at footnotes that are not in the JSON-LD (§5.5). Decide that asterisk markers count as
+  note references; this drafting treats them that way across the set. Also check line 1 "8 oz.
+  can pineapple chunks in juice" (one 8 oz can, not 8 oz by weight) for when the notes exist.
+outcome: reject
+instructions_complete: false
+instructions_note: >-
+  The footnotes that explain the bacon and the dough are missing.
+reject:
+  codes: [missing_note_dependency]

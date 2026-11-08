@@ -1,0 +1,209 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/shredded-brussels-sprouts-arugula-salad-recipe/",
+  "note": "Copied from local ingest.source_nodes id 452 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "Shredded Brussels Sprouts & Arugula Salad with Sunshine Dressing",
+    "description": "This shredded Brussels sprout and arugula salad is crisp, refreshing and filling. Enjoy this simple recipe for dinner, pack it for lunch tomorrow, make it for the holidays! Recipe yields 4 large portions or 6 to 8 side salads.",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "keywords": "Brussels sprout salad, holiday salad",
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2018\/10\/brussels-sprout-arugula-salad-recipe-2-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/10\/brussels-sprout-arugula-salad-recipe-2-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/10\/brussels-sprout-arugula-salad-recipe-2-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/10\/brussels-sprout-arugula-salad-recipe-2.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/",
+    "recipeIngredient": [
+      "1 pound Brussels sprouts",
+      "5 to 6 ounces baby arugula",
+      "1 &frac14; cups pecan halves or pieces",
+      "&frac12; cup dried cherries or cranberries, chopped",
+      "4 ounces goat cheese, crumbled",
+      "&#8532; batch sunshine salad dressing"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "To prepare the Brussels sprouts, first cut off the nubby ends and discard any discolored outer leaves. Then, carefully shred the sprouts with a sharp knife by hand, then roughly chop them for good measure. Or shred them in your food processor using the slicing disk. Place the arugula and shredded Brussels in a large serving bowl, and set it aside.",
+        "url": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Toast the pecans in a large skillet over medium heat, stirring often, until they’re fragrant and starting to toast on the edges, about 4 to 6 minutes. If using pecan halves, transfer them to a cutting board and chop before adding them to the bowl.",
+        "url": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/#instruction-step-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the chopped cherries and goat cheese to the bowl. If you’ll be serving the salad promptly, drizzle about two-thirds of it over the salad. Toss gently to combine. You might want to add a little more, but I’ll leave that up to you.",
+        "url": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/#instruction-step-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Once dressed, this salad will keep well in the refrigerator, covered, for about two days. For more longevity, store the salad dressing separately and toss individual salads with dressing just before serving (the salad will keep for about 5 days that way).",
+        "url": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/#instruction-step-4"
+      }
+    ],
+    "prepTime": "PT25M",
+    "cookTime": "PT5M",
+    "totalTime": "PT30M",
+    "recipeYield": [
+      "4",
+      "4 to 8 salads"
+    ],
+    "recipeCategory": "Salad",
+    "cookingMethod": "By hand",
+    "recipeCuisine": "Vegetarian",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "45",
+      "ratingValue": "5"
+    },
+    "nutrition": {
+      "servingSize": "1 large salad",
+      "calories": "551 calories",
+      "sugarContent": "27.7 g",
+      "sodiumContent": "607.9 mg",
+      "fatContent": "39 g",
+      "saturatedFatContent": "8 g",
+      "transFatContent": "0 g",
+      "carbohydrateContent": "42 g",
+      "fiberContent": "8.3 g",
+      "proteinContent": "13.9 g",
+      "cholesterolContent": "15.7 mg",
+      "@type": "nutritionInformation"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Lins"
+        },
+        "datePublished": "2022-02-26",
+        "reviewBody": "So good!  Hubby loved it too, and said \"wow what a sneaky way to sneak in some brussel sprouts\" when he asked what's in the salad!  Using the food processor make them perfectly shredded!  I didn't dress it and had it again for lunch today. So good and so filling. I did 3.5 tablespoons of honey and will prob do a little less next time because I like less sweet. Will be making this often. Thanks!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Karen"
+        },
+        "datePublished": "2022-11-13",
+        "reviewBody": "I took this to a dinner party and everyone loved it! I will definitely make it again because it is not your run of the mill salad, and the dressing is fantastic."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jim"
+        },
+        "datePublished": "2025-04-02",
+        "reviewBody": "Thanks, Kate, for this outstanding addition to my favorite salads collection. As always, your recipes are top notch!\r\nAll the best,\r\nJim"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Beth"
+        },
+        "datePublished": "2023-11-25",
+        "reviewBody": "I love this salad and this dressing so much.  It's become a staple in my house."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Diana"
+        },
+        "datePublished": "2024-04-28",
+        "reviewBody": "Here’s a riff on this salad that we enjoyed: shaved brussels sprouts, arugula, roasted pumpkin seeds, and roasted cubed golden beets. Used Kate’s yummy dressing (but made with less mustard &amp; honey so it was more lemony)."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Alyssa"
+        },
+        "datePublished": "2025-03-24",
+        "reviewBody": "Absolutely delicious! And that dressing, oh my. This salad proves that you don't need a long ingredient list to have a true knockout of a recipe. This was prepped to have for lunch this week packed with dressing on the side as the note section recommended...I'll be looking forward to lunch every day...thank you, Kate!!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Kara"
+        },
+        "datePublished": "2026-01-13",
+        "reviewBody": "This salad is so good, we are still talking about it the next day! I just used craisins instead of cherries and it worked perfectly. Can’t wait to bring this to a larger gathering, I can hear the compliments now!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Debbie"
+        },
+        "datePublished": "2026-02-04",
+        "reviewBody": "Made this salad for our dinner with friends.  They all loved it!  Dressing was fantastic too.  Thank you Kate (and Cookie:)"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jill R."
+        },
+        "datePublished": "2026-02-05",
+        "reviewBody": "This is so good - and that dressing...!  I split everything up in to 4 portions for lunches adding dressing before eating.  Very filling salad with great mix of ingredients."
+      }
+    ],
+    "datePublished": "2018-10-06",
+    "@id": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/shredded-brussels-sprouts-arugula-salad-recipe\/"
+  }
+}

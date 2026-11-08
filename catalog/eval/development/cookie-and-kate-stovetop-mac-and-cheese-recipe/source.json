@@ -1,0 +1,521 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/stovetop-mac-and-cheese-recipe/",
+  "note": "Copied from local ingest.source_nodes id 433 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "Real Stovetop Mac and Cheese",
+    "description": "The best stovetop mac and cheese! This recipe is like blue box mac and cheese, but made with real cheddar cheese. It's creamy, delicious and so easy to make! Recipe yields 3 modest or 2 generous servings; multiply and use a larger pot as necessary.",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "keywords": "stovetop mac and cheese",
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2018\/04\/best-stovetop-mac-and-cheese-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/04\/best-stovetop-mac-and-cheese-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/04\/best-stovetop-mac-and-cheese-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/04\/best-stovetop-mac-and-cheese.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/",
+    "recipeIngredient": [
+      "8 ounces (2 cups) regular or whole-wheat macaroni noodles",
+      "2 teaspoons salt, for the pasta cooking water",
+      "&#8531; cup heavy cream",
+      "1 &#8531; packed cups (5 ounces) grated sharp cheddar cheese",
+      "&frac12; teaspoon mustard powder",
+      "&#8539; teaspoon garlic powder",
+      "&#8539; teaspoon onion powder",
+      "Tiny pinch of cayenne pepper, or a dash of your favorite hot sauce"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Bring a medium pot of water to boil. Add the noodles and salt. Cook until the pasta is al dente, according to package directions. In the meantime, make sure all of your ingredients are measured and ready (I combine the dry spices in a small bowl).",
+        "url": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Drain the pasta and leave it in the colander for now. Return the empty pot to medium heat. Immediately add the cream and let the mixture come to a boil. Once boiling, set a timer for 1 minute.",
+        "url": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/#instruction-step-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Once the minute is up, add all of the cheese and spices. Stir until the cheese has fully melted to produce a creamy sauce. Add the pasta, stir until the pasta is evenly coated in cheese sauce, and remove the pot from the heat.",
+        "url": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/#instruction-step-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Taste and season with salt, if necessary. Serve immediately.",
+        "url": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/#instruction-step-4"
+      }
+    ],
+    "prepTime": "PT10M",
+    "cookTime": "PT10M",
+    "totalTime": "PT20M",
+    "recipeYield": [
+      "3",
+      "3 servings"
+    ],
+    "recipeCategory": "Entree",
+    "cookingMethod": "Stovetop",
+    "recipeCuisine": "American",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "96",
+      "ratingValue": "4.3"
+    },
+    "nutrition": {
+      "servingSize": null,
+      "calories": "566 calories",
+      "sugarContent": "3.1 g",
+      "sodiumContent": "507.6 mg",
+      "fatContent": "26.6 g",
+      "saturatedFatContent": "15.2 g",
+      "transFatContent": "0.8 g",
+      "carbohydrateContent": "59.2 g",
+      "fiberContent": "2.5 g",
+      "proteinContent": "21.6 g",
+      "cholesterolContent": "76.7 mg",
+      "@type": "nutritionInformation"
+    },
+    "video": {
+      "@context": "http:\/\/schema.org",
+      "@type": "VideoObject",
+      "name": "Stovetop Mac and Cheese",
+      "description": "Learn how to make the best stovetop mac and cheese in this recipe video! It's ready in about 15 minutes.",
+      "contentUrl": "https:\/\/content.jwplatform.com\/videos\/1qlaNWqA.mp4",
+      "thumbnailUrl": [
+        "https:\/\/content.jwplatform.com\/thumbs\/1qlaNWqA-720.jpg"
+      ],
+      "uploadDate": "2019-02-15T20:34:22+00:00"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "1"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jody"
+        },
+        "datePublished": "2021-04-16",
+        "reviewBody": "So disappointed. I followed this recipe exactly. My sauce was terrible. The cheese did not melt and mix well. It was strongly and dry. Nothing like creamy Mac n cheese. I called this recipe a failure "
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Paul"
+        },
+        "datePublished": "2025-03-01",
+        "reviewBody": "This was great... I don't like butter so this was a perfect alternative. Went down a treat as a side for bbq pork. Thanks!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Lila"
+        },
+        "datePublished": "2024-11-27",
+        "reviewBody": "Was hesitant to try because of all the reviews but it was totally perfect! Added a splash of milk to loosen everything up but honestly the key is you finely grating the cheese. \r\n\r\nI just kept the pot off the heat immediately after the cream boils - the cheese melts and comes together instantly. \r\n\r\nToasted a mountain of breadcrumbs and am in heaven. Will need defibrillator."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Kevin Michael Storm"
+        },
+        "datePublished": "2025-04-16",
+        "reviewBody": "I wonder if you used shredded cheese or used a block of cheese and shredded it yourself. I made this recipe (subbing white cheddar) and it turned out perfect. It's not \"blue box\", but it was delicious. \r\nDon't use pre-shredded cheese for melting in a sauce. It's covered in an anticoagulant. Use block cheese and spend the time to shred it your self. Massive difference."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Tanja"
+        },
+        "datePublished": "2021-07-13",
+        "reviewBody": "This was delicious! Quick and easy alternative to traditional baked mac n cheese. Thanks!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Ariel Reno"
+        },
+        "datePublished": "2021-08-08",
+        "reviewBody": "This is my go-to lazy Sunday lunch for my 2-year-old son and me. Mac and cheese is such a guilty pleasure! I'm very glad to have a recipe to share with my son that doesn't involve cheese powder. Thanks!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "1"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "aaron Julien"
+        },
+        "datePublished": "2021-08-20",
+        "reviewBody": "This was a complete failure for me. I followed the recipe exactly and the sauce was terrible. It had an awful texture and tasted really bad. Nothing like mac n cheese. I'm just shocked at how awful this recipe was."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "3"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Teri"
+        },
+        "datePublished": "2021-11-20",
+        "reviewBody": "Still stringy (like all my attempts). I did put the timer on; maybe my boil was too vigorous, pan too wide? Perhaps the cheese took too long to melt (perhaps bring the cheese to room temperature first?) I did use half &amp; half.\r\n\r\nThis is one of my favorite recipe sites, regardless of my not nailing creamy mac &amp; cheese. \r\n\r\n(BTW, my vegetarian dog, who eats what we eat, really liked the leftovers.)"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "1"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Laura"
+        },
+        "datePublished": "2021-11-29",
+        "reviewBody": "This didn’t work out for me - I followed the instructions exactly (shredded cheese, boiling the cream, etc), using whole wheat macaroni. It was extremely dry and not creamy at all - it almost looks now like the sauce curdled when I added the pasta? I’m sorry, I love your website and the majority of recipes, but this didn’t work out. Perhaps two cups of pasta is too much?"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Hava Schoffman"
+        },
+        "datePublished": "2021-12-22",
+        "reviewBody": "YUM!!  Tastes just like the \"real\" thing!!  Just a question, in step 2 it says \"...and let the mixture come to a boil.\"  But it's just the cream, right?  Or did I miss something?\r\nThanks!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Cheryl"
+        },
+        "datePublished": "2022-01-09",
+        "reviewBody": "We tried this today, with pre shredded cheese and it turned out delicious. So easy and tasty.thanks"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "1"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Nisha"
+        },
+        "datePublished": "2022-01-14",
+        "reviewBody": "I followed the cream boil step and used freshly grated cheese but my cheese sauce was so grainy! Sadly did not enjoy this recipe, it was missing the creaminess of box Mac and cheese. I found the oil also separated a bit from the cheese in the sauce making the whole dish seem much oilier than it should have been"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Charlene"
+        },
+        "datePublished": "2022-04-25",
+        "reviewBody": "My sister recommended this recipe and we love all your stuff, so thought I would give it a go. I haven't eaten mac and cheese in years and this was delicious! Super easy to make and extremely satisfying. I definitely will come back to this again for a treat!\r\n\r\nThank you!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Amelia Comey"
+        },
+        "datePublished": "2022-08-11",
+        "reviewBody": "i dont know why it didn’t work well for so many others, but this works out very well for me every time! i use preshredded cheese too. lately i’ve done 1\/2cup of heavy cream, and more like 1.5-2 cups of cheese for a thicker and more flavourful sauce, and it still works very well. it’s way better than any storebought mac and cheese!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Elizabeth"
+        },
+        "datePublished": "2022-11-23",
+        "reviewBody": "Mmmmm. I made this today for our Thanksgiving meal and it came out perfectly. I hand grated a block of Whole Foods vegetarian sharp cheddar using the large holes, and used heavy whipping cream for the liquid base. Not stringy nor grainy but perfection! Thank you!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Helen Sweeney"
+        },
+        "datePublished": "2022-11-26",
+        "reviewBody": "Have made this countless time over the last few years, usually served up with some green veg. My two young kids love it, as do I! So tasty and comforting."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "2"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Sarah"
+        },
+        "datePublished": "2022-12-05",
+        "reviewBody": "Unfortunately this didn’t work for me. Similar to others, my sauce was very stringy. I used pre shredded cheese, which is probably why it didn’t turn out. \r\nI think it would  Be helpful to specify in the ingredients list that it needs to be FRESHLY grated cheese :)  I will try that next time and see how it goes."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Ashley Oliver"
+        },
+        "datePublished": "2023-01-26",
+        "reviewBody": "This recipe turned out great and everyone in the house gobbled up their meal! \r\n\r\nI used the instant pot: cooked my whole wheat elbow noodles for 3 minutes and used the saute function to cook up the sauce while the noodles cooled in a colander. We have a toddler, so I didn't add any salt to the water or pasta, but a sprinkling of salt on the adults' plates made it taste like a delightfully creamy mac n' cheese!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Gina Berger"
+        },
+        "datePublished": "2023-11-17",
+        "reviewBody": "This recipe is absolutely amazing! Quick,  easy and replicates our favorite restaurant Mac and Cheese which is a huge plus for our 2 toddlers!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Lorie"
+        },
+        "datePublished": "2023-12-03",
+        "reviewBody": "I’m not sure why the reviews are all over the place on this. It was delicious! I made it exactly as written and it came out perfect. My husband and I scarfed the whole pot down in one sitting. Will definitely be making it again and again. Thanks for another great recipe!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Cathy"
+        },
+        "datePublished": "2024-01-08",
+        "reviewBody": "Excellent and quick!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Ellie"
+        },
+        "datePublished": "2024-01-12",
+        "reviewBody": "This recipe worked for me! I actually used oat milk instead of heavy cream and it turned out great. It was smooth and blended really well together on the stove. I did use a block of cheese that I shredded."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Barbara"
+        },
+        "datePublished": "2024-02-22",
+        "reviewBody": "I think it's important to freshly grate from a block of cheese (I used my food processor for this). If you use store bought shredded cheese, it has additives to prevent caking, which also causes the cheese to not melt right and be a stringy mess.\r\n\r\nI didn't have half and half or cream on hand, so I used unsweetened oat milk and 2 T butter. This was soooo quick and easy and actually came out better than the baked mac and cheese that I recently made that took 4x the time and was meh."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "2"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Hailey Queen"
+        },
+        "datePublished": "2024-04-08",
+        "reviewBody": "I love most of your recipes, but this one wasn't a success for me. The taste of the cheese sauce was great, but the texture made it inedible ... the cream separated from the cheese and the cheese clumped together. If it being too hot causes this... maybe amend the directions to state this more clearly ... when I read \"immediately add cream &amp; bring to a boil\" ... I didn't get the sense that pan really needed to cool. I wonder if using a new pot makes more sense since this recipe is apparently heat sensitive."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Dani"
+        },
+        "datePublished": "2024-08-09",
+        "reviewBody": "This was Awesome Sauce! Pun intended :) Ended up using some white sharp cheddar and I folded in a bunch of steamed broccoli too and it made for a very delicious dinner. Thanks!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Deb K"
+        },
+        "datePublished": "2025-01-29",
+        "reviewBody": "This is perfect and so easy! Can’t understand the negative reviews. I used pre-shredded Mexican Blend cheese, about 3-4 oz of cream cheese and a splash of whole milk to loosen it up and it was delicious, just the right consistency and flavor!!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Meghan"
+        },
+        "datePublished": "2025-03-07",
+        "reviewBody": "Best recipe- I make it frequently for my toddler and add in hidden veggies. Onion, carrots, celery, riced cauliflower are all excellent!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Joanne Evans"
+        },
+        "datePublished": "2025-04-30",
+        "reviewBody": "I seldom rate a recipe but this was so good, I told my husband I wanted to lick my plate. I made it exactly as written, using the pumpkin pie spices suggested in the notes.  I was afraid the onion and garlic powders would take away from the flavor of the pumpkin pie spices.  However, I was wrong.  The flavors were perfectly balanced.  The technique to make the pumpkin mac and cheese was different than I'd used in the past, but your directions were clear and simple to follow.  I would suggest to others making this dish, to have your ingredients prepped and measured out before you start cooking.  Then the dish will then go together perfectly.  Is there a way to make this ahead for a dinner party or pot luck?"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Eliza"
+        },
+        "datePublished": "2025-07-11",
+        "reviewBody": "This recipe was the one that finally ended my search for a good Mac and cheese recipe. I use it every time and it works a charm. Love that it uses no butter and always produces a velvety smooth, tasty Mac that has just the right amount of sauce and can be multiplied to feed extra people. Always works beautifully."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jazell"
+        },
+        "datePublished": "2025-12-21",
+        "reviewBody": "The recipe was great and so easy to follow! My toddler is allergic to regular store bought mac and cheese, so we were trying to find an alternative since he loved it [the store bought] so much. Found this recipe and he loved it, too! This time no reaction!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Darcy"
+        },
+        "datePublished": "2026-06-15",
+        "reviewBody": "I wanted to make a quick Mac and Cheese for lunch today, so I tried out this recipe! It turned out pretty well! I definitely changed a few things though based on the ingredients that I had available. I used skim milk instead of heavy cream, and I didn’t include the mustard or onion powder. I added 1-2tbsp of butter to the sauce as well, since I usually do this with boxed Mac and Cheese. After reading the comments, I also decided to pulse my pre-shredded cheddar cheese in my food processor so that it would melt better into the cheese sauce. I made sure to add the cheese little by little and whisk vigorously the entire time, and the sauce came together beautifully. I didn’t have any of the issues that others in the comments had, so maybe these additional two steps made the difference! Overall great recipe, easy to customize, and now I know that I never have to stock boxed Mac and Cheese in my pantry!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Katie"
+        },
+        "datePublished": "2026-08-16",
+        "reviewBody": "Fantastic recipe. For those who experienced issues with the sauce— I used grated cheese that was covered in a potato starch anticoagulant so it didn’t melt easily into the small amount of heavy cream called for in the recipe, but this was easily fixed by adding a splash of milk to help it melt into a sauce. Once that was fixed, this was easily the best Mac and cheese recipe I have ever tried for both flavor and ease of preparation."
+      }
+    ],
+    "datePublished": "2018-04-09",
+    "@id": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/stovetop-mac-and-cheese-recipe\/"
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "format_version": 1,
+  "site": "once-upon-a-chef",
+  "url": "https://www.onceuponachef.com/recipes/over-easy-eggs.html",
+  "note": "Copied from local ingest.source_nodes id 250 (page fetched 2026-11-08, JSON-LD location /@graph/10); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Over Easy Eggs",
+    "author": {
+      "@id": "https:\/\/www.onceuponachef.com\/#\/schema\/person\/6a00bb55b739011ea9f60f89b1a070b3"
+    },
+    "description": "Learn how to cook the perfect over easy egg with tender whites and a rich, golden center—simple, satisfying, and totally delicious!",
+    "datePublished": "2024-08-09T17:20:08+00:00",
+    "image": [
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/Over-Easy-Eggs-Hero-2.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/Over-Easy-Eggs-Hero-2-500x500.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/Over-Easy-Eggs-Hero-2-500x375.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/Over-Easy-Eggs-Hero-2-480x270.jpg"
+    ],
+    "recipeYield": [
+      "1",
+      "1 egg"
+    ],
+    "cookTime": "PT5M",
+    "totalTime": "PT5M",
+    "recipeIngredient": [
+      "1 large egg",
+      "Pinch fine sea salt",
+      "Freshly ground black pepper",
+      "1 teaspoon unsalted butter"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Crack the egg into a small bowl and set aside.",
+        "name": "Crack the egg into a small bowl and set aside.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/over-easy-eggs.html#wprm-recipe-85155-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Place a medium non-stick pan over medium-low heat. Let heat up for 30 seconds. Once hot, add the butter to the center of the pan and heat until melted.",
+        "name": "Place a medium non-stick pan over medium-low heat. Let heat up for 30 seconds. Once hot, add the butter to the center of the pan and heat until melted.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/over-easy-eggs.html#wprm-recipe-85155-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add egg to the pan and let cook for 1 minute. Cover the pan and cook for 2 minutes. Once the egg white looks set\/cooked, and the yolk is jiggly but not fully raw, use a plastic spatula to flip the egg. Cook for 1 more minute.",
+        "name": "Add egg to the pan and let cook for 1 minute. Cover the pan and cook for 2 minutes. Once the egg white looks set\/cooked, and the yolk is jiggly but not fully raw, use a plastic spatula to flip the egg. Cook for 1 more minute.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/over-easy-eggs.html#wprm-recipe-85155-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Use the spatula to lift the cooked egg out of the pan onto a plate. Sprinkle it with salt and pepper and serve.",
+        "name": "Use the spatula to lift the cooked egg out of the pan onto a plate. Sprinkle it with salt and pepper and serve.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/over-easy-eggs.html#wprm-recipe-85155-step-0-3"
+      }
+    ],
+    "recipeCategory": [
+      "Breakfast",
+      "Quiches, Casseroles, Eggs &amp; Spreads"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "over easy eggs",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "105 kcal",
+      "fatContent": "9 g",
+      "proteinContent": "6 g",
+      "saturatedFatContent": "4 g",
+      "sodiumContent": "127 mg",
+      "cholesterolContent": "196 mg",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/www.onceuponachef.com\/recipes\/over-easy-eggs.html#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.onceuponachef.com\/recipes\/over-easy-eggs.html#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.onceuponachef.com\/recipes\/over-easy-eggs.html"
+  }
+}

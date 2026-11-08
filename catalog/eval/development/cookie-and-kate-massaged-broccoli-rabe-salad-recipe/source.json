@@ -1,0 +1,158 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/massaged-broccoli-rabe-salad-recipe/",
+  "note": "Copied from local ingest.source_nodes id 401 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "Massaged Broccoli Rabe Salad with Sunflower Seeds & Cranberries",
+    "description": "Raw broccoli rabe, once massaged with a lemony, garlicky dressing, transforms into a delicious salad green. Be prepared to get your hands dirty for this one—for best results, use your fingers to tear the leaves apart and rub the dressing into the leaves. Then, just toss in crisp celery, salty Parmesan, toasted sunflower seeds and sweet dried cranberries. Recipe yields 4 side salads.",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2016\/09\/broccoli-rabe-salad-with-parmesan-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2016\/09\/broccoli-rabe-salad-with-parmesan-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2016\/09\/broccoli-rabe-salad-with-parmesan-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2016\/09\/broccoli-rabe-salad-with-parmesan.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/",
+    "recipeIngredient": [
+      "2 bunches broccoli rabe (about 2 pounds)",
+      "&frac14; cup sunflower seeds",
+      "&frac12; cup chopped celery (about 3 celery ribs)",
+      "&#8531; cup grated Parmesan cheese",
+      "&frac14; cup dried cranberries",
+      "3 tablespoons olive oil",
+      "1 tablespoon plus 1 teaspoon lemon juice, to taste",
+      "&frac12; teaspoon Dijon mustard",
+      "1 large clove garlic, pressed or minced",
+      "&frac14; teaspoon salt"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Pull the broccoli rabe leaves from the stems and discard the stems. Wash and spin dry the leaves. Tear any large leaves into small, bite-sized pieces, then transfer the leaves to a large serving bowl.",
+        "url": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "In a medium skillet over medium heat, toast the sunflower seeds until they are fragrant and starting to turn lightly golden on the edges, about 5 minutes. Remove from heat and set aside.",
+        "url": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/#instruction-step-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "In a small bowl, whisk together the olive oil, lemon juice, mustard, garlic and salt until emulsified. Pour the dressing over the leaves and gently massage the dressing into the leaves until they are lightly coated and the salad has almost halved in size. Taste, and add one to two more teaspoons lemon juice if it needs more zip.",
+        "url": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/#instruction-step-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the chopped celery, grated Parmesan, toasted sunflower seeds and dried cranberries to the serving bowl. Toss again and serve immediately.",
+        "url": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/#instruction-step-4"
+      }
+    ],
+    "prepTime": "PT25M",
+    "cookTime": "PT5M",
+    "totalTime": "PT30M",
+    "recipeYield": [
+      "4",
+      "4 side salads"
+    ],
+    "recipeCategory": "Salad",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "5",
+      "ratingValue": "4.8"
+    },
+    "nutrition": {
+      "servingSize": null,
+      "calories": "308 calories",
+      "sugarContent": "13.4 g",
+      "sodiumContent": "464.9 mg",
+      "fatContent": "17.6 g",
+      "saturatedFatContent": "3 g",
+      "transFatContent": "0.1 g",
+      "carbohydrateContent": "33.3 g",
+      "fiberContent": "10 g",
+      "proteinContent": "12.3 g",
+      "cholesterolContent": "5.4 mg",
+      "@type": "nutritionInformation"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Maria"
+        },
+        "datePublished": "2016-09-08",
+        "reviewBody": "This looks delicious!  I bet pomegranate seeds would taste delicious in it too! I love love love that you are using broccoli rabe!  I have a total brown thumb but have decided that I am planting it as a winter crop.  Markets here rarely have it, which is probably not a great indicator for my brown thumb.  But, fingers crossed!!  Nonetheless, excited to try this!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Emily"
+        },
+        "datePublished": "2016-10-24",
+        "reviewBody": "This salad is so yummy. I think I ate it for lunch almost everyday last week. It's my new go-to salad. I can't get enough."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Pamela"
+        },
+        "datePublished": "2016-10-25",
+        "reviewBody": "I've been wow'ed by many, many recipes on your wonderful site (and I'm so behind in submitting my positive reviews!), but this one is noteworthy for just how far it surpassed my expectations. Broccoli rabe scares me a little bit because of its bitterness (as a vegetarian teenager, I completely turned my nose up at a beautiful broccoli rabe omelet my grandfather made me), but the composition of this salad--with the cranberries being essential, in my opinion--is perfection. Make just it as Kate instructed. You won't regret it."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "autumn"
+        },
+        "datePublished": "2017-05-09",
+        "reviewBody": "So I've been meaning to tell you I made this the other week as a side salad for dinner guests and WHOA it was so addicting! The flavors together were so delicious and the massaged broccoli rabe was a pleasant surprise! \r\n\r\nI'm actually going to be making it as a side salad again for Mothers Day brunch this weekend! I'm sure my Mom and other family will love it too!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Pat C"
+        },
+        "datePublished": "2017-06-04",
+        "reviewBody": "You never mention the flowerets, which look like broccali flowerets, and need to be steamed or sautéed, cooled and added to the massaged leaves. And 2 lbs.of broccali rabe, a.k.a rappini, would make way more than 4 side salads! Otherwise, the recipe is very nice."
+      }
+    ],
+    "datePublished": "2016-09-08",
+    "@id": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/massaged-broccoli-rabe-salad-recipe\/"
+  }
+}

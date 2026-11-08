@@ -1,0 +1,154 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/salami-cream-cheese-sandwich/",
+  "note": "Copied from local ingest.source_nodes id 318 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Salami Cream Cheese Sandwich",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "This salami sandwich literally takes about 5 minutes to put together. It's the perfect lunch for work or school since you can make it the night before.",
+    "datePublished": "2015-05-19T04:34:34+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2022\/05\/Salami-Sandwich.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2022\/05\/Salami-Sandwich-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2022\/05\/Salami-Sandwich-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2022\/05\/Salami-Sandwich-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4",
+      "4 Large Sandwiches"
+    ],
+    "prepTime": "PT5M",
+    "totalTime": "PT5M",
+    "recipeIngredient": [
+      "8 oz cream cheese (cold or room temp)",
+      "1\/4 cup finely chopped green onion (fresh or frozen)",
+      "1\/4 cup finely chopped dill (fresh or frozen)",
+      "1 garlic clove (pressed)",
+      "8 slices of sandwich bread (we used sourdough)",
+      "8-10 oz genoa salami",
+      "4 large leaves of green lettuce"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "In a small bowl, combine 8 oz cream cheese, 1\/4 cup green onions, 1\/4 cup dill, and press in 1 garlic clove. Mash herbs into the cream cheese.",
+        "name": "In a small bowl, combine 8 oz cream cheese, 1\/4 cup green onions, 1\/4 cup dill, and press in 1 garlic clove. Mash herbs into the cream cheese.",
+        "url": "https:\/\/natashaskitchen.com\/salami-cream-cheese-sandwich\/#wprm-recipe-54539-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Spread about 1-2 Tbsp of the cream cheese mixture on one side of each bread slice.",
+        "name": "Spread about 1-2 Tbsp of the cream cheese mixture on one side of each bread slice.",
+        "url": "https:\/\/natashaskitchen.com\/salami-cream-cheese-sandwich\/#wprm-recipe-54539-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Top with lettuce and about 6-8 pieces of salami, or to taste.",
+        "name": "Top with lettuce and about 6-8 pieces of salami, or to taste.",
+        "url": "https:\/\/natashaskitchen.com\/salami-cream-cheese-sandwich\/#wprm-recipe-54539-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "47",
+      "reviewCount": "6"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Delicious and simple.  I will definitely make it again!!!!yummy",
+        "author": {
+          "@type": "Person",
+          "name": "Robin Campbell"
+        },
+        "datePublished": "2026-02-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was absolutely delicious and complimented the salami wonderfully! EXACTLY what I was looking for this evening. Thank you!",
+        "author": {
+          "@type": "Person",
+          "name": "James"
+        },
+        "datePublished": "2022-08-14"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I have made this several times and I just love it. The only thing I do different is I use french bread and toast the inside with a little butter. I also add a little salt and pepper to the cream cheese mixture. Delicious! Thanks for sharing!",
+        "author": {
+          "@type": "Person",
+          "name": "Vonetta A."
+        },
+        "datePublished": "2022-01-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Me and my mum enjoyed making this recipe a lot i think it was quick and easy though in our religion we cant be eating pork ham or salami so we used chicken or other poultry instead which really made our big family love it! Thanks!",
+        "author": {
+          "@type": "Person",
+          "name": "Dk"
+        },
+        "datePublished": "2021-07-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This tastes amazing! I personally think that the cream cheese recipe is very versatile, used the exact same recipe and used smoked salmon instead of salami the second time we made this, and it tasted just as great!",
+        "author": {
+          "@type": "Person",
+          "name": "Florence"
+        },
+        "datePublished": "2020-04-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "As we are not big fans of salami I used ham and OMG so tasty!\nThanks Natasha! \nSome food ideas may seems to be too simple to share them on the blog, but I'm sure many people will try them anyway",
+        "author": {
+          "@type": "Person",
+          "name": "Kasia"
+        },
+        "datePublished": "2020-02-25"
+      }
+    ],
+    "recipeCategory": [
+      "Lunch"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Salami Cream Cheese Sandwich",
+    "@id": "https:\/\/natashaskitchen.com\/salami-cream-cheese-sandwich\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/salami-cream-cheese-sandwich\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/salami-cream-cheese-sandwich\/"
+  }
+}
