@@ -67,31 +67,31 @@ func TestGetPageObeysRobotsCrawlDelayAndCache(t *testing.T) {
 	h.mux.Handle(www, "/stew", fetchtest.Text(200, html, "<html>stew</html>"))
 	ctx := context.Background()
 
-	result, err := h.client.GetPage(ctx, site, "https://www.a.test/soup")
+	result, err := h.client.GetPage(ctx, site, 1, "https://www.a.test/soup")
 	if err != nil || result.Outcome != acquire.OutcomeFetched || string(result.Response.Body) != "<html>soup</html>" {
 		t.Fatalf("soup: %v %+v", err, result)
 	}
 	if got := h.clock.Sleeps(); !slices.Equal(got, []time.Duration{8 * time.Second}) {
 		t.Fatalf("sleeps = %v, want crawl-delay spacing after robots", got)
 	}
-	if _, err := h.client.GetPage(ctx, site, "https://www.a.test/stew"); err != nil {
+	if _, err := h.client.GetPage(ctx, site, 1, "https://www.a.test/stew"); err != nil {
 		t.Fatal(err)
 	}
 	if hits := h.mux.Hits(www, "/robots.txt"); hits != 1 {
 		t.Fatalf("robots fetched %d times within TTL", hits)
 	}
-	result, _ = h.client.GetPage(ctx, site, "https://www.a.test/private/x")
+	result, _ = h.client.GetPage(ctx, site, 1, "https://www.a.test/private/x")
 	if result.Outcome != acquire.OutcomeDisallowed || h.mux.Hits(www, "/private/x") != 0 {
 		t.Fatalf("private: %+v", result.Outcome)
 	}
 	h.clock.Advance(robots.TTL)
-	if _, err := h.client.GetPage(ctx, site, "https://www.a.test/soup"); err != nil {
+	if _, err := h.client.GetPage(ctx, site, 1, "https://www.a.test/soup"); err != nil {
 		t.Fatal(err)
 	}
 	if hits := h.mux.Hits(www, "/robots.txt"); hits != 2 {
 		t.Fatalf("robots not refreshed after TTL: %d", hits)
 	}
-	want := []string{"robots:fetched", "page:fetched", "page:fetched", "page:disallowed", "robots:fetched", "page:fetched"}
+	want := []string{"robots:fetched", "page:fetched", "page:fetched", "robots:fetched", "page:fetched"}
 	if got := h.outcomes(); !slices.Equal(got, want) {
 		t.Fatalf("attempts = %v", got)
 	}
@@ -107,7 +107,7 @@ func TestRobotsUnavailablePausesSite(t *testing.T) {
 			h := newHarness(t)
 			setup(h)
 			h.mux.Handle(www, "/soup", fetchtest.Text(200, html, "soup"))
-			result, err := h.client.GetPage(context.Background(), site, "https://www.a.test/soup")
+			result, err := h.client.GetPage(context.Background(), site, 1, "https://www.a.test/soup")
 			if err != nil || result.Outcome != acquire.OutcomePaused || result.Pause == nil ||
 				result.Pause.Reason != acquire.PauseRobotsUnavailable {
 				t.Fatalf("result = %v %+v", err, result)
@@ -121,12 +121,12 @@ func TestRobotsUnavailablePausesSite(t *testing.T) {
 			if result.Outcome != acquire.OutcomePaused || h.mux.Hits(www, "/robots.txt") != robotsHits {
 				t.Fatalf("paused site was fetched: %+v", result)
 			}
-			if err := h.pauses.Resume(context.Background(), site.ID); err != nil {
+			if _, err := h.pauses.Resume(context.Background(), site.ID, "test"); err != nil {
 				t.Fatal(err)
 			}
 			h.robots(www, 200, "")
 			h.network.Resolver.Set(www, fetchtest.PublicIP)
-			result, _ = h.client.GetPage(context.Background(), site, "https://www.a.test/soup")
+			result, _ = h.client.GetPage(context.Background(), site, 1, "https://www.a.test/soup")
 			if result.Outcome != acquire.OutcomeFetched {
 				t.Fatalf("after resume: %+v", result)
 			}
@@ -138,7 +138,7 @@ func TestRobots4xxMeansUnrestricted(t *testing.T) {
 	h := newHarness(t)
 	h.robots(www, 404, "")
 	h.mux.Handle(www, "/soup", fetchtest.Text(200, html, "soup"))
-	result, err := h.client.GetPage(context.Background(), site, "https://www.a.test/soup")
+	result, err := h.client.GetPage(context.Background(), site, 1, "https://www.a.test/soup")
 	if err != nil || result.Outcome != acquire.OutcomeFetched {
 		t.Fatalf("%v %+v", err, result)
 	}
@@ -150,7 +150,7 @@ func TestRobotsCheckedPerActualHostOnRedirect(t *testing.T) {
 	h.robots(cdn, 200, "User-agent: *\nDisallow: /\n")
 	h.mux.Handle(www, "/soup", fetchtest.Redirect(301, "https://cdn.a.test/soup"))
 	h.mux.Handle(cdn, "/soup", fetchtest.Text(200, html, "soup"))
-	result, _ := h.client.GetPage(context.Background(), site, "https://www.a.test/soup")
+	result, _ := h.client.GetPage(context.Background(), site, 1, "https://www.a.test/soup")
 	if result.Outcome != acquire.OutcomeDisallowed || h.mux.Hits(cdn, "/robots.txt") != 1 || h.mux.Hits(cdn, "/soup") != 0 {
 		t.Fatalf("result = %+v", result)
 	}
@@ -160,7 +160,7 @@ func TestRetriesTimeoutsAnd5xxTwiceWithBackoff(t *testing.T) {
 	h := newHarness(t)
 	h.robots(www, 404, "")
 	h.mux.Handle(www, "/down", fetchtest.Text(502, html, "bad gateway"))
-	result, err := h.client.GetPage(context.Background(), site, "https://www.a.test/down")
+	result, err := h.client.GetPage(context.Background(), site, 1, "https://www.a.test/down")
 	if err != nil || result.Outcome != acquire.OutcomeFailed || result.Attempts != 3 || h.mux.Hits(www, "/down") != 3 {
 		t.Fatalf("%v %+v hits=%d", err, result, h.mux.Hits(www, "/down"))
 	}
@@ -181,7 +181,7 @@ func TestRetriesTimeoutsAnd5xxTwiceWithBackoff(t *testing.T) {
 		}
 		fetchtest.Text(200, html, "ok")(w, r)
 	})
-	result, _ = h.client.GetPage(context.Background(), site, "https://www.a.test/flaky")
+	result, _ = h.client.GetPage(context.Background(), site, 1, "https://www.a.test/flaky")
 	if result.Outcome != acquire.OutcomeFetched || result.Attempts != 2 {
 		t.Fatalf("flaky: %+v", result)
 	}
@@ -211,7 +211,9 @@ func TestBlockingResponsesPauseSite(t *testing.T) {
 			h := newHarness(t)
 			h.robots(www, 200, "")
 			h.mux.Handle(www, "/x", tc.handler)
-			get := h.client.GetPage
+			get := func(ctx context.Context, site acquire.Site, raw string) (acquire.Result, error) {
+				return h.client.GetPage(ctx, site, 1, raw)
+			}
 			if tc.sitemap {
 				get = h.client.GetSitemap
 			}
@@ -223,7 +225,7 @@ func TestBlockingResponsesPauseSite(t *testing.T) {
 				t.Fatalf("blocking response retried: attempts=%d", result.Attempts)
 			}
 			stored, ok, _ := h.pauses.ActivePause(context.Background(), site.ID)
-			if !ok || stored.Reason != tc.reason || stored.Status == 0 {
+			if !ok || stored.Reason != tc.reason || stored.Status == 0 || stored.Detail == "" || stored.AttemptID == 0 {
 				t.Fatalf("stored pause = %+v", stored)
 			}
 		})
@@ -239,7 +241,7 @@ func TestOtherOutcomesAreFinal(t *testing.T) {
 	for path, want := range map[string]acquire.Outcome{
 		"/gone": acquire.OutcomeFailed, "/json": acquire.OutcomeRejected, "/off": acquire.OutcomeRejected,
 	} {
-		result, err := h.client.GetPage(context.Background(), site, "https://www.a.test"+path)
+		result, err := h.client.GetPage(context.Background(), site, 1, "https://www.a.test"+path)
 		if err != nil || result.Outcome != want || result.Attempts != 1 {
 			t.Errorf("%s: %v %+v", path, err, result)
 		}

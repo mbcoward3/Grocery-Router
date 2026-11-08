@@ -124,3 +124,23 @@ tasks:
     desc: Validate the catalog site registry and sync it into PostgreSQL (pass CLI flags after --)
     cmds:
       - go run ./cmd/grocery-router catalog-sites {{.CLI_ARGS}}
+
+  catalog-discover:
+    desc: Queue pages from registered sitemaps of fetchable catalog sites (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router catalog-discover {{.CLI_ARGS}}
+
+  catalog-fetch:
+    desc: Fetch queued catalog pages; resumable; --site, --limit N, --replay (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router catalog-fetch {{.CLI_ARGS}}
+
+  catalog-site-resume:
+    desc: Resume a paused catalog site, e.g. task catalog-site-resume -- budget-bytes --note "..."
+    cmds:
+      - go run ./cmd/grocery-router catalog-site-resume {{.CLI_ARGS}}
+
+  catalog-report:
+    desc: Report catalog acquisition metrics per site
+    cmds:
+      - go run ./cmd/grocery-router catalog-report {{.CLI_ARGS}}

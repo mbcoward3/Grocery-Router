@@ -48,6 +48,48 @@ func (q *Queries) AcquireIngestHostSlot(ctx context.Context, arg AcquireIngestHo
 	return i, err
 }
 
+const countIngestNoRecipePagesBySite = `-- name: CountIngestNoRecipePagesBySite :many
+SELECT p.site_id, count(*) AS page_count
+FROM ingest.source_pages AS p
+WHERE
+    p.state = 'fetched'
+    AND NOT EXISTS (
+        SELECT 1 FROM ingest.source_nodes AS n
+        WHERE n.evidence_id = p.latest_evidence_id
+    )
+GROUP BY p.site_id
+ORDER BY p.site_id
+`
+
+type CountIngestNoRecipePagesBySiteRow struct {
+	SiteID    string `db:"site_id" json:"site_id"`
+	PageCount int64  `db:"page_count" json:"page_count"`
+}
+
+// Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
+func (q *Queries) CountIngestNoRecipePagesBySite(ctx context.Context) ([]CountIngestNoRecipePagesBySiteRow, error) {
+	rows, err := q.db.QueryContext(ctx, countIngestNoRecipePagesBySite)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []CountIngestNoRecipePagesBySiteRow{}
+	for rows.Next() {
+		var i CountIngestNoRecipePagesBySiteRow
+		if err := rows.Scan(&i.SiteID, &i.PageCount); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const countIngestSourceNodesBySite = `-- name: CountIngestSourceNodesBySite :many
 SELECT
     site_id,

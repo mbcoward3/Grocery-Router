@@ -51,7 +51,7 @@ func TestExtractGraphArraysAndMalformedBlocks(t *testing.T) {
 	for _, node := range result.Nodes {
 		locations = append(locations, node.Location)
 	}
-	if strings.Join(locations, " ") != "$/@graph[1] $/@graph[2] $[1]" {
+	if strings.Join(locations, " ") != "/@graph/1 /@graph/2 /1" {
 		t.Fatalf("locations = %v", locations)
 	}
 	soup := result.Nodes[0]
@@ -148,7 +148,7 @@ func TestReplayFromStoredEvidenceWithoutNetwork(t *testing.T) {
 		Pauses: acquire.NewMemoryPauses(), Recorder: &acquire.MemoryRecorder{}, Clock: clk,
 	}
 	site := acquire.Site{ID: "a", Hosts: hosts}
-	fetched, err := client.GetPage(context.Background(), site, final)
+	fetched, err := client.GetPage(context.Background(), site, 1, final)
 	if err != nil || fetched.Outcome != acquire.OutcomeFetched {
 		t.Fatalf("fetch: %v %+v", err, fetched)
 	}

@@ -1,7 +1,7 @@
 // Package acquire applies the politeness and failure policy of
 // CATALOG_INGEST_SPEC.md §7.3–§7.4 around safefetch: robots per actual host,
 // per-host rate limiting, bounded retries, persistent site pauses, and a
-// recorded attempt for every try.
+// recorded attempt for every network try.
 package acquire
 
 import (
@@ -54,6 +54,9 @@ type Result struct {
 	Outcome  Outcome
 	Response safefetch.Response
 	Attempts int
+	// AttemptID is the recorder's ID for the last recorded attempt, or 0
+	// when no network attempt was made.
+	AttemptID int64
 	// Pause is set when the site is paused, whether by this fetch or earlier.
 	Pause *Pause
 	// Err describes a non-fetched outcome.
@@ -67,19 +70,19 @@ var (
 	errRobotsPaused = errors.New("robots.txt unavailable; site paused")
 )
 
-// GetPage fetches an HTML page for site.
-func (client *Client) GetPage(ctx context.Context, site Site, rawURL string) (Result, error) {
-	return client.get(ctx, site, KindPage, safefetch.PageProfile, rawURL)
+// GetPage fetches the HTML page sourcePageID at rawURL for site.
+func (client *Client) GetPage(ctx context.Context, site Site, sourcePageID int64, rawURL string) (Result, error) {
+	return client.get(ctx, site, KindPage, sourcePageID, safefetch.PageProfile, rawURL)
 }
 
 // GetSitemap fetches a sitemap or sitemap index for site.
 func (client *Client) GetSitemap(ctx context.Context, site Site, rawURL string) (Result, error) {
-	return client.get(ctx, site, KindSitemap, safefetch.SitemapProfile, rawURL)
+	return client.get(ctx, site, KindSitemap, 0, safefetch.SitemapProfile, rawURL)
 }
 
 // get runs the failure policy. The returned error is reserved for
 // infrastructure failures (stores, cancellation); fetch outcomes are in Result.
-func (client *Client) get(ctx context.Context, site Site, kind Kind, profile safefetch.Profile, rawURL string) (Result, error) {
+func (client *Client) get(ctx context.Context, site Site, kind Kind, sourcePageID int64, profile safefetch.Profile, rawURL string) (Result, error) {
 	if pause, paused, err := client.Pauses.ActivePause(ctx, site.ID); err != nil {
 		return Result{}, fmt.Errorf("read pause for %s: %w", site.ID, err)
 	} else if paused {
@@ -101,27 +104,32 @@ func (client *Client) get(ctx context.Context, site Site, kind Kind, profile saf
 		}
 		response, fetchErr := client.Fetcher.Fetch(ctx, request)
 		result = Result{Response: response, Attempts: attempt}
-		var pause *Pause
 		switch {
 		case gateErr != nil && !errors.Is(gateErr, ErrDisallowed) && !errors.Is(gateErr, errRobotsPaused):
 			return result, gateErr // store or cancellation failure inside the gate
 		case safefetch.KindOf(fetchErr) == safefetch.KindCanceled:
 			return result, fmt.Errorf("fetch %s: %w", rawURL, fetchErr)
 		case errors.Is(gateErr, errRobotsPaused):
+			// No request reached the page; the robots attempt was recorded.
 			result.Outcome, result.Err, result.Pause = OutcomePaused, gateErr, robotsPause
+			return result, nil
 		case errors.Is(gateErr, ErrDisallowed):
 			result.Outcome, result.Err = OutcomeDisallowed, gateErr
-		default:
-			result.Outcome, pause, result.Err = classify(site, response, fetchErr, client.Clock.Now().UTC())
+			return result, nil
 		}
+		var pause *Pause
+		result.Outcome, pause, result.Err = classify(site, response, fetchErr, client.Clock.Now().UTC())
+		attemptID, err := client.record(ctx, site, kind, sourcePageID, rawURL, attempt, result, fetchErr)
+		if err != nil {
+			return result, err
+		}
+		result.AttemptID = attemptID
 		if pause != nil {
+			pause.AttemptID = attemptID
 			if err := client.Pauses.Pause(ctx, *pause); err != nil {
 				return result, fmt.Errorf("pause %s: %w", site.ID, err)
 			}
 			result.Pause = pause
-		}
-		if err := client.record(ctx, site, kind, rawURL, attempt, result, fetchErr); err != nil {
-			return result, err
 		}
 		if result.Outcome != OutcomeRetryable {
 			return result, nil
@@ -140,8 +148,11 @@ func (client *Client) get(ctx context.Context, site Site, kind Kind, profile saf
 // classify maps a completed fetch to an outcome and an optional pause.
 // The returned error describes why the outcome is not OutcomeFetched.
 func classify(site Site, response safefetch.Response, fetchErr error, now time.Time) (Outcome, *Pause, error) {
-	newPause := func(reason PauseReason) *Pause {
-		return &Pause{SiteID: site.ID, Reason: reason, URL: response.FinalURL, Status: response.Status, PausedAt: now}
+	newPause := func(reason PauseReason, detail string) *Pause {
+		return &Pause{
+			SiteID: site.ID, Reason: reason, URL: response.FinalURL, Status: response.Status,
+			Detail: detail, PausedAt: now,
+		}
 	}
 	if fetchErr != nil {
 		switch safefetch.KindOf(fetchErr) {
@@ -155,15 +166,19 @@ func classify(site Site, response safefetch.Response, fetchErr error, now time.T
 	}
 	status := response.Status
 	if IsBotChallenge(response.Header, response.Body) {
-		return OutcomePaused, newPause(PauseBotChallenge), fmt.Errorf("HTTP %d bot challenge", status)
+		detail := fmt.Sprintf("HTTP %d bot challenge at %s", status, response.FinalURL)
+		return OutcomePaused, newPause(PauseBotChallenge, detail), errors.New(detail)
 	}
 	switch {
 	case status >= 200 && status <= 299:
 		return OutcomeFetched, nil, nil
-	case status == 403:
-		return OutcomePaused, newPause(PauseForbidden), fmt.Errorf("HTTP 403")
-	case status == 429:
-		return OutcomePaused, newPause(PauseTooManyRequests), fmt.Errorf("HTTP 429")
+	case status == 403, status == 429:
+		reason := PauseForbidden
+		if status == 429 {
+			reason = PauseTooManyRequests
+		}
+		detail := fmt.Sprintf("HTTP %d at %s", status, response.FinalURL)
+		return OutcomePaused, newPause(reason, detail), errors.New(detail)
 	case status >= 500 && status <= 599:
 		return OutcomeRetryable, nil, fmt.Errorf("HTTP %d", status)
 	default:
@@ -206,10 +221,7 @@ func (client *Client) robotsPolicy(ctx context.Context, site Site, host string) 
 		},
 	}
 	response, fetchErr := client.Fetcher.Fetch(ctx, request)
-	if safefetch.KindOf(fetchErr) == safefetch.KindCanceled {
-		return robots.Policy{}, nil, fmt.Errorf("fetch %s: %w", robotsURL, fetchErr)
-	}
-	if safefetch.KindOf(fetchErr) == safefetch.KindGate {
+	if kind := safefetch.KindOf(fetchErr); kind == safefetch.KindCanceled || kind == safefetch.KindGate {
 		return robots.Policy{}, nil, fmt.Errorf("fetch %s: %w", robotsURL, fetchErr)
 	}
 	now := client.Clock.Now().UTC()
@@ -233,26 +245,25 @@ func (client *Client) robotsPolicy(ctx context.Context, site Site, host string) 
 		attemptErr = fmt.Errorf("robots.txt HTTP %d", response.Status)
 	}
 	result := Result{Outcome: outcome, Response: response, Attempts: 1, Err: attemptErr}
+	attemptID, err := client.record(ctx, site, KindRobots, 0, robotsURL, 1, result, fetchErr)
+	if err != nil {
+		return robots.Policy{}, nil, err
+	}
 	if outcome == OutcomePaused {
-		detail := "robots.txt unavailable"
-		if attemptErr != nil {
-			detail = attemptErr.Error()
-		}
 		pause := &Pause{
-			SiteID: site.ID, Reason: PauseRobotsUnavailable, URL: robotsURL,
-			Status: response.Status, Detail: detail, PausedAt: now,
+			SiteID: site.ID, Reason: PauseRobotsUnavailable, URL: robotsURL, Status: response.Status,
+			Detail: robotsURL + ": " + attemptErr.Error(), AttemptID: attemptID, PausedAt: now,
 		}
 		if err := client.Pauses.Pause(ctx, *pause); err != nil {
 			return robots.Policy{}, nil, fmt.Errorf("pause %s: %w", site.ID, err)
 		}
-		result.Pause = pause
-		if err := client.record(ctx, site, KindRobots, robotsURL, 1, result, fetchErr); err != nil {
-			return robots.Policy{}, nil, err
-		}
-		return policy, pause, fmt.Errorf("%w: %s", errRobotsPaused, detail)
+		return policy, pause, fmt.Errorf("%w: %s", errRobotsPaused, pause.Detail)
 	}
-	if err := client.record(ctx, site, KindRobots, robotsURL, 1, result, fetchErr); err != nil {
-		return robots.Policy{}, nil, err
+	// The robots request was spaced before its Crawl-delay was known.
+	if delay := ratelimit.Interval(site.MinInterval, policy.CrawlDelay); delay > ratelimit.Interval(site.MinInterval, 0) {
+		if err := client.Limiter.Defer(ctx, host, delay); err != nil {
+			return robots.Policy{}, nil, fmt.Errorf("apply crawl-delay for %s: %w", host, err)
+		}
 	}
 	if err := client.Robots.Put(ctx, policy); err != nil {
 		return robots.Policy{}, nil, fmt.Errorf("store robots policy for %s: %w", host, err)
@@ -260,13 +271,16 @@ func (client *Client) robotsPolicy(ctx context.Context, site Site, host string) 
 	return policy, nil, nil
 }
 
-func (client *Client) record(ctx context.Context, site Site, kind Kind, rawURL string, number int, result Result, fetchErr error) error {
+func (client *Client) record(ctx context.Context, site Site, kind Kind, sourcePageID int64, rawURL string, number int, result Result, fetchErr error) (int64, error) {
 	attempt := Attempt{
-		SiteID: site.ID, Kind: kind, URL: rawURL, Number: number,
+		SiteID: site.ID, Kind: kind, SourcePageID: sourcePageID, URL: rawURL, Number: number,
 		StartedAt: result.Response.StartedAt, FinishedAt: result.Response.FinishedAt,
 		Status: result.Response.Status, FinalURL: result.Response.FinalURL,
 		Redirects: result.Response.Redirects, Outcome: result.Outcome,
 		ErrorKind: safefetch.KindOf(fetchErr), DecodedBytes: len(result.Response.Body),
+	}
+	if fetchErr == nil && IsBotChallenge(result.Response.Header, result.Response.Body) {
+		attempt.BotChallenge = true
 	}
 	if result.Err != nil {
 		attempt.Error = strings.TrimSpace(result.Err.Error())
@@ -275,8 +289,9 @@ func (client *Client) record(ctx context.Context, site Site, kind Kind, rawURL s
 		now := client.Clock.Now().UTC()
 		attempt.StartedAt, attempt.FinishedAt = now, now
 	}
-	if err := client.Recorder.RecordAttempt(ctx, attempt); err != nil {
-		return fmt.Errorf("record attempt for %s: %w", rawURL, err)
+	id, err := client.Recorder.RecordAttempt(ctx, attempt)
+	if err != nil {
+		return 0, fmt.Errorf("record attempt for %s: %w", rawURL, err)
 	}
-	return nil
+	return id, nil
 }

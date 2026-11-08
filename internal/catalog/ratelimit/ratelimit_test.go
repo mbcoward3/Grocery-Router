@@ -98,3 +98,21 @@ func TestMemoryAllowsOneInFlight(t *testing.T) {
 		t.Fatalf("canceled acquire err = %v", err)
 	}
 }
+
+func TestMemoryDeferNeverMovesEarlier(t *testing.T) {
+	clk := clock.NewFake(start)
+	limiter := ratelimit.NewMemory(clk)
+	ctx := context.Background()
+	release, _ := limiter.Acquire(ctx, "www.a.test", 5*time.Second)
+	release()
+	if err := limiter.Defer(ctx, "www.a.test", 12*time.Second); err != nil {
+		t.Fatal(err)
+	}
+	_ = limiter.Defer(ctx, "www.a.test", time.Second) // shorter: ignored
+	before := clk.Now()
+	next, _ := limiter.Acquire(ctx, "www.a.test", 5*time.Second)
+	next()
+	if waited := clk.Now().Sub(before); waited != 12*time.Second {
+		t.Fatalf("waited %v, want deferred 12s", waited)
+	}
+}

@@ -1,6 +1,6 @@
 // Package ratelimit spaces requests per host (CATALOG_INGEST_SPEC.md §7.3):
-// one request in flight per host, and each request starts at least the
-// host's interval after the previous one finished.
+// one request in flight per host, and a next-allowed time that each finished
+// request pushes at least its interval into the future.
 package ratelimit
 
 import (
@@ -23,11 +23,14 @@ func Interval(siteInterval, crawlDelay time.Duration) time.Duration {
 // Limiter grants exclusive, spaced access to a host. The database-backed
 // implementation shares state across commands; Memory serves tests.
 type Limiter interface {
-	// Acquire blocks until host has no request in flight and the larger of
-	// interval and the previous holder's interval has elapsed since the
-	// previous request on host finished. The caller must call release once
-	// its request is complete; extra calls are ignored.
+	// Acquire blocks until host has no request in flight and its
+	// next-allowed time has passed. Calling release ends the request and
+	// sets the next-allowed time to at least interval (never below
+	// MinInterval) from then. Extra release calls are ignored.
 	Acquire(ctx context.Context, host string, interval time.Duration) (release func(), err error)
+	// Defer moves host's next-allowed time to at least d from now; it never
+	// moves it earlier.
+	Defer(ctx context.Context, host string, d time.Duration) error
 }
 
 // Memory is an in-process Limiter.
@@ -38,10 +41,9 @@ type Memory struct {
 }
 
 type hostState struct {
-	inFlight     bool
-	lastFinished time.Time
-	lastInterval time.Duration
-	wake         chan struct{}
+	inFlight    bool
+	nextAllowed time.Time
+	wake        chan struct{}
 }
 
 // NewMemory returns a Memory limiter using clk.
@@ -49,16 +51,21 @@ func NewMemory(clk clock.Clock) *Memory {
 	return &Memory{clock: clk, hosts: map[string]*hostState{}}
 }
 
+func (memory *Memory) state(host string) *hostState {
+	state := memory.hosts[host]
+	if state == nil {
+		state = &hostState{wake: make(chan struct{})}
+		memory.hosts[host] = state
+	}
+	return state
+}
+
 // Acquire implements Limiter.
 func (memory *Memory) Acquire(ctx context.Context, host string, interval time.Duration) (func(), error) {
 	interval = max(interval, MinInterval)
 	for {
 		memory.mu.Lock()
-		state := memory.hosts[host]
-		if state == nil {
-			state = &hostState{wake: make(chan struct{})}
-			memory.hosts[host] = state
-		}
+		state := memory.state(host)
 		if state.inFlight {
 			wake := state.wake
 			memory.mu.Unlock()
@@ -69,7 +76,7 @@ func (memory *Memory) Acquire(ctx context.Context, host string, interval time.Du
 			}
 			continue
 		}
-		wait := state.lastFinished.Add(max(interval, state.lastInterval)).Sub(memory.clock.Now())
+		wait := state.nextAllowed.Sub(memory.clock.Now())
 		if wait <= 0 {
 			state.inFlight = true
 			memory.mu.Unlock()
@@ -83,13 +90,25 @@ func (memory *Memory) Acquire(ctx context.Context, host string, interval time.Du
 	}
 }
 
+// Defer implements Limiter.
+func (memory *Memory) Defer(_ context.Context, host string, d time.Duration) error {
+	memory.mu.Lock()
+	defer memory.mu.Unlock()
+	state := memory.state(host)
+	if next := memory.clock.Now().Add(d); next.After(state.nextAllowed) {
+		state.nextAllowed = next
+	}
+	return nil
+}
+
 func (memory *Memory) release(host string, interval time.Duration) {
 	memory.mu.Lock()
 	defer memory.mu.Unlock()
 	state := memory.hosts[host]
 	state.inFlight = false
-	state.lastFinished = memory.clock.Now()
-	state.lastInterval = interval
+	if next := memory.clock.Now().Add(interval); next.After(state.nextAllowed) {
+		state.nextAllowed = next
+	}
 	close(state.wake)
 	state.wake = make(chan struct{})
 }
