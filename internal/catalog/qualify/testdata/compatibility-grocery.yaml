@@ -1,0 +1,13 @@
+# Expected grocery output for internal/ingest/testdata/catalog/every-relationship.yaml added once
+# to an empty week. Hand-checked: the walnut additive line totals ½ cup + 2 tbsp = 5/8 cup; the
+# butter "plus more" requirement stays a separate unspecified line; salt is presence-only.
+- {item: walnuts, section: baking, kind: exact, amount: "5/8", unit: cup, source_lines: [1, 1]}
+- {item: butter, section: dairy, kind: exact, amount: "4", unit: tbsp, source_lines: [2]}
+- {item: butter, section: dairy, kind: unspecified, source_lines: [2]}
+- {item: thyme, section: spices, kind: exact, amount: "1", unit: tsp, source_lines: [3]}
+- {item: rosemary, section: spices, kind: exact, amount: "1", unit: tsp, source_lines: [3]}
+- {item: chicken-breasts, section: meat, kind: exact, amount: "2", unit: each, source_lines: [4]}
+- {item: olive-oil, section: pantry, kind: exact, amount: "2", unit: tbsp, source_lines: [5]}
+- {item: sugar, section: baking, kind: exact, amount: "1", unit: cup, source_lines: [6]}
+- {item: boneless-beef-chuck, section: meat, kind: exact, amount: "3", unit: lb, source_lines: [7]}
+- {item: salt, section: spices, kind: presence, source_lines: [8]}

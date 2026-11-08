@@ -124,3 +124,8 @@ tasks:
     desc: Validate the catalog site registry and sync it into PostgreSQL (pass CLI flags after --)
     cmds:
       - go run ./cmd/grocery-router catalog-sites {{.CLI_ARGS}}
+
+  catalog-qualify:
+    desc: Score a candidate set against the catalog evaluation set (pass --candidates DIR and --holdout DIR after --)
+    cmds:
+      - go run ./cmd/grocery-router catalog-qualify {{.CLI_ARGS}}

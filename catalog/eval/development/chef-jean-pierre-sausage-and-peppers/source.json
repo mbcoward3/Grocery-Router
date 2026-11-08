@@ -1,0 +1,48 @@
+{
+  "format_version": 1,
+  "site": "chef-jean-pierre",
+  "url": "https://chefjeanpierre.com/recipes/sausage-and-peppers/",
+  "note": "Reconstructed from the recipe-intelligence pilot candidate catalog/candidates/sausage-and-peppers.candidate.json (source lines and steps exact, including the HTML entity in line 5). The page gives no prepTime or cookTime. Replace with the stored evidence node once slice 2 captures it.",
+  "node": {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    "name": "Sausage and Peppers Recipe",
+    "image": [
+      "https://eadn-wc02-12309146.nxedge.io/wp-content/uploads/2022/09/The-best-Sausage-and-Pepper-Recipe.jpg"
+    ],
+    "recipeYield": [
+      "4 Servings"
+    ],
+    "recipeIngredient": [
+      "2  large Italian Sausages",
+      "Olive Oil, the Chef uses Garlic Olive Oil",
+      "1 cup Onion sliced",
+      "1  Green Bell Pepper sliced",
+      "1  Red Bell Pepper sliced",
+      "2 teaspoons of Thyme &amp; Rosemary freshly chopped, if dry use half",
+      "1 tablespoon Garlic chopped"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToSection",
+        "name": "Method",
+        "itemListElement": [
+          {
+            "@type": "HowToStep",
+            "text": "Steam the sausage in a frying pan with a cover like the chef did in the video. Let cool at least one hour to let the pork fat congeal so that when you cut it on your cutting board you do not lose all the juices."
+          }
+        ]
+      },
+      {
+        "@type": "HowToSection",
+        "name": "When ready to Eat",
+        "itemListElement": [
+          {
+            "@type": "HowToStep",
+            "text": "In a frying pan add some oil when it is 365ºF / 185ºC add onion and cook until light golden brown, cut the sausage into bite size and add to the onion. When the sausage starts getting golden brown, add your peppers add the herbs and salt and pepper to taste. Cook until the peppers are tender.Just before removing from the heat add the garlic and sauté for one minute."
+          }
+        ]
+      }
+    ]
+  }
+}

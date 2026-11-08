@@ -1,0 +1,201 @@
+# Draft evaluation case. Spans are half-open [start, end) Unicode code point offsets into the
+# named source line. The grocery section is the output of internal/grocery for the document.
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the recipe-intelligence pilot candidate; not yet reviewed by the
+  household. Check: (1) line 2 "½ cup melted butter or vegetable oil (plus more for the pan)" is
+  both an alternative and a "plus more" line; catalog format v1 allows one relationship per line,
+  so it is drafted as additive (½ cup melted butter + unspecified butter for the pan) with the
+  vegetable-oil option kept as a note. Decide whether that is right or whether this line should
+  reject until the format can say both. (2) line 10 walnuts are additive: ½ cup chopped plus 2 tbsp
+  chopped for topping, aggregating to 5/8 cup on the list. (3) line 1 "cane sugar or brown sugar"
+  takes cane sugar as a coherent first alternative (the steps only say "sugar"). (4) bananas are
+  2 cups mashed (measured), with "about 4 large" kept as a note, not converted to a count.
+  (5) sea salt maps to the single presence-only salt item (spec §11 default), so the list shows
+  "salt" with no amount. (6) cinnamon and nutmeg stay unqualified (the source does not say ground).
+  (7) The source node is reconstructed from the pilot candidate, not stored evidence.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Banana Bread"
+  source:
+    relationship: source
+    attribution: Love and Lemons
+    url: https://www.loveandlemons.com/banana-bread/
+    checked_on: 2026-09-29
+  image_url: https://cdn.loveandlemons.com/wp-content/uploads/2023/07/banana-bread-recipe-500x500.jpg
+  yield: "8"
+  hands_on: {min: 15, max: 15}
+  unattended: {min: 55, max: 55}
+  source_lines:
+    - "2 cups mashed very ripe banana (about 4 large)"
+    - "½ cup cane sugar or brown sugar"
+    - "½ cup melted butter or vegetable oil (plus more for the pan)"
+    - "2  large eggs"
+    - "1 teaspoon vanilla extract"
+    - "1½ cups all-purpose flour (spooned and leveled)"
+    - "1 teaspoon baking soda"
+    - "½ teaspoon sea salt"
+    - "½ teaspoon cinnamon"
+    - "¼ teaspoon nutmeg"
+    - "½ cup chopped walnuts (plus 2 tablespoons for topping)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 46}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: banana, name: "Banana", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: cup}
+          preparation: "mashed very ripe"
+          note: "about 4 large"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 16}}
+          relationship: alternative
+          state: resolved
+          grocery_item: {key: cane-sugar, name: "Cane Sugar", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: cup}
+          note: "or brown sugar"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 19}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: butter, name: "Butter", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: cup}
+          preparation: "melted"
+          note: "or vegetable oil"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 38, end: 59}}
+          relationship: additive
+          state: intentionally_unspecified
+          grocery_item: {key: butter, name: "Butter", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: unspecified}
+          note: "for the pan"
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 13}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: eggs, name: "Eggs", store_section: {key: dairy, name: "Dairy"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "2", unit: each}
+          note: "large"
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 26}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: vanilla-extract, name: "Vanilla Extract", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: tsp}
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 47}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: all-purpose-flour, name: "All-Purpose Flour", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1 1/2", unit: cup}
+          note: "spooned and leveled"
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 22}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: baking-soda, name: "Baking Soda", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: tsp}
+        - provenance: {type: ingredient_line, line: 7, span: {start: 0, end: 19}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/2", unit: tsp}
+          note: "sea salt"
+        - provenance: {type: ingredient_line, line: 8, span: {start: 0, end: 19}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: cinnamon, name: "Cinnamon", store_section: {key: spices, name: "Spices"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: tsp}
+        - provenance: {type: ingredient_line, line: 9, span: {start: 0, end: 17}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: nutmeg, name: "Nutmeg", store_section: {key: spices, name: "Spices"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: tsp}
+        - provenance: {type: ingredient_line, line: 10, span: {start: 0, end: 21}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: walnuts, name: "Walnuts", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: cup}
+          preparation: "chopped"
+        - provenance: {type: ingredient_line, line: 10, span: {start: 23, end: 53}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: walnuts, name: "Walnuts", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: tbsp}
+          preparation: "chopped"
+          note: "for topping"
+  instruction_sections:
+    - name: Instructions
+      steps:
+        - "Preheat the oven to 350°F and grease an 8x4 or 9x5-inch loaf pan."
+        - "In a large bowl, whisk together the mashed banana, sugar, butter, eggs, and vanilla."
+        - "In a medium bowl, whisk together the flour, baking soda, salt, cinnamon, and nutmeg."
+        - "Add the dry ingredients to the wet ingredients and stir until just combined. Don’t overmix. Fold in the ½ cup walnuts."
+        - "Pour the batter into the prepared pan and top with the remaining 2 tablespoons walnuts."
+        - "Bake for 50 to 60 minutes, or until a toothpick inserted comes out clean and the top springs back to the touch. I like to check the loaf after 40 minutes. If the top is golden brown, I cover it with foil for the remaining bake time to prevent further browning."
+grocery:
+  - item: banana
+    section: produce
+    kind: exact
+    amount: "2"
+    unit: cup
+    source_lines: [0]
+  - item: cane-sugar
+    section: baking
+    kind: exact
+    amount: "1/2"
+    unit: cup
+    source_lines: [1]
+  - item: butter
+    section: dairy
+    kind: exact
+    amount: "1/2"
+    unit: cup
+    source_lines: [2]
+  - item: butter
+    section: dairy
+    kind: unspecified
+    source_lines: [2]
+  - item: eggs
+    section: dairy
+    kind: exact
+    amount: "2"
+    unit: each
+    source_lines: [3]
+  - item: vanilla-extract
+    section: baking
+    kind: exact
+    amount: "1"
+    unit: tsp
+    source_lines: [4]
+  - item: all-purpose-flour
+    section: baking
+    kind: exact
+    amount: "3/2"
+    unit: cup
+    source_lines: [5]
+  - item: baking-soda
+    section: baking
+    kind: exact
+    amount: "1"
+    unit: tsp
+    source_lines: [6]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [7]
+  - item: cinnamon
+    section: spices
+    kind: exact
+    amount: "1/2"
+    unit: tsp
+    source_lines: [8]
+  - item: nutmeg
+    section: spices
+    kind: exact
+    amount: "1/4"
+    unit: tsp
+    source_lines: [9]
+  - item: walnuts
+    section: baking
+    kind: exact
+    amount: "5/8"
+    unit: cup
+    source_lines: [10, 10]
