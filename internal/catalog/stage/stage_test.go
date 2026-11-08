@@ -343,7 +343,7 @@ func TestDatabaseRateLimitIsSharedAcrossFetchers(t *testing.T) {
 			path := []string{"/recipes/one", "/recipes/two"}[index]
 			result, err := newClient(pool).GetPage(context.Background(), site, int64(index+1), "https://www.a.test"+path)
 			if err == nil && result.Outcome != acquire.OutcomeFetched {
-				err = fmt.Errorf("outcome %s: %v", result.Outcome, result.Err)
+				err = fmt.Errorf("outcome %s: %w", result.Outcome, result.Err)
 			}
 			errs <- err
 		}(index, pool)
