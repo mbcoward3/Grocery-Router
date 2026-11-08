@@ -286,6 +286,12 @@ func (client *Client) checkHop(raw string, hosts []string) (*url.URL, error) {
 	if !HostAllowed(parsed, hosts) {
 		return nil, &Error{Kind: KindPolicy, Err: fmt.Errorf("host %q is not one of the site's hosts", parsed.Hostname())}
 	}
+	// Canonical form: lowercase host without the default port, and "/" for
+	// an empty path.
+	parsed.Host = NormalizeHost(parsed.Hostname())
+	if parsed.Path == "" && parsed.RawPath == "" {
+		parsed.Path = "/"
+	}
 	return parsed, nil
 }
 

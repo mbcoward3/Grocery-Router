@@ -14,6 +14,8 @@ type Querier interface {
 	// GetIngestHostRateLimit to learn how long. Safe across concurrent processes.
 	AcquireIngestHostSlot(ctx context.Context, arg AcquireIngestHostSlotParams) (AcquireIngestHostSlotRow, error)
 	ApproveReviewFlag(ctx context.Context, id int64) (RecipeReviewFlag, error)
+	// Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
+	CountIngestNoRecipePagesBySite(ctx context.Context) ([]CountIngestNoRecipePagesBySiteRow, error)
 	CountIngestSourceNodesBySite(ctx context.Context) ([]CountIngestSourceNodesBySiteRow, error)
 	CountIngestSourcePagesByState(ctx context.Context) ([]CountIngestSourcePagesByStateRow, error)
 	CountUnapprovedReviewFlags(ctx context.Context, arg CountUnapprovedReviewFlagsParams) (int64, error)

@@ -26,6 +26,10 @@ import (
 // Version identifies the extraction rules; stored with every result.
 const Version = "jsonld-recipe/1"
 
+// NormalizationVersion identifies the content-digest normalization
+// (ingest.source_nodes.normalization_version).
+const NormalizationVersion = 1
+
 // Outcome is the page-level extraction result.
 type Outcome string
 
@@ -55,7 +59,8 @@ type Block struct {
 // Node is one Schema.org Recipe node.
 type Node struct {
 	// BlockIndex and Location say where the node was found; they are not
-	// part of its identity.
+	// part of its identity. Location is a JSON Pointer into the block ("" for
+	// the block's top-level object).
 	BlockIndex int
 	Location   string
 	// ID is the node's "@id" string, or empty.
@@ -186,7 +191,7 @@ func findRecipes(document []byte) []located {
 		for index, item := range graph {
 			var nested map[string]json.RawMessage
 			if json.Unmarshal(item, &nested) == nil && isRecipe(nested["@type"]) {
-				found = append(found, located{location: location + "/@graph[" + strconv.Itoa(index) + "]", raw: bytes.TrimSpace(item)})
+				found = append(found, located{location: location + "/@graph/" + strconv.Itoa(index), raw: bytes.TrimSpace(item)})
 			}
 		}
 	}
@@ -196,11 +201,11 @@ func findRecipes(document []byte) []located {
 		var items []json.RawMessage
 		if json.Unmarshal(trimmed, &items) == nil {
 			for index, item := range items {
-				visitObject("$["+strconv.Itoa(index)+"]", item, true)
+				visitObject("/"+strconv.Itoa(index), item, true)
 			}
 		}
 	case len(trimmed) > 0 && trimmed[0] == '{':
-		visitObject("$", trimmed, true)
+		visitObject("", trimmed, true)
 	}
 	return found
 }

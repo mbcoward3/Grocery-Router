@@ -40,11 +40,14 @@ const (
 	OutcomePaused Outcome = "paused"
 )
 
-// Attempt is one recorded attempt. Every attempt, including ones refused
-// before reaching the network, is reported to the AttemptRecorder.
+// Attempt is one network attempt. Requests refused before reaching the
+// network (site paused, robots disallow) are not attempts and are not
+// recorded; policy refusals of the initial URL are recorded as rejected.
 type Attempt struct {
-	SiteID       string
-	Kind         Kind
+	SiteID string
+	Kind   Kind
+	// SourcePageID identifies the queued page for page attempts; 0 otherwise.
+	SourcePageID int64
 	URL          string
 	Number       int
 	StartedAt    time.Time
@@ -54,13 +57,15 @@ type Attempt struct {
 	Redirects    []safefetch.Redirect
 	Outcome      Outcome
 	ErrorKind    safefetch.ErrorKind
+	BotChallenge bool
 	Error        string
 	DecodedBytes int
 }
 
 // AttemptRecorder persists attempts (ingest.fetch_attempts).
+// RecordAttempt returns the stored attempt's ID.
 type AttemptRecorder interface {
-	RecordAttempt(ctx context.Context, attempt Attempt) error
+	RecordAttempt(ctx context.Context, attempt Attempt) (int64, error)
 }
 
 // PauseReason says why a site was paused.
@@ -76,20 +81,24 @@ const (
 
 // Pause is a persistent stop on a site until an operator resumes it.
 type Pause struct {
-	SiteID   string
-	Reason   PauseReason
-	URL      string
-	Status   int
-	Detail   string
-	PausedAt time.Time
+	SiteID string
+	Reason PauseReason
+	URL    string
+	Status int
+	// Detail is a non-empty human-readable explanation.
+	Detail string
+	// AttemptID is the attempt that caused the pause, when known.
+	AttemptID int64
+	PausedAt  time.Time
 }
 
 // PauseStore persists site pauses (ingest.site_pauses). Pause keeps an
-// existing active pause unchanged; Resume clears it (catalog-site-resume).
+// existing active pause unchanged; Resume closes the open pause with an
+// operator note (catalog-site-resume) and reports whether one was open.
 type PauseStore interface {
 	ActivePause(ctx context.Context, siteID string) (Pause, bool, error)
 	Pause(ctx context.Context, pause Pause) error
-	Resume(ctx context.Context, siteID string) error
+	Resume(ctx context.Context, siteID, note string) (bool, error)
 }
 
 // MemoryRecorder is an in-memory AttemptRecorder.
@@ -98,12 +107,12 @@ type MemoryRecorder struct {
 	attempts []Attempt
 }
 
-// RecordAttempt appends attempt.
-func (recorder *MemoryRecorder) RecordAttempt(_ context.Context, attempt Attempt) error {
+// RecordAttempt appends attempt and returns its 1-based position.
+func (recorder *MemoryRecorder) RecordAttempt(_ context.Context, attempt Attempt) (int64, error) {
 	recorder.mu.Lock()
 	defer recorder.mu.Unlock()
 	recorder.attempts = append(recorder.attempts, attempt)
-	return nil
+	return int64(len(recorder.attempts)), nil
 }
 
 // Attempts returns a copy of the recorded attempts.
@@ -141,9 +150,10 @@ func (pauses *MemoryPauses) Pause(_ context.Context, pause Pause) error {
 }
 
 // Resume clears the site's pause.
-func (pauses *MemoryPauses) Resume(_ context.Context, siteID string) error {
+func (pauses *MemoryPauses) Resume(_ context.Context, siteID, _ string) (bool, error) {
 	pauses.mu.Lock()
 	defer pauses.mu.Unlock()
+	_, ok := pauses.active[siteID]
 	delete(pauses.active, siteID)
-	return nil
+	return ok, nil
 }
