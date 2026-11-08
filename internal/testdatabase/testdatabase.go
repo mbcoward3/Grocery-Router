@@ -1,4 +1,4 @@
-// Package testdatabase creates isolated PostgreSQL schemas for integration tests.
+// Package testdatabase creates isolated PostgreSQL databases for integration tests.
 package testdatabase
 
 import (
@@ -16,7 +16,7 @@ import (
 
 var sequence atomic.Uint64
 
-// Open creates, migrates, and returns a database pool isolated by a temporary schema.
+// Open creates, migrates, and returns a pool for a fresh temporary database.
 func Open(t testing.TB) *sql.DB {
 	t.Helper()
 	db, _ := OpenWithURL(t)
@@ -24,6 +24,9 @@ func Open(t testing.TB) *sql.DB {
 }
 
 // OpenWithURL also returns the isolated connection URL for CLI tests.
+//
+// Each test gets its own database rather than its own schema because migrations create fixed
+// named schemas (such as ingest) that a search_path cannot isolate.
 func OpenWithURL(t testing.TB) (*sql.DB, string) {
 	t.Helper()
 	baseURL := os.Getenv("GROCERY_ROUTER_TEST_DATABASE_URL")
@@ -34,31 +37,29 @@ func OpenWithURL(t testing.TB) (*sql.DB, string) {
 	if err != nil {
 		t.Fatalf("open test postgres (set GROCERY_ROUTER_TEST_DATABASE_URL): %v", err)
 	}
-	schema := fmt.Sprintf("test_%d_%d", time.Now().UnixNano(), sequence.Add(1))
-	if _, err := admin.Exec(`CREATE SCHEMA "` + schema + `"`); err != nil {
+	name := fmt.Sprintf("test_%d_%d_%d", time.Now().UnixNano(), os.Getpid(), sequence.Add(1))
+	if _, err := admin.Exec(`CREATE DATABASE "` + name + `" TEMPLATE template0`); err != nil {
 		admin.Close()
-		t.Fatalf("create test schema: %v", err)
+		t.Fatalf("create test database: %v", err)
 	}
+	t.Cleanup(func() {
+		_, _ = admin.Exec(`DROP DATABASE IF EXISTS "` + name + `" WITH (FORCE)`)
+		admin.Close()
+	})
 
 	parsed, err := url.Parse(baseURL)
 	if err != nil {
 		t.Fatalf("parse test database URL: %v", err)
 	}
-	query := parsed.Query()
-	query.Set("search_path", schema)
-	parsed.RawQuery = query.Encode()
-	db, err := database.Open(parsed.String())
+	parsed.Path = "/" + name
+	isolatedURL := parsed.String()
+	db, err := database.Open(isolatedURL)
 	if err != nil {
-		t.Fatalf("open isolated test schema: %v", err)
+		t.Fatalf("open isolated test database: %v", err)
 	}
+	t.Cleanup(func() { db.Close() })
 	if err := database.Migrate(context.Background(), db); err != nil {
-		db.Close()
-		t.Fatalf("migrate test schema: %v", err)
+		t.Fatalf("migrate test database: %v", err)
 	}
-	t.Cleanup(func() {
-		db.Close()
-		_, _ = admin.Exec(`DROP SCHEMA IF EXISTS "` + schema + `" CASCADE`)
-		admin.Close()
-	})
-	return db, parsed.String()
+	return db, isolatedURL
 }
