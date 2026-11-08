@@ -112,7 +112,7 @@ func (client *Client) get(ctx context.Context, site Site, kind Kind, profile saf
 		case errors.Is(gateErr, ErrDisallowed):
 			result.Outcome, result.Err = OutcomeDisallowed, gateErr
 		default:
-			result.Outcome, result.Err, pause = classify(site, response, fetchErr, client.Clock.Now().UTC())
+			result.Outcome, pause, result.Err = classify(site, response, fetchErr, client.Clock.Now().UTC())
 		}
 		if pause != nil {
 			if err := client.Pauses.Pause(ctx, *pause); err != nil {
@@ -138,35 +138,36 @@ func (client *Client) get(ctx context.Context, site Site, kind Kind, profile saf
 }
 
 // classify maps a completed fetch to an outcome and an optional pause.
-func classify(site Site, response safefetch.Response, fetchErr error, now time.Time) (Outcome, error, *Pause) {
+// The returned error describes why the outcome is not OutcomeFetched.
+func classify(site Site, response safefetch.Response, fetchErr error, now time.Time) (Outcome, *Pause, error) {
 	newPause := func(reason PauseReason) *Pause {
 		return &Pause{SiteID: site.ID, Reason: reason, URL: response.FinalURL, Status: response.Status, PausedAt: now}
 	}
 	if fetchErr != nil {
 		switch safefetch.KindOf(fetchErr) {
 		case safefetch.KindTimeout:
-			return OutcomeRetryable, fetchErr, nil
+			return OutcomeRetryable, nil, fetchErr
 		case safefetch.KindPolicy, safefetch.KindTooLarge, safefetch.KindMediaType:
-			return OutcomeRejected, fetchErr, nil
+			return OutcomeRejected, nil, fetchErr
 		default:
-			return OutcomeFailed, fetchErr, nil
+			return OutcomeFailed, nil, fetchErr
 		}
 	}
 	status := response.Status
 	if IsBotChallenge(response.Header, response.Body) {
-		return OutcomePaused, fmt.Errorf("HTTP %d bot challenge", status), newPause(PauseBotChallenge)
+		return OutcomePaused, newPause(PauseBotChallenge), fmt.Errorf("HTTP %d bot challenge", status)
 	}
 	switch {
 	case status >= 200 && status <= 299:
 		return OutcomeFetched, nil, nil
 	case status == 403:
-		return OutcomePaused, fmt.Errorf("HTTP 403"), newPause(PauseForbidden)
+		return OutcomePaused, newPause(PauseForbidden), fmt.Errorf("HTTP 403")
 	case status == 429:
-		return OutcomePaused, fmt.Errorf("HTTP 429"), newPause(PauseTooManyRequests)
+		return OutcomePaused, newPause(PauseTooManyRequests), fmt.Errorf("HTTP 429")
 	case status >= 500 && status <= 599:
-		return OutcomeRetryable, fmt.Errorf("HTTP %d", status), nil
+		return OutcomeRetryable, nil, fmt.Errorf("HTTP %d", status)
 	default:
-		return OutcomeFailed, fmt.Errorf("HTTP %d", status), nil
+		return OutcomeFailed, nil, fmt.Errorf("HTTP %d", status)
 	}
 }
 
