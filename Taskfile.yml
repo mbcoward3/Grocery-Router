@@ -119,3 +119,8 @@ tasks:
     desc: Migrate and ingest the approved corpus (pass CLI flags after --)
     cmds:
       - go run ./cmd/grocery-router corpus-ingest {{.CLI_ARGS}}
+
+  catalog-sites:
+    desc: Validate the catalog site registry and sync it into PostgreSQL (pass CLI flags after --)
+    cmds:
+      - go run ./cmd/grocery-router catalog-sites {{.CLI_ARGS}}
