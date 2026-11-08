@@ -119,3 +119,38 @@ tasks:
     desc: Migrate and ingest the approved corpus (pass CLI flags after --)
     cmds:
       - go run ./cmd/grocery-router corpus-ingest {{.CLI_ARGS}}
+
+  catalog-agent-inputs:
+    desc: Build compact ignored inputs for bounded Pi recipe standardization
+    cmds:
+      - go run ./cmd/grocery-router catalog-agent-inputs {{.CLI_ARGS}}
+
+  catalog-amplify:
+    desc: Run isolated low-cost Pi workers over at most 25 catalog inputs
+    cmds:
+      - bash scripts/catalog-amplify.sh {{.CLI_ARGS}}
+
+  catalog-candidate-build:
+    desc: Validate Pi proposals and render Git-reviewable catalog candidates
+    cmds:
+      - go run ./cmd/grocery-router catalog-candidate-build {{.CLI_ARGS}}
+
+  catalog-audit:
+    desc: Audit a catalog release and all committed artifact digests
+    cmds:
+      - go run ./cmd/grocery-router catalog-audit {{.CLI_ARGS}}
+
+  catalog-publish:
+    desc: Transactionally publish a catalog review release to PostgreSQL
+    cmds:
+      - go run ./cmd/grocery-router catalog-publish {{.CLI_ARGS}}
+
+  recipe-source-pilot:
+    desc: Fetch manifested public recipe JSON-LD into inspectable local output
+    cmds:
+      - go run ./cmd/grocery-router recipe-source-pilot {{.CLI_ARGS}}
+
+  recipe-intelligence-pilot:
+    desc: Assess fetched and approved recipes with the import-time Jev catalog
+    cmds:
+      - go run ./cmd/grocery-router recipe-intelligence-pilot {{.CLI_ARGS}}

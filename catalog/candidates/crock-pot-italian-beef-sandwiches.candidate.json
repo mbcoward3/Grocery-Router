@@ -1,0 +1,260 @@
+{
+  "format_version": 1,
+  "candidate_id": "crock-pot-italian-beef-sandwiches#$/@graph[7]",
+  "catalog_key": "crock-pot-italian-beef-sandwiches",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "crock-pot-italian-beef-sandwiches",
+    "manifest_url": "https://iowagirleats.com/crock-pot-italian-beef-sandwiches/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "crock-pot-italian-beef-sandwiches.json",
+    "artifact_sha256": "ccfe582644c259962daa8239d4ecbd178d3f4e6b15835aa5e840de04ff554724",
+    "requested_url": "https://iowagirleats.com/crock-pot-italian-beef-sandwiches/",
+    "final_url": "https://iowagirleats.com/crock-pot-italian-beef-sandwiches/",
+    "fetched_at": "2026-09-29T01:45:02.847805627Z",
+    "response_body_sha256": "d2d3ad0ff373493f71179e31bc66e94d609262397afdb1c4a73f3b270830fdc2",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "92977dd7c903146245c8f8a17a030741a38c231f2517f756af2bbc7243e8283d",
+      "recipe_raw_sha256": "80db6f43b09824974f7c11b7e7852da369f6e5bf45d31bfc1d173ceb887f9576",
+      "recipe_raw_canonical_sha256": "fecc4c1938cf5bb70ad521405430fd2da2e237ca3563179a72e2bc4754e35859"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "c016ea43cd159ec06e0d4a159ff8936d8142e6fa0b922bd386a9fd8d6e2cb865",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Crock Pot Italian Beef Sandwiches",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://iowagirleats.com/wp-content/uploads/2013/10/Crock-Pot-Italian-Beef-Sandwiches-Featuredsrgb.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "8",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 20,
+      "max": 20
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 600,
+      "max": 600
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "3 lb chuck roast (trimmed of large pieces of fat then cut into large pieces)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3",
+            "unit": "lb"
+          },
+          "item_phrase": "Chuck Roast",
+          "preparation": "trimmed of large pieces of fat then cut into large pieces",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chuck-roast",
+            "name": "Chuck Roast",
+            "store_section": "Meat",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1 envelope Italian salad dressing mix (see notes)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "package": {
+              "count": "1",
+              "type": "envelope"
+            }
+          },
+          "item_phrase": "Italian Salad Dressing Mix",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "italian-salad-dressing-mix",
+            "name": "Italian Salad Dressing Mix",
+            "store_section": "Spices",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "see notes"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "8 oz pepperoncini pepper slices + splash of juice (plus extra peppers for serving)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "8",
+            "unit": "oz"
+          },
+          "item_phrase": "Sliced Pepperoncini",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "sliced-pepperoncini",
+            "name": "Sliced Pepperoncini",
+            "store_section": "Condiments",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[2]",
+              "message": "+ splash of juice (plus extra peppers for serving)"
+            }
+          ]
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "8 oz Chicago-Style Giardiniera (drained, plus extra for serving)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "8",
+            "unit": "oz"
+          },
+          "item_phrase": "Chicago-Style Giardiniera",
+          "preparation": "drained",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chicago-style-giardiniera",
+            "name": "Chicago-Style Giardiniera",
+            "store_section": "Condiments",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[3]",
+              "message": "plus extra for serving"
+            }
+          ]
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "14.5 oz can beef broth",
+          "quantity": {
+            "kind": "exact",
+            "amount": "14.5",
+            "package": {
+              "count": "14.5",
+              "type": "can",
+              "size": "14.5",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Beef Broth",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "beef-broth",
+            "name": "Beef Broth",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "provolone cheese slices",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Sliced Provolone Cheese",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "sliced-provolone-cheese",
+            "name": "Sliced Provolone Cheese",
+            "store_section": "Dairy",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "buns",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Sandwich Buns",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "sandwich-buns",
+            "name": "Sandwich Buns",
+            "store_section": "Bakery",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Place chuck roast into the bottom of a 6 quart crock pot then sprinkle with salad dressing mix. Add pepperoncini peppers plus a splash of juice, drained Giardiniera, and beef broth then lift up chuck roast pieces to get broth underneath. Place a lid on top then cook on low for 9 hours, or until meat shreds easily with a fork. Shred then place meat back into juices inside crock pot and cook on low for 1 more hour.",
+        "Split buns in half then scoop the shredded meat mixture on top and add provolone cheese slices (if using gluten free buns, toast/broil first). Top with additional pepperoncini peppers and Giardiniera, if desired, then serve."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[1].note",
+      "message": "source-note: Ingredient references notes but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[5].quantity",
+      "message": "unresolved: No quantity provided for provolone cheese slices."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[6].quantity",
+      "message": "unresolved: No quantity provided for buns."
+    }
+  ],
+  "source_notes": [
+    {
+      "reference": "see notes",
+      "state": "unresolved"
+    }
+  ],
+  "decisions": []
+}

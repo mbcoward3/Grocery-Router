@@ -12,11 +12,12 @@ The application is packaged as one container containing the Go API, built React 
 - Google client: `GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_ID` and `GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_SECRET`
 - Session signing key: `GROCERY_ROUTER_AUTH_SESSION_SECRET` (base64url, at least 32 decoded bytes)
 - Active verified-email policy: `GROCERY_ROUTER_AUTH_BOOTSTRAP_USERS` (owner JSON)
+- Optional review release: `GROCERY_ROUTER_CATALOG_RELEASE` (stable development only unless the release is fully approved)
 - Health endpoint: `GET /healthz`
 
 The server fails startup if authentication configuration is absent or inconsistent. HTTPS deployments use host-only `__Host-` cookies; only an explicit localhost origin receives distinct non-secure development cookie names. There is no authentication-disabled mode.
 
-The entrypoint applies pending Goose migrations and ingests the approved corpus only when the Coward household's recipe table is empty. CNPG owns database storage and credentials; the application pod is stateless.
+The entrypoint applies pending Goose migrations and ingests the approved corpus only when the Coward household's recipe table is empty. When `GROCERY_ROUTER_CATALOG_RELEASE` is set, it then idempotently publishes that committed release before serving. Reviewable releases expose non-adoptable development previews and must not be configured in production. CNPG owns database storage and credentials; the application pod is stateless.
 
 ## Environments and cutover
 

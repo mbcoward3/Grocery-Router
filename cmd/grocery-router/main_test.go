@@ -35,6 +35,18 @@ func TestServeFailsClosedWithoutAuthenticationConfiguration(t *testing.T) {
 	}
 }
 
+func TestRecipeSourcePilotResolvesManifestRelativeToRoot(t *testing.T) {
+	root := t.TempDir()
+	manifest := "version: 1\nsources:\n  - id: unsafe\n    url: http://example.com/recipe\n"
+	if err := os.WriteFile(filepath.Join(root, "manifest.yaml"), []byte(manifest), 0o644); err != nil {
+		t.Fatalf("write manifest: %v", err)
+	}
+	err := run([]string{"recipe-source-pilot", "--root", root, "--manifest", "manifest.yaml"}, io.Discard, io.Discard)
+	if err == nil || !strings.Contains(err.Error(), "must use https") {
+		t.Fatalf("recipe-source-pilot error = %v, want manifest URL validation", err)
+	}
+}
+
 func TestRunReportsUnknownCommand(t *testing.T) {
 	err := run([]string{"unknown"}, io.Discard, io.Discard)
 	if err == nil {

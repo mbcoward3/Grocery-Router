@@ -28,6 +28,10 @@ scope requires a new phase with its own acceptance criteria.
 - **Leftovers.** Model extra batches, repeat meals, and the distinction between recipes and
   eating occasions.
 - **Recipe discovery.** Search for recipes outside the family corpus and propose additions.
+- **Runtime semantic ranking.** Use Jev against a small, deterministically retrieved recipe shortlist
+  to rank natural-language searches, context-specific suggestions, recipe pairings, and week
+  composition. The first recipe-intelligence phase is import-time only; persisted intrinsic facets
+  support deterministic filtering without runtime model calls.
 
 ## 3. Quantity and shopping intelligence
 
@@ -51,7 +55,9 @@ scope requires a new phase with its own acceptance criteria.
 ## 4. Corpus and recipe management
 
 - **Recipe onboarding UI.** Add linked, pasted, photographed, or typed recipes using the
-  same ingestion and verification services built for true-up.
+  same ingestion and verification services built for true-up. The standalone acquisition pilot in
+  [`RECIPE_SOURCE_PILOT_SPEC.md`](RECIPE_SOURCE_PILOT_SPEC.md) produces evidence only and does not
+  promote this onboarding scope.
 - **Household correction UI.** Edit ingredients, quantities, mappings, times, instructions,
   and source relationships from the application.
 - **Agent-assisted onboarding.** Package true-up rules, fixtures, and context as SDK/ADK

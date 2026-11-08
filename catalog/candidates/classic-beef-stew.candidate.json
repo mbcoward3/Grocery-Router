@@ -1,0 +1,437 @@
+{
+  "format_version": 1,
+  "candidate_id": "beef-stew-with-carrots-and-potatoes#$/@graph[7]",
+  "catalog_key": "classic-beef-stew",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "beef-stew-with-carrots-and-potatoes",
+    "manifest_url": "https://www.onceuponachef.com/recipes/beef-stew-with-carrots-potatoes.html",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "beef-stew-with-carrots-and-potatoes.json",
+    "artifact_sha256": "f851c3e8c689ad57ec489c8aec2108b6a0704537d972d0fd9946db5d7a093599",
+    "requested_url": "https://www.onceuponachef.com/recipes/beef-stew-with-carrots-potatoes.html",
+    "final_url": "https://www.onceuponachef.com/recipes/beef-stew-with-carrots-potatoes.html",
+    "fetched_at": "2026-09-29T01:45:03.245340209Z",
+    "response_body_sha256": "ba6f3cc9913e6616731819d9fc3d6e3ba3222e0cac213b4ec48ed404e73cccd5",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "dbf34fde807715291311ccf291bc5e28ce3cc9cc84265b0aa9efb5ac721ecf0a",
+      "recipe_raw_sha256": "5ee166fa421ed2b4ae2be521fa32326e9b0b58afc37d6825415236883ab39aa0",
+      "recipe_raw_canonical_sha256": "a4b2de3c985ba92aa480a237eb5459f40437794bc8ace320a9b81d530a9726c3"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "63986293446ba6f03ad34c96fa5b6e7140c7f37d8b7c755791b384e4a883c0bd",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Classic Beef Stew",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://www.onceuponachef.com/images/2026/08/Beef-Stew-5.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "6",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 30,
+      "max": 30
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 180,
+      "max": 180
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "3 pounds boneless beef chuck, (well-marbled, cut into 1½-inch pieces)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3",
+            "unit": "lb"
+          },
+          "item_phrase": "Boneless Beef Chuck",
+          "preparation": "well-marbled, cut into 1 1/2-inch pieces",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "boneless-beef-chuck",
+            "name": "Boneless Beef Chuck",
+            "store_section": "Meat",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "2 teaspoons salt",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1 teaspoon freshly ground black pepper",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Black Pepper",
+          "preparation": "freshly ground",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-pepper",
+            "name": "Black Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "3 tablespoons olive oil",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Olive Oil",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "olive-oil",
+            "name": "Olive Oil",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "2  medium yellow onions, (cut into 1-inch chunks)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Yellow Onion",
+          "preparation": "medium, cut into 1-inch chunks",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "yellow-onion",
+            "name": "Yellow Onion",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "7 cloves garlic, (peeled and smashed)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "7",
+            "unit": "clove"
+          },
+          "item_phrase": "Garlic",
+          "preparation": "peeled and smashed",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "2 tablespoons balsamic vinegar",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Balsamic Vinegar",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "balsamic-vinegar",
+            "name": "Balsamic Vinegar",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "1½ tablespoons tomato paste",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1 1/2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Tomato Paste",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "tomato-paste",
+            "name": "Tomato Paste",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "¼ cup all-purpose flour",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "cup"
+          },
+          "item_phrase": "All-Purpose Flour",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "all-purpose-flour",
+            "name": "All-Purpose Flour",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "2 cups dry red wine",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Dry Red Wine",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "dry-red-wine",
+            "name": "Dry Red Wine",
+            "store_section": "Wine \u0026 Beer",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "2 cups beef broth",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Beef Broth",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "beef-broth",
+            "name": "Beef Broth",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 11,
+          "source_text": "2 cups water",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Water",
+          "non_shopping": true,
+          "grocery_proposal": {
+            "state": "match",
+            "key": "water",
+            "name": "Water",
+            "store_section": "Non-shopping",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 12,
+          "source_text": "1  bay leaf",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "leaf"
+          },
+          "item_phrase": "Bay Leaves",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "bay-leaves",
+            "name": "Bay Leaves",
+            "store_section": "Spices",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 13,
+          "source_text": "½ teaspoon dried thyme",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Dried Thyme",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "dried-thyme",
+            "name": "Dried Thyme",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 14,
+          "source_text": "1½ teaspoons sugar",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1 1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Granulated Sugar",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "granulated-sugar",
+            "name": "Granulated Sugar",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 15,
+          "source_text": "4  large carrots, (peeled and cut into 1-inch chunks on a diagonal)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "each"
+          },
+          "item_phrase": "Carrots",
+          "preparation": "large, peeled and cut into 1-inch chunks on a diagonal",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "carrots",
+            "name": "Carrots",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 16,
+          "source_text": "1 pound small white boiling potatoes ((baby yukons), cut in half)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "lb"
+          },
+          "item_phrase": "Baby Yukon Potatoes",
+          "preparation": "small white boiling potatoes (baby yukons), cut in half",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "baby-yukon-potatoes",
+            "name": "Baby Yukon Potatoes",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 17,
+          "source_text": "Fresh chopped parsley, (for serving (optional))",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Fresh Parsley",
+          "preparation": "fresh chopped",
+          "optional": true,
+          "grocery_proposal": {
+            "state": "match",
+            "key": "fresh-parsley",
+            "name": "Fresh Parsley",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[17]",
+              "message": "for serving"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Preheat the oven to 325°F (165°C) and set a rack in the lower middle position.",
+        "Pat the beef dry and season with the salt and pepper. In a large Dutch oven or heavy soup pot, heat 1 tablespoon of the olive oil over medium-high heat until hot and shimmering. Brown the meat in 3 batches, turning with tongs, for about 5 minutes per batch; add one tablespoon more oil for each batch. (To sear the meat properly, do not crowd the pan and let the meat develop a nice brown crust before turning with tongs.) Transfer the meat to a large plate and set aside.",
+        "Add the onions, garlic and balsamic vinegar; cook, stirring with a wooden spoon and scraping the brown bits from bottom of the pan, for about 5 minutes. Add the tomato paste and cook for a minute more. Add the beef with its juices back to the pan and sprinkle with the flour. Stir with wooden spoon until the flour is dissolved, 1 to 2 minutes. Add the wine, beef broth, water, bay leaf, thyme, and sugar. Stir with a wooden spoon to loosen any brown bits from the bottom of the pan and bring to a boil. Cover the pot with a lid, transfer to the preheated oven, and braise for 2 hours.",
+        "Remove the pot from the oven and add the carrots and potatoes. Cover and place back in oven for about an hour more, or until the vegetables are cooked, the broth is thickened, and the meat is tender. Fish out the bay leaf and discard, then taste and adjust seasoning, if necessary. Serve the stew warm -- or let it come to room temperature and then store in the refrigerator overnight or until ready to serve. This stew improves in flavor if made at least 1 day ahead. Reheat, covered, over medium heat. Garnish with fresh parsley, if desired."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "$.unattended",
+      "message": "source-note: Cook time includes active stovetop browning and sautéing plus passive oven braising; unattended proposed from clearly passive oven time only."
+    },
+    {
+      "severity": "blocker",
+      "field": "$.ingredient_sections[0].ingredients[17].quantity",
+      "message": "unresolved: Parsley quantity is not specified in source."
+    }
+  ],
+  "source_notes": [],
+  "decisions": []
+}

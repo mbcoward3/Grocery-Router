@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mbcoward3/grocery-router/internal/catalog"
 	"github.com/mbcoward3/grocery-router/internal/store"
 	"github.com/mbcoward3/grocery-router/internal/week"
 )
@@ -26,6 +27,7 @@ type AuthorizeHousehold func(context.Context, string) bool
 // Server is the HTTP boundary around corpus reads and week operations.
 type Server struct {
 	queries     *store.Queries
+	catalog     *catalog.Service
 	weeks       *week.Service
 	now         Clock
 	householdID string
@@ -41,10 +43,13 @@ func New(db *sql.DB, weeks *week.Service, clock Clock, householdID string, autho
 	if householdID == "" || authorize == nil {
 		panic("HTTP API requires an explicit household and authorizer")
 	}
-	server := &Server{queries: store.New(db), weeks: weeks, now: clock, householdID: householdID, authorize: authorize}
+	server := &Server{queries: store.New(db), catalog: catalog.NewService(db), weeks: weeks, now: clock, householdID: householdID, authorize: authorize}
 	mux := http.NewServeMux()
+	mux.HandleFunc("GET /api/v2/catalog/recipes", server.listCatalogRecipes)
+	mux.HandleFunc("GET /api/v2/catalog/recipes/{catalogRecipeID}", server.getCatalogRecipe)
 	mux.Handle("GET /api/v2/households/{householdID}/recipes", server.guard(http.HandlerFunc(server.listRecipes)))
 	mux.Handle("GET /api/v2/households/{householdID}/recipes/{recipeID}", server.guard(http.HandlerFunc(server.getRecipe)))
+	mux.Handle("POST /api/v2/households/{householdID}/catalog/recipes/{catalogRecipeID}/membership", server.guard(http.HandlerFunc(server.setCatalogMembership)))
 	mux.Handle("GET /api/v2/households/{householdID}/week/current", server.guard(http.HandlerFunc(server.currentWeek)))
 	mux.Handle("GET /api/v2/households/{householdID}/weeks/history", server.guard(http.HandlerFunc(server.weekHistory)))
 	mux.Handle("GET /api/v2/households/{householdID}/weeks/history/{weekID}", server.guard(http.HandlerFunc(server.historicalWeek)))
@@ -79,13 +84,14 @@ func (server *Server) guard(next http.Handler) http.Handler {
 }
 
 type recipeSummary struct {
-	ID         int64         `json:"id"`
-	Key        string        `json:"key"`
-	Name       string        `json:"name"`
-	ImageURL   *string       `json:"imageUrl"`
-	Yield      *string       `json:"yield"`
-	HandsOn    durationRange `json:"handsOn"`
-	Unattended durationRange `json:"unattended"`
+	ID              int64         `json:"id"`
+	Key             string        `json:"key"`
+	Name            string        `json:"name"`
+	ImageURL        *string       `json:"imageUrl"`
+	Yield           *string       `json:"yield"`
+	HandsOn         durationRange `json:"handsOn"`
+	Unattended      durationRange `json:"unattended"`
+	CollectionState *string       `json:"collectionState"`
 }
 
 type durationRange struct {
@@ -211,14 +217,21 @@ type apiError struct {
 }
 
 func (server *Server) listRecipes(response http.ResponseWriter, request *http.Request) {
-	recipes, err := server.queries.ListVerifiedRecipes(request.Context(), server.householdID)
+	recipes, err := server.queries.ListFamilyRecipes(request.Context(), server.householdID)
 	if err != nil {
 		writeInternalError(response, err)
 		return
 	}
 	result := make([]recipeSummary, 0, len(recipes))
 	for _, recipe := range recipes {
-		result = append(result, summaryFromRecipe(recipe))
+		summary := recipeSummary{
+			ID: recipe.ID, Key: recipe.Key, Name: recipe.Name,
+			ImageURL: nullableString(recipe.ImageUrl), Yield: nullableString(recipe.YieldText),
+			HandsOn:         durationRange{MinimumMinutes: nullableInt(recipe.HandsOnMinMinutes), MaximumMinutes: nullableInt(recipe.HandsOnMaxMinutes)},
+			Unattended:      durationRange{MinimumMinutes: nullableInt(recipe.UnattendedMinMinutes), MaximumMinutes: nullableInt(recipe.UnattendedMaxMinutes)},
+			CollectionState: nullableString(recipe.CatalogState),
+		}
+		result = append(result, summary)
 	}
 	writeJSON(response, http.StatusOK, map[string]any{"recipes": result})
 }

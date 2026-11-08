@@ -1,0 +1,265 @@
+{
+  "format_version": 1,
+  "candidate_id": "baked-chicken-breast#$/@graph[7]",
+  "catalog_key": "baked-chicken-breasts",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "baked-chicken-breast",
+    "manifest_url": "https://www.gimmesomeoven.com/baked-chicken-breast/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "baked-chicken-breast.json",
+    "artifact_sha256": "32386421d0ead33ea14e83c0bc9bd8d60baae4b5e83a7b7ab5080c1fc67a78df",
+    "requested_url": "https://www.gimmesomeoven.com/baked-chicken-breast/",
+    "final_url": "https://www.gimmesomeoven.com/baked-chicken-breast/",
+    "fetched_at": "2026-09-29T01:45:04.190718115Z",
+    "response_body_sha256": "1fcd83ebf9be6c25ff0d12d2e4c2217dbb5047db8faa00e33904ec02a771da06",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "742281d2f893bc0e1ce0542b2a12e0db8e73e16f52147d282ad6aac5faafcd2c",
+      "recipe_raw_sha256": "26f76535592ec10940989c5a1b64528b7d0b377cf24ad5c1806edcd3f718e84f",
+      "recipe_raw_canonical_sha256": "82cc4c381cda3fb49209fd2d5259b19ce12bc16da8b28d69fedfbd2ab8a361cb"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "22c42a97d6bcae055e1db5423fcc73578ef183ea6b7907e27d66b76314ada951",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Baked Chicken Breasts",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://www.gimmesomeoven.com/wp-content/uploads/2015/05/Oven-Baked-Chicken-Breast-Recipe-3.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "4 servings",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 20,
+      "max": 20
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 15,
+      "max": 15
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "4  boneless skinless chicken breasts (pounded to even thickness)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "each"
+          },
+          "item_phrase": "Chicken Breast",
+          "preparation": "boneless skinless, pounded to even thickness",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chicken-breast",
+            "name": "Chicken Breast",
+            "store_section": "Meat",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1 tablespoon melted butter or olive oil",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Butter",
+          "preparation": "melted",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "butter",
+            "name": "Butter",
+            "store_section": "Dairy",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "olive oil listed as alternative"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1 teaspoon kosher salt",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Kosher Salt",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "kosher-salt",
+            "name": "Kosher Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "1/2 teaspoon freshly-ground black pepper",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Black Pepper",
+          "preparation": "freshly-ground",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-pepper",
+            "name": "Black Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "1/2 teaspoon garlic powder",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Garlic Powder",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic-powder",
+            "name": "Garlic Powder",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "1/2 teaspoon smoked paprika",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Smoked Paprika",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "smoked-paprika",
+            "name": "Smoked Paprika",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Fill a large mixing bowl with 2 cups of lukewarm water and 1/4 cup kosher salt. Stir to combine until most of the salt is absorbed. Add 2 cups of cold water (or a few ice cubes) to lower the temperature of the water so that it is cool to the touch. Add the chicken breasts and let them sit in the mixture to brine for 15 minutes, or you can also also cover the bowl and refrigerate for up to 6 hours. Remove the chicken breasts from the brine, rinse them with cold water, then pat them dry with paper towels.",
+        "Preheat oven to 450°F.",
+        "Place the chicken breasts in a single layer in a large baking dish*. Brush on both sides (turning once) evenly with the melted butter or olive oil. In a separate small bowl, whisk the salt, pepper, garlic powder and paprika until combined. Sprinkle the seasoning mixture evenly over the chicken on both sides.",
+        "Bake for 15-18* minutes, or until the chicken is cooked through and no longer pink. Cooking time will depend on the thickness of the chicken breasts, so I recommend using a cooking thermometer to know exactly when the chicken is fully cooked. The thickest part of the breast should measure 165°F. (If you want the chicken to be a little bit browned and crispier on top, you can turn the broiler on high for the final 3-5 minutes of the cooking time and broil the chicken until it is cooked through and golden on top. Keep a close eye on the chicken, however, so that it does not overcook and/or burn.)",
+        "Once the chicken is cooked, remove the pan from the oven, transfer the chicken to a clean plate, and loosely tent the plate with aluminum foil. Let the chicken rest for at least 5-10 minutes.",
+        "Serve warm and enjoy!"
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[1]",
+      "message": "alternative: Source lists melted butter or olive oil; selected butter as first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[5].grocery_item",
+      "message": "backfill: No exact existing grocery item for smoked paprika; proposed new Spices measured item."
+    },
+    {
+      "severity": "blocker",
+      "field": "instruction_sections[0].steps[2]",
+      "message": "source-note: Asterisk after baking dish appears to reference a source note absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "instruction_sections[0].steps[3]",
+      "message": "source-note: Asterisk after 15-18 minutes appears to reference a source note absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "unattended",
+      "message": "ambiguous: Cook time is baking and proposed as unattended, but optional broiling requires active monitoring."
+    }
+  ],
+  "source_notes": [
+    {
+      "reference": "*",
+      "state": "unresolved"
+    }
+  ],
+  "decisions": [
+    {
+      "field": "key",
+      "state": "unresolved",
+      "rationale": "rewritten: Generated stable kebab-case key from recipe name."
+    },
+    {
+      "field": "yield",
+      "state": "unresolved",
+      "rationale": "rewritten: Used more descriptive recipeYield entry, 4 servings."
+    },
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed prepTime PT20M as hands-on time."
+    },
+    {
+      "field": "unattended",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed cookTime PT15M as passive baking time."
+    },
+    {
+      "field": "instruction_sections[0].steps",
+      "state": "unresolved",
+      "rationale": "rewritten: Removed redundant leading step labels while preserving instruction meaning and order."
+    }
+  ]
+}

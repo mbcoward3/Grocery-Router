@@ -43,8 +43,10 @@ export function RecipePage() {
         </div>
         {primarySource && (
           <div className="recipe-source">
-            <span>{primarySource.relationship === 'adapted-from' ? 'Adapted from' : 'Source'}: {primarySource.attribution}</span>
-            {primarySource.url && <a href={primarySource.url} target="_blank" rel="noreferrer">View source <ExternalIcon /></a>}
+            <span>{primarySource.relationship === 'adapted-from' ? 'Adapted from' : 'Source'}</span>
+            {primarySource.url
+              ? <a href={primarySource.url} target="_blank" rel="noreferrer">{primarySource.attribution} <ExternalIcon /></a>
+              : <span>{primarySource.attribution}</span>}
           </div>
         )}
       </header>

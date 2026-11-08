@@ -1,0 +1,440 @@
+{
+  "format_version": 1,
+  "candidate_id": "banana-bread#$/@graph[7]",
+  "catalog_key": "my-favorite-banana-bread",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "banana-bread",
+    "manifest_url": "https://sallysbakingaddiction.com/best-banana-bread-recipe/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "banana-bread.json",
+    "artifact_sha256": "74b731174d87b1fef58450d9f1138df2cbf1911ef7dda9ef1a02874bc5ad60dd",
+    "requested_url": "https://sallysbakingaddiction.com/best-banana-bread-recipe/",
+    "final_url": "https://sallysbakingaddiction.com/best-banana-bread-recipe/",
+    "fetched_at": "2026-09-29T01:45:04.448826341Z",
+    "response_body_sha256": "542e2f62be122970e33a5ff160583da98712383222e0dabc968cb930fe82cc14",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "f1404ac7e20fd097d4d361bd67ca0962bd6073e77954c419442de425525bae7c",
+      "recipe_raw_sha256": "abbeb9d653467521114435eb715500a5b3607f1dc8f01407c84f273717b572d2",
+      "recipe_raw_canonical_sha256": "8651fbc1106d49166af30af9264cd930e5c72e05367708eda46f390da57b605d"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "26e5b99af7332ab3a47a93fb16ff00bef62acf2c6fd3e7b64e632b419a105f3a",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "My Favorite Banana Bread",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://sallysbakingaddiction.com/wp-content/uploads/2018/10/moist-banana-bread-225x225.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "1 loaf",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 10,
+      "max": 10
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 65,
+      "max": 65
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2 cups (250g) all-purpose flour (spooned \u0026amp; leveled)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "All-Purpose Flour",
+          "preparation": "spooned \u0026 leveled",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "all-purpose-flour",
+            "name": "All-Purpose Flour",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "250g alternate measure"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1 teaspoon baking soda",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Baking Soda",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "baking-soda",
+            "name": "Baking Soda",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1/4 teaspoon salt",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "1/2 teaspoon ground cinnamon",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Ground Cinnamon",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "ground-cinnamon",
+            "name": "Ground Cinnamon",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "1/2 cup (8 Tbsp; 113g) unsalted butter, softened to room temperature",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Unsalted Butter",
+          "preparation": "softened to room temperature",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "unsalted-butter",
+            "name": "Unsalted Butter",
+            "store_section": "Dairy",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[4]",
+              "message": "8 Tbsp; 113g alternate measures"
+            }
+          ]
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "3/4 cup (150g) packed light or dark brown sugar",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3/4",
+            "unit": "cup"
+          },
+          "item_phrase": "Brown Sugar",
+          "preparation": "packed",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "brown-sugar",
+            "name": "Brown Sugar",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[5]",
+              "message": "150g alternate measure; light or dark"
+            }
+          ]
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "2 large eggs, at room temperature",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Eggs",
+          "preparation": "large, at room temperature",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "eggs",
+            "name": "Eggs",
+            "store_section": "Dairy",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "1 and 1/2 cups (345g) mashed bananas (about 3–4 ripe bananas)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1 1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Bananas",
+          "preparation": "mashed; ripe",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "bananas",
+            "name": "Bananas",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[7]",
+              "message": "345g alternate measure; about 3–4 bananas"
+            }
+          ]
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "1/3 cup (80g) plain Greek yogurt or full-fat sour cream, at room temperature",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/3",
+            "unit": "cup"
+          },
+          "item_phrase": "Plain Greek Yogurt",
+          "preparation": "at room temperature",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "plain-greek-yogurt",
+            "name": "Plain Greek Yogurt",
+            "store_section": "Dairy",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[8]",
+              "message": "80g alternate measure; full-fat sour cream alternative"
+            }
+          ]
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "1 teaspoon pure vanilla extract",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Pure Vanilla Extract",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "pure-vanilla-extract",
+            "name": "Pure Vanilla Extract",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          }
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "optional: 3/4 cup (90g) chopped pecans or walnuts, or 1 cup (180g) semi-sweet chocolate chips",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3/4",
+            "unit": "cup"
+          },
+          "item_phrase": "Chopped Pecans",
+          "preparation": "chopped",
+          "optional": true,
+          "grocery_proposal": {
+            "state": "create",
+            "key": "chopped-pecans",
+            "name": "Chopped Pecans",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[10]",
+              "message": "90g alternate measure; walnuts or semi-sweet chocolate chips alternatives"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Adjust the oven rack to the lower third position and preheat the oven to 350°F (177°C). Lowering the oven rack prevents the top of your bread from browning too much, too soon. Grease a 9×5-inch loaf pan with nonstick spray. Set aside.",
+        "In a medium bowl, whisk the flour, baking soda, salt, and cinnamon together. Set aside.",
+        "In a large bowl using a handheld or stand mixer fitted with a paddle attachment, beat the butter and brown sugar together on medium-high speed until light and creamy, about 3 minutes. (Here’s a helpful tutorial if you need guidance on how to cream butter and sugar.) With the mixer running on medium speed, add the eggs one at a time, beating well after each addition. Scrape down the sides of the bowl as needed. Beat in the mashed bananas, yogurt/sour cream, and vanilla until combined.",
+        "Add the dry ingredients into the wet ingredients and beat on low speed just until combined. Do not over-mix. Fold in the nuts/chocolate chips, if using. The batter should be thick.",
+        "Pour and spread the batter into the prepared baking pan. Bake for 60–65 minutes, making sure to loosely cover the pan with aluminum foil halfway through, to prevent the top from getting too brown. The bread is done when a toothpick inserted in the center comes out clean with only a few small moist crumbs. Cool the bread in the pan set on a cooling rack for 1 hour. Remove the bread from the pan and place it directly on the rack to cool completely before slicing and serving.",
+        "Store wrapped tightly at room temperature for up to 3 days or in the refrigerator for up to 1 week."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[0].quantity",
+      "message": "dual-unit: Source includes cups and grams; used first source measure."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[1].grocery_item",
+      "message": "backfill: Proposed new grocery item for baking soda."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[3].grocery_item",
+      "message": "backfill: Proposed new grocery item for ground cinnamon."
+    },
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[4].quantity",
+      "message": "dual-unit: Source includes cups, tablespoons, and grams; used first source measure."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[5]",
+      "message": "alternative: Source allows light or dark brown sugar; retained existing brown sugar item."
+    },
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[5].quantity",
+      "message": "dual-unit: Source includes cups and grams; used first source measure."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[7].grocery_item",
+      "message": "backfill: Proposed new grocery item for bananas."
+    },
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[7].quantity",
+      "message": "dual-unit: Source includes cups, grams, and approximate count range; used first source measure."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[8]",
+      "message": "alternative: Source allows plain Greek yogurt or full-fat sour cream; selected first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[8].grocery_item",
+      "message": "backfill: Proposed new grocery item for plain Greek yogurt."
+    },
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[8].quantity",
+      "message": "dual-unit: Source includes cups and grams; used first source measure."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[9].grocery_item",
+      "message": "backfill: Proposed new grocery item for pure vanilla extract."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[10]",
+      "message": "alternative: Source allows pecans, walnuts, or semi-sweet chocolate chips; selected first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[10].grocery_item",
+      "message": "backfill: Proposed new grocery item for chopped pecans."
+    },
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[10].quantity",
+      "message": "dual-unit: Source includes cups and grams for alternatives; used first source measure."
+    },
+    {
+      "severity": "blocker",
+      "field": "unattended",
+      "message": "source-note: Cook time is PT1H5M and baking is clearly passive; cooling/rest time appears in total time but is not represented as cookTime."
+    }
+  ],
+  "source_notes": [],
+  "decisions": [
+    {
+      "field": "instruction_sections[0].steps",
+      "state": "unresolved",
+      "rationale": "rewritten: Decoded HTML entities in instruction text."
+    },
+    {
+      "field": "yield",
+      "state": "unresolved",
+      "rationale": "conflict-resolved: recipeYield contained both \"1\" and \"1 loaf\"; used more useful literal yield."
+    },
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed prepTime PT10M as hands-on time."
+    },
+    {
+      "field": "unattended",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed cookTime PT1H5M as unattended baking time."
+    }
+  ]
+}

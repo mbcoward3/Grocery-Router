@@ -24,6 +24,7 @@ WORKDIR /app
 COPY --from=api /out/grocery-router /usr/local/bin/grocery-router
 COPY --from=web /src/web/dist ./web/dist
 COPY --chown=grocery-router:grocery-router corpus ./corpus
+COPY --chown=grocery-router:grocery-router catalog ./catalog
 COPY --chown=grocery-router:grocery-router archive ./archive
 COPY --chown=grocery-router:grocery-router sources ./sources
 COPY --chown=grocery-router:grocery-router scripts/container-entrypoint.sh /usr/local/bin/container-entrypoint

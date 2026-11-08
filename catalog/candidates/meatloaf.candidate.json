@@ -1,0 +1,467 @@
+{
+  "format_version": 1,
+  "candidate_id": "meatloaf#$/@graph[7]",
+  "catalog_key": "meatloaf",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "meatloaf",
+    "manifest_url": "https://natashaskitchen.com/meatloaf-recipe/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "meatloaf.json",
+    "artifact_sha256": "bff8ad632d8a9a23e2f3352c5c3d8f2e2ec87c528a6ab4aa2c9f5aeff1630c7c",
+    "requested_url": "https://natashaskitchen.com/meatloaf-recipe/",
+    "final_url": "https://natashaskitchen.com/meatloaf-recipe/",
+    "fetched_at": "2026-09-29T01:45:03.072901273Z",
+    "response_body_sha256": "ee93bf880ac28ecef7230e9dfbe5835ce8fb3841cd90708f421b93241b69d137",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "35dc2e9796757b41fb03439874d443a70a976dcf9f09b94ecfe98447558799dd",
+      "recipe_raw_sha256": "a2d312ac9107b908524d50236098eb13a7796b708c0e96b42f462900e0a8e626",
+      "recipe_raw_canonical_sha256": "508f38150e4310c94f4222481ece4ceb2561fc9d579a9b91b7b2182fde8df98d"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "8e3ba75fa93af033afa911e2c7494456c7e93b5a39ca3439d10eb7ddc33aa52c",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Meatloaf Recipe",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://natashaskitchen.com/wp-content/uploads/2024/10/Best-Meatloaf-Recipe-2.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "8 servings",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 20,
+      "max": 22
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 70,
+      "max": 75
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2 lbs ground beef (85% or 80% lean*)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "lb"
+          },
+          "item_phrase": "Ground Beef",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "ground-beef",
+            "name": "Ground Beef",
+            "store_section": "Meat",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "85% or 80% lean"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1  med onion ((1 cup), finely chopped)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Onion",
+          "preparation": "finely chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "onion",
+            "name": "Onion",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "med; (1 cup)"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1 tsp olive oil",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Olive Oil",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "olive-oil",
+            "name": "Olive Oil",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "2  large eggs",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Eggs",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "eggs",
+            "name": "Eggs",
+            "store_section": "Dairy",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[3]",
+              "message": "large"
+            }
+          ]
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "3  garlic cloves (minced)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3",
+            "unit": "clove"
+          },
+          "item_phrase": "Garlic",
+          "preparation": "minced",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "2 Tbsp ketchup",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Ketchup",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "ketchup",
+            "name": "Ketchup",
+            "store_section": "Condiments",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "3 Tbsp fresh parsley (finely chopped)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Fresh Parsley",
+          "preparation": "finely chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "fresh-parsley",
+            "name": "Fresh Parsley",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "3/4 cup Panko breadcrumbs (or gluten-free bread crumbs)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3/4",
+            "unit": "cup"
+          },
+          "item_phrase": "Panko Breadcrumbs",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "panko-breadcrumbs",
+            "name": "Panko Breadcrumbs",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[7]",
+              "message": "or gluten-free bread crumbs"
+            }
+          ]
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "1/3 cup milk",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/3",
+            "unit": "cup"
+          },
+          "item_phrase": "Milk",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "milk",
+            "name": "Milk",
+            "store_section": "Dairy",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "1 tsp salt (or to taste)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[9]",
+              "message": "or to taste"
+            }
+          ]
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "1 tsp Italian seasoning",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Italian Seasoning",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "italian-seasoning",
+            "name": "Italian Seasoning",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 11,
+          "source_text": "1/2 tsp ground black pepper",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Black Pepper",
+          "preparation": "ground",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-pepper",
+            "name": "Black Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 12,
+          "source_text": "3/4 cup ketchup",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3/4",
+            "unit": "cup"
+          },
+          "item_phrase": "Ketchup",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "ketchup",
+            "name": "Ketchup",
+            "store_section": "Condiments",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 13,
+          "source_text": "1 ½ tsp white vinegar",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1 1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "White Vinegar",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "white-vinegar",
+            "name": "White Vinegar",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 14,
+          "source_text": "2 Tbsp brown sugar",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Brown Sugar",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "brown-sugar",
+            "name": "Brown Sugar",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 15,
+          "source_text": "1/2 tsp garlic powder",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Garlic Powder",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic-powder",
+            "name": "Garlic Powder",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 16,
+          "source_text": "1/2 tsp onion powder",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Onion Powder",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "onion-powder",
+            "name": "Onion Powder",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Prep - Line a rimmed baking sheet with parchment paper or foil for easier cleanup, and preheat oven to 350°F.",
+        "Sautee Onions - Set a medium skillet over medium heat. Add 1 tsp oil and chopped onion and saute, stirring occasionally, until softened and golden, about 5-7 minutes. Transfer to a plate to cool.",
+        "Make the Meatloaf Mixture - In a large bowl, add all of the meatloaf ingredients and the cooled onions and mix just until well combined (your hands are your best tool for mixing - put on disposable gloves if you want to).",
+        "Shape Meatloaf and Bake - Add meat to the pan and shape it into a meatloaf about 8 inches long, 4 inches wide, and 3 inches tall. Bake uncovered at 350˚F for 40 minutes.",
+        "Make the Sauce - In a small bowl, add the sauce ingredients and stir to combine.",
+        "Add the Glaze - Spread the sauce over the Meatloaf, then return to the oven and bake an additional 20 minutes or until the internal temperature is 160˚F on an instant-read thermometer. Rest the meatloaf for 10-15 minutes before serving and it will be much easier to slice."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[0]",
+      "message": "source-note: Asterisk after lean percentage references an absent source note body."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[7]",
+      "message": "alternative: Source lists Panko breadcrumbs or gluten-free bread crumbs; selected first-listed baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "hands_on",
+      "message": "ambiguous: Prep time is 15 minutes, plus active saute time of 5-7 minutes from instructions; sauce/mixing/shaping active time overlaps source prep/cook timing uncertainty."
+    }
+  ],
+  "source_notes": [
+    {
+      "reference": "*",
+      "state": "unresolved"
+    }
+  ],
+  "decisions": [
+    {
+      "field": "unattended",
+      "state": "unresolved",
+      "rationale": "backfilled: Proposed unattended time from passive baking 40 minutes, additional baking 20 minutes, and resting 10-15 minutes."
+    },
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Proposed hands-on time from source prep time plus active onion saute range."
+    }
+  ]
+}

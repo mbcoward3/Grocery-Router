@@ -6,6 +6,7 @@ package store
 
 import (
 	"database/sql"
+	"encoding/json"
 	"time"
 )
 
@@ -32,6 +33,31 @@ type AuthSession struct {
 	ClientMetadata    sql.NullString `db:"client_metadata" json:"client_metadata"`
 }
 
+type CatalogAppliedRelease struct {
+	ReleaseID     string          `db:"release_id" json:"release_id"`
+	ReleaseDigest string          `db:"release_digest" json:"release_digest"`
+	Manifest      json.RawMessage `db:"manifest" json:"manifest"`
+	AppliedAt     time.Time       `db:"applied_at" json:"applied_at"`
+}
+
+type CatalogRecipe struct {
+	ID                   int64           `db:"id" json:"id"`
+	Key                  string          `db:"key" json:"key"`
+	Name                 string          `db:"name" json:"name"`
+	Status               string          `db:"status" json:"status"`
+	RecipeDocument       json.RawMessage `db:"recipe_document" json:"recipe_document"`
+	SourceIdentity       json.RawMessage `db:"source_identity" json:"source_identity"`
+	SemanticProfile      json.RawMessage `db:"semantic_profile" json:"semantic_profile"`
+	SourceUrl            sql.NullString  `db:"source_url" json:"source_url"`
+	SourceAttribution    string          `db:"source_attribution" json:"source_attribution"`
+	DocumentDigest       string          `db:"document_digest" json:"document_digest"`
+	SourceIdentityDigest string          `db:"source_identity_digest" json:"source_identity_digest"`
+	SelectedRecipeDigest string          `db:"selected_recipe_digest" json:"selected_recipe_digest"`
+	ReleaseID            string          `db:"release_id" json:"release_id"`
+	ReleaseDigest        string          `db:"release_digest" json:"release_digest"`
+	PublishedAt          time.Time       `db:"published_at" json:"published_at"`
+}
+
 type GroceryItem struct {
 	ID             int64  `db:"id" json:"id"`
 	Key            string `db:"key" json:"key"`
@@ -48,6 +74,16 @@ type Household struct {
 	Name      string    `db:"name" json:"name"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+type HouseholdCatalogMembership struct {
+	HouseholdID           string    `db:"household_id" json:"household_id"`
+	CatalogRecipeID       int64     `db:"catalog_recipe_id" json:"catalog_recipe_id"`
+	MaterializedRecipeID  int64     `db:"materialized_recipe_id" json:"materialized_recipe_id"`
+	State                 string    `db:"state" json:"state"`
+	CatalogDocumentDigest string    `db:"catalog_document_digest" json:"catalog_document_digest"`
+	CreatedAt             time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt             time.Time `db:"updated_at" json:"updated_at"`
 }
 
 type HouseholdMembership struct {

@@ -1,0 +1,625 @@
+{
+  "format_version": 1,
+  "candidate_id": "creamy-white-chicken-chili#$/@graph[7]",
+  "catalog_key": "creamy-white-chicken-chili",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "creamy-white-chicken-chili",
+    "manifest_url": "https://www.budgetbytes.com/creamy-white-chicken-chili/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "creamy-white-chicken-chili.json",
+    "artifact_sha256": "59cb41bb2e85e274d3f53d60936cfc06c5f731c3f2043e6d7a8457867273e183",
+    "requested_url": "https://www.budgetbytes.com/creamy-white-chicken-chili/",
+    "final_url": "https://www.budgetbytes.com/creamy-white-chicken-chili/",
+    "fetched_at": "2026-09-29T01:45:09.212678646Z",
+    "response_body_sha256": "0da2d1913fec2a1ee9260ef68bc1aac7bb94613090d322093d7fba7e5ca1fecd",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[7]",
+      "json_ld_block_sha256": "c4dd91d517dbf25f83b995727c75cd1601b4cdcd6aa372019fc84a48b16818ee",
+      "recipe_raw_sha256": "f3ab477b56b1c9a1e0f8d2d61105bb477668d2ce71c6b3531a649dc59b9b6256",
+      "recipe_raw_canonical_sha256": "6b9636a0f13236b200b3b554ea8cdb4374482fa4f27539f844b1b54f5b570557"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "a0a3e3827a49531e95150354f762f51a0723f074168507de157a9fdd5e9d9939",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Creamy White Chicken Chili",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://www.budgetbytes.com/wp-content/uploads/2022/11/White_Chicken_Chili_Bowl.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "8 servings (1.25 cups each)",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 10,
+      "max": 10
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "resolved",
+    "value": {
+      "min": 30,
+      "max": 30
+    },
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "1  yellow onion ($0.70)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Yellow Onion",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "yellow-onion",
+            "name": "Yellow Onion",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "$0.70"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "4  garlic cloves ($0.16)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "clove"
+          },
+          "item_phrase": "Garlic",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "$0.16"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1  jalapeño ($0.24)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Jalapeño",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "jalapeno",
+            "name": "Jalapeño",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[2]",
+              "message": "$0.24"
+            }
+          ]
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "1 Tbsp olive oil ($0.22)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Olive Oil",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "olive-oil",
+            "name": "Olive Oil",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[3]",
+              "message": "$0.22"
+            }
+          ]
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "1½ lbs. chicken thighs (boneless \u0026amp; skinless, $3.48*)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1 1/2",
+            "unit": "lb"
+          },
+          "item_phrase": "Boneless Skinless Chicken Thighs",
+          "preparation": "boneless \u0026 skinless",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "boneless-skinless-chicken-thighs",
+            "name": "Boneless Skinless Chicken Thighs",
+            "store_section": "Meat",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[4]",
+              "message": "$3.48*"
+            }
+          ]
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "2 15 oz. cans cannellini beans (drained and rinsed, $1.88)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "package": {
+              "count": "2",
+              "type": "can",
+              "size": "15",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Cannellini Beans",
+          "preparation": "drained and rinsed",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "cannellini-beans",
+            "name": "Cannellini Beans",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[5]",
+              "message": "$1.88"
+            }
+          ]
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "15 oz. can pinto beans (drained and rinsed, $0.94)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "package": {
+              "count": "1",
+              "type": "can",
+              "size": "15",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Pinto Beans",
+          "preparation": "drained and rinsed",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "pinto-beans",
+            "name": "Pinto Beans",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[6]",
+              "message": "$0.94"
+            }
+          ]
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "7 oz. can diced green chiles ($0.97)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "package": {
+              "count": "1",
+              "type": "can",
+              "size": "7",
+              "unit": "oz"
+            }
+          },
+          "item_phrase": "Diced Green Chiles",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "diced-green-chiles",
+            "name": "Diced Green Chiles",
+            "store_section": "Pantry",
+            "shopping_mode": "counted",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[7]",
+              "message": "$0.97"
+            }
+          ]
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "1 Tbsp ground cumin ($0.30)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Ground Cumin",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "ground-cumin",
+            "name": "Ground Cumin",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[8]",
+              "message": "$0.30"
+            }
+          ]
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "1 tsp dried oregano ($0.10)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tsp"
+          },
+          "item_phrase": "Dried Oregano",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "dried-oregano",
+            "name": "Dried Oregano",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[9]",
+              "message": "$0.10"
+            }
+          ]
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "¼ tsp smoked paprika ($0.02)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "tsp"
+          },
+          "item_phrase": "Smoked Paprika",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "smoked-paprika",
+            "name": "Smoked Paprika",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[10]",
+              "message": "$0.02"
+            }
+          ]
+        },
+        {
+          "source_line_index": 11,
+          "source_text": "¼ tsp cayenne pepper ($0.02)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "tsp"
+          },
+          "item_phrase": "Cayenne Pepper",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "cayenne-pepper",
+            "name": "Cayenne Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[11]",
+              "message": "$0.02"
+            }
+          ]
+        },
+        {
+          "source_line_index": 12,
+          "source_text": "¼ tsp garlic powder ($0.02)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "tsp"
+          },
+          "item_phrase": "Garlic Powder",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic-powder",
+            "name": "Garlic Powder",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[12]",
+              "message": "$0.02"
+            }
+          ]
+        },
+        {
+          "source_line_index": 13,
+          "source_text": "¼ tsp black pepper (freshly cracked, $0.02)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "tsp"
+          },
+          "item_phrase": "Black Pepper",
+          "preparation": "freshly cracked",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-pepper",
+            "name": "Black Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[13]",
+              "message": "$0.02"
+            }
+          ]
+        },
+        {
+          "source_line_index": 14,
+          "source_text": "3 cups chicken broth ($0.39)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "3",
+            "unit": "cup"
+          },
+          "item_phrase": "Chicken Broth",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chicken-broth",
+            "name": "Chicken Broth",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[14]",
+              "message": "$0.39"
+            }
+          ]
+        },
+        {
+          "source_line_index": 15,
+          "source_text": "1 cup frozen corn ($0.78)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "cup"
+          },
+          "item_phrase": "Frozen Corn",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "frozen-corn",
+            "name": "Frozen Corn",
+            "store_section": "Frozen",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[15]",
+              "message": "$0.78"
+            }
+          ]
+        },
+        {
+          "source_line_index": 16,
+          "source_text": "4 oz. cream cheese ($0.93**)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "4",
+            "unit": "oz"
+          },
+          "item_phrase": "Cream Cheese",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "cream-cheese",
+            "name": "Cream Cheese",
+            "store_section": "Dairy",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[16]",
+              "message": "$0.93**"
+            }
+          ]
+        },
+        {
+          "source_line_index": 17,
+          "source_text": "½ cup sour cream ($0.49**)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Sour Cream",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "sour-cream",
+            "name": "Sour Cream",
+            "store_section": "Dairy",
+            "shopping_mode": "presence-only",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[17]",
+              "message": "$0.49**"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Dice the onion and mince the garlic. Deseed then dice the jalapeño. Add the onion, garlic, and jalapeño to a large pot with the olive oil. Sauté over medium heat until the onions have softened.",
+        "Add the chicken thighs, cannellini beans, pinto beans, diced green chiles, cumin, oregano, smoked paprika, cayenne pepper, garlic powder, pepper, and chicken broth to the pot. Stir to combine.",
+        "Place a lid on the pot and turn the heat up to medium-high. Allow the chili to come up to a boil. Once boiling, turn the heat down to medium-low and let the chili simmer for 30 minutes, stirring occasionally.",
+        "After 30 minutes, remove the chicken thighs and shred with two forks. Add the shredded meat back to the pot along with the corn. Stir to combine and heat through.",
+        "Cut the cream cheese into chunks and stir it into the chili until melted. Stir in the sour cream. To further thicken the chili, smash some of the beans against the side of the pot.",
+        "Taste the chili and adjust the seasoning to your liking. Serve hot with your favorite toppings!"
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[2].grocery_item",
+      "message": "backfill: Proposed new grocery item for jalapeño."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[5].grocery_item",
+      "message": "backfill: Proposed new grocery item for cannellini beans."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[7].grocery_item",
+      "message": "backfill: Proposed new grocery item for diced green chiles."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[10].grocery_item",
+      "message": "backfill: Proposed new grocery item for smoked paprika."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[11].grocery_item",
+      "message": "backfill: Proposed new grocery item for cayenne pepper."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[15].grocery_item",
+      "message": "backfill: Proposed new grocery item for frozen corn."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[4].note",
+      "message": "source-note: Source references * but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[16].note",
+      "message": "source-note: Source references ** but note body is absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[17].note",
+      "message": "source-note: Source references ** but note body is absent from JSON-LD."
+    }
+  ],
+  "source_notes": [
+    {
+      "reference": "*",
+      "state": "unresolved"
+    },
+    {
+      "reference": "**",
+      "state": "unresolved"
+    }
+  ],
+  "decisions": [
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Used prepTime PT10M as hands-on time."
+    },
+    {
+      "field": "unattended",
+      "state": "unresolved",
+      "rationale": "backfilled: Used the clearly passive 30-minute simmer step as unattended time."
+    }
+  ]
+}

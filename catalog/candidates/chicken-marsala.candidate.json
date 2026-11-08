@@ -1,0 +1,548 @@
+{
+  "format_version": 1,
+  "candidate_id": "chicken-marsala#$/@graph[6]",
+  "catalog_key": "chicken-marsala",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "chicken-marsala",
+    "manifest_url": "https://www.recipetineats.com/chicken-marsala/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "chicken-marsala.json",
+    "artifact_sha256": "2b428c913be4aaa1c844c1e66708997c368e35ef806202700f4c7c0d239acdb4",
+    "requested_url": "https://www.recipetineats.com/chicken-marsala/",
+    "final_url": "https://www.recipetineats.com/chicken-marsala/",
+    "fetched_at": "2026-09-29T01:45:04.649735014Z",
+    "response_body_sha256": "f713962bdecef2c35c01349ccddd92aef72d0df76e04aca3e1cbd2c24608acb9",
+    "selected": {
+      "candidate_index": 0,
+      "script_index": 0,
+      "json_path": "$/@graph[6]",
+      "json_ld_block_sha256": "6f0b647fed1249431256681f4c4e320e33551997da51ff8b0c4136d63378b572",
+      "recipe_raw_sha256": "df0ebc3df35ce35abaa92a3251f1d9e91401a3c808da6dbea4a2284f378322ec",
+      "recipe_raw_canonical_sha256": "15a85470c7b5c1760be2950d2c80ec8ed73578fe2f1c63ade0c665b3e0d38c26"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "a00b88f901d184792bb81787069b1e3c56b952d58550d9d089e754bb8aa0f9e2",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Chicken Marsala",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://www.recipetineats.com/tachyon/2023/06/Chicken-Marsala_0b-SQ.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "4",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "resolved",
+    "value": {
+      "min": 25,
+      "max": 25
+    },
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "unresolved",
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2 large chicken breasts ((300g/10oz each), cut in half horizontally (or 4 thighs, Note 1))",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each",
+            "equivalents": [
+              "300 g / 10 oz each"
+            ]
+          },
+          "item_phrase": "Chicken Breast",
+          "preparation": "large, cut in half horizontally",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chicken-breast",
+            "name": "Chicken Breast",
+            "store_section": "Meat",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[0]",
+              "message": "300g/10oz each; or 4 thighs, Note 1"
+            }
+          ]
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "1/2 tsp cooking salt / kosher salt",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "cooking salt / kosher salt"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1/2 tsp black pepper",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Black Pepper",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-pepper",
+            "name": "Black Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "1/4 cup flour (, plain/all-purpose)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "cup"
+          },
+          "item_phrase": "All-Purpose Flour",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "all-purpose-flour",
+            "name": "All-Purpose Flour",
+            "store_section": "Baking",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[3]",
+              "message": "plain/all-purpose"
+            }
+          ]
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "2 tbsp extra virgin olive oil",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Olive Oil",
+          "preparation": "extra virgin",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "olive-oil",
+            "name": "Olive Oil",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "2 tbsp / 30g  unsalted butter",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tbsp",
+            "equivalents": [
+              "30 g"
+            ]
+          },
+          "item_phrase": "Unsalted Butter",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "unsalted-butter",
+            "name": "Unsalted Butter",
+            "store_section": "Dairy",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[5]",
+              "message": "30g"
+            }
+          ]
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "2  eschalots ((US: shallots), peeled and cut into 1cm / 1/3\" squares (Note 2))",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Echalots",
+          "preparation": "peeled and cut into 1cm / 1/3\" squares",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "eschalots",
+            "name": "Echalots",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[6]",
+              "message": "US: shallots; Note 2"
+            }
+          ]
+        },
+        {
+          "source_line_index": 7,
+          "source_text": "1  garlic (, finely minced)",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Garlic",
+          "preparation": "finely minced",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 8,
+          "source_text": "2 cups white mushrooms (, sliced 0.5cm / 1/5\u0026quot; thick)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "cup"
+          },
+          "item_phrase": "Mushrooms",
+          "preparation": "white, sliced 0.5cm / 1/5\" thick",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "mushrooms",
+            "name": "Mushrooms",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 9,
+          "source_text": "1 cup dry marsala wine ((Note 3))",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "cup"
+          },
+          "item_phrase": "Dry Marsala Wine",
+          "preparation": "dry",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "dry-marsala-wine",
+            "name": "Dry Marsala Wine",
+            "store_section": "Wine \u0026 Beer",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[9]",
+              "message": "Note 3"
+            }
+          ]
+        },
+        {
+          "source_line_index": 10,
+          "source_text": "1/2 cup chicken stock/broth (, low sodium)",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Chicken Broth",
+          "preparation": "low sodium",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "chicken-broth",
+            "name": "Chicken Broth",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[10]",
+              "message": "chicken stock/broth"
+            }
+          ]
+        },
+        {
+          "source_line_index": 11,
+          "source_text": "1/2 cup thickened / heavy cream ( (Note 4))",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/2",
+            "unit": "cup"
+          },
+          "item_phrase": "Heavy Cream",
+          "grocery_proposal": {
+            "state": "create",
+            "key": "heavy-cream",
+            "name": "Heavy Cream",
+            "store_section": "Dairy",
+            "shopping_mode": "measured",
+            "rationale": "New catalog grocery definition requires review."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[11]",
+              "message": "thickened / heavy cream; Note 4"
+            }
+          ]
+        },
+        {
+          "source_line_index": 12,
+          "source_text": "1/4 tsp cooking salt / kosher salt",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/4",
+            "unit": "tsp"
+          },
+          "item_phrase": "Salt",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "salt",
+            "name": "Salt",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[12]",
+              "message": "cooking salt / kosher salt"
+            }
+          ]
+        },
+        {
+          "source_line_index": 13,
+          "source_text": "1/8 tsp black pepper",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1/8",
+            "unit": "tsp"
+          },
+          "item_phrase": "Black Pepper",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "black-pepper",
+            "name": "Black Pepper",
+            "store_section": "Spices",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 14,
+          "source_text": "1 tbsp finely chopped parsley (, for garnish (optional))",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Fresh Parsley",
+          "preparation": "finely chopped, for garnish",
+          "optional": true,
+          "grocery_proposal": {
+            "state": "match",
+            "key": "fresh-parsley",
+            "name": "Fresh Parsley",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          }
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Chicken escalopes:",
+      "steps": [
+        "Pound - Cut each breast in half to form 2 thin steaks. Cover with a freezer bag or Go-Between (Note 5) and pound to 1 cm / 0.4″ thickness using a meat mallet or rolling pin. This tenderises and ensures even cooking of the chicken.",
+        "Dust - Sprinkle the surface with half the salt, pepper then flour. Lightly rub flour across surface, turn and repeat with remaining salt, pepper and flour. Shake excess flour off each piece just before cooking.",
+        "Cook - Put half the butter and oil in a large non-stick pan over medium high heat. Once the butter is melted and foamy, place chicken in, then cook for 3 to 4 minutes until it's gorgeously golden and crispy. Turn and cook the other side for 2 minutes. Remove onto a plate."
+      ]
+    },
+    {
+      "name": "Creamy marsala sauce:",
+      "steps": [
+        "Sauté aromatics - In the same pan, add remaining butter and oil. Once butter is melted, add eschalots and garlic. Cook for 1 minute.",
+        "Cook mushrooms - Add mushrooms. Cook for 3 minutes, stirring regularly.",
+        "Reduce marsala - Add marsala, turn up heat to high and boil for 3 minutes or until reduced by half.",
+        "Thicken sauce - Add chicken stock, cream, salt and pepper. Stir, then lower heat so it's simmering (not boiling rapidly) and simmer for 3 to 5 minutes until the sauce thickens to a cream consistency (not too thick, will thicken more).",
+        "Rewarm chicken - Nestle chicken into sauce and leave for 30 seconds to reheat.",
+        "Serve! Take off the stove. Sprinkle with parsley, serve over starchy vehicle of choice (I chose mash. Rice, small pasta, polenta or bread for plate mopping also work well!)."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[0].quantity",
+      "message": "dual-unit: Source displays 300 g / 10 oz per breast; count is the single arithmetic requirement and both masses remain provenance."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[0]",
+      "message": "alternative: Source lists chicken breasts or 4 thighs; selected chicken breasts as baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "source_notes",
+      "message": "source-note: Note 1 is referenced but absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[1]",
+      "message": "alternative: Source lists cooking salt / kosher salt; selected generic salt as proposal."
+    },
+    {
+      "severity": "warning",
+      "field": "ingredient_sections[0].ingredients[5].quantity",
+      "message": "dual-unit: Source lists 2 tbsp / 30g; used first measure and preserved gram amount in source_text/note."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[6].grocery_item",
+      "message": "backfill: Proposed new grocery item for eschalots."
+    },
+    {
+      "severity": "blocker",
+      "field": "source_notes",
+      "message": "source-note: Note 2 is referenced but absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[7].quantity",
+      "message": "unresolved: Source says '1 garlic' without supported unit or clear piece noun; quantity left unspecified."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[9].grocery_item",
+      "message": "backfill: Proposed new grocery item for dry marsala wine."
+    },
+    {
+      "severity": "blocker",
+      "field": "source_notes",
+      "message": "source-note: Note 3 is referenced but absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[11].grocery_item",
+      "message": "backfill: Proposed new grocery item for heavy cream."
+    },
+    {
+      "severity": "blocker",
+      "field": "source_notes",
+      "message": "source-note: Note 4 is referenced but absent from JSON-LD."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[12]",
+      "message": "alternative: Source lists cooking salt / kosher salt; selected generic salt as proposal."
+    },
+    {
+      "severity": "blocker",
+      "field": "instruction_sections[0].steps[0]",
+      "message": "source-note: Note 5 is referenced but absent from JSON-LD."
+    }
+  ],
+  "source_notes": [
+    {
+      "reference": "Note 1",
+      "state": "unresolved"
+    },
+    {
+      "reference": "Note 2",
+      "state": "unresolved"
+    },
+    {
+      "reference": "Note 3",
+      "state": "unresolved"
+    },
+    {
+      "reference": "Note 4",
+      "state": "unresolved"
+    },
+    {
+      "reference": "Note 5",
+      "state": "unresolved"
+    }
+  ],
+  "decisions": [
+    {
+      "field": "hands_on",
+      "state": "unresolved",
+      "rationale": "backfilled: Parsed prepTime PT10M and active stovetop cookTime PT15M as 25 minutes hands-on."
+    },
+    {
+      "field": "ingredient_sections[0].ingredients[3].grocery_item",
+      "state": "unresolved",
+      "rationale": "rewritten: Mapped plain/all-purpose flour to existing all-purpose-flour item."
+    },
+    {
+      "field": "ingredient_sections[0].ingredients[10].grocery_item",
+      "state": "unresolved",
+      "rationale": "rewritten: Mapped chicken stock/broth to existing chicken-broth item."
+    }
+  ]
+}

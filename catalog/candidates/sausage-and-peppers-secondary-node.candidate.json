@@ -1,0 +1,263 @@
+{
+  "format_version": 1,
+  "candidate_id": "sausage-and-peppers#$",
+  "catalog_key": "sausage-and-peppers-secondary-node",
+  "state": "reviewable",
+  "source": {
+    "pilot_implementation": "grocery-router-go-jsonld/v1",
+    "pilot_format_version": 1,
+    "manifest_id": "sausage-and-peppers",
+    "manifest_url": "https://chefjeanpierre.com/recipes/sausage-and-peppers/",
+    "run_index_sha256": "fd33e0dcb89a162baf7caa7f0c400e51e8e105098ee21c61cefade9588807bb3",
+    "artifact_file": "sausage-and-peppers.json",
+    "artifact_sha256": "0b3f1ef4bc250e2ae73a7e89bb2e1a590fb1298a1e481293228daf486d024883",
+    "requested_url": "https://chefjeanpierre.com/recipes/sausage-and-peppers/",
+    "final_url": "https://chefjeanpierre.com/recipes/sausage-and-peppers/",
+    "fetched_at": "2026-09-29T01:45:02.686933757Z",
+    "response_body_sha256": "19bb185413a7f130b3e48d4feb1ce30da8beed3f74ead4909e6d39b8e8bd8696",
+    "selected": {
+      "candidate_index": 1,
+      "script_index": 1,
+      "json_path": "$",
+      "json_ld_block_sha256": "9761b7d6360a3d91591d9ab6b248a021ef38080efa0127138d4d1f9de6774bd1",
+      "recipe_raw_sha256": "921660a4c370b728e1f365f082835f9425b31ea16cf6b45d6ee64b9cd8911f92",
+      "recipe_raw_canonical_sha256": "745d208726f147d98b972f4ce9a239308b2bcf8cadf5df2ebab33998cc41b3e6"
+    }
+  },
+  "agent": {
+    "kind": "pi-proposed",
+    "provider": "openai-codex",
+    "model": "gpt-5.5",
+    "prompt_sha256": "2c6d193ac2900ef33e8fc24db56cb341af3fd6b3abee1c8d066c1421961d59ed",
+    "input_sha256": "",
+    "output_sha256": "fabb303b06830685d58036d7346dab139b6fa3ac8df7bd602d95105eb1e1c700",
+    "run_at": "2026-09-29T04:00:00Z"
+  },
+  "name": {
+    "state": "resolved",
+    "value": "Sausage and Peppers Recipe",
+    "provenance": "pi-proposed"
+  },
+  "image_url": {
+    "state": "resolved",
+    "value": "https://eadn-wc02-12309146.nxedge.io/wp-content/uploads/2022/09/The-best-Sausage-and-Pepper-Recipe.jpg",
+    "provenance": "pi-proposed"
+  },
+  "yield": {
+    "state": "resolved",
+    "value": "4 Servings",
+    "provenance": "pi-proposed"
+  },
+  "hands_on": {
+    "state": "unresolved",
+    "provenance": "pi-proposed"
+  },
+  "unattended": {
+    "state": "unresolved",
+    "provenance": "pi-proposed"
+  },
+  "ingredient_sections": [
+    {
+      "name": "Ingredients",
+      "ingredients": [
+        {
+          "source_line_index": 0,
+          "source_text": "2  large Italian Sausages",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "each"
+          },
+          "item_phrase": "Italian Sausage",
+          "preparation": "large",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "italian-sausage",
+            "name": "Italian Sausage",
+            "store_section": "Meat",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 1,
+          "source_text": "Olive Oil, the Chef uses Garlic Olive Oil",
+          "quantity": {
+            "kind": "unspecified"
+          },
+          "item_phrase": "Olive Oil",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "olive-oil",
+            "name": "Olive Oil",
+            "store_section": "Pantry",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[1]",
+              "message": "the Chef uses Garlic Olive Oil"
+            }
+          ]
+        },
+        {
+          "source_line_index": 2,
+          "source_text": "1 cup Onion sliced",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "cup"
+          },
+          "item_phrase": "Onion",
+          "preparation": "sliced",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "onion",
+            "name": "Onion",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 3,
+          "source_text": "1  Green Bell Pepper sliced",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Green Bell Pepper",
+          "preparation": "sliced",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "green-bell-pepper",
+            "name": "Green Bell Pepper",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 4,
+          "source_text": "1  Red Bell Pepper sliced",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "each"
+          },
+          "item_phrase": "Red Bell Pepper",
+          "preparation": "sliced",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "red-bell-pepper",
+            "name": "Red Bell Pepper",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        },
+        {
+          "source_line_index": 5,
+          "source_text": "2 teaspoons of Thyme \u0026amp; Rosemary freshly chopped, if dry use half",
+          "quantity": {
+            "kind": "exact",
+            "amount": "2",
+            "unit": "tsp"
+          },
+          "item_phrase": "Fresh Thyme",
+          "preparation": "freshly chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "fresh-thyme",
+            "name": "Fresh Thyme",
+            "store_section": "Produce",
+            "shopping_mode": "measured",
+            "rationale": "Exact existing key proposal."
+          },
+          "issues": [
+            {
+              "severity": "warning",
+              "field": "ingredient_sections[0].ingredients[5]",
+              "message": "Thyme \u0026 Rosemary; if dry use half"
+            }
+          ]
+        },
+        {
+          "source_line_index": 6,
+          "source_text": "1 tablespoon Garlic chopped",
+          "quantity": {
+            "kind": "exact",
+            "amount": "1",
+            "unit": "tbsp"
+          },
+          "item_phrase": "Garlic",
+          "preparation": "chopped",
+          "grocery_proposal": {
+            "state": "match",
+            "key": "garlic",
+            "name": "Garlic",
+            "store_section": "Produce",
+            "shopping_mode": "counted",
+            "rationale": "Exact existing key proposal."
+          }
+        }
+      ]
+    }
+  ],
+  "instruction_sections": [
+    {
+      "name": "Method",
+      "steps": [
+        "Steam the sausage in a frying pan with a cover like the chef did in the video. Let cool at least one hour to let the pork fat congeal so that when you cut it on your cutting board you do not lose all the juices."
+      ]
+    },
+    {
+      "name": "When ready to Eat",
+      "steps": [
+        "In a frying pan add some oil when it is 365ºF / 185ºC add onion and cook until light golden brown, cut the sausage into bite size and add to the onion. When the sausage starts getting golden brown, add your peppers add the herbs and salt and pepper to taste. Cook until the peppers are tender.Just before removing from the heat add the garlic and sauté for one minute."
+      ]
+    }
+  ],
+  "issues": [
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[1].quantity",
+      "message": "unresolved: Olive oil quantity is not specified."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[1].source_text",
+      "message": "alternative: Source mentions garlic olive oil as chef-used alternative; baseline proposed as olive oil."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[5].grocery_item",
+      "message": "ambiguous: Source combines thyme and rosemary in one ingredient; proposed first-listed herb only while preserving combined source text."
+    },
+    {
+      "severity": "blocker",
+      "field": "ingredient_sections[0].ingredients[5].source_text",
+      "message": "alternative: Source says if dry use half; proposed fresh baseline."
+    },
+    {
+      "severity": "blocker",
+      "field": "hands_on",
+      "message": "unresolved: No Schema.org prepTime or cookTime durations provided."
+    },
+    {
+      "severity": "blocker",
+      "field": "unattended",
+      "message": "unresolved: No Schema.org prepTime or cookTime durations provided; cooling time appears in instructions but no total duration is provided."
+    },
+    {
+      "severity": "blocker",
+      "field": "key",
+      "message": "ambiguous: The page exposed a second Recipe node with the same display name; review whether this is duplicate evidence."
+    }
+  ],
+  "source_notes": [],
+  "decisions": []
+}

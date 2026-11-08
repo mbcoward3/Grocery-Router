@@ -31,5 +31,6 @@ function recipe(id: number, name: string): RecipeSummary {
     yield: null,
     handsOn: { minimumMinutes: null, maximumMinutes: null },
     unattended: { minimumMinutes: null, maximumMinutes: null },
+    collectionState: null,
   }
 }
