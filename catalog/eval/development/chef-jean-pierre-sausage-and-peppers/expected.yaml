@@ -1,0 +1,18 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the recipe-intelligence pilot candidate; not yet reviewed by the
+  household. Expected to reject with instruction_ingredient_discrepancy: salt and pepper appear only
+  in the second step ("add the herbs and salt and pepper to taste") and no source line names them
+  (spec §5.6; the §11 default does not auto-add them). Other lines to check while reviewing:
+  line 5 "2 teaspoons of Thyme &amp; Rosemary freshly chopped, if dry use half" is a compound line
+  with no "each", so 2 tsp may be the combined amount (unresolved) rather than 2 tsp of each; and
+  line 1 "Olive Oil, the Chef uses Garlic Olive Oil" has no amount and none of the closed
+  unspecified phrases, so it is unresolved under §5.3. Those would add reason codes; only the
+  discrepancy is listed as required.
+outcome: reject
+categories: [compound]
+instructions_complete: true
+instructions_note: The two steps are short but complete enough to cook from.
+reject:
+  codes: [instruction_ingredient_discrepancy]

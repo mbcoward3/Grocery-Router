@@ -161,6 +161,13 @@ type quantityRationals struct {
 	PackageSize *big.Rat
 }
 
+// Rationals parses a quantity's amount, maximum, and package size as exact rationals after
+// the same checks shared validation applies. Values that are absent from the quantity are nil.
+func (q Quantity) Rationals() (minimum, maximum, packageSize *big.Rat, err error) {
+	values, err := q.rationals()
+	return values.Minimum, values.Maximum, values.PackageSize, err
+}
+
 // rationals parses and checks a quantity. Every returned rational fits 64-bit storage and
 // every unit key is in the unit vocabulary.
 func (q Quantity) rationals() (quantityRationals, error) {

@@ -304,6 +304,40 @@ func (r Requirement) Ingredient(sourceText string) (Ingredient, bool) {
 	}, true
 }
 
+// Content converts a valid catalog document to the shared recipe content every format
+// imports from: each requirement becomes one ingredient whose source text is its source line,
+// in document order. Provenance, relationship, and state are catalog-only and are dropped.
+// It fails when the document is invalid or any requirement is unresolved or unsupported, so
+// nothing is silently dropped.
+func (d CatalogDocument) Content() (RecipeContent, error) {
+	if err := d.Validate(); err != nil {
+		return RecipeContent{}, err
+	}
+	sections := make([]IngredientSection, 0, len(d.IngredientSections))
+	for sectionIndex, section := range d.IngredientSections {
+		ingredients := make([]Ingredient, 0, len(section.Requirements))
+		for requirementIndex, requirement := range section.Requirements {
+			sourceText, _ := d.SourceText(requirement.Provenance)
+			ingredient, ok := requirement.Ingredient(sourceText)
+			if !ok || !requirement.State.Publishable() {
+				return RecipeContent{}, fmt.Errorf("ingredient_sections[%d].requirements[%d] is %s and has no ingredient",
+					sectionIndex, requirementIndex, requirement.State)
+			}
+			ingredients = append(ingredients, ingredient)
+		}
+		sections = append(sections, IngredientSection{Name: section.Name, Ingredients: ingredients})
+	}
+	content := RecipeContent{
+		Name: d.Name, Source: d.Source, ImageURL: d.ImageURL, Yield: d.Yield,
+		HandsOn: d.HandsOn, Unattended: d.Unattended,
+		IngredientSections: sections, InstructionSections: d.InstructionSections,
+	}
+	if err := ValidateRecipeContent(content); err != nil {
+		return RecipeContent{}, err
+	}
+	return content, nil
+}
+
 // SourceText returns the source line a requirement or heading's provenance names, or false
 // when the provenance does not name a line of this document.
 func (d CatalogDocument) SourceText(provenance Provenance) (string, bool) {

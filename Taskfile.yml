@@ -125,6 +125,11 @@ tasks:
     cmds:
       - go run ./cmd/grocery-router catalog-sites {{.CLI_ARGS}}
 
+  catalog-qualify:
+    desc: Score a candidate set against the catalog evaluation set (pass --candidates DIR and --holdout DIR after --)
+    cmds:
+      - go run ./cmd/grocery-router catalog-qualify {{.CLI_ARGS}}
+
   catalog-discover:
     desc: Queue pages from registered sitemaps of fetchable catalog sites (pass CLI flags after --)
     cmds:

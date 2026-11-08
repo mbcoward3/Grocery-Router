@@ -112,6 +112,10 @@ func TestUnitVocabularyMatchesDatabase(t *testing.T) {
 		if !ok || dimension != unit.Dimension {
 			t.Errorf("unit %q: vocabulary dimension %q (known=%v), database %q", unit.Key, dimension, ok, unit.Dimension)
 		}
+		numerator, denominator, _ := ingest.UnitToBase(unit.Key)
+		if numerator != unit.ToBaseNumerator || denominator != unit.ToBaseDenominator {
+			t.Errorf("unit %q: vocabulary ratio %d/%d, database %d/%d", unit.Key, numerator, denominator, unit.ToBaseNumerator, unit.ToBaseDenominator)
+		}
 	}
 	slices.Sort(databaseKeys)
 	if !slices.Equal(databaseKeys, ingest.UnitKeys()) {

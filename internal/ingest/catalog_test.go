@@ -517,3 +517,35 @@ func assertCodes(t *testing.T, got []ingest.IssueCode, want ...ingest.IssueCode)
 		t.Fatalf("issue codes = %v, want %v", got, want)
 	}
 }
+
+func TestCatalogContentConvertsEveryRequirement(t *testing.T) {
+	document := loadCatalog(t)
+	content, err := document.Content()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ingest.ValidateRecipeContent(content); err != nil {
+		t.Fatalf("converted content is invalid: %v", err)
+	}
+	count := 0
+	for sectionIndex, section := range content.IngredientSections {
+		if section.Name != document.IngredientSections[sectionIndex].Name {
+			t.Fatalf("section %d = %q, want %q", sectionIndex, section.Name, document.IngredientSections[sectionIndex].Name)
+		}
+		for index, ingredient := range section.Ingredients {
+			requirement := document.IngredientSections[sectionIndex].Requirements[index]
+			if ingredient.SourceText != document.SourceLines[requirement.Provenance.Line] {
+				t.Fatalf("ingredient source text %q is not its requirement's source line", ingredient.SourceText)
+			}
+			count++
+		}
+	}
+	if count != 11 {
+		t.Fatalf("converted %d ingredients, want every one of 11 requirements", count)
+	}
+
+	*beef(&document) = ingest.Requirement{Provenance: beef(&document).Provenance, State: ingest.StateUnresolved, Reason: "ambiguous_unit"}
+	if _, err := document.Content(); err == nil || !strings.Contains(err.Error(), "unresolved") {
+		t.Fatalf("Content() of an unresolved requirement err = %v, want refusal", err)
+	}
+}

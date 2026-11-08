@@ -111,6 +111,7 @@ func (command *trueupInventoryCommand) Run() error {
 
 type cli struct {
 	catalogSitesCommands
+	catalogQualifyCommands
 	catalogFetchCommands
 
 	Bootstrap       bootstrapCommand       `cmd:"" help:"Migrate and load the approved corpus when the database is empty."`

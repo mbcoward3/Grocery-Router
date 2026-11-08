@@ -1,0 +1,18 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the recipe-intelligence pilot candidate; not yet reviewed by the
+  household. Expected to reject because (1) source lines 0, 6, 9, and 11 and the first step refer to
+  "Note 1" to "Note 5", which are not in the JSON-LD (spec §5.5 missing_note_dependency), and
+  (2) line 7 "1  garlic (, finely minced)" has no unit or piece noun, so it is unresolved rather
+  than guessed as one clove or one head (reason code drafted as ambiguous_unit; the code name is
+  provisional until slice 3 fixes the reason vocabulary). Also check that line 0 ("2 large chicken
+  breasts ... (or 4 thighs, Note 1)") is the alternative case you want here.
+outcome: reject
+categories: [alternative, presence_only]
+instructions_complete: false
+instructions_note: >-
+  Step 1 depends on Note 5 (what a Go-Between is), and the ingredient notes that explain the
+  substitutions are missing.
+reject:
+  codes: [missing_note_dependency, ambiguous_unit]
