@@ -1,0 +1,130 @@
+# Hand-written catalog content format v1 fixture. It is not a real recipe: it exercises every
+# relationship and both publishable states so the format has one readable, valid example.
+# Spans are half-open [start, end) Unicode code point offsets into the named source line.
+format_version: 1
+name: Catalog Format Example
+source:
+  relationship: source
+  attribution: Grocery Router test fixture
+  url: https://example.com/recipes/catalog-format-example
+  checked_on: 2026-11-08
+yield: 8 servings
+hands_on: {min: 20, max: 25}
+unattended: {min: 40, max: 40}
+source_lines:
+  - "For the cake:"
+  - "½ cup walnuts (plus 2 tablespoons for topping)"
+  - "4 tablespoons butter, plus more for greasing"
+  - "1 tsp each thyme and rosemary"
+  - "2 chicken breasts or 4 thighs"
+  - "2 tbsp / 30g olive oil"
+  - "1 cup sugar, divided"
+  - "3 lb boneless beef chuck"
+  - "Salt, to taste"
+ingredient_sections:
+  - name: For the cake
+    heading: {type: ingredient_line, line: 0, span: {start: 0, end: 13}}
+    requirements:
+      - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 13}}
+        relationship: additive
+        state: resolved
+        grocery_item: &walnuts
+          key: walnuts
+          name: Walnuts
+          store_section: {key: baking, name: Baking}
+          shopping_mode: measured
+        quantity: {kind: exact, amount: "1/2", unit: cup}
+      - provenance: {type: ingredient_line, line: 1, span: {start: 15, end: 45}}
+        relationship: additive
+        state: resolved
+        grocery_item: *walnuts
+        quantity: {kind: exact, amount: "2", unit: tbsp}
+        note: for topping
+      - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 20}}
+        relationship: additive
+        state: resolved
+        grocery_item: &butter
+          key: butter
+          name: Butter
+          store_section: {key: dairy, name: Dairy}
+          shopping_mode: measured
+        quantity: {kind: exact, amount: "4", unit: tbsp}
+      - provenance: {type: ingredient_line, line: 2, span: {start: 22, end: 44}}
+        relationship: additive
+        state: intentionally_unspecified
+        grocery_item: *butter
+        quantity: {kind: unspecified}
+        note: for greasing
+  - name: Main
+    requirements:
+      - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 16}}
+        relationship: compound
+        state: resolved
+        grocery_item:
+          key: thyme
+          name: Thyme
+          store_section: {key: spices, name: Spices}
+          shopping_mode: measured
+        quantity: {kind: exact, amount: "1", unit: tsp}
+      - provenance: {type: ingredient_line, line: 3, span: {start: 21, end: 29}}
+        relationship: compound
+        state: resolved
+        grocery_item:
+          key: rosemary
+          name: Rosemary
+          store_section: {key: spices, name: Spices}
+          shopping_mode: measured
+        quantity: {kind: exact, amount: "1", unit: tsp}
+      - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 17}}
+        relationship: alternative
+        state: resolved
+        grocery_item:
+          key: chicken-breasts
+          name: Chicken Breasts
+          store_section: {key: meat, name: Meat}
+          shopping_mode: counted
+        quantity: {kind: exact, amount: "2", unit: each}
+      - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 22}}
+        relationship: equivalent
+        state: resolved
+        grocery_item:
+          key: olive-oil
+          name: Olive Oil
+          store_section: {key: pantry, name: Pantry}
+          shopping_mode: measured
+        quantity: {kind: exact, amount: "2", unit: tbsp}
+        note: "source also gives: 30g"
+      - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 20}}
+        relationship: divided
+        state: resolved
+        grocery_item:
+          key: sugar
+          name: Sugar
+          store_section: {key: baking, name: Baking}
+          shopping_mode: measured
+        quantity: {kind: exact, amount: "1", unit: cup}
+        preparation: divided
+      - provenance: {type: ingredient_line, line: 7, span: {start: 0, end: 24}}
+        relationship: single
+        state: resolved
+        grocery_item:
+          key: boneless-beef-chuck
+          name: Boneless Beef Chuck
+          store_section: {key: meat, name: Meat}
+          shopping_mode: measured
+        quantity: {kind: exact, amount: "3", unit: lb}
+      - provenance: {type: ingredient_line, line: 8, span: {start: 0, end: 14}}
+        relationship: single
+        state: intentionally_unspecified
+        grocery_item:
+          key: salt
+          name: Salt
+          store_section: {key: spices, name: Spices}
+          shopping_mode: presence-only
+        quantity: {kind: unspecified}
+        preparation: to taste
+instruction_sections:
+  - name: Method
+    steps:
+      - Toast the walnuts and set aside 2 tablespoons for topping.
+      - Grease the pan with butter and bake.
