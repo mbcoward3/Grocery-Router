@@ -273,6 +273,14 @@ type RecipeStep struct {
 	Instruction string `db:"instruction" json:"instruction"`
 }
 
+type RememberedItemSection struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	NameKey        string `db:"name_key" json:"name_key"`
+	DisplayName    string `db:"display_name" json:"display_name"`
+	StoreSectionID int64  `db:"store_section_id" json:"store_section_id"`
+	UpdatedAt      string `db:"updated_at" json:"updated_at"`
+}
+
 type ShoppingLine struct {
 	ID                     int64          `db:"id" json:"id"`
 	ShoppingListID         int64          `db:"shopping_list_id" json:"shopping_list_id"`

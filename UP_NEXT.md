@@ -84,7 +84,6 @@ scope requires a new phase with its own acceptance criteria.
   plan-then-shop workflow needs enforcement.
 - **Within-section item ordering.** Section ordering was promoted by issues #36–#38 (D044);
   custom ordering of individual items stays deferred.
-- **Remember manual terms.** Household aliases for repeated unknown items require separate scope.
 - **List export and sharing.** Web Share/Apple Notes, text export, or copy workflows.
 - **Offline shopping.** Installed PWA/service worker or another offline-capable list.
 - **Interactive cooking mode.** Step completion, timers, wake-lock behavior, and cooking

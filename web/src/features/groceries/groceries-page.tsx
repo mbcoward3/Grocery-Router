@@ -30,7 +30,7 @@ export function GroceriesPage() {
   const [ordering, setOrdering] = useState(false)
   const [placing, setPlacing] = useState<GroceryLine | null>(null)
   const [moving, setMoving] = useState<number | null>(null)
-  const [hideDone, setHideDone] = useState(() => { try { return localStorage.getItem('groceries-hide-done') === 'true' } catch { return false } })
+  const [hideDone, setHideDone] = useState(() => { try { return localStorage.getItem('groceries-hide-done') !== 'false' } catch { return true } })
   const [openSections, setOpenSections] = useState<Set<string>>(new Set())
   const [held, setHeld] = useState<Set<number>>(new Set())
   const [undo, setUndo] = useState<GroceryLine | null>(null)
@@ -50,9 +50,11 @@ export function GroceriesPage() {
   const mutation = useMutation({
     mutationKey: ['groceries'],
     mutationFn: runLineAction,
-    onSuccess: (data) => {
+    onSuccess: (data, action) => {
       queryClient.setQueryData(groceriesKey, data)
       setEditing(null)
+      // Placing an unknown item teaches the household's suggestions.
+      if (action.type === 'section') void queryClient.invalidateQueries({ queryKey: ['grocery-items'] })
     },
     onError: (_error, action) => {
       if (action.type === 'complete') {
@@ -66,6 +68,7 @@ export function GroceriesPage() {
     mutationFn: addGroceryLine,
     onSuccess: (data) => {
       queryClient.setQueryData(groceriesKey, data)
+      void queryClient.invalidateQueries({ queryKey: ['grocery-items'] })
       const previousIds = new Set(query.data?.lines.map(line => line.id))
       const added = data.lines.find(line => line.origin === 'manual' && !previousIds.has(line.id))
       if (added?.section === 'Other') setPlacing(added)
@@ -97,13 +100,13 @@ export function GroceriesPage() {
       <PageHeading count={visibleLines.length} completed={completed} />
       <div className="shopping-toolbar">
         <button className="button" onClick={() => setOrdering(true)} disabled={!sectionQuery.data}>Reorder sections</button>
-        <button className={`button hide-done-toggle${hideDone ? ' active' : ''}`} aria-pressed={hideDone} onClick={() => {
+        <button className={`button hide-done-toggle${hideDone ? ' active' : ''}`} onClick={() => {
           const next = !hideDone; setHideDone(next)
           try { localStorage.setItem('groceries-hide-done', String(next)) } catch { /* Storage is optional. */ }
-        }}>{hideDone ? `${completed} done · show` : 'Hide done'}</button>
+        }}>{hideDone ? `Show done (${completed})` : 'Hide done'}</button>
       </div>
       <QuickAdd pending={addMutation.isPending} onAdd={input => addMutation.mutateAsync(input)} />
-      {placing && <div className="placement-panel"><div><strong>Where will you find {placing.name}?</strong><button className="icon-button" aria-label="Dismiss section picker" onClick={() => setPlacing(null)}><CloseIcon /></button></div><SectionPicker sections={sectionQuery.data?.sections ?? []} selected={placing.sectionId} pending={mutation.isPending} onPick={sectionId => {
+      {placing && <div className="placement-panel"><div><strong>Where will you find {placing.name}? <span className="muted">We’ll remember next time.</span></strong><button className="icon-button" aria-label="Dismiss section picker" onClick={() => setPlacing(null)}><CloseIcon /></button></div><SectionPicker sections={sectionQuery.data?.sections ?? []} selected={placing.sectionId} pending={mutation.isPending} onPick={sectionId => {
         mutation.mutate({ type: 'section', line: placing, sectionId }, { onSuccess: () => setPlacing(null) })
       }} /></div>}
       {sectionQuery.error && <p role="alert" className="inline-error">{sectionQuery.error.message} <button className="button" onClick={() => void sectionQuery.refetch()}>Retry sections</button></p>}
@@ -111,13 +114,19 @@ export function GroceriesPage() {
       {sections.length === 0 ? (
         <div className="grocery-empty">No grocery items in this week.</div>
       ) : sections.map(([section, lines]) => {
+        // Hide done hides checked items; a section with nothing left folds to its header,
+        // which can be opened to see (and uncheck) what was picked up there.
         const allDone = lines.every(line => line.completed && !held.has(line.id))
-        const collapsed = allDone && !openSections.has(section)
+        const peeking = openSections.has(section)
+        const collapsed = hideDone && allDone && !peeking
         const sorted = [...lines].sort((a, b) => Number(a.completed && !held.has(a.id)) - Number(b.completed && !held.has(b.id)))
-        const shown = sorted.filter(line => !hideDone || !line.completed || held.has(line.id))
+        const shown = sorted.filter(line => !hideDone || peeking || !line.completed || held.has(line.id))
+        const left = lines.filter(line => !line.completed).length
         return (
-        <section className="grocery-section" key={section} aria-labelledby={`section-${slug(section)}`}>
-          <header><h2 id={`section-${slug(section)}`}>{section}</h2>{allDone ? <button className="section-collapse" aria-expanded={!collapsed} aria-controls={`lines-${slug(section)}`} onClick={() => setOpenSections(previous => { const next = new Set(previous); if (next.has(section)) next.delete(section); else next.add(section); return next })}><CheckIcon /> {lines.length} done <ChevronIcon /></button> : <span>{lines.filter(line => !line.completed).length} left</span>}</header>
+        <section className={`grocery-section${allDone ? ' all-done' : ''}`} key={section} aria-labelledby={`section-${slug(section)}`}>
+          <header><h2 id={`section-${slug(section)}`}>{section}</h2>{hideDone && allDone
+            ? <button className="section-collapse" aria-expanded={!collapsed} aria-controls={`lines-${slug(section)}`} onClick={() => setOpenSections(previous => { const next = new Set(previous); if (next.has(section)) next.delete(section); else next.add(section); return next })}><CheckIcon /> {lines.length} done <ChevronIcon /></button>
+            : allDone ? <span className="section-done"><CheckIcon /> All done</span> : <span>{left} left</span>}</header>
           <div className="grocery-lines" id={`lines-${slug(section)}`} hidden={collapsed}>
             {shown.map((line) => (
               <GroceryRow

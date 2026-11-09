@@ -416,9 +416,11 @@ It must:
 - Manual additions suggest existing household items by name and normalized identity. Selection
   or an unambiguous exact match (case/whitespace insensitive) uses that item's section and ID.
 - Unknown additions enter Other immediately and offer a section picker. Any manual line can be
-  moved later. Manual lines remain separate, adjacent to matching generated items, with no recipe
+  moved later. The household's placement of an unknown name is remembered (case/whitespace
+  insensitive): adding that name again uses the remembered section, and it appears in suggestions.
+  Moving it back to Other forgets it. Known items keep their reviewed section and are not remembered. Manual lines remain separate, adjacent to matching generated items, with no recipe
   contributions. Recipe changes retain manual identities and chosen sections.
-- No runtime AI, quantity parsing, remembered terms, or shared catalog aliases are introduced.
+- No runtime AI, quantity parsing, or shared catalog aliases are introduced.
 
 ### 8.3 User editing
 
@@ -436,9 +438,11 @@ A weekly quantity override should be represented separately from the underlying 
 ### 8.4 Completion display
 
 Completed items stay crossed out and de-emphasized, then sink below remaining items within their
-section after about 1.8 seconds without another check. Undo reverses a check. Fully completed
-sections collapse to their header with a done count and can be expanded. Hide done optionally hides
-completed rows, showing a count and show action; this preference defaults off and persists per device.
+section after about 1.8 seconds without another check. Undo reverses a check. Hide done hides
+completed rows; a fully completed section then folds to its header with a done count and can be
+opened to show (and uncheck) its items. Show done keeps every row visible, completed rows sunk, and
+marks fully completed sections "All done" without folding them. Hide done defaults on and persists
+per device.
 Unchecking restores original order among remaining rows. Header/footer counts include hidden items.
 Section positions remain stable and nonessential movement respects reduced-motion preferences.
 

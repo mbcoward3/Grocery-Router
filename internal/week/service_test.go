@@ -340,3 +340,68 @@ func TestNewSectionPlacementBeforeAnyCustomization(t *testing.T) {
 		t.Fatalf("new section %d, Other %d, error %v", newPosition, otherPosition, err)
 	}
 }
+
+func TestUnknownManualItemRemembersChosenSection(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	if _, err := service.Generate(ctx, testNow(), 2); err != nil {
+		t.Fatal(err)
+	}
+	var dairy, other int64
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 AND key = 'dairy'`, household).Scan(&dairy); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 AND key = 'other'`, household).Scan(&other); err != nil {
+		t.Fatal(err)
+	}
+
+	// First time: unknown, lands in Other, then the user places it in Dairy.
+	first, err := service.AddManualLine(ctx, testNow(), "Cottage cheese")
+	if err != nil || first.StoreSectionID != other {
+		t.Fatalf("first add = %#v, %v", first, err)
+	}
+	if err := service.SetLineSection(ctx, testNow(), first.ID, dairy); err != nil {
+		t.Fatal(err)
+	}
+
+	// Searching again offers it in Dairy, ahead of looser matches.
+	matches, err := service.SearchItems(ctx, "cottage")
+	if err != nil || len(matches) == 0 || matches[0].Name != "Cottage cheese" || matches[0].SectionID != dairy || matches[0].GroceryItemID != 0 {
+		t.Fatalf("search = %#v, %v", matches, err)
+	}
+
+	// Typing it again goes straight to Dairy.
+	second, err := service.AddManualLine(ctx, testNow(), "  cottage CHEESE ")
+	if err != nil || second.StoreSectionID != dairy {
+		t.Fatalf("second add = %#v, %v", second, err)
+	}
+
+	// Choosing a section while adding is remembered too; moving back to Other forgets it.
+	candles, err := service.AddManualLine(ctx, testNow(), "Birthday candles", week.ManualLineOptions{StoreSectionID: dairy})
+	if err != nil || candles.StoreSectionID != dairy {
+		t.Fatalf("explicit add = %#v, %v", candles, err)
+	}
+	if err := service.SetLineSection(ctx, testNow(), candles.ID, other); err != nil {
+		t.Fatal(err)
+	}
+	if matches, err := service.SearchItems(ctx, "birthday"); err != nil || len(matches) != 0 {
+		t.Fatalf("forgotten search = %#v, %v", matches, err)
+	}
+
+	// Known grocery items keep their corpus section and are not remembered.
+	milk, err := service.AddManualLine(ctx, testNow(), "milk")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.SetLineSection(ctx, testNow(), milk.ID, other); err != nil {
+		t.Fatal(err)
+	}
+	var remembered int
+	if err := db.QueryRow(`SELECT count(*) FROM remembered_item_sections WHERE household_id = $1`, household).Scan(&remembered); err != nil || remembered != 1 {
+		t.Fatalf("remembered rows = %d, %v", remembered, err)
+	}
+	if matches, err := service.SearchItems(ctx, "milk"); err != nil || len(matches) == 0 || matches[0].Name != "Milk" || matches[0].SectionID == other {
+		t.Fatalf("known search = %#v, %v", matches, err)
+	}
+}

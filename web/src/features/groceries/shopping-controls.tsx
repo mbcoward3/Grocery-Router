@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { searchGroceryItems, setStoreSections, type GroceryItemMatch, type StoreSection } from '../../api/client'
 import { CloseIcon, PlusIcon } from '../../ui/icons'
 
-type Addition = { name: string; groceryItemId?: number }
+type Addition = { name: string; groceryItemId?: number; storeSectionId?: number }
 
 export function QuickAdd({ pending, onAdd }: { pending: boolean; onAdd: (input: Addition) => Promise<unknown> }) {
   const [text, setText] = useState('')
@@ -18,7 +18,7 @@ export function QuickAdd({ pending, onAdd }: { pending: boolean; onAdd: (input: 
   async function add(item?: GroceryItemMatch) {
     if (pending || !text.trim()) return
     try {
-      await onAdd({ name: item?.name ?? text.trim(), ...(item ? { groceryItemId: item.id } : {}) })
+      await onAdd(additionFor(text.trim(), item))
       setText(''); setTerm(''); setOpen(false); setActive(-1); input.current?.focus()
     } catch { /* The parent presents the mutation error and retains the input. */ }
   }
@@ -39,10 +39,16 @@ export function QuickAdd({ pending, onAdd }: { pending: boolean; onAdd: (input: 
       <button className="button" type="submit" disabled={!text.trim() || pending}>{pending ? 'Adding…' : 'Add'}</button>
     </form>
     {show && <ul className="grocery-suggestions" id="grocery-suggestions" role="listbox" aria-label="Known grocery items">
-      {items.map((item, index) => <li key={item.id} id={`grocery-suggestion-${index}`} role="option" aria-selected={active === index} onMouseDown={event => event.preventDefault()} onClick={() => void add(item)}><strong>{item.name}</strong><span>{item.section}</span></li>)}
+      {items.map((item, index) => <li key={`${item.id ?? 'remembered'}-${item.name}`} id={`grocery-suggestion-${index}`} role="option" aria-selected={active === index} onMouseDown={event => event.preventDefault()} onClick={() => void add(item)}><strong>{item.name}</strong><span>{item.section}</span></li>)}
     </ul>}
     {query.error && open && <p className="muted">Suggestions unavailable. You can still add your item.</p>}
   </div>
+}
+
+// A known item is identified by ID; a name the household placed before carries its section.
+function additionFor(text: string, item?: GroceryItemMatch): Addition {
+  if (!item) return { name: text }
+  return item.id ? { name: item.name, groceryItemId: item.id } : { name: item.name, storeSectionId: item.sectionId }
 }
 
 export function SectionPicker({ sections, selected, pending, onPick }: { sections: StoreSection[]; selected: number; pending: boolean; onPick: (id: number) => void }) {

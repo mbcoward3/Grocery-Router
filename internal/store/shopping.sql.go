@@ -243,6 +243,20 @@ func (q *Queries) DeleteGeneratedShoppingLines(ctx context.Context, arg DeleteGe
 	return err
 }
 
+const forgetItemSection = `-- name: ForgetItemSection :exec
+DELETE FROM remembered_item_sections WHERE household_id = $1 AND name_key = $2
+`
+
+type ForgetItemSectionParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	NameKey     string `db:"name_key" json:"name_key"`
+}
+
+func (q *Queries) ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error {
+	_, err := q.db.ExecContext(ctx, forgetItemSection, arg.HouseholdID, arg.NameKey)
+	return err
+}
+
 const getOtherStoreSection = `-- name: GetOtherStoreSection :one
 SELECT id, key, name, household_id, display_position FROM store_sections WHERE household_id = $1 AND key = 'other'
 `
@@ -258,6 +272,23 @@ func (q *Queries) GetOtherStoreSection(ctx context.Context, householdID string) 
 		&i.DisplayPosition,
 	)
 	return i, err
+}
+
+const getRememberedItemSection = `-- name: GetRememberedItemSection :one
+SELECT store_section_id FROM remembered_item_sections
+WHERE household_id = $1 AND name_key = $2
+`
+
+type GetRememberedItemSectionParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	NameKey     string `db:"name_key" json:"name_key"`
+}
+
+func (q *Queries) GetRememberedItemSection(ctx context.Context, arg GetRememberedItemSectionParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getRememberedItemSection, arg.HouseholdID, arg.NameKey)
+	var store_section_id int64
+	err := row.Scan(&store_section_id)
+	return store_section_id, err
 }
 
 const listGeneratedShoppingLineStates = `-- name: ListGeneratedShoppingLineStates :many
@@ -295,6 +326,49 @@ func (q *Queries) ListGeneratedShoppingLineStates(ctx context.Context, arg ListG
 			&i.IsRemoved,
 			&i.IsCompleted,
 			&i.OverrideText,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listRememberedItemSections = `-- name: ListRememberedItemSections :many
+SELECT ris.name_key, ris.display_name, ris.store_section_id, ss.name AS store_section_name
+FROM remembered_item_sections ris
+JOIN store_sections ss ON ss.household_id = ris.household_id AND ss.id = ris.store_section_id
+WHERE ris.household_id = $1
+ORDER BY ris.display_name
+`
+
+type ListRememberedItemSectionsRow struct {
+	NameKey          string `db:"name_key" json:"name_key"`
+	DisplayName      string `db:"display_name" json:"display_name"`
+	StoreSectionID   int64  `db:"store_section_id" json:"store_section_id"`
+	StoreSectionName string `db:"store_section_name" json:"store_section_name"`
+}
+
+func (q *Queries) ListRememberedItemSections(ctx context.Context, householdID string) ([]ListRememberedItemSectionsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listRememberedItemSections, householdID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListRememberedItemSectionsRow{}
+	for rows.Next() {
+		var i ListRememberedItemSectionsRow
+		if err := rows.Scan(
+			&i.NameKey,
+			&i.DisplayName,
+			&i.StoreSectionID,
+			&i.StoreSectionName,
 		); err != nil {
 			return nil, err
 		}
@@ -586,6 +660,31 @@ func (q *Queries) NextManualShoppingLinePosition(ctx context.Context, arg NextMa
 	return column_1, err
 }
 
+const rememberItemSection = `-- name: RememberItemSection :exec
+INSERT INTO remembered_item_sections (household_id, name_key, display_name, store_section_id)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (household_id, name_key) DO UPDATE
+SET display_name = excluded.display_name, store_section_id = excluded.store_section_id,
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+`
+
+type RememberItemSectionParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	NameKey        string `db:"name_key" json:"name_key"`
+	DisplayName    string `db:"display_name" json:"display_name"`
+	StoreSectionID int64  `db:"store_section_id" json:"store_section_id"`
+}
+
+func (q *Queries) RememberItemSection(ctx context.Context, arg RememberItemSectionParams) error {
+	_, err := q.db.ExecContext(ctx, rememberItemSection,
+		arg.HouseholdID,
+		arg.NameKey,
+		arg.DisplayName,
+		arg.StoreSectionID,
+	)
+	return err
+}
+
 const resetSectionPositions = `-- name: ResetSectionPositions :exec
 UPDATE store_sections SET display_position = default_section_position(key) WHERE household_id = $1
 `
@@ -595,7 +694,7 @@ func (q *Queries) ResetSectionPositions(ctx context.Context, householdID string)
 	return err
 }
 
-const setManualLineSection = `-- name: SetManualLineSection :execrows
+const setManualLineSection = `-- name: SetManualLineSection :one
 UPDATE shopping_lines SET store_section_id = $1
 WHERE shopping_lines.household_id = $2 AND shopping_lines.id = $3 AND origin = 'manual'
     AND shopping_list_id = (
@@ -603,6 +702,7 @@ WHERE shopping_lines.household_id = $2 AND shopping_lines.id = $3 AND origin = '
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
         WHERE w.household_id = $2 AND w.starts_on = $4
     )
+RETURNING display_name, grocery_item_id
 `
 
 type SetManualLineSectionParams struct {
@@ -612,17 +712,21 @@ type SetManualLineSectionParams struct {
 	StartsOn       string `db:"starts_on" json:"starts_on"`
 }
 
-func (q *Queries) SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setManualLineSection,
+type SetManualLineSectionRow struct {
+	DisplayName   string        `db:"display_name" json:"display_name"`
+	GroceryItemID sql.NullInt64 `db:"grocery_item_id" json:"grocery_item_id"`
+}
+
+func (q *Queries) SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (SetManualLineSectionRow, error) {
+	row := q.db.QueryRowContext(ctx, setManualLineSection,
 		arg.StoreSectionID,
 		arg.HouseholdID,
 		arg.LineID,
 		arg.StartsOn,
 	)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected()
+	var i SetManualLineSectionRow
+	err := row.Scan(&i.DisplayName, &i.GroceryItemID)
+	return i, err
 }
 
 const setSectionPosition = `-- name: SetSectionPosition :exec
