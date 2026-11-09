@@ -163,25 +163,32 @@ func (q *Queries) CreateGroceryItem(ctx context.Context, arg CreateGroceryItemPa
 }
 
 const createIngredientSection = `-- name: CreateIngredientSection :one
-INSERT INTO recipe_ingredient_sections (recipe_id, name, position)
-VALUES ($1, $2, $3)
-RETURNING id, recipe_id, name, position
+INSERT INTO recipe_ingredient_sections (household_id, recipe_id, name, position)
+VALUES ($4, $1, $2, $3)
+RETURNING id, recipe_id, name, position, household_id
 `
 
 type CreateIngredientSectionParams struct {
-	RecipeID int64  `db:"recipe_id" json:"recipe_id"`
-	Name     string `db:"name" json:"name"`
-	Position int64  `db:"position" json:"position"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	Name        string `db:"name" json:"name"`
+	Position    int64  `db:"position" json:"position"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateIngredientSection(ctx context.Context, arg CreateIngredientSectionParams) (RecipeIngredientSection, error) {
-	row := q.db.QueryRowContext(ctx, createIngredientSection, arg.RecipeID, arg.Name, arg.Position)
+	row := q.db.QueryRowContext(ctx, createIngredientSection,
+		arg.RecipeID,
+		arg.Name,
+		arg.Position,
+		arg.HouseholdID,
+	)
 	var i RecipeIngredientSection
 	err := row.Scan(
 		&i.ID,
 		&i.RecipeID,
 		&i.Name,
 		&i.Position,
+		&i.HouseholdID,
 	)
 	return i, err
 }
@@ -212,14 +219,14 @@ func (q *Queries) CreateInstructionSection(ctx context.Context, arg CreateInstru
 
 const createRecipeIngredient = `-- name: CreateRecipeIngredient :one
 INSERT INTO recipe_ingredients (
-    section_id, grocery_item_id, position, source_text, quantity_kind,
+    household_id, section_id, grocery_item_id, position, source_text, quantity_kind,
     amount_min_numerator, amount_min_denominator,
     amount_max_numerator, amount_max_denominator,
     unit_id, package_type,
     package_size_numerator, package_size_denominator, package_size_unit_id,
     preparation, is_optional, include_on_grocery_list, display_note
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-RETURNING id, section_id, grocery_item_id, position, source_text, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, preparation, is_optional, include_on_grocery_list, display_note
+) VALUES ($19, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+RETURNING id, section_id, grocery_item_id, position, source_text, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, preparation, is_optional, include_on_grocery_list, display_note, household_id
 `
 
 type CreateRecipeIngredientParams struct {
@@ -241,6 +248,7 @@ type CreateRecipeIngredientParams struct {
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	IncludeOnGroceryList   int64          `db:"include_on_grocery_list" json:"include_on_grocery_list"`
 	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
 func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIngredientParams) (RecipeIngredient, error) {
@@ -263,6 +271,7 @@ func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIn
 		arg.IsOptional,
 		arg.IncludeOnGroceryList,
 		arg.DisplayNote,
+		arg.HouseholdID,
 	)
 	var i RecipeIngredient
 	err := row.Scan(
@@ -285,6 +294,7 @@ func (q *Queries) CreateRecipeIngredient(ctx context.Context, arg CreateRecipeIn
 		&i.IsOptional,
 		&i.IncludeOnGroceryList,
 		&i.DisplayNote,
+		&i.HouseholdID,
 	)
 	return i, err
 }
@@ -661,7 +671,7 @@ func (q *Queries) ListGroceryItems(ctx context.Context, householdID string) ([]L
 }
 
 const listIngredientSections = `-- name: ListIngredientSections :many
-SELECT ris.id, ris.recipe_id, ris.name, ris.position FROM recipe_ingredient_sections ris
+SELECT ris.id, ris.recipe_id, ris.name, ris.position, ris.household_id FROM recipe_ingredient_sections ris
 JOIN recipes r ON r.id = ris.recipe_id
 WHERE r.household_id = $1 AND ris.recipe_id = $2
 ORDER BY position
@@ -686,6 +696,7 @@ func (q *Queries) ListIngredientSections(ctx context.Context, arg ListIngredient
 			&i.RecipeID,
 			&i.Name,
 			&i.Position,
+			&i.HouseholdID,
 		); err != nil {
 			return nil, err
 		}
@@ -742,7 +753,7 @@ func (q *Queries) ListInstructionSections(ctx context.Context, arg ListInstructi
 
 const listRecipeIngredients = `-- name: ListRecipeIngredients :many
 SELECT
-    ri.id, ri.section_id, ri.grocery_item_id, ri.position, ri.source_text, ri.quantity_kind, ri.amount_min_numerator, ri.amount_min_denominator, ri.amount_max_numerator, ri.amount_max_denominator, ri.unit_id, ri.package_type, ri.package_size_numerator, ri.package_size_denominator, ri.package_size_unit_id, ri.preparation, ri.is_optional, ri.include_on_grocery_list, ri.display_note,
+    ri.id, ri.section_id, ri.grocery_item_id, ri.position, ri.source_text, ri.quantity_kind, ri.amount_min_numerator, ri.amount_min_denominator, ri.amount_max_numerator, ri.amount_max_denominator, ri.unit_id, ri.package_type, ri.package_size_numerator, ri.package_size_denominator, ri.package_size_unit_id, ri.preparation, ri.is_optional, ri.include_on_grocery_list, ri.display_note, ri.household_id,
     ris.recipe_id,
     ris.name AS section_name,
     ris.position AS section_position,
@@ -790,6 +801,7 @@ type ListRecipeIngredientsRow struct {
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	IncludeOnGroceryList   int64          `db:"include_on_grocery_list" json:"include_on_grocery_list"`
 	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 	RecipeID               int64          `db:"recipe_id" json:"recipe_id"`
 	SectionName            string         `db:"section_name" json:"section_name"`
 	SectionPosition        int64          `db:"section_position" json:"section_position"`
@@ -832,6 +844,7 @@ func (q *Queries) ListRecipeIngredients(ctx context.Context, arg ListRecipeIngre
 			&i.IsOptional,
 			&i.IncludeOnGroceryList,
 			&i.DisplayNote,
+			&i.HouseholdID,
 			&i.RecipeID,
 			&i.SectionName,
 			&i.SectionPosition,

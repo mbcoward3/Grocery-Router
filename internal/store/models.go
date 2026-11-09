@@ -230,13 +230,15 @@ type RecipeIngredient struct {
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	IncludeOnGroceryList   int64          `db:"include_on_grocery_list" json:"include_on_grocery_list"`
 	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
 type RecipeIngredientSection struct {
-	ID       int64  `db:"id" json:"id"`
-	RecipeID int64  `db:"recipe_id" json:"recipe_id"`
-	Name     string `db:"name" json:"name"`
-	Position int64  `db:"position" json:"position"`
+	ID          int64  `db:"id" json:"id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	Name        string `db:"name" json:"name"`
+	Position    int64  `db:"position" json:"position"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 type RecipeInstructionSection struct {
