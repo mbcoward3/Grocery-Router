@@ -157,8 +157,31 @@ func auditCorpus(root, corpusPath, inventoryPath string) error {
 	if err != nil {
 		return err
 	}
+	undecided, err := auditItemReviews(root, documents)
+	if err != nil {
+		return err
+	}
 	fmt.Printf("corpus valid: %d approved of %d PDF recipes\n", len(documents), inventoryCount)
+	if len(undecided) > 0 {
+		fmt.Printf("%d look-alike grocery item pairs are unclassified in corpus/item-reviews.yaml:\n", len(undecided))
+		for _, review := range undecided {
+			fmt.Printf("  %s / %s\n", review.Items[0], review.Items[1])
+		}
+	}
 	return nil
+}
+
+func auditItemReviews(root string, documents []ingest.Document) ([]ingest.ItemReview, error) {
+	file, err := os.Open(filepath.Join(root, "corpus", "item-reviews.yaml"))
+	if err != nil {
+		return nil, fmt.Errorf("open item reviews: %w", err)
+	}
+	defer file.Close()
+	reviews, err := ingest.ParseItemReviews(file)
+	if err != nil {
+		return nil, err
+	}
+	return ingest.CheckLookAlikes(documents, reviews)
 }
 
 func ingestCorpus(databasePath, root, corpusPath, inventoryPath string) error {

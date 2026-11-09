@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"slices"
-	"strings"
 	"testing"
 	"time"
 
@@ -79,43 +78,89 @@ func TestCompatibilityFixture(t *testing.T) {
 		t.Fatal(err)
 	}
 	sourceLines := ingredientSourceLines(t, db, document)
-	var imported []qualify.GroceryLine
+	// A week lists one row per grocery item; amounts that cannot be added stay separate within
+	// the row. Compare item by item so every evaluation line is accounted for.
+	imported := make(map[string]*itemRow)
 	for _, line := range checklist.Lines {
-		output := qualify.GroceryLine{Kind: line.QuantityKind, Optional: line.IsOptional == 1,
-			Amount:  ratString(line.AmountMinNumerator, line.AmountMinDenominator),
-			Maximum: ratString(line.AmountMaxNumerator, line.AmountMaxDenominator),
-			Unit:    line.UnitKey.String}
+		var item, section string
 		if err := db.QueryRow(`SELECT gi.key, ss.key FROM grocery_items gi JOIN store_sections ss ON ss.id = gi.store_section_id WHERE gi.id = $1`,
-			line.GroceryItemID.Int64).Scan(&output.Item, &output.Section); err != nil {
+			line.GroceryItemID.Int64).Scan(&item, &section); err != nil {
 			t.Fatal(err)
 		}
-		if line.PackageType.Valid {
-			output.Package = &ingest.Package{Type: line.PackageType.String,
-				Size: ratString(line.PackageSizeNumerator, line.PackageSizeDenominator), Unit: line.PackageSizeUnitKey.String}
+		row := &itemRow{Item: item, Section: section, Optional: line.IsOptional == 1,
+			Presence:    line.QuantityKind == "presence",
+			Unspecified: line.QuantityKind != "presence" && checklist.Unspecified[line.ID]}
+		if line.QuantityKind == "exact" || line.QuantityKind == "range" {
+			first := qualify.GroceryLine{Kind: line.QuantityKind,
+				Amount:  ratString(line.AmountMinNumerator, line.AmountMinDenominator),
+				Maximum: ratString(line.AmountMaxNumerator, line.AmountMaxDenominator), Unit: line.UnitKey.String}
+			if line.PackageType.Valid {
+				first.Package = &ingest.Package{Type: line.PackageType.String,
+					Size: ratString(line.PackageSizeNumerator, line.PackageSizeDenominator), Unit: line.PackageSizeUnitKey.String}
+			}
+			row.Quantities = append(row.Quantities, first)
+		}
+		for _, extra := range checklist.Quantities[line.ID] {
+			quantity := qualify.GroceryLine{Kind: extra.QuantityKind,
+				Amount:  big.NewRat(extra.AmountMinNumerator, extra.AmountMinDenominator).RatString(),
+				Maximum: ratString(extra.AmountMaxNumerator, extra.AmountMaxDenominator), Unit: extra.UnitKey.String}
+			if extra.PackageType.Valid {
+				quantity.Package = &ingest.Package{Type: extra.PackageType.String,
+					Size: ratString(extra.PackageSizeNumerator, extra.PackageSizeDenominator), Unit: extra.PackageSizeUnitKey.String}
+			}
+			row.Quantities = append(row.Quantities, quantity)
 		}
 		contributions, err := service.Contributions(ctx, now, line.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
 		for _, contribution := range contributions {
-			output.SourceLines = append(output.SourceLines, sourceLines[contribution.RecipeIngredientID])
+			row.SourceLines = append(row.SourceLines, sourceLines[contribution.RecipeIngredientID])
 		}
-		imported = append(imported, output)
+		slices.Sort(row.SourceLines)
+		imported[item] = row
 	}
-	// The checklist lists lines in store order; the aggregated lines themselves must match.
-	got, want := sortedLines(imported), sortedLines(expected)
-	if !reflect.DeepEqual(got, want) {
-		rendered, _ := yaml.Marshal(got)
-		t.Fatalf("imported week grocery output differs from the expected output:\n%s", rendered)
+	if want := byItem(expected); !reflect.DeepEqual(imported, want) {
+		rendered, _ := yaml.Marshal(imported)
+		t.Fatalf("imported week grocery rows differ from the expected output:\n%s", rendered)
 	}
 }
 
-func sortedLines(lines []qualify.GroceryLine) []qualify.GroceryLine {
-	sorted := slices.Clone(lines)
-	slices.SortFunc(sorted, func(left, right qualify.GroceryLine) int {
-		return strings.Compare(left.Item+"|"+left.Kind, right.Item+"|"+right.Kind)
-	})
-	return sorted
+// itemRow is one week checklist row in evaluation terms.
+type itemRow struct {
+	Item        string                `yaml:"item"`
+	Section     string                `yaml:"section"`
+	Presence    bool                  `yaml:"presence,omitempty"`
+	Unspecified bool                  `yaml:"unspecified,omitempty"`
+	Optional    bool                  `yaml:"optional,omitempty"`
+	Quantities  []qualify.GroceryLine `yaml:"quantities,omitempty"`
+	SourceLines []int                 `yaml:"source_lines,flow"`
+}
+
+// byItem groups evaluation lines the way a week groups them: one row per item, its exact and
+// range amounts in order, and a flag for any requirement without an amount.
+func byItem(lines []qualify.GroceryLine) map[string]*itemRow {
+	rows := make(map[string]*itemRow)
+	for _, line := range lines {
+		row, ok := rows[line.Item]
+		if !ok {
+			row = &itemRow{Item: line.Item, Section: line.Section, Optional: true}
+			rows[line.Item] = row
+		}
+		row.Optional = row.Optional && line.Optional
+		switch line.Kind {
+		case "presence":
+			row.Presence = true
+		case "unspecified":
+			row.Unspecified = true
+		default:
+			row.Quantities = append(row.Quantities, qualify.GroceryLine{Kind: line.Kind,
+				Amount: line.Amount, Maximum: line.Maximum, Unit: line.Unit, Package: line.Package})
+		}
+		row.SourceLines = append(row.SourceLines, line.SourceLines...)
+		slices.Sort(row.SourceLines)
+	}
+	return rows
 }
 
 // ingredientSourceLines maps each imported recipe ingredient to its requirement's source line,

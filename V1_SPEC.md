@@ -351,6 +351,8 @@ Required behavior:
 - source package sizes are not converted into supposedly equivalent purchase packages; and
 - conversions must never silently understate a requirement.
 
+Exact addition happens first; the checklist then shows each grocery item once (§8.1).
+
 ### 7.4 Packages
 
 A package requirement preserves both count and size.
@@ -399,7 +401,9 @@ It must:
 - include every recipe ingredient;
 - perform no pantry subtraction;
 - aggregate by canonical grocery item when permitted;
-- preserve incompatible requirements as separate lines;
+- show one row per grocery item: requirements that cannot be added exactly stay separate
+  quantities on that row (`8 cloves + 1 tbsp`), and a requirement with no amount adds `+ more`
+  rather than a second row, so the row never understates what is needed;
 - group lines by store section;
 - show recipe provenance through expansion; and
 - never silently drop a contribution.

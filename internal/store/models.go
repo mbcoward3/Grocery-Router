@@ -328,12 +328,29 @@ type ShoppingLineContribution struct {
 	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
+type ShoppingLineQuantity struct {
+	HouseholdID            string         `db:"household_id" json:"household_id"`
+	ShoppingLineID         int64          `db:"shopping_line_id" json:"shopping_line_id"`
+	Position               int64          `db:"position" json:"position"`
+	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
+	AmountMinNumerator     int64          `db:"amount_min_numerator" json:"amount_min_numerator"`
+	AmountMinDenominator   int64          `db:"amount_min_denominator" json:"amount_min_denominator"`
+	AmountMaxNumerator     sql.NullInt64  `db:"amount_max_numerator" json:"amount_max_numerator"`
+	AmountMaxDenominator   sql.NullInt64  `db:"amount_max_denominator" json:"amount_max_denominator"`
+	UnitID                 sql.NullInt64  `db:"unit_id" json:"unit_id"`
+	PackageType            sql.NullString `db:"package_type" json:"package_type"`
+	PackageSizeNumerator   sql.NullInt64  `db:"package_size_numerator" json:"package_size_numerator"`
+	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
+	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
+}
+
 type ShoppingList struct {
-	ID          int64  `db:"id" json:"id"`
-	WeekID      int64  `db:"week_id" json:"week_id"`
-	CreatedAt   string `db:"created_at" json:"created_at"`
-	UpdatedAt   string `db:"updated_at" json:"updated_at"`
-	HouseholdID string `db:"household_id" json:"household_id"`
+	ID                 int64  `db:"id" json:"id"`
+	WeekID             int64  `db:"week_id" json:"week_id"`
+	CreatedAt          string `db:"created_at" json:"created_at"`
+	UpdatedAt          string `db:"updated_at" json:"updated_at"`
+	HouseholdID        string `db:"household_id" json:"household_id"`
+	AggregationVersion int64  `db:"aggregation_version" json:"aggregation_version"`
 }
 
 type StoreSection struct {

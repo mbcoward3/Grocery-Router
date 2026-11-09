@@ -31,6 +31,7 @@ type Querier interface {
 	CreateRecipeStep(ctx context.Context, arg CreateRecipeStepParams) (RecipeStep, error)
 	CreateReviewFlag(ctx context.Context, arg CreateReviewFlagParams) (RecipeReviewFlag, error)
 	CreateShoppingLineContribution(ctx context.Context, arg CreateShoppingLineContributionParams) (ShoppingLineContribution, error)
+	CreateShoppingLineQuantity(ctx context.Context, arg CreateShoppingLineQuantityParams) error
 	CreateShoppingList(ctx context.Context, arg CreateShoppingListParams) (ShoppingList, error)
 	CreateStoreSection(ctx context.Context, arg CreateStoreSectionParams) (StoreSection, error)
 	CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, error)
@@ -94,8 +95,10 @@ type Querier interface {
 	ListRememberedItemSections(ctx context.Context, householdID string) ([]ListRememberedItemSectionsRow, error)
 	ListRunningIngestRuns(ctx context.Context) ([]IngestRun, error)
 	ListShoppingLineContributions(ctx context.Context, arg ListShoppingLineContributionsParams) ([]ListShoppingLineContributionsRow, error)
+	ListShoppingLineQuantities(ctx context.Context, arg ListShoppingLineQuantitiesParams) ([]ListShoppingLineQuantitiesRow, error)
 	ListShoppingLineRecipeNames(ctx context.Context, arg ListShoppingLineRecipeNamesParams) ([]ListShoppingLineRecipeNamesRow, error)
 	ListShoppingLines(ctx context.Context, arg ListShoppingLinesParams) ([]ListShoppingLinesRow, error)
+	ListShoppingLinesWithUnspecified(ctx context.Context, arg ListShoppingLinesWithUnspecifiedParams) ([]int64, error)
 	ListStoreSections(ctx context.Context, householdID string) ([]StoreSection, error)
 	ListUnits(ctx context.Context) ([]Unit, error)
 	ListVerifiedRecipes(ctx context.Context, householdID string) ([]Recipe, error)
@@ -130,6 +133,7 @@ type Querier interface {
 	SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error)
 	SetShoppingLineOverride(ctx context.Context, arg SetShoppingLineOverrideParams) (int64, error)
 	SetShoppingLineRemoved(ctx context.Context, arg SetShoppingLineRemovedParams) (int64, error)
+	SetShoppingListAggregationVersion(ctx context.Context, arg SetShoppingListAggregationVersionParams) (int64, error)
 	StartIngestRun(ctx context.Context, arg StartIngestRunParams) (IngestRun, error)
 	TouchWeek(ctx context.Context, arg TouchWeekParams) error
 	// Stage locks (§7.3). Session-level: call on one *sql.Conn and unlock on the same connection.

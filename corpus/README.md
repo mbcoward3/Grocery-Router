@@ -19,6 +19,9 @@ Rules:
 - Numeric quantities specify exactly one `unit` or `package`.
 - Unit keys must exist in the exact-unit migration.
 - Grocery item key, name, section, and shopping mode must agree across every recipe.
+- Items whose names look alike (`Salt` and `Kosher Salt`) need a classification (alias, group,
+  or distinct) in `corpus/item-reviews.yaml`; `corpus-audit` fails on an unlisted pair and lists
+  undecided ones.
 - Every backfill, rewrite, or resolved conflict appears in `review` with `approved: true`.
 - Agent-selected calls and household outcomes are retained in each recipe's approved review
   fields.

@@ -235,3 +235,69 @@ func fromRat(value *big.Rat) (*Rational, error) {
 	}
 	return &Rational{Numerator: value.Num().Int64(), Denominator: value.Denom().Int64()}, nil
 }
+
+// Quantity is one exactly summed amount within a checklist row.
+type Quantity struct {
+	Kind    string
+	Minimum *Rational
+	Maximum *Rational
+	Unit    *Unit
+	Package *Package
+}
+
+// ItemLine is one checklist row: every requirement for one grocery item. Aggregate keeps
+// amounts that cannot be added exactly (cloves and tablespoons, a jar and cups) apart; a row
+// lists them side by side instead of repeating the item.
+type ItemLine struct {
+	Key              string
+	GroceryItemID    int64
+	GroceryItemName  string
+	StoreSectionID   int64
+	StoreSectionName string
+	// Presence marks a presence-only item, which shows no amount.
+	Presence bool
+	// Quantities are the row's exact or range amounts, in first-seen order.
+	Quantities []Quantity
+	// Unspecified reports that at least one requirement gave no amount ("to taste"), so the
+	// quantities alone would understate what the recipes need.
+	Unspecified   bool
+	Optional      bool
+	Contributions []Contribution
+}
+
+// ItemKey identifies a grocery item's checklist row across rebuilds.
+func ItemKey(groceryItemID int64) string { return fmt.Sprintf("item:%d", groceryItemID) }
+
+// Group merges aggregated lines into one row per grocery item, in first-seen order. It never
+// adds amounts itself, so every quantity stays exactly what Aggregate computed.
+func Group(lines []Line) []ItemLine {
+	rows := make([]ItemLine, 0, len(lines))
+	byItem := make(map[int64]int, len(lines))
+	for _, line := range lines {
+		index, exists := byItem[line.GroceryItemID]
+		if !exists {
+			rows = append(rows, ItemLine{
+				Key: ItemKey(line.GroceryItemID), GroceryItemID: line.GroceryItemID,
+				GroceryItemName: line.GroceryItemName, StoreSectionID: line.StoreSectionID,
+				StoreSectionName: line.StoreSectionName, Optional: true,
+			})
+			index = len(rows) - 1
+			byItem[line.GroceryItemID] = index
+		}
+		row := &rows[index]
+		row.Optional = row.Optional && line.Optional
+		row.Contributions = append(row.Contributions, line.Contributions...)
+		switch line.QuantityKind {
+		case "presence":
+			row.Presence = true
+		case "unspecified":
+			row.Unspecified = true
+		default:
+			row.Quantities = append(row.Quantities, Quantity{
+				Kind: line.QuantityKind, Minimum: line.Minimum, Maximum: line.Maximum,
+				Unit: line.Unit, Package: line.Package,
+			})
+		}
+	}
+	return rows
+}

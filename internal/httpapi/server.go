@@ -499,9 +499,7 @@ func (server *Server) writeGroceries(response http.ResponseWriter, request *http
 func groceryResponseFromChecklist(checklist week.Checklist, startsOn string) groceryResponse {
 	result := groceryResponse{StartsOn: startsOn, Lines: make([]groceryLine, 0, len(checklist.Lines))}
 	for _, row := range checklist.Lines {
-		generated := quantityText(row.QuantityKind, row.AmountMinNumerator, row.AmountMinDenominator,
-			row.AmountMaxNumerator, row.AmountMaxDenominator, row.UnitSymbol,
-			row.PackageType, row.PackageSizeNumerator, row.PackageSizeDenominator, row.PackageSizeUnitSymbol)
+		generated := lineQuantityText(row, checklist.Quantities[row.ID], checklist.Unspecified[row.ID])
 		quantity := generated
 		if row.OverrideText.Valid {
 			quantity = &row.OverrideText.String
@@ -628,6 +626,32 @@ func quantityText(
 		amount += " " + unitSymbol.String
 	}
 	return &amount
+}
+
+// lineQuantityText joins a row's amounts that cannot be added exactly ("8 cloves + 1 tbsp") and
+// adds "more" when a recipe also gave no amount, so the row never understates what is needed.
+func lineQuantityText(row store.ListShoppingLinesRow, extra []store.ListShoppingLineQuantitiesRow, unspecified bool) *string {
+	first := quantityText(row.QuantityKind, row.AmountMinNumerator, row.AmountMinDenominator,
+		row.AmountMaxNumerator, row.AmountMaxDenominator, row.UnitSymbol,
+		row.PackageType, row.PackageSizeNumerator, row.PackageSizeDenominator, row.PackageSizeUnitSymbol)
+	if first == nil {
+		return nil
+	}
+	parts := []string{*first}
+	for _, quantity := range extra {
+		text := quantityText(quantity.QuantityKind,
+			sql.NullInt64{Int64: quantity.AmountMinNumerator, Valid: true}, sql.NullInt64{Int64: quantity.AmountMinDenominator, Valid: true},
+			quantity.AmountMaxNumerator, quantity.AmountMaxDenominator, quantity.UnitSymbol,
+			quantity.PackageType, quantity.PackageSizeNumerator, quantity.PackageSizeDenominator, quantity.PackageSizeUnitSymbol)
+		if text != nil {
+			parts = append(parts, *text)
+		}
+	}
+	if unspecified {
+		parts = append(parts, "more")
+	}
+	joined := strings.Join(parts, " + ")
+	return &joined
 }
 
 func formatRational(numerator, denominator int64) string {

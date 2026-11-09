@@ -12,7 +12,7 @@ import (
 
 const createShoppingList = `-- name: CreateShoppingList :one
 INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)
-RETURNING id, week_id, created_at, updated_at, household_id
+RETURNING id, week_id, created_at, updated_at, household_id, aggregation_version
 `
 
 type CreateShoppingListParams struct {
@@ -29,6 +29,7 @@ func (q *Queries) CreateShoppingList(ctx context.Context, arg CreateShoppingList
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.HouseholdID,
+		&i.AggregationVersion,
 	)
 	return i, err
 }
@@ -145,7 +146,7 @@ func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week,
 }
 
 const getShoppingListByWeek = `-- name: GetShoppingListByWeek :one
-SELECT id, week_id, created_at, updated_at, household_id FROM shopping_lists
+SELECT id, week_id, created_at, updated_at, household_id, aggregation_version FROM shopping_lists
 WHERE household_id = $1 AND week_id = $2
 `
 
@@ -163,6 +164,7 @@ func (q *Queries) GetShoppingListByWeek(ctx context.Context, arg GetShoppingList
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.HouseholdID,
+		&i.AggregationVersion,
 	)
 	return i, err
 }
