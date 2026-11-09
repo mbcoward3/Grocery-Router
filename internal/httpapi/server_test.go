@@ -152,7 +152,7 @@ func lineRemoved(t *testing.T, response *httptest.ResponseRecorder, lineID int64
 
 func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 	db := testDB(t)
-	service := week.NewService(db, zeroPicker{}, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5")
+	service := week.NewService(db, zeroPicker{}).ForHousehold("c0a7a2d8-669b-4e47-91c1-4d9a32f339d5")
 	past := time.Date(2026, time.August, 12, 12, 0, 0, 0, time.Local)
 	view, err := service.Generate(context.Background(), past, 2)
 	if err != nil {
@@ -255,12 +255,75 @@ func testDB(t *testing.T) *sql.DB {
 	return db
 }
 
+func TestRequestsUseAuthorizedPathHousehold(t *testing.T) {
+	db := testDB(t)
+	const householdA = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	const householdB = "711e58fa-2c03-44cc-83aa-432eab3158fb"
+	const missing = "c7c7d0df-c81c-41d9-b95b-c131bdd605bd"
+	statements := []struct {
+		query string
+		args  []any
+	}{
+		{"INSERT INTO households (id, name) VALUES ($1, 'Second household')", []any{householdB}},
+		{"INSERT INTO store_sections (household_id, key, name) VALUES ($1, 'other', 'Other')", []any{householdB}},
+		{"INSERT INTO grocery_items (household_id, key, name, store_section_id, shopping_mode) SELECT $1, 'second-item', 'Second item', id, 'counted' FROM store_sections WHERE household_id = $1 AND key = 'other'", []any{householdB}},
+		{"INSERT INTO recipes (household_id, key, name) VALUES ($1, 'second-recipe', 'Second recipe')", []any{householdB}},
+		{"INSERT INTO recipe_sources (recipe_id, relationship, attribution, is_primary, position) SELECT id, 'source', 'Household', 1, 0 FROM recipes WHERE household_id = $1 AND key = 'second-recipe'", []any{householdB}},
+		{"INSERT INTO recipe_ingredient_sections (household_id, recipe_id, name, position) SELECT $1, id, 'Ingredients', 0 FROM recipes WHERE household_id = $1 AND key = 'second-recipe'", []any{householdB}},
+		{"INSERT INTO recipe_ingredients (household_id, section_id, grocery_item_id, position, source_text, quantity_kind) SELECT $1, ris.id, gi.id, 0, 'Second item', 'unspecified' FROM recipe_ingredient_sections ris JOIN grocery_items gi ON gi.household_id = $1 AND gi.key = 'second-item' WHERE ris.household_id = $1", []any{householdB}},
+		{"INSERT INTO recipe_instruction_sections (recipe_id, name, position) SELECT id, 'Steps', 0 FROM recipes WHERE household_id = $1 AND key = 'second-recipe'", []any{householdB}},
+		{"INSERT INTO recipe_steps (section_id, position, instruction) SELECT ris.id, 0, 'Prepare item.' FROM recipe_instruction_sections ris JOIN recipes r ON r.id = ris.recipe_id WHERE r.household_id = $1", []any{householdB}},
+		{"UPDATE recipes SET status = 'reviewable' WHERE household_id = $1 AND key = 'second-recipe'", []any{householdB}},
+		{"UPDATE recipes SET status = 'verified', verified_at = '2026-08-01' WHERE household_id = $1 AND key = 'second-recipe'", []any{householdB}},
+	}
+	for _, statement := range statements {
+		if _, err := db.Exec(statement.query, statement.args...); err != nil {
+			t.Fatalf("seed second household: %v: %s", err, statement.query)
+		}
+	}
+	handler := httpapi.New(db, week.NewService(db, zeroPicker{}), func() time.Time {
+		return time.Date(2026, time.August, 19, 12, 0, 0, 0, time.UTC)
+	}, func(_ context.Context, id string) bool { return id == householdB }).Handler()
+
+	path := func(id, suffix string) string { return "/api/v2/households/" + id + suffix }
+	for _, id := range []string{householdA, missing} {
+		response := request(t, handler, http.MethodGet, path(id, "/recipes"), "")
+		if response.Code != http.StatusNotFound {
+			t.Fatalf("household %s recipes status = %d", id, response.Code)
+		}
+	}
+	recipes := request(t, handler, http.MethodGet, path(householdB, "/recipes"), "")
+	if recipes.Code != http.StatusOK {
+		t.Fatalf("second household recipes status = %d, body %s", recipes.Code, recipes.Body.String())
+	}
+	listed, ok := decodeObject(t, recipes)["recipes"].([]any)
+	if !ok || len(listed) != 1 || listed[0].(map[string]any)["name"] != "Second recipe" {
+		t.Fatalf("second household recipe list = %s", recipes.Body.String())
+	}
+	generated := request(t, handler, http.MethodPost, path(householdB, "/week/current/generate"), `{"recipeCount":1}`)
+	if generated.Code != http.StatusOK {
+		t.Fatalf("second household generate status = %d, body %s", generated.Code, generated.Body.String())
+	}
+	var countA, countB int
+	if err := db.QueryRow("SELECT count(*) FROM weeks WHERE household_id = $1", householdA).Scan(&countA); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow("SELECT count(*) FROM weeks WHERE household_id = $1", householdB).Scan(&countB); err != nil {
+		t.Fatal(err)
+	}
+	if countA != 0 || countB != 1 {
+		t.Fatalf("week counts: first household %d, second household %d", countA, countB)
+	}
+}
+
 func handlerForDB(db *sql.DB) http.Handler {
-	service := week.NewService(db, zeroPicker{}, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5")
+	service := week.NewService(db, zeroPicker{})
 	now := func() time.Time {
 		return time.Date(2026, time.August, 19, 12, 0, 0, 0, time.Local)
 	}
-	return httpapi.New(db, service, now, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", func(context.Context, string) bool { return true }).Handler()
+	return httpapi.New(db, service, now, func(_ context.Context, id string) bool {
+		return id == "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	}).Handler()
 }
 
 func request(t *testing.T, handler http.Handler, method, path, body string) *httptest.ResponseRecorder {

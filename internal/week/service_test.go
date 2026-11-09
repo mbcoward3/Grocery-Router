@@ -168,7 +168,7 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	}
 }
 
-func testService(t *testing.T) (*week.Service, *sql.DB) {
+func testService(t *testing.T) (*week.Household, *sql.DB) {
 	t.Helper()
 	db := testdatabase.Open(t)
 	documents, err := ingest.ReadDirectory(filepath.Join("..", "..", "corpus", "recipes"))
@@ -178,7 +178,7 @@ func testService(t *testing.T) (*week.Service, *sql.DB) {
 	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
 		t.Fatal(err)
 	}
-	return week.NewService(db, zeroPicker{}, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"), db
+	return week.NewService(db, zeroPicker{}).ForHousehold("c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"), db
 }
 
 func testNow() time.Time {
