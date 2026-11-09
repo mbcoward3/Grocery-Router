@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -404,4 +405,78 @@ func TestUnknownManualItemRemembersChosenSection(t *testing.T) {
 	if matches, err := service.SearchItems(ctx, "milk"); err != nil || len(matches) == 0 || matches[0].Name != "Milk" || matches[0].SectionID == other {
 		t.Fatalf("known search = %#v, %v", matches, err)
 	}
+}
+
+func TestChecklistHasOneRowPerItemAndUpgradesOldLists(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	view, err := service.Generate(ctx, testNow(), 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Two measured teaspoons and one "generous" pepper used to show as two Black Pepper rows.
+	for _, key := range []string{"tuna-melt", "beef-pot-roast", "beef-stew-with-carrots-and-potatoes"} {
+		var recipeID int64
+		if err := db.QueryRow(`SELECT id FROM recipes WHERE key = $1`, key).Scan(&recipeID); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := service.Add(ctx, testNow(), recipeID); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var rows, items int
+	if err := db.QueryRow(`SELECT count(*), count(DISTINCT grocery_item_id) FROM shopping_lines WHERE origin = 'generated'`).Scan(&rows, &items); err != nil {
+		t.Fatal(err)
+	}
+	if rows != items {
+		t.Fatalf("generated rows = %d for %d items, want one row per item", rows, items)
+	}
+	pepper := func() (int64, string, int64, bool) {
+		checklist, err := service.Checklist(ctx, testNow())
+		if err != nil {
+			t.Fatal(err)
+		}
+		found := 0
+		var id, completed int64
+		var kind string
+		for _, line := range checklist.Lines {
+			if line.DisplayName == "Black Pepper" {
+				found++
+				id, kind, completed = line.ID, line.QuantityKind, line.IsCompleted
+			}
+		}
+		if found != 1 {
+			t.Fatalf("Black Pepper rows = %d, want 1", found)
+		}
+		return id, kind, completed, checklist.Unspecified[id]
+	}
+	id, kind, _, unspecified := pepper()
+	if kind != "exact" || !unspecified {
+		t.Fatalf("Black Pepper kind = %q, unspecified = %v; want an exact amount plus more", kind, unspecified)
+	}
+	assertAllShoppingContributionsPresent(t, db, view.Week.ID)
+
+	// A list built before one row per item had keys like item:<id>:dimension:volume. Reading the
+	// current week rebuilds it once and keeps what was already checked.
+	if _, err := db.Exec(`UPDATE shopping_lines SET aggregation_key = aggregation_key || ':dimension:volume', is_completed = 1 WHERE id = $1`, id); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`UPDATE shopping_lists SET aggregation_version = 1`); err != nil {
+		t.Fatal(err)
+	}
+	if _, _, completed, _ := pepper(); completed != 1 {
+		t.Fatal("upgrading an old list lost the checked state")
+	}
+	var version int64
+	var key string
+	if err := db.QueryRow(`SELECT aggregation_version FROM shopping_lists`).Scan(&version); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT aggregation_key FROM shopping_lines WHERE display_name = 'Black Pepper'`).Scan(&key); err != nil {
+		t.Fatal(err)
+	}
+	if version != 2 || strings.Count(key, ":") != 1 {
+		t.Fatalf("after upgrade version = %d, key = %q", version, key)
+	}
+	assertAllShoppingContributionsPresent(t, db, view.Week.ID)
 }

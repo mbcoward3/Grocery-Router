@@ -692,3 +692,25 @@ DELETE. Done group open state is not persisted.
 **Revisit when:** Real shopping shows the Done group needs to stay open, or swipe gestures are wanted
 for remove.
 
+## D047 — One checklist row per grocery item; look-alike items need a decision
+
+**Decision:** The checklist shows each grocery item once. Exact addition still happens first;
+amounts that cannot be added exactly stay as separate quantities on the same row
+(`8 cloves + 1 tbsp`), and a requirement with no amount adds `+ more` instead of its own row.
+Separately, grocery items whose names look alike must have a recorded household decision before
+the corpus audits clean, and the catalog freeze applies the same gate.
+
+**Why:** Real use showed Black Pepper twice (2 tsp from two recipes, and a "generous" amount from
+a third). Unspecified requirements were keyed per recipe and incompatible units per unit, so 18
+items could repeat. Separately named near-duplicates (Kosher Salt and Salt, Onion and Yellow Onion)
+are a vocabulary problem that aggregation cannot fix and that new recipes would keep introducing.
+
+**Consequence:** Migration 00007 stores a row's second and later quantities; the current week
+rebuilds once on read and keeps checked, removed, and single-row adjusted state; history is not
+rebuilt. The catalog evaluation format is unchanged because grouping happens after aggregation.
+`corpus/item-reviews.yaml` holds 37 pairs: 16 pre-filled as distinct products and 21 awaiting the
+household. Merging approved pairs is a separate corpus change.
+
+**Revisit when:** The catalog vocabulary supplies aliases for the bootstrap corpus, or a row's
+combined amount needs a purchase-oriented summary.
+

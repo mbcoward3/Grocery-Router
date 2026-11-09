@@ -1,0 +1,51 @@
+# Grocery items whose names look alike. corpus-audit fails when a look-alike pair is missing
+# here, so a new recipe cannot quietly add "Yellow Onion" beside "Onion".
+#
+# decision:
+#   distinct   different products; keep both items.
+#   merge      approved to become one item; the corpus change follows.
+#   undecided  waiting on the household. The audit passes but lists these.
+#
+# Pairs marked distinct below were pre-filled as clearly different products. Change any that
+# are wrong.
+pairs:
+  # Waiting on the household.
+  - {items: [kosher-salt, salt], decision: undecided, suggestion: merge, note: "Catalog spec default: one presence-only salt."}
+  - {items: [onion, yellow-onion], decision: undecided, suggestion: merge, note: "Does plain Onion mean yellow onion?"}
+  - {items: [onion, white-onion], decision: undecided, suggestion: distinct}
+  - {items: [onion, red-onion], decision: undecided, suggestion: distinct}
+  - {items: [dill-pickle-slices, dill-pickles], decision: undecided, suggestion: merge}
+  - {items: [pepperoncini, sliced-pepperoncini], decision: undecided, suggestion: merge}
+  - {items: [mustard, yellow-mustard], decision: undecided, suggestion: merge}
+  - {items: [ground-mild-italian-sausage, italian-sausage], decision: undecided, suggestion: merge}
+  - {items: [shredded-cheddar-cheese, shredded-cheese], decision: undecided, suggestion: merge, note: "Merge if plain Shredded Cheese means cheddar."}
+  - {items: [shredded-cheese, shredded-italian-cheese-blend], decision: undecided, suggestion: distinct}
+  - {items: [shredded-cheese, shredded-mexican-cheese-blend], decision: undecided, suggestion: distinct}
+  - {items: [reduced-sodium-soy-sauce, soy-sauce], decision: undecided, suggestion: distinct, note: "Low-sodium is a protected descriptor in the catalog spec."}
+  - {items: [butter, unsalted-butter], decision: undecided, suggestion: distinct, note: "Merge if the household buys one kind of butter."}
+  - {items: [ground-beef, lean-ground-beef], decision: undecided, suggestion: merge}
+  - {items: [85-percent-lean-ground-beef, ground-beef], decision: undecided, suggestion: distinct}
+  - {items: [85-percent-lean-ground-beef, lean-ground-beef], decision: undecided, suggestion: distinct}
+  - {items: [90-percent-lean-ground-beef, ground-beef], decision: undecided, suggestion: distinct}
+  - {items: [90-percent-lean-ground-beef, lean-ground-beef], decision: undecided, suggestion: distinct}
+  - {items: [potatoes, russet-potatoes], decision: undecided, suggestion: merge, note: "Merge if plain Potatoes means russets."}
+  - {items: [potatoes, yukon-gold-potatoes], decision: undecided, suggestion: distinct}
+  - {items: [baby-yukon-potatoes, potatoes], decision: undecided, suggestion: distinct}
+
+  # Different products.
+  - {items: [butter, garlic-butter], decision: distinct}
+  - {items: [carrots, frozen-peas-and-carrots], decision: distinct}
+  - {items: [celery, celery-seed], decision: distinct}
+  - {items: [coconut-milk, milk], decision: distinct}
+  - {items: [garlic, garlic-butter], decision: distinct}
+  - {items: [garlic, garlic-powder], decision: distinct}
+  - {items: [garlic, garlic-salt], decision: distinct}
+  - {items: [garlic-salt, salt], decision: distinct}
+  - {items: [green-onion, onion], decision: distinct}
+  - {items: [lemon, lemon-juice], decision: distinct}
+  - {items: [onion, onion-powder], decision: distinct}
+  - {items: [onion, onion-soup-mix], decision: distinct}
+  - {items: [petite-diced-tomatoes, tomato], decision: distinct}
+  - {items: [rotel-tomatoes-and-chiles, tomato], decision: distinct}
+  - {items: [tomato, tomato-paste], decision: distinct}
+  - {items: [tomato, tomato-sauce], decision: distinct}

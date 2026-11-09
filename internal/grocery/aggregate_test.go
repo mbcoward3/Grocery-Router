@@ -154,3 +154,41 @@ func quantity(line grocery.Line) string {
 	}
 	return value + " " + line.Unit.Key
 }
+
+func TestGroupKeepsOneRowPerItem(t *testing.T) {
+	garlicClove := &grocery.Unit{ID: 6, Key: "clove", Dimension: "count", ToBaseNumerator: 1, ToBaseDenominator: 1}
+	requirements := []grocery.Requirement{
+		requirement(1, 10, 1, "black-pepper", "Black Pepper", "measured", "exact", rational(1, 1), nil, tsp),
+		requirement(2, 11, 1, "black-pepper", "Black Pepper", "measured", "unspecified", nil, nil, nil),
+		requirement(3, 12, 1, "black-pepper", "Black Pepper", "measured", "exact", rational(1, 1), nil, tsp),
+		requirement(1, 13, 2, "garlic", "Garlic", "measured", "exact", rational(8, 1), nil, garlicClove),
+		requirement(2, 14, 2, "garlic", "Garlic", "measured", "exact", rational(1, 1), nil, tbsp),
+		requirement(1, 15, 3, "parsley", "Parsley", "measured", "unspecified", nil, nil, nil),
+		requirement(2, 16, 3, "parsley", "Parsley", "measured", "unspecified", nil, nil, nil),
+		requirement(1, 17, 4, "salt", "Salt", "presence-only", "exact", rational(1, 2), nil, tsp),
+	}
+	lines, err := grocery.Aggregate(requirements)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := grocery.Group(lines)
+	if len(rows) != 4 {
+		t.Fatalf("rows = %d, want one per item", len(rows))
+	}
+	pepper, garlic, parsley, salt := rows[0], rows[1], rows[2], rows[3]
+	if pepper.Key != "item:1" || len(pepper.Quantities) != 1 || !pepper.Unspecified || len(pepper.Contributions) != 3 {
+		t.Fatalf("pepper = %#v", pepper)
+	}
+	assertRational(t, pepper.Quantities[0].Minimum, 2, 1)
+	if len(garlic.Quantities) != 2 || garlic.Unspecified || garlic.Quantities[0].Unit.Key != "clove" || garlic.Quantities[1].Unit.Key != "tbsp" {
+		t.Fatalf("garlic = %#v", garlic)
+	}
+	assertRational(t, garlic.Quantities[0].Minimum, 8, 1)
+	assertRational(t, garlic.Quantities[1].Minimum, 1, 1)
+	if len(parsley.Quantities) != 0 || !parsley.Unspecified || len(parsley.Contributions) != 2 {
+		t.Fatalf("parsley = %#v", parsley)
+	}
+	if !salt.Presence || salt.Unspecified || len(salt.Quantities) != 0 {
+		t.Fatalf("salt = %#v", salt)
+	}
+}

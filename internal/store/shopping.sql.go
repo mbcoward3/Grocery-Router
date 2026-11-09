@@ -227,6 +227,50 @@ func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg Create
 	return i, err
 }
 
+const createShoppingLineQuantity = `-- name: CreateShoppingLineQuantity :exec
+INSERT INTO shopping_line_quantities (
+    household_id, shopping_line_id, position, quantity_kind,
+    amount_min_numerator, amount_min_denominator,
+    amount_max_numerator, amount_max_denominator, unit_id,
+    package_type, package_size_numerator, package_size_denominator, package_size_unit_id
+) VALUES ($13, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+`
+
+type CreateShoppingLineQuantityParams struct {
+	ShoppingLineID         int64          `db:"shopping_line_id" json:"shopping_line_id"`
+	Position               int64          `db:"position" json:"position"`
+	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
+	AmountMinNumerator     int64          `db:"amount_min_numerator" json:"amount_min_numerator"`
+	AmountMinDenominator   int64          `db:"amount_min_denominator" json:"amount_min_denominator"`
+	AmountMaxNumerator     sql.NullInt64  `db:"amount_max_numerator" json:"amount_max_numerator"`
+	AmountMaxDenominator   sql.NullInt64  `db:"amount_max_denominator" json:"amount_max_denominator"`
+	UnitID                 sql.NullInt64  `db:"unit_id" json:"unit_id"`
+	PackageType            sql.NullString `db:"package_type" json:"package_type"`
+	PackageSizeNumerator   sql.NullInt64  `db:"package_size_numerator" json:"package_size_numerator"`
+	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
+	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
+}
+
+func (q *Queries) CreateShoppingLineQuantity(ctx context.Context, arg CreateShoppingLineQuantityParams) error {
+	_, err := q.db.ExecContext(ctx, createShoppingLineQuantity,
+		arg.ShoppingLineID,
+		arg.Position,
+		arg.QuantityKind,
+		arg.AmountMinNumerator,
+		arg.AmountMinDenominator,
+		arg.AmountMaxNumerator,
+		arg.AmountMaxDenominator,
+		arg.UnitID,
+		arg.PackageType,
+		arg.PackageSizeNumerator,
+		arg.PackageSizeDenominator,
+		arg.PackageSizeUnitID,
+		arg.HouseholdID,
+	)
+	return err
+}
+
 const deleteGeneratedShoppingLines = `-- name: DeleteGeneratedShoppingLines :exec
 DELETE FROM shopping_lines
 WHERE household_id = $1 AND shopping_list_id = $2
@@ -473,6 +517,93 @@ func (q *Queries) ListShoppingLineContributions(ctx context.Context, arg ListSho
 	return items, nil
 }
 
+const listShoppingLineQuantities = `-- name: ListShoppingLineQuantities :many
+SELECT
+    q.shopping_line_id,
+    q.position,
+    q.quantity_kind,
+    q.amount_min_numerator,
+    q.amount_min_denominator,
+    q.amount_max_numerator,
+    q.amount_max_denominator,
+    q.package_type,
+    q.package_size_numerator,
+    q.package_size_denominator,
+    u.key AS unit_key,
+    u.symbol AS unit_symbol,
+    psu.key AS package_size_unit_key,
+    psu.symbol AS package_size_unit_symbol
+FROM shopping_line_quantities AS q
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = q.household_id AND sl.id = q.shopping_line_id
+LEFT JOIN units AS u ON q.unit_id = u.id
+LEFT JOIN units AS psu ON q.package_size_unit_id = psu.id
+WHERE
+    q.household_id = $1
+    AND sl.shopping_list_id = $2
+ORDER BY q.shopping_line_id, q.position
+`
+
+type ListShoppingLineQuantitiesParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
+
+type ListShoppingLineQuantitiesRow struct {
+	ShoppingLineID         int64          `db:"shopping_line_id" json:"shopping_line_id"`
+	Position               int64          `db:"position" json:"position"`
+	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
+	AmountMinNumerator     int64          `db:"amount_min_numerator" json:"amount_min_numerator"`
+	AmountMinDenominator   int64          `db:"amount_min_denominator" json:"amount_min_denominator"`
+	AmountMaxNumerator     sql.NullInt64  `db:"amount_max_numerator" json:"amount_max_numerator"`
+	AmountMaxDenominator   sql.NullInt64  `db:"amount_max_denominator" json:"amount_max_denominator"`
+	PackageType            sql.NullString `db:"package_type" json:"package_type"`
+	PackageSizeNumerator   sql.NullInt64  `db:"package_size_numerator" json:"package_size_numerator"`
+	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
+	UnitKey                sql.NullString `db:"unit_key" json:"unit_key"`
+	UnitSymbol             sql.NullString `db:"unit_symbol" json:"unit_symbol"`
+	PackageSizeUnitKey     sql.NullString `db:"package_size_unit_key" json:"package_size_unit_key"`
+	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
+}
+
+func (q *Queries) ListShoppingLineQuantities(ctx context.Context, arg ListShoppingLineQuantitiesParams) ([]ListShoppingLineQuantitiesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listShoppingLineQuantities, arg.HouseholdID, arg.ShoppingListID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListShoppingLineQuantitiesRow{}
+	for rows.Next() {
+		var i ListShoppingLineQuantitiesRow
+		if err := rows.Scan(
+			&i.ShoppingLineID,
+			&i.Position,
+			&i.QuantityKind,
+			&i.AmountMinNumerator,
+			&i.AmountMinDenominator,
+			&i.AmountMaxNumerator,
+			&i.AmountMaxDenominator,
+			&i.PackageType,
+			&i.PackageSizeNumerator,
+			&i.PackageSizeDenominator,
+			&i.UnitKey,
+			&i.UnitSymbol,
+			&i.PackageSizeUnitKey,
+			&i.PackageSizeUnitSymbol,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listShoppingLineRecipeNames = `-- name: ListShoppingLineRecipeNames :many
 SELECT
     c.shopping_line_id,
@@ -621,6 +752,46 @@ func (q *Queries) ListShoppingLines(ctx context.Context, arg ListShoppingLinesPa
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listShoppingLinesWithUnspecified = `-- name: ListShoppingLinesWithUnspecified :many
+SELECT DISTINCT c.shopping_line_id
+FROM shopping_line_contributions AS c
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = c.household_id AND sl.id = c.shopping_line_id
+WHERE
+    c.household_id = $1
+    AND sl.shopping_list_id = $2
+    AND c.quantity_kind = 'unspecified'
+ORDER BY c.shopping_line_id
+`
+
+type ListShoppingLinesWithUnspecifiedParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
+
+func (q *Queries) ListShoppingLinesWithUnspecified(ctx context.Context, arg ListShoppingLinesWithUnspecifiedParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, listShoppingLinesWithUnspecified, arg.HouseholdID, arg.ShoppingListID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var shopping_line_id int64
+		if err := rows.Scan(&shopping_line_id); err != nil {
+			return nil, err
+		}
+		items = append(items, shopping_line_id)
 	}
 	if err := rows.Close(); err != nil {
 		return nil, err
@@ -832,6 +1003,29 @@ func (q *Queries) SetShoppingLineRemoved(ctx context.Context, arg SetShoppingLin
 		arg.LineID,
 		arg.StartsOn,
 	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const setShoppingListAggregationVersion = `-- name: SetShoppingListAggregationVersion :execrows
+UPDATE shopping_lists
+SET aggregation_version = $1
+WHERE
+    household_id = $2
+    AND id = $3
+    AND aggregation_version < $1
+`
+
+type SetShoppingListAggregationVersionParams struct {
+	Version     int64  `db:"version" json:"version"`
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) SetShoppingListAggregationVersion(ctx context.Context, arg SetShoppingListAggregationVersionParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, setShoppingListAggregationVersion, arg.Version, arg.HouseholdID, arg.ID)
 	if err != nil {
 		return 0, err
 	}

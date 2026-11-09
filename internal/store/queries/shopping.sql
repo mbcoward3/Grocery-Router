@@ -159,3 +159,56 @@ WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
 
 -- name: ResetSectionPositions :exec
 UPDATE store_sections SET display_position = default_section_position(key) WHERE household_id = $1;
+
+-- name: CreateShoppingLineQuantity :exec
+INSERT INTO shopping_line_quantities (
+    household_id, shopping_line_id, position, quantity_kind,
+    amount_min_numerator, amount_min_denominator,
+    amount_max_numerator, amount_max_denominator, unit_id,
+    package_type, package_size_numerator, package_size_denominator, package_size_unit_id
+) VALUES (sqlc.arg(household_id), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
+
+-- name: ListShoppingLineQuantities :many
+SELECT
+    q.shopping_line_id,
+    q.position,
+    q.quantity_kind,
+    q.amount_min_numerator,
+    q.amount_min_denominator,
+    q.amount_max_numerator,
+    q.amount_max_denominator,
+    q.package_type,
+    q.package_size_numerator,
+    q.package_size_denominator,
+    u.key AS unit_key,
+    u.symbol AS unit_symbol,
+    psu.key AS package_size_unit_key,
+    psu.symbol AS package_size_unit_symbol
+FROM shopping_line_quantities AS q
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = q.household_id AND sl.id = q.shopping_line_id
+LEFT JOIN units AS u ON q.unit_id = u.id
+LEFT JOIN units AS psu ON q.package_size_unit_id = psu.id
+WHERE
+    q.household_id = sqlc.arg(household_id)
+    AND sl.shopping_list_id = sqlc.arg(shopping_list_id)
+ORDER BY q.shopping_line_id, q.position;
+
+-- name: ListShoppingLinesWithUnspecified :many
+SELECT DISTINCT c.shopping_line_id
+FROM shopping_line_contributions AS c
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = c.household_id AND sl.id = c.shopping_line_id
+WHERE
+    c.household_id = sqlc.arg(household_id)
+    AND sl.shopping_list_id = sqlc.arg(shopping_list_id)
+    AND c.quantity_kind = 'unspecified'
+ORDER BY c.shopping_line_id;
+
+-- name: SetShoppingListAggregationVersion :execrows
+UPDATE shopping_lists
+SET aggregation_version = sqlc.arg(version)
+WHERE
+    household_id = sqlc.arg(household_id)
+    AND id = sqlc.arg(id)
+    AND aggregation_version < sqlc.arg(version);
