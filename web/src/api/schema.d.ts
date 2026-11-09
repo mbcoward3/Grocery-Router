@@ -289,7 +289,7 @@ export interface paths {
         delete: operations["removeCurrentGroceryLine"];
         options?: never;
         head?: never;
-        /** Toggle completion or set a week-only quantity override. */
+        /** Toggle completion, set a week-only quantity override, move a manual line, or restore a removed line. */
         patch: operations["updateCurrentGroceryLine"];
         trace?: never;
     };
@@ -966,6 +966,9 @@ export interface operations {
                     overrideText: string;
                 } | {
                     storeSectionId: number;
+                } | {
+                    /** @enum {boolean} */
+                    removed: false;
                 };
             };
         };

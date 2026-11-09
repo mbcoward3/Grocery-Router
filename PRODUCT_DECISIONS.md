@@ -670,3 +670,25 @@ supersedes D044's "remembered terms require separate scope" and its Hide done de
 
 **Revisit when:** The shared catalog vocabulary (CATALOG_INGEST_SPEC) supplies aliases that should
 replace or seed household memory.
+
+## D046 — Plain rows, one Done group, undo only for removal
+
+**Decision:** The grocery row is the check target. Every other line action (quantity, section,
+recipes, remove) lives behind one quiet details control. Checked lines settle into a single collapsed
+Done group at the bottom instead of folding sections behind a Hide done toggle. Undo moves from
+checking to removal, and dismisses itself. Checks update optimistically and never wait on a save.
+Reorder sections becomes a quiet header icon.
+
+**Why:** D044 and D045 solved real problems by adding visible controls: three always-visible icons
+per row on iPhone, a toggle whose label described the action rather than the state, per-section
+folding with a peek button, and a check toast that never dismissed and only covered the last item,
+while removal had no undo. Checking is trivially reversible; removal is not. A 26px checkbox was the
+only check target, and checks were blocked while any save was in flight.
+
+**Consequence:** This supersedes D044's fold and Undo-on-check behavior and D045's Hide done
+control. The grocery line update accepts `removed: false` to restore a removed line; removal stays
+DELETE. Done group open state is not persisted.
+
+**Revisit when:** Real shopping shows the Done group needs to stay open, or swipe gestures are wanted
+for remove.
+
