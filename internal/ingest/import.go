@@ -131,9 +131,10 @@ func importDocument(
 
 	for sectionPosition, ingredientSection := range document.IngredientSections {
 		section, err := queries.CreateIngredientSection(ctx, store.CreateIngredientSectionParams{
-			RecipeID: recipe.ID,
-			Name:     ingredientSection.Name,
-			Position: int64(sectionPosition),
+			HouseholdID: householdID,
+			RecipeID:    recipe.ID,
+			Name:        ingredientSection.Name,
+			Position:    int64(sectionPosition),
 		})
 		if err != nil {
 			return err
@@ -143,7 +144,7 @@ func importDocument(
 			if err != nil {
 				return err
 			}
-			params, err := ingredientParams(ctx, queries, ingredient, section.ID, item.ID, int64(ingredientPosition), units)
+			params, err := ingredientParams(ctx, queries, householdID, ingredient, section.ID, item.ID, int64(ingredientPosition), units)
 			if err != nil {
 				return err
 			}
@@ -248,6 +249,7 @@ func ensureGroceryItem(
 func ingredientParams(
 	ctx context.Context,
 	queries *store.Queries,
+	householdID string,
 	ingredient Ingredient,
 	sectionID, itemID, position int64,
 	units map[string]store.Unit,
@@ -257,6 +259,7 @@ func ingredientParams(
 		return store.CreateRecipeIngredientParams{}, err
 	}
 	params := store.CreateRecipeIngredientParams{
+		HouseholdID:          householdID,
 		SectionID:            sectionID,
 		GroceryItemID:        sql.NullInt64{Int64: itemID, Valid: true},
 		Position:             position,

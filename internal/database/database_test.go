@@ -1,11 +1,16 @@
 package database_test
 
 import (
+	"context"
 	"database/sql"
+	"os"
 	"strings"
 	"testing"
 
+	"github.com/mbcoward3/grocery-router/internal/database"
+	"github.com/mbcoward3/grocery-router/internal/tenant"
 	"github.com/mbcoward3/grocery-router/internal/testdatabase"
+	"github.com/pressly/goose/v3"
 )
 
 func migratedDB(t *testing.T) *sql.DB {
@@ -47,10 +52,10 @@ func TestRecipeMustPassReviewBeforeVerification(t *testing.T) {
 		(recipe_id, relationship, attribution, is_primary, position)
 		VALUES ($1, 'source', 'Recipes.pdf', 1, 0)`, recipeID)
 	sectionID := mustInsertID(t, db, `INSERT INTO recipe_ingredient_sections
-		(recipe_id, name, position) VALUES ($1, 'Ingredients', 0)`, recipeID)
+		(household_id, recipe_id, name, position) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', $1, 'Ingredients', 0)`, recipeID)
 	ingredientID := mustInsertID(t, db, `INSERT INTO recipe_ingredients
-		(section_id, position, source_text, quantity_kind)
-		VALUES ($1, 0, 'salt to taste', 'unspecified')`, sectionID)
+		(household_id, section_id, position, source_text, quantity_kind)
+		VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', $1, 0, 'salt to taste', 'unspecified')`, sectionID)
 	instructionSectionID := mustInsertID(t, db, `INSERT INTO recipe_instruction_sections
 		(recipe_id, name, position) VALUES ($1, 'Method', 0)`, recipeID)
 	mustExec(t, db, `INSERT INTO recipe_steps (section_id, position, instruction)
@@ -107,29 +112,29 @@ func TestWeekDateAndVerifiedRecipeConstraints(t *testing.T) {
 func TestQuantityAndPackageConstraints(t *testing.T) {
 	db := migratedDB(t)
 	recipeID := mustInsertID(t, db, "INSERT INTO recipes (household_id, key, name) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', 'test', 'Test')")
-	sectionID := mustInsertID(t, db, "INSERT INTO recipe_ingredient_sections (recipe_id, name, position) VALUES ($1, 'Ingredients', 0)", recipeID)
+	sectionID := mustInsertID(t, db, "INSERT INTO recipe_ingredient_sections (household_id, recipe_id, name, position) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', $1, 'Ingredients', 0)", recipeID)
 	var unitID int64
 	if err := db.QueryRow("SELECT id FROM units WHERE key = 'oz'").Scan(&unitID); err != nil {
 		t.Fatal(err)
 	}
 
 	_, err := db.Exec(`INSERT INTO recipe_ingredients
-		(section_id, position, source_text, quantity_kind, amount_min_numerator,
+		(household_id, section_id, position, source_text, quantity_kind, amount_min_numerator,
 		 amount_min_denominator, unit_id)
-		VALUES ($1, 0, '1 oz cheese', 'exact', 1, 0, $2)`, sectionID, unitID)
+		VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', $1, 0, '1 oz cheese', 'exact', 1, 0, $2)`, sectionID, unitID)
 	assertErrorContains(t, err, "violates check constraint")
 
 	_, err = db.Exec(`INSERT INTO recipe_ingredients
-		(section_id, position, source_text, quantity_kind, amount_min_numerator,
+		(household_id, section_id, position, source_text, quantity_kind, amount_min_numerator,
 		 amount_min_denominator, package_type, package_size_numerator)
-		VALUES ($1, 0, 'one 14.5 oz can', 'exact', 1, 1, 'can', 29)`, sectionID)
+		VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', $1, 0, 'one 14.5 oz can', 'exact', 1, 1, 'can', 29)`, sectionID)
 	assertErrorContains(t, err, "violates check constraint")
 
 	mustExec(t, db, `INSERT INTO recipe_ingredients
-		(section_id, position, source_text, quantity_kind, amount_min_numerator,
+		(household_id, section_id, position, source_text, quantity_kind, amount_min_numerator,
 		 amount_min_denominator, package_type, package_size_numerator,
 		 package_size_denominator, package_size_unit_id)
-		VALUES ($1, 0, 'one 14.5 oz can', 'exact', 1, 1, 'can', 29, 2, $2)`, sectionID, unitID)
+		VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', $1, 0, 'one 14.5 oz can', 'exact', 1, 1, 'can', 29, 2, $2)`, sectionID, unitID)
 }
 
 func TestHouseholdConstraintsRejectCrossTenantRelationships(t *testing.T) {
@@ -148,6 +153,71 @@ func TestHouseholdConstraintsRejectCrossTenantRelationships(t *testing.T) {
 	otherWeekID := mustInsertID(t, db, "INSERT INTO weeks (household_id, starts_on) VALUES ($1, '2026-08-16')", other)
 	_, err = db.Exec("INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)", coward, otherWeekID)
 	assertErrorContains(t, err, "shopping_lists_household_week_fkey")
+}
+
+func TestRecipeIngredientRequiresItemInSameHousehold(t *testing.T) {
+	db := migratedDB(t)
+	var other string
+	if err := db.QueryRow("INSERT INTO households (name) VALUES ('Other') RETURNING id::text").Scan(&other); err != nil {
+		t.Fatal(err)
+	}
+	otherSection := mustInsertID(t, db, "INSERT INTO store_sections (household_id, key, name) VALUES ($1, 'other', 'Other')", other)
+	otherItem := mustInsertID(t, db, `INSERT INTO grocery_items
+		(household_id, key, name, store_section_id, shopping_mode)
+		VALUES ($1, 'other', 'Other', $2, 'counted')`, other, otherSection)
+	section := mustInsertID(t, db, "INSERT INTO store_sections (household_id, key, name) VALUES ($1, 'seeded', 'Seeded')", tenant.CowardHouseholdID)
+	item := mustInsertID(t, db, `INSERT INTO grocery_items
+		(household_id, key, name, store_section_id, shopping_mode)
+		VALUES ($1, 'seeded', 'Seeded', $2, 'counted')`, tenant.CowardHouseholdID, section)
+	recipe := mustInsertID(t, db, "INSERT INTO recipes (household_id, key, name) VALUES ($1, 'tenancy-test', 'Tenancy test')", tenant.CowardHouseholdID)
+	ingredientSection := mustInsertID(t, db, `INSERT INTO recipe_ingredient_sections
+		(household_id, recipe_id, name, position) VALUES ($1, $2, 'Ingredients', 0)`, tenant.CowardHouseholdID, recipe)
+	_, err := db.Exec(`INSERT INTO recipe_ingredients
+		(household_id, section_id, grocery_item_id, position, source_text, quantity_kind)
+		VALUES ($1, $2, $3, 0, 'wrong household', 'unspecified')`, tenant.CowardHouseholdID, ingredientSection, otherItem)
+	assertErrorContains(t, err, "recipe_ingredients_household_item_fkey")
+	mustExec(t, db, `INSERT INTO recipe_ingredients
+		(household_id, section_id, grocery_item_id, position, source_text, quantity_kind)
+		VALUES ($1, $2, $3, 0, 'right household', 'unspecified')`, tenant.CowardHouseholdID, ingredientSection, item)
+}
+
+func TestRecipeIngredientTenancyMigrationRollsBackAndReapplies(t *testing.T) {
+	db := migratedDB(t)
+	provider, err := goose.NewProvider(goose.DialectPostgres, db, os.DirFS("migrations"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.DownTo(context.Background(), 7); err != nil {
+		t.Fatalf("roll back recipe ingredient tenancy: %v", err)
+	}
+	storeSection := mustInsertID(t, db, "INSERT INTO store_sections (household_id, key, name) VALUES ($1, 'backfill', 'Backfill')", tenant.CowardHouseholdID)
+	item := mustInsertID(t, db, `INSERT INTO grocery_items
+		(household_id, key, name, store_section_id, shopping_mode)
+		VALUES ($1, 'backfill', 'Backfill', $2, 'counted')`, tenant.CowardHouseholdID, storeSection)
+	recipe := mustInsertID(t, db, "INSERT INTO recipes (household_id, key, name) VALUES ($1, 'backfill', 'Backfill')", tenant.CowardHouseholdID)
+	mustExec(t, db, `INSERT INTO recipe_sources (recipe_id, relationship, attribution, is_primary, position)
+		VALUES ($1, 'source', 'Test', 1, 0)`, recipe)
+	section := mustInsertID(t, db, "INSERT INTO recipe_ingredient_sections (recipe_id, name, position) VALUES ($1, 'Ingredients', 0)", recipe)
+	ingredient := mustInsertID(t, db, `INSERT INTO recipe_ingredients
+		(section_id, grocery_item_id, position, source_text, quantity_kind)
+		VALUES ($1, $2, 0, 'Backfill', 'unspecified')`, section, item)
+	instructions := mustInsertID(t, db, "INSERT INTO recipe_instruction_sections (recipe_id, name, position) VALUES ($1, 'Method', 0)", recipe)
+	mustExec(t, db, "INSERT INTO recipe_steps (section_id, position, instruction) VALUES ($1, 0, 'Prepare')", instructions)
+	mustExec(t, db, "UPDATE recipes SET status = 'reviewable' WHERE id = $1", recipe)
+	mustExec(t, db, "UPDATE recipes SET status = 'verified', verified_at = '2026-11-09T00:00:00Z' WHERE id = $1", recipe)
+	if err := database.Migrate(context.Background(), db); err != nil {
+		t.Fatalf("reapply recipe ingredient tenancy: %v", err)
+	}
+	var sectionHousehold, ingredientHousehold string
+	if err := db.QueryRow("SELECT household_id::text FROM recipe_ingredient_sections WHERE id = $1", section).Scan(&sectionHousehold); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow("SELECT household_id::text FROM recipe_ingredients WHERE id = $1", ingredient).Scan(&ingredientHousehold); err != nil {
+		t.Fatal(err)
+	}
+	if sectionHousehold != tenant.CowardHouseholdID || ingredientHousehold != tenant.CowardHouseholdID {
+		t.Fatalf("backfilled households = %s, %s", sectionHousehold, ingredientHousehold)
+	}
 }
 
 func TestHouseholdCannotLoseLastOwner(t *testing.T) {
