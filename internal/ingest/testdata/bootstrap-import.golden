@@ -1,16 +1,16 @@
-store_sections {"id": 1, "key": "other", "name": "Other", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 2, "key": "meat", "name": "Meat", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 3, "key": "spices", "name": "Spices", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 4, "key": "condiments", "name": "Condiments", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 5, "key": "non-shopping", "name": "Non-shopping", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 6, "key": "bakery", "name": "Bakery", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 7, "key": "dairy", "name": "Dairy", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 8, "key": "pantry", "name": "Pantry", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 9, "key": "produce", "name": "Produce", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 10, "key": "baking", "name": "Baking", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 11, "key": "wine-and-beer", "name": "Wine & Beer", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 12, "key": "frozen", "name": "Frozen", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
-store_sections {"id": 13, "key": "seafood", "name": "Seafood", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"}
+store_sections {"id": 1, "key": "other", "name": "Other", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 1300}
+store_sections {"id": 2, "key": "meat", "name": "Meat", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 300}
+store_sections {"id": 3, "key": "spices", "name": "Spices", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 800}
+store_sections {"id": 4, "key": "condiments", "name": "Condiments", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 900}
+store_sections {"id": 5, "key": "non-shopping", "name": "Non-shopping", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 1400}
+store_sections {"id": 6, "key": "bakery", "name": "Bakery", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 200}
+store_sections {"id": 7, "key": "dairy", "name": "Dairy", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 500}
+store_sections {"id": 8, "key": "pantry", "name": "Pantry", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 600}
+store_sections {"id": 9, "key": "produce", "name": "Produce", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 100}
+store_sections {"id": 10, "key": "baking", "name": "Baking", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 700}
+store_sections {"id": 11, "key": "wine-and-beer", "name": "Wine & Beer", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 1000}
+store_sections {"id": 12, "key": "frozen", "name": "Frozen", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 1100}
+store_sections {"id": 13, "key": "seafood", "name": "Seafood", "household_id": "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", "display_position": 400}
 units {"id": 1, "key": "each", "name": "each", "symbol": "each", "dimension": "count", "to_base_numerator": 1, "to_base_denominator": 1}
 units {"id": 2, "key": "slice", "name": "slice", "symbol": "slices", "dimension": "count", "to_base_numerator": 1, "to_base_denominator": 1}
 units {"id": 3, "key": "clove", "name": "clove", "symbol": "cloves", "dimension": "count", "to_base_numerator": 1, "to_base_denominator": 1}

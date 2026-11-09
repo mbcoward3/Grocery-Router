@@ -19,6 +19,7 @@ type Querier interface {
 	CountIngestSourceNodesBySite(ctx context.Context) ([]CountIngestSourceNodesBySiteRow, error)
 	CountIngestSourcePagesByState(ctx context.Context) ([]CountIngestSourcePagesByStateRow, error)
 	CountUnapprovedReviewFlags(ctx context.Context, arg CountUnapprovedReviewFlagsParams) (int64, error)
+	CreateBootstrapStoreSection(ctx context.Context, arg CreateBootstrapStoreSectionParams) (StoreSection, error)
 	CreateDraftRecipe(ctx context.Context, arg CreateDraftRecipeParams) (Recipe, error)
 	CreateGeneratedShoppingLine(ctx context.Context, arg CreateGeneratedShoppingLineParams) (ShoppingLine, error)
 	CreateGroceryItem(ctx context.Context, arg CreateGroceryItemParams) (GroceryItem, error)
@@ -98,6 +99,7 @@ type Querier interface {
 	ListWeekIngredientRequirements(ctx context.Context, arg ListWeekIngredientRequirementsParams) ([]ListWeekIngredientRequirementsRow, error)
 	ListWeekRecipeIDs(ctx context.Context, arg ListWeekRecipeIDsParams) ([]int64, error)
 	ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams) ([]ListWeekRecipesRow, error)
+	LockSectionOrder(ctx context.Context, id string) (string, error)
 	MarkIngestSourcePageFailed(ctx context.Context, arg MarkIngestSourcePageFailedParams) error
 	MarkIngestSourcePageFetched(ctx context.Context, arg MarkIngestSourcePageFetchedParams) error
 	// A retryable failure: stays queued until next_attempt_at.
@@ -114,10 +116,13 @@ type Querier interface {
 	ReleaseIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
 	// Explicitly queues a page again; a re-fetch creates new evidence and never edits the old.
 	RequeueIngestSourcePage(ctx context.Context, id int64) error
+	ResetSectionPositions(ctx context.Context, householdID string) error
 	ResumeIngestSite(ctx context.Context, arg ResumeIngestSiteParams) (int64, error)
 	// Deactivates a site the registry no longer lists. Its evidence, pages, and pauses stay.
 	RetireIngestSite(ctx context.Context, id string) (int64, error)
 	ReturnRecipeToDraft(ctx context.Context, arg ReturnRecipeToDraftParams) (Recipe, error)
+	SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (int64, error)
+	SetSectionPosition(ctx context.Context, arg SetSectionPositionParams) error
 	SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error)
 	SetShoppingLineOverride(ctx context.Context, arg SetShoppingLineOverrideParams) (int64, error)
 	SetShoppingLineRemoved(ctx context.Context, arg SetShoppingLineRemovedParams) (int64, error)

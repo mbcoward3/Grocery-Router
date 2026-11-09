@@ -48,6 +48,31 @@ func (q *Queries) CountUnapprovedReviewFlags(ctx context.Context, arg CountUnapp
 	return count, err
 }
 
+const createBootstrapStoreSection = `-- name: CreateBootstrapStoreSection :one
+INSERT INTO store_sections (household_id, key, name, display_position)
+VALUES ($1, $2, $3, default_section_position($2))
+RETURNING id, key, name, household_id, display_position
+`
+
+type CreateBootstrapStoreSectionParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	Key         string `db:"key" json:"key"`
+	Name        string `db:"name" json:"name"`
+}
+
+func (q *Queries) CreateBootstrapStoreSection(ctx context.Context, arg CreateBootstrapStoreSectionParams) (StoreSection, error) {
+	row := q.db.QueryRowContext(ctx, createBootstrapStoreSection, arg.HouseholdID, arg.Key, arg.Name)
+	var i StoreSection
+	err := row.Scan(
+		&i.ID,
+		&i.Key,
+		&i.Name,
+		&i.HouseholdID,
+		&i.DisplayPosition,
+	)
+	return i, err
+}
+
 const createDraftRecipe = `-- name: CreateDraftRecipe :one
 INSERT INTO recipes (
     household_id, key, name, image_url, yield_text,
@@ -363,7 +388,7 @@ func (q *Queries) CreateReviewFlag(ctx context.Context, arg CreateReviewFlagPara
 
 const createStoreSection = `-- name: CreateStoreSection :one
 INSERT INTO store_sections (household_id, key, name) VALUES ($3, $1, $2)
-RETURNING id, key, name, household_id
+RETURNING id, key, name, household_id, display_position
 `
 
 type CreateStoreSectionParams struct {
@@ -380,6 +405,7 @@ func (q *Queries) CreateStoreSection(ctx context.Context, arg CreateStoreSection
 		&i.Key,
 		&i.Name,
 		&i.HouseholdID,
+		&i.DisplayPosition,
 	)
 	return i, err
 }
@@ -510,7 +536,7 @@ func (q *Queries) GetRecipeByKey(ctx context.Context, arg GetRecipeByKeyParams) 
 }
 
 const getStoreSectionByKey = `-- name: GetStoreSectionByKey :one
-SELECT id, key, name, household_id FROM store_sections WHERE household_id = $1 AND key = $2
+SELECT id, key, name, household_id, display_position FROM store_sections WHERE household_id = $1 AND key = $2
 `
 
 type GetStoreSectionByKeyParams struct {
@@ -526,6 +552,7 @@ func (q *Queries) GetStoreSectionByKey(ctx context.Context, arg GetStoreSectionB
 		&i.Key,
 		&i.Name,
 		&i.HouseholdID,
+		&i.DisplayPosition,
 	)
 	return i, err
 }
@@ -972,7 +999,7 @@ func (q *Queries) ListRecipeSteps(ctx context.Context, arg ListRecipeStepsParams
 }
 
 const listStoreSections = `-- name: ListStoreSections :many
-SELECT id, key, name, household_id FROM store_sections WHERE household_id = $1 ORDER BY name
+SELECT id, key, name, household_id, display_position FROM store_sections WHERE household_id = $1 ORDER BY display_position, name
 `
 
 func (q *Queries) ListStoreSections(ctx context.Context, householdID string) ([]StoreSection, error) {
@@ -989,6 +1016,7 @@ func (q *Queries) ListStoreSections(ctx context.Context, householdID string) ([]
 			&i.Key,
 			&i.Name,
 			&i.HouseholdID,
+			&i.DisplayPosition,
 		); err != nil {
 			return nil, err
 		}

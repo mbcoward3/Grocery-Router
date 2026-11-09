@@ -1,0 +1,4 @@
+# Keep Go formatting and exact text fixtures consistent on Windows.
+*.go text eol=lf
+corpus/recipes/*.md text eol=lf
+*.golden text eol=lf

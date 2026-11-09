@@ -82,8 +82,9 @@ scope requires a new phase with its own acceptance criteria.
   grocery quantity overrides, removals, or completed lines.
 - **Explicit lock/finalize state.** Reconsider only if real use shows that the natural
   plan-then-shop workflow needs enforcement.
-- **Custom store-section ordering.** Persist household shopping order rather than
-  alphabetical sections.
+- **Within-section item ordering.** Section ordering was promoted by issues #36–#38 (D044);
+  custom ordering of individual items stays deferred.
+- **Remember manual terms.** Household aliases for repeated unknown items require separate scope.
 - **List export and sharing.** Web Share/Apple Notes, text export, or copy workflows.
 - **Offline shopping.** Installed PWA/service worker or another offline-capable list.
 - **Interactive cooking mode.** Step completion, timers, wake-lock behavior, and cooking
@@ -114,7 +115,7 @@ scope requires a new phase with its own acceptance criteria.
 - More elaborate fraction typography.
 - Advanced animation and transition choreography.
 - Additional themes beyond the dark-first direction.
-- Reorderable store sections.
+- Section ordering was promoted by issues #36–#38 (D044).
 
 ## 8. Rules for deferred work
 

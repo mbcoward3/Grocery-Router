@@ -132,11 +132,11 @@ export async function getGroceries(): Promise<Groceries | null> {
   }
 }
 
-export function addGroceryLine(name: string): Promise<Groceries> {
-  return request(householdPath('/week/current/groceries'), { method: 'POST', body: JSON.stringify({ name }) })
+export function addGroceryLine(input: string | { name: string; groceryItemId?: number; storeSectionId?: number }): Promise<Groceries> {
+  return request(householdPath('/week/current/groceries'), { method: 'POST', body: JSON.stringify(typeof input === 'string' ? { name: input } : input) })
 }
 
-export function updateGroceryLine(lineId: number, update: { completed: boolean } | { overrideText: string }): Promise<Groceries> {
+export function updateGroceryLine(lineId: number, update: { completed: boolean } | { overrideText: string } | { storeSectionId: number }): Promise<Groceries> {
   return request(householdPath(`/week/current/groceries/${lineId}`), { method: 'PATCH', body: JSON.stringify(update) })
 }
 
@@ -146,4 +146,14 @@ export function removeGroceryLine(lineId: number): Promise<Groceries> {
 
 export function getGroceryContributions(lineId: number): Promise<{ contributions: GroceryContribution[] }> {
   return request(householdPath(`/week/current/groceries/${lineId}/contributions`))
+}
+
+export type StoreSection = components['schemas']['StoreSection']
+export type GroceryItemMatch = components['schemas']['GroceryItemMatch']
+export function getStoreSections(): Promise<{ sections: StoreSection[] }> { return request(householdPath('/store-sections')) }
+export function setStoreSections(input: { sectionIds: number[] } | { reset: true }): Promise<{ sections: StoreSection[] }> {
+  return request(householdPath('/store-sections'), { method: 'PUT', body: JSON.stringify(input) })
+}
+export function searchGroceryItems(term: string): Promise<{ items: GroceryItemMatch[] }> {
+  return request(householdPath(`/grocery-items?q=${encodeURIComponent(term)}`))
 }

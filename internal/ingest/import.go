@@ -212,7 +212,7 @@ func ensureGroceryItem(
 		var err error
 		section, err = queries.GetStoreSectionByKey(ctx, store.GetStoreSectionByKeyParams{HouseholdID: householdID, Key: wanted.StoreSection.Key})
 		if errors.Is(err, sql.ErrNoRows) {
-			section, err = queries.CreateStoreSection(ctx, store.CreateStoreSectionParams{
+			section, err = queries.CreateBootstrapStoreSection(ctx, store.CreateBootstrapStoreSectionParams{
 				HouseholdID: householdID, Key: wanted.StoreSection.Key, Name: wanted.StoreSection.Name,
 			})
 		}

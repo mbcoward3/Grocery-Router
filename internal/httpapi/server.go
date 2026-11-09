@@ -58,6 +58,9 @@ func New(db *sql.DB, weeks *week.Service, clock Clock, householdID string, autho
 	mux.Handle("PATCH /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.guard(http.HandlerFunc(server.updateGroceryLine)))
 	mux.Handle("DELETE /api/v2/households/{householdID}/week/current/groceries/{lineID}", server.guard(http.HandlerFunc(server.removeGroceryLine)))
 	mux.Handle("GET /api/v2/households/{householdID}/week/current/groceries/{lineID}/contributions", server.guard(http.HandlerFunc(server.getGroceryContributions)))
+	mux.Handle("GET /api/v2/households/{householdID}/grocery-items", server.guard(http.HandlerFunc(server.searchGroceryItems)))
+	mux.Handle("GET /api/v2/households/{householdID}/store-sections", server.guard(http.HandlerFunc(server.storeSections)))
+	mux.Handle("PUT /api/v2/households/{householdID}/store-sections", server.guard(http.HandlerFunc(server.setStoreSections)))
 	server.handler = requestHeaders(mux)
 	return server
 }
@@ -152,12 +155,15 @@ type recipeRequest struct {
 }
 
 type manualLineRequest struct {
-	Name string `json:"name"`
+	Name           string `json:"name"`
+	GroceryItemID  int64  `json:"groceryItemId"`
+	StoreSectionID int64  `json:"storeSectionId"`
 }
 
 type groceryLineUpdate struct {
-	Completed    *bool   `json:"completed"`
-	OverrideText *string `json:"overrideText"`
+	StoreSectionID *int64  `json:"storeSectionId"`
+	Completed      *bool   `json:"completed"`
+	OverrideText   *string `json:"overrideText"`
 }
 
 type groceryResponse struct {
@@ -180,6 +186,7 @@ type historicalWeekResponse struct {
 
 type groceryLine struct {
 	ID                int64    `json:"id"`
+	SectionID         int64    `json:"sectionId"`
 	Section           string   `json:"section"`
 	Name              string   `json:"name"`
 	Quantity          *string  `json:"quantity"`
@@ -393,7 +400,7 @@ func (server *Server) addGroceryLine(response http.ResponseWriter, request *http
 	if !decodeJSON(response, request, &input) {
 		return
 	}
-	if _, err := server.weeks.AddManualLine(request.Context(), server.now(), input.Name); err != nil {
+	if _, err := server.weeks.AddManualLine(request.Context(), server.now(), input.Name, week.ManualLineOptions{GroceryItemID: input.GroceryItemID, StoreSectionID: input.StoreSectionID}); err != nil {
 		server.writeGroceryError(response, err)
 		return
 	}
@@ -409,13 +416,25 @@ func (server *Server) updateGroceryLine(response http.ResponseWriter, request *h
 	if !decodeJSON(response, request, &input) {
 		return
 	}
-	if (input.Completed == nil) == (input.OverrideText == nil) {
+	updates := 0
+	if input.Completed != nil {
+		updates++
+	}
+	if input.OverrideText != nil {
+		updates++
+	}
+	if input.StoreSectionID != nil {
+		updates++
+	}
+	if updates != 1 {
 		writeError(response, http.StatusBadRequest, "invalid_request", "Provide exactly one supported grocery line update.")
 		return
 	}
 	var err error
 	if input.Completed != nil {
 		err = server.weeks.SetLineCompleted(request.Context(), server.now(), lineID, *input.Completed)
+	} else if input.StoreSectionID != nil {
+		err = server.weeks.SetLineSection(request.Context(), server.now(), lineID, *input.StoreSectionID)
 	} else {
 		err = server.weeks.SetLineOverride(request.Context(), server.now(), lineID, *input.OverrideText)
 	}
@@ -485,7 +504,7 @@ func groceryResponseFromChecklist(checklist week.Checklist, startsOn string) gro
 			recipeNames = make([]string, 0)
 		}
 		result.Lines = append(result.Lines, groceryLine{
-			ID: row.ID, Section: row.StoreSectionName, Name: row.DisplayName,
+			ID: row.ID, SectionID: row.StoreSectionID, Section: row.StoreSectionName, Name: row.DisplayName,
 			Quantity: quantity, GeneratedQuantity: generated, Origin: row.Origin,
 			Optional: row.IsOptional == 1, Removed: row.IsRemoved == 1, Completed: row.IsCompleted == 1,
 			HasContributions: row.Origin == "generated", RecipeNames: recipeNames,
@@ -664,4 +683,63 @@ func requestHeaders(next http.Handler) http.Handler {
 		response.Header().Set("X-Content-Type-Options", "nosniff")
 		next.ServeHTTP(response, request)
 	})
+}
+
+type storeSectionResponse struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	Key  string `json:"key"`
+}
+
+func (server *Server) storeSections(response http.ResponseWriter, request *http.Request) {
+	sections, err := server.queries.ListStoreSections(request.Context(), server.householdID)
+	if err != nil {
+		server.writeGroceryError(response, err)
+		return
+	}
+	result := make([]storeSectionResponse, 0, len(sections))
+	for _, section := range sections {
+		result = append(result, storeSectionResponse{section.ID, section.Name, section.Key})
+	}
+	writeJSON(response, http.StatusOK, map[string]any{"sections": result})
+}
+func (server *Server) setStoreSections(response http.ResponseWriter, request *http.Request) {
+	var input struct {
+		SectionIDs []int64 `json:"sectionIds"`
+		Reset      bool    `json:"reset"`
+	}
+	if !decodeJSON(response, request, &input) {
+		return
+	}
+	if err := server.weeks.SetSectionOrder(request.Context(), input.SectionIDs, input.Reset); err != nil {
+		server.writeGroceryError(response, err)
+		return
+	}
+	server.storeSections(response, request)
+}
+func (server *Server) searchGroceryItems(response http.ResponseWriter, request *http.Request) {
+	rows, err := server.queries.ListGroceryItems(request.Context(), server.householdID)
+	if err != nil {
+		server.writeGroceryError(response, err)
+		return
+	}
+	type item struct {
+		ID        int64  `json:"id"`
+		Name      string `json:"name"`
+		SectionID int64  `json:"sectionId"`
+		Section   string `json:"section"`
+	}
+	result := make([]item, 0)
+	term := strings.ToLower(strings.Join(strings.Fields(request.URL.Query().Get("q")), " "))
+	if term != "" {
+		for _, row := range rows {
+			if strings.Contains(strings.ToLower(row.Name), term) || strings.Contains(strings.ReplaceAll(row.Key, "-", " "), term) {
+				result = append(result, item{row.ID, row.Name, row.StoreSectionID, row.StoreSectionName})
+				if len(result) == 12 {
+					break
+				}
+			}
+		}
+	}
+	writeJSON(response, http.StatusOK, map[string]any{"items": result})
 }

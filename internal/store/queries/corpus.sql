@@ -55,11 +55,16 @@ ORDER BY position;
 INSERT INTO store_sections (household_id, key, name) VALUES (sqlc.arg(household_id), $1, $2)
 RETURNING *;
 
+-- name: CreateBootstrapStoreSection :one
+INSERT INTO store_sections (household_id, key, name, display_position)
+VALUES (sqlc.arg(household_id), sqlc.arg(key), sqlc.arg(name), default_section_position(sqlc.arg(key)))
+RETURNING *;
+
 -- name: GetStoreSectionByKey :one
 SELECT * FROM store_sections WHERE household_id = sqlc.arg(household_id) AND key = sqlc.arg(key);
 
 -- name: ListStoreSections :many
-SELECT * FROM store_sections WHERE household_id = $1 ORDER BY name;
+SELECT * FROM store_sections WHERE household_id = $1 ORDER BY display_position, name;
 
 -- name: CreateUnit :one
 INSERT INTO units (

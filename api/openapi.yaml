@@ -176,6 +176,56 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+  /households/{householdID}/store-sections:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+    get:
+      operationId: getStoreSections
+      responses:
+        "200":
+          description: Household sections in shopping order.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoreSections" }
+    put:
+      operationId: setStoreSectionOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                sectionIds: { type: array, items: { type: integer, minimum: 1 }, uniqueItems: true }
+                reset: { type: boolean, default: false }
+      responses:
+        "200":
+          description: Saved household order.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/StoreSections" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+  /households/{householdID}/grocery-items:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+      - name: q
+        in: query
+        schema: { type: string }
+    get:
+      operationId: searchGroceryItems
+      responses:
+        "200":
+          description: Up to twelve deterministic household item matches.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/GroceryItemMatch" }
   /households/{householdID}/week/current/groceries:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -187,7 +237,7 @@ paths:
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
     post:
       operationId: addCurrentGroceryLine
-      summary: Add a manual presence-only line to Other.
+      summary: Add a manual item with deterministic known-item matching.
       requestBody:
         required: true
         content:
@@ -196,7 +246,10 @@ paths:
               type: object
               additionalProperties: false
               required: [name]
-              properties: { name: { type: string, minLength: 1 } }
+              properties:
+                name: { type: string, minLength: 1 }
+                groceryItemId: { type: integer, minimum: 1 }
+                storeSectionId: { type: integer, minimum: 1 }
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
@@ -225,6 +278,10 @@ paths:
                   additionalProperties: false
                   required: [overrideText]
                   properties: { overrideText: { type: string } }
+                - type: object
+                  additionalProperties: false
+                  required: [storeSectionId]
+                  properties: { storeSectionId: { type: integer, minimum: 1 } }
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
@@ -385,11 +442,34 @@ components:
             instructionSections:
               type: array
               items: { $ref: "#/components/schemas/RecipeInstructionSection" }
-    GroceryLine:
+    StoreSection:
       type: object
-      required: [id, section, name, quantity, generatedQuantity, origin, optional, removed, completed, hasContributions, recipeNames]
+      required: [id, name, key]
       properties:
         id: { type: integer }
+        name: { type: string }
+        key: { type: string }
+    StoreSections:
+      type: object
+      required: [sections]
+      properties:
+        sections:
+          type: array
+          items: { $ref: "#/components/schemas/StoreSection" }
+    GroceryItemMatch:
+      type: object
+      required: [id, name, sectionId, section]
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        sectionId: { type: integer }
+        section: { type: string }
+    GroceryLine:
+      type: object
+      required: [id, sectionId, section, name, quantity, generatedQuantity, origin, optional, removed, completed, hasContributions, recipeNames]
+      properties:
+        id: { type: integer }
+        sectionId: { type: integer }
         section: { type: string }
         name: { type: string }
         quantity: { type: [string, "null"] }
