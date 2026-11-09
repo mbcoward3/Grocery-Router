@@ -718,28 +718,25 @@ func (server *Server) setStoreSections(response http.ResponseWriter, request *ht
 	server.storeSections(response, request)
 }
 func (server *Server) searchGroceryItems(response http.ResponseWriter, request *http.Request) {
-	rows, err := server.queries.ListGroceryItems(request.Context(), server.householdID)
+	matches, err := server.weeks.SearchItems(request.Context(), request.URL.Query().Get("q"))
 	if err != nil {
 		server.writeGroceryError(response, err)
 		return
 	}
 	type item struct {
-		ID        int64  `json:"id"`
+		ID        *int64 `json:"id,omitempty"`
 		Name      string `json:"name"`
 		SectionID int64  `json:"sectionId"`
 		Section   string `json:"section"`
 	}
-	result := make([]item, 0)
-	term := strings.ToLower(strings.Join(strings.Fields(request.URL.Query().Get("q")), " "))
-	if term != "" {
-		for _, row := range rows {
-			if strings.Contains(strings.ToLower(row.Name), term) || strings.Contains(strings.ReplaceAll(row.Key, "-", " "), term) {
-				result = append(result, item{row.ID, row.Name, row.StoreSectionID, row.StoreSectionName})
-				if len(result) == 12 {
-					break
-				}
-			}
+	result := make([]item, 0, len(matches))
+	for _, match := range matches {
+		entry := item{Name: match.Name, SectionID: match.SectionID, Section: match.Section}
+		if match.GroceryItemID != 0 {
+			id := match.GroceryItemID
+			entry.ID = &id
 		}
+		result = append(result, entry)
 	}
 	writeJSON(response, http.StatusOK, map[string]any{"items": result})
 }

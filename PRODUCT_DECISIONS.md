@@ -652,3 +652,21 @@ supersedes the original in-place completion rule and D024's Other-only manual pl
 
 **Revisit when:** Repeated unknown terms justify household aliases or within-section item ordering
 needs scope. Shared catalog aliases remain gated by the catalog phase.
+
+## D045 — Remember where unknown items go; Hide done owns folding
+
+**Decision:** When the household places an unknown manual item in a section, remember that name's
+section for the household and reuse it in suggestions and later additions. Hide done is the single
+control for getting completed rows out of the way: it hides checked rows and folds fully completed
+sections; Show done shows everything. Hide done defaults on.
+
+**Why:** Real use after D044: cottage cheese placed in Dairy was unknown again next time, and fully
+completed sections folded whether or not Hide done was on, so the toggle appeared to do nothing
+and opening a folded section under Hide done showed an empty list.
+
+**Consequence:** `remembered_item_sections` stores normalized name to section per household.
+Placing a name in Other forgets it. Known corpus items are never overridden by memory. This
+supersedes D044's "remembered terms require separate scope" and its Hide done default.
+
+**Revisit when:** The shared catalog vocabulary (CATALOG_INGEST_SPEC) supplies aliases that should
+replace or seed household memory.

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"sort"
 	"strings"
 	"time"
 
@@ -546,20 +547,24 @@ func (service *Service) AddManualLine(ctx context.Context, now time.Time, name s
 			section.ID = matches[0].StoreSectionID
 			name = matches[0].Name
 		}
-		if options.StoreSectionID != 0 {
-			sections, err := queries.ListStoreSections(ctx, service.householdID)
-			if err != nil {
+		switch {
+		case options.StoreSectionID != 0:
+			if err := requireSection(ctx, queries, service.householdID, options.StoreSectionID); err != nil {
 				return err
 			}
-			found := false
-			for _, candidate := range sections {
-				if candidate.ID == options.StoreSectionID {
-					section.ID = candidate.ID
-					found = true
+			if !itemID.Valid {
+				if err := rememberSection(ctx, queries, service.householdID, name, options.StoreSectionID, section.ID); err != nil {
+					return err
 				}
 			}
-			if !found {
-				return fmt.Errorf("store section not found")
+			section.ID = options.StoreSectionID
+		case !itemID.Valid:
+			// An unknown name reuses the section the household chose for it last time.
+			remembered, err := queries.GetRememberedItemSection(ctx, store.GetRememberedItemSectionParams{HouseholdID: service.householdID, NameKey: normalizeItem(name)})
+			if err == nil {
+				section.ID = remembered
+			} else if !errors.Is(err, sql.ErrNoRows) {
+				return err
 			}
 		}
 		position, err := queries.NextManualShoppingLinePosition(ctx, store.NextManualShoppingLinePositionParams{HouseholdID: service.householdID, ShoppingListID: list.ID})
@@ -694,24 +699,136 @@ func normalizeItem(value string) string {
 
 // SetLineSection changes only a manual line in the current week.
 func (service *Service) SetLineSection(ctx context.Context, now time.Time, lineID, sectionID int64) error {
-	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
-		sections, err := queries.ListStoreSections(ctx, service.householdID)
-		if err != nil {
-			return 0, err
+	return service.transact(ctx, func(queries *store.Queries) error {
+		if err := requireSection(ctx, queries, service.householdID, sectionID); err != nil {
+			return err
 		}
-		found := false
-		for _, section := range sections {
-			if section.ID == sectionID {
-				found = true
-			}
-		}
-		if !found {
-			return 0, fmt.Errorf("store section not found")
-		}
-		return queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{
+		line, err := queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{
 			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID, StartsOn: CurrentSunday(now),
 		})
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("shopping line not found or operation is not supported")
+		}
+		if err != nil {
+			return err
+		}
+		// Known grocery items keep their reviewed corpus section; only unknown names are remembered.
+		if line.GroceryItemID.Valid {
+			return nil
+		}
+		other, err := queries.GetOtherStoreSection(ctx, service.householdID)
+		if err != nil {
+			return err
+		}
+		return rememberSection(ctx, queries, service.householdID, line.DisplayName, sectionID, other.ID)
 	})
+}
+
+func requireSection(ctx context.Context, queries *store.Queries, householdID string, sectionID int64) error {
+	sections, err := queries.ListStoreSections(ctx, householdID)
+	if err != nil {
+		return err
+	}
+	for _, section := range sections {
+		if section.ID == sectionID {
+			return nil
+		}
+	}
+	return fmt.Errorf("store section not found")
+}
+
+// rememberSection saves the household's placement of an unknown item name. Placing it in
+// Other is the default, so it clears the memory instead of storing it.
+func rememberSection(ctx context.Context, queries *store.Queries, householdID, name string, sectionID, otherID int64) error {
+	key := normalizeItem(name)
+	if sectionID == otherID {
+		return queries.ForgetItemSection(ctx, store.ForgetItemSectionParams{HouseholdID: householdID, NameKey: key})
+	}
+	return queries.RememberItemSection(ctx, store.RememberItemSectionParams{
+		HouseholdID: householdID, NameKey: key, DisplayName: strings.TrimSpace(name), StoreSectionID: sectionID,
+	})
+}
+
+// ItemMatch is one add-item suggestion: a known grocery item, or an unknown name the
+// household has placed before (GroceryItemID is zero).
+type ItemMatch struct {
+	GroceryItemID int64
+	Name          string
+	SectionID     int64
+	Section       string
+}
+
+// SearchItems returns up to twelve suggestions, best match first: exact, prefix, word
+// prefix, then substring, alphabetical within each tier.
+func (service *Service) SearchItems(ctx context.Context, term string) ([]ItemMatch, error) {
+	term = normalizeItem(term)
+	if term == "" {
+		return []ItemMatch{}, nil
+	}
+	queries := store.New(service.db)
+	items, err := queries.ListGroceryItems(ctx, service.householdID)
+	if err != nil {
+		return nil, err
+	}
+	remembered, err := queries.ListRememberedItemSections(ctx, service.householdID)
+	if err != nil {
+		return nil, err
+	}
+	type ranked struct {
+		match ItemMatch
+		rank  int
+	}
+	var found []ranked
+	known := make(map[string]bool, len(items))
+	for _, item := range items {
+		known[normalizeItem(item.Name)] = true
+		rank := matchRank(term, normalizeItem(item.Name))
+		if keyRank := matchRank(term, strings.ReplaceAll(item.Key, "-", " ")); keyRank < rank {
+			rank = keyRank
+		}
+		if rank < noMatch {
+			found = append(found, ranked{ItemMatch{item.ID, item.Name, item.StoreSectionID, item.StoreSectionName}, rank})
+		}
+	}
+	for _, entry := range remembered {
+		if known[entry.NameKey] {
+			continue
+		}
+		if rank := matchRank(term, entry.NameKey); rank < noMatch {
+			found = append(found, ranked{ItemMatch{0, entry.DisplayName, entry.StoreSectionID, entry.StoreSectionName}, rank})
+		}
+	}
+	sort.SliceStable(found, func(i, j int) bool {
+		if found[i].rank != found[j].rank {
+			return found[i].rank < found[j].rank
+		}
+		return strings.ToLower(found[i].match.Name) < strings.ToLower(found[j].match.Name)
+	})
+	result := make([]ItemMatch, 0, min(len(found), 12))
+	for _, entry := range found {
+		if len(result) == 12 {
+			break
+		}
+		result = append(result, entry.match)
+	}
+	return result, nil
+}
+
+const noMatch = 4
+
+func matchRank(term, candidate string) int {
+	switch {
+	case candidate == term:
+		return 0
+	case strings.HasPrefix(candidate, term):
+		return 1
+	case strings.Contains(candidate, " "+term):
+		return 2
+	case strings.Contains(candidate, term):
+		return 3
+	default:
+		return noMatch
+	}
 }
 
 // SetSectionOrder validates and saves a complete household order, or resets the default.

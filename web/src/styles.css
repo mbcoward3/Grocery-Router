@@ -542,6 +542,10 @@ select {
 .section-collapse svg { width: 14px; height: 14px; }
 .section-collapse[aria-expanded="true"] svg:last-child { transform: rotate(180deg); }
 .grocery-section > header { min-height: 44px; height: auto; }
+.grocery-section > header .section-done { display: inline-flex; align-items: center; gap: 6px; color: var(--success); font-size: 12px; }
+.section-done svg { width: 14px; height: 14px; }
+.grocery-section.all-done > header h2 { color: var(--faint); }
+.placement-panel strong .muted { font-weight: 400; font-size: 12px; }
 .grocery-lines[hidden] { display: none; }
 .shopping-undo { position: sticky; bottom: 20px; z-index: 10; width: fit-content; max-width: 100%; margin: 20px auto; padding: 8px 10px 8px 16px; display: flex; align-items: center; gap: 12px; color: var(--text); background: #19221f; border: 1px solid #375b4e; border-radius: 10px; box-shadow: 0 8px 28px #0007; font-size: 13px; }
 .shopping-undo > span { overflow-wrap: anywhere; }

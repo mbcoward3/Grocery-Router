@@ -44,6 +44,7 @@ type Querier interface {
 	DeleteWeekRecipe(ctx context.Context, arg DeleteWeekRecipeParams) (int64, error)
 	DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesParams) error
 	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
+	ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
 	GetIngestEvidence(ctx context.Context, id int64) (IngestEvidence, error)
 	GetIngestHostRateLimit(ctx context.Context, host string) (GetIngestHostRateLimitRow, error)
@@ -56,6 +57,7 @@ type Querier interface {
 	GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error)
 	GetRecipe(ctx context.Context, arg GetRecipeParams) (Recipe, error)
 	GetRecipeByKey(ctx context.Context, arg GetRecipeByKeyParams) (Recipe, error)
+	GetRememberedItemSection(ctx context.Context, arg GetRememberedItemSectionParams) (int64, error)
 	GetShoppingListByWeek(ctx context.Context, arg GetShoppingListByWeekParams) (ShoppingList, error)
 	GetStoreSectionByKey(ctx context.Context, arg GetStoreSectionByKeyParams) (StoreSection, error)
 	GetUnitByKey(ctx context.Context, key string) (Unit, error)
@@ -89,6 +91,7 @@ type Querier interface {
 	ListRecipeReviewFlags(ctx context.Context, arg ListRecipeReviewFlagsParams) ([]RecipeReviewFlag, error)
 	ListRecipeSources(ctx context.Context, arg ListRecipeSourcesParams) ([]RecipeSource, error)
 	ListRecipeSteps(ctx context.Context, arg ListRecipeStepsParams) ([]ListRecipeStepsRow, error)
+	ListRememberedItemSections(ctx context.Context, householdID string) ([]ListRememberedItemSectionsRow, error)
 	ListRunningIngestRuns(ctx context.Context) ([]IngestRun, error)
 	ListShoppingLineContributions(ctx context.Context, arg ListShoppingLineContributionsParams) ([]ListShoppingLineContributionsRow, error)
 	ListShoppingLineRecipeNames(ctx context.Context, arg ListShoppingLineRecipeNamesParams) ([]ListShoppingLineRecipeNamesRow, error)
@@ -114,6 +117,7 @@ type Querier interface {
 	// 5 seconds) from now. Returns 0 rows affected when the lease was lost to expiry.
 	ReleaseIngestHostSlot(ctx context.Context, arg ReleaseIngestHostSlotParams) (int64, error)
 	ReleaseIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
+	RememberItemSection(ctx context.Context, arg RememberItemSectionParams) error
 	// Explicitly queues a page again; a re-fetch creates new evidence and never edits the old.
 	RequeueIngestSourcePage(ctx context.Context, id int64) error
 	ResetSectionPositions(ctx context.Context, householdID string) error
@@ -121,7 +125,7 @@ type Querier interface {
 	// Deactivates a site the registry no longer lists. Its evidence, pages, and pauses stay.
 	RetireIngestSite(ctx context.Context, id string) (int64, error)
 	ReturnRecipeToDraft(ctx context.Context, arg ReturnRecipeToDraftParams) (Recipe, error)
-	SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (int64, error)
+	SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (SetManualLineSectionRow, error)
 	SetSectionPosition(ctx context.Context, arg SetSectionPositionParams) error
 	SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error)
 	SetShoppingLineOverride(ctx context.Context, arg SetShoppingLineOverrideParams) (int64, error)

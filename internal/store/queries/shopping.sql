@@ -119,14 +119,36 @@ WHERE shopping_lines.household_id = sqlc.arg(household_id)
         WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
     );
 
--- name: SetManualLineSection :execrows
+-- name: SetManualLineSection :one
 UPDATE shopping_lines SET store_section_id = sqlc.arg(store_section_id)
 WHERE shopping_lines.household_id = sqlc.arg(household_id) AND shopping_lines.id = sqlc.arg(line_id) AND origin = 'manual'
     AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
         WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
-    );
+    )
+RETURNING display_name, grocery_item_id;
+
+-- name: ListRememberedItemSections :many
+SELECT ris.name_key, ris.display_name, ris.store_section_id, ss.name AS store_section_name
+FROM remembered_item_sections ris
+JOIN store_sections ss ON ss.household_id = ris.household_id AND ss.id = ris.store_section_id
+WHERE ris.household_id = $1
+ORDER BY ris.display_name;
+
+-- name: GetRememberedItemSection :one
+SELECT store_section_id FROM remembered_item_sections
+WHERE household_id = $1 AND name_key = $2;
+
+-- name: RememberItemSection :exec
+INSERT INTO remembered_item_sections (household_id, name_key, display_name, store_section_id)
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (household_id, name_key) DO UPDATE
+SET display_name = excluded.display_name, store_section_id = excluded.store_section_id,
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"');
+
+-- name: ForgetItemSection :exec
+DELETE FROM remembered_item_sections WHERE household_id = $1 AND name_key = $2;
 
 -- name: LockSectionOrder :one
 SELECT id FROM households WHERE id = $1 FOR UPDATE;

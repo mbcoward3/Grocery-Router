@@ -392,7 +392,8 @@ export interface components {
             sections: components["schemas"]["StoreSection"][];
         };
         GroceryItemMatch: {
-            id: number;
+            /** @description Known grocery item ID; absent for a remembered household name. */
+            id?: number;
             name: string;
             sectionId: number;
             section: string;
@@ -879,7 +880,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Up to twelve deterministic household item matches. */
+            /** @description Up to twelve deterministic matches, best first. Known grocery items carry an id; names the household placed before do not. */
             200: {
                 headers: {
                     [name: string]: unknown;

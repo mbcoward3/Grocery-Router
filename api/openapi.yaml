@@ -216,7 +216,7 @@ paths:
       operationId: searchGroceryItems
       responses:
         "200":
-          description: Up to twelve deterministic household item matches.
+          description: Up to twelve deterministic matches, best first. Known grocery items carry an id; names the household placed before do not.
           content:
             application/json:
               schema:
@@ -458,9 +458,9 @@ components:
           items: { $ref: "#/components/schemas/StoreSection" }
     GroceryItemMatch:
       type: object
-      required: [id, name, sectionId, section]
+      required: [name, sectionId, section]
       properties:
-        id: { type: integer }
+        id: { type: integer, description: Known grocery item ID; absent for a remembered household name. }
         name: { type: string }
         sectionId: { type: integer }
         section: { type: string }

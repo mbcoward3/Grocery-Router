@@ -9,7 +9,10 @@ async function setup(page: Page) {
     let body: unknown
     if (path.endsWith('/session')) body = { user: { displayName: 'Shopper' }, households: [{ householdID: 'test', householdName: 'Coward', role: 'owner' }] }
     else if (path.endsWith('/week/current')) body = { id: 1, startsOn: '2026-11-08', recipes: [] }
-    else if (path.endsWith('/grocery-items')) body = { items: [{ id: 10, name: 'Milk', sectionId: 2, section: 'Dairy' }] }
+    else if (path.endsWith('/grocery-items')) {
+      const q = new URL(request.url()).searchParams.get('q') ?? ''
+      body = { items: q.startsWith('cot') ? [{ name: 'Cottage cheese', sectionId: 2, section: 'Dairy' }] : [{ id: 10, name: 'Milk', sectionId: 2, section: 'Dairy' }] }
+    }
     else if (path.endsWith('/store-sections')) {
       if (request.method() === 'PUT') {
         const input = request.postDataJSON()
@@ -20,7 +23,8 @@ async function setup(page: Page) {
       if (request.method() === 'POST') {
         const input = request.postDataJSON()
         const known = input.groceryItemId === 10 || input.name.toLowerCase().trim() === 'milk'
-        lines.push({ ...base, id: lines.length + 1, name: known ? 'Milk' : input.name, sectionId: known ? 2 : 4, section: known ? 'Dairy' : 'Other' })
+        const sectionId = known ? 2 : input.storeSectionId ?? 4
+        lines.push({ ...base, id: lines.length + 1, name: known ? 'Milk' : input.name, sectionId, section: sections.find(section => section.id === sectionId)!.name })
       }
       if (request.method() === 'PATCH') {
         const line = lines.find(line => line.id === Number(path.split('/').at(-1)))!
@@ -36,28 +40,41 @@ async function setup(page: Page) {
   await expect(page.getByRole('heading', { name: 'Groceries', exact: true })).toBeVisible()
 }
 
-test('check, delayed sink, undo, collapse, hide and restore preference', async ({ page }) => {
+test('hide done by default: checked items leave, done sections fold and can be opened', async ({ page }) => {
   await setup(page)
-  const rows = page.locator('.grocery-section').filter({ has: page.getByRole('heading', { name: 'Produce', exact: true }) }).locator('.grocery-row')
+  const produce = page.locator('.grocery-section').filter({ has: page.getByRole('heading', { name: 'Produce', exact: true }) }).locator('.grocery-row')
   await page.getByRole('button', { name: 'Mark complete: Apples', exact: true }).click()
-  await expect(rows.first()).toContainText('Apples')
-  await expect(rows.last()).toContainText('Apples', { timeout: 5000 })
+  await expect(produce.first()).toContainText('Apples')
+  await expect(produce).toHaveCount(1, { timeout: 5000 })
   await page.getByRole('button', { name: 'Undo', exact: true }).click()
-  await expect(rows.first()).toContainText('Apples')
+  await expect(produce).toHaveCount(2)
   await page.getByRole('button', { name: 'Mark complete: Cheese', exact: true }).click()
-  const collapse = page.getByRole('button', { name: '1 done' })
-  await expect(collapse).toHaveAttribute('aria-expanded', 'false')
-  await collapse.click()
-  await expect(page.getByRole('button', { name: 'Mark incomplete: Cheese' })).toBeVisible()
-  await page.getByRole('button', { name: 'Hide done', exact: true }).click()
+  const fold = page.getByRole('button', { name: '1 done' })
+  await expect(fold).toHaveAttribute('aria-expanded', 'false', { timeout: 5000 })
   await expect(page.getByRole('button', { name: 'Mark incomplete: Cheese' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: '1 done · show' })).toBeVisible()
-  await page.reload()
-  await expect(page.getByRole('button', { name: '1 done · show' })).toBeVisible()
-  await page.getByRole('button', { name: '1 done · show' }).click()
-  await page.getByRole('button', { name: '1 done', exact: true }).click()
+  // Opening a fully done section shows its checked items rather than an empty box.
+  await fold.click()
+  await expect(page.getByRole('button', { name: 'Mark incomplete: Cheese' })).toBeVisible()
   await page.getByRole('button', { name: 'Mark incomplete: Cheese' }).click()
   await expect(page.getByRole('button', { name: 'Mark complete: Cheese' })).toBeVisible()
+})
+
+test('showing done keeps everything visible with checked items sunk', async ({ page }) => {
+  await setup(page)
+  await page.getByRole('button', { name: 'Show done (0)', exact: true }).click()
+  const produce = page.locator('.grocery-section').filter({ has: page.getByRole('heading', { name: 'Produce', exact: true }) }).locator('.grocery-row')
+  await page.getByRole('button', { name: 'Mark complete: Apples', exact: true }).click()
+  await expect(produce.last()).toContainText('Apples', { timeout: 5000 })
+  await expect(produce).toHaveCount(2)
+  await page.getByRole('button', { name: 'Mark complete: Cheese', exact: true }).click()
+  const dairy = page.locator('.grocery-section').filter({ has: page.getByRole('heading', { name: 'Dairy', exact: true }) })
+  await expect(dairy).toContainText('All done', { timeout: 5000 })
+  await expect(dairy.getByRole('button', { name: 'Mark incomplete: Cheese' })).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('button', { name: 'Hide done', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Hide done', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Mark incomplete: Cheese' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Show done (2)', exact: true })).toBeVisible()
 })
 
 test('manual suggestions, exact matching, and section corrections', async ({ page }) => {
@@ -77,6 +94,16 @@ test('manual suggestions, exact matching, and section corrections', async ({ pag
   await page.getByRole('button', { name: 'Other', exact: true }).click()
   await expect(page.locator('.grocery-section').filter({ has: page.getByRole('heading', { name: 'Other', exact: true }) })).toContainText('Birthday candles')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+})
+
+test('a name placed before is suggested and added to its remembered section', async ({ page }) => {
+  await setup(page)
+  const input = page.getByRole('combobox', { name: 'Add grocery item' })
+  await input.fill('cot')
+  await expect(page.getByRole('option', { name: 'Cottage cheese Dairy' })).toBeVisible()
+  await page.getByRole('option', { name: 'Cottage cheese Dairy' }).click()
+  await expect(page.locator('.grocery-section').filter({ has: page.getByRole('heading', { name: 'Dairy', exact: true }) })).toContainText('Cottage cheese')
+  await expect(page.getByText('Where will you find Cottage cheese?')).toHaveCount(0)
 })
 
 test('section order saves, survives reload and resets', async ({ page }) => {
@@ -99,6 +126,7 @@ test('section order saves, survives reload and resets', async ({ page }) => {
 test('reduced motion keeps completion movement non-animated', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await setup(page)
+  await page.getByRole('button', { name: 'Show done (0)', exact: true }).click()
   await page.getByRole('button', { name: 'Mark complete: Apples', exact: true }).click()
   const rows = page.locator('.grocery-section').first().locator('.grocery-row')
   await expect(rows.last()).toContainText('Apples')
