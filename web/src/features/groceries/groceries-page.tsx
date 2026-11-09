@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react'
 import {
   addGroceryLine,
   getGroceries,
@@ -20,6 +20,9 @@ const changeKey = ['groceries'] as const
 // A checked row stays in place this long after the last check, so a mis-tap is easy to reverse.
 const settleDelay = 1800
 const undoDelay = 5000
+// Motion stays short and only moves what changed: rows ease in, settle out, and checks pop.
+const enterMotion = { duration: 180, easing: 'cubic-bezier(0, 0, .2, 1)' }
+const leaveMotion = { duration: 200, easing: 'cubic-bezier(.4, 0, .2, 1)' }
 
 type LineChange =
   | { type: 'complete'; lineId: number; completed: boolean }
@@ -36,7 +39,10 @@ export function GroceriesPage() {
   const quick = useLineChange()
   const edit = useLineChange()
   const add = useAddLine(setPlacingId)
-  const settling = useSettling(settleDelay)
+  const settling = useSettling(settleDelay, leaveMotion.duration)
+  // Rows present when the list first loads appear without motion; later arrivals ease in.
+  const ready = useRef(false)
+  useEffect(() => { if (query.data) ready.current = true })
   const [ordering, setOrdering] = useState(false)
   const [doneOpen, setDoneOpen] = useState(false)
   const [removed, setRemoved] = useState<GroceryLine | null>(null)
@@ -71,6 +77,7 @@ export function GroceriesPage() {
   const detail = lines.find(line => line.id === detailId)
   const placing = lines.find(line => line.id === placingId && line.origin === 'manual')
   const error = quick.error ?? add.error
+  const leaving = (line: GroceryLine) => settling.leaving && line.completed && settling.ids.has(line.id)
 
   function toggle(line: GroceryLine) {
     const completed = !line.completed
@@ -114,21 +121,21 @@ export function GroceriesPage() {
       {lines.length === 0 && <div className="grocery-empty">No grocery items this week.</div>}
       {lines.length > 0 && active.length === 0 && <p className="grocery-clear"><CheckIcon /> Everything’s in the cart.</p>}
       {groupBySection(active).map(([section, sectionLines]) => (
-        <section className="grocery-section" key={section} aria-labelledby={`section-${slug(section)}`}>
+        <Animated as="section" className="grocery-section" key={section} aria-labelledby={`section-${slug(section)}`} enter={ready.current} leave={sectionLines.every(leaving)}>
           <header>
             <h2 id={`section-${slug(section)}`}>{section}</h2>
             <span className="grocery-count">{sectionLines.filter(line => !line.completed).length}</span>
           </header>
           <ul className="grocery-lines">
             {sectionLines.map(line => (
-              <GroceryRow key={line.id} line={line} meta={line.recipeNames.join(' · ')} onToggle={() => toggle(line)} onOpen={() => setDetailId(line.id)} />
+              <GroceryRow key={line.id} line={line} meta={line.recipeNames.join(' · ')} enter={ready.current} leave={leaving(line)} onToggle={() => toggle(line)} onOpen={() => setDetailId(line.id)} />
             ))}
           </ul>
-        </section>
+        </Animated>
       ))}
 
       {done.length > 0 && (
-        <section className="grocery-section done-group" aria-labelledby="done-heading">
+        <Animated as="section" className="grocery-section done-group" aria-labelledby="done-heading" enter={ready.current}>
           <header>
             <h2 id="done-heading">
               <button className="done-toggle" type="button" aria-expanded={doneOpen} aria-controls="done-lines" onClick={() => setDoneOpen(open => !open)}>
@@ -138,10 +145,10 @@ export function GroceriesPage() {
           </header>
           {doneOpen && (
             <ul className="grocery-lines" id="done-lines">
-              {done.map(line => <GroceryRow key={line.id} line={line} meta={line.section} onToggle={() => toggle(line)} onOpen={() => setDetailId(line.id)} />)}
+              {done.map(line => <GroceryRow key={line.id} line={line} meta={line.section} enter={ready.current} onToggle={() => toggle(line)} onOpen={() => setDetailId(line.id)} />)}
             </ul>
           )}
-        </section>
+        </Animated>
       )}
 
       {removed && (
@@ -207,41 +214,81 @@ function useAddLine(onUnknown: (lineId: number) => void) {
   })
 }
 
-function useSettling(delay: number) {
+// Checked rows hold their place until checks pause, then collapse out together.
+function useSettling(delay: number, leaveDuration: number) {
   const [ids, setIds] = useState<ReadonlySet<number>>(() => new Set())
+  const [leaving, setLeaving] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
   const hold = useCallback((id: number) => {
     setIds(previous => new Set(previous).add(id))
+    setLeaving(false)
     clearTimeout(timer.current)
-    timer.current = setTimeout(() => setIds(new Set()), delay)
-  }, [delay])
+    timer.current = setTimeout(() => {
+      setLeaving(true)
+      timer.current = setTimeout(() => { setIds(new Set()); setLeaving(false) }, leaveDuration)
+    }, delay)
+  }, [delay, leaveDuration])
   const release = useCallback((id: number) => {
     setIds(previous => {
       if (!previous.has(id)) return previous
       const next = new Set(previous); next.delete(id); return next
     })
   }, [])
-  return { ids, hold, release }
+  return { ids, leaving, hold, release }
 }
 
-function GroceryRow({ line, meta, onToggle, onOpen }: { line: GroceryLine; meta: string; onToggle: () => void; onOpen: () => void }) {
-  const row = useRef<HTMLLIElement>(null)
-  const previousTop = useRef<number | null>(null)
-  // Rows glide into place when items above them settle away.
+function reducedMotion() { return window.matchMedia('(prefers-reduced-motion: reduce)').matches }
+
+// Height, opacity, and bottom margin animate together so neighbours glide instead of jumping.
+function useEnterLeave(ref: RefObject<HTMLElement | null>, enter: boolean, leave: boolean) {
+  const shouldEnter = useRef(enter)
   useLayoutEffect(() => {
-    if (!row.current) return
-    const top = row.current.getBoundingClientRect().top + window.scrollY
-    if (previousTop.current !== null && top !== previousTop.current && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      row.current.animate([{ transform: `translateY(${previousTop.current - top}px)` }, { transform: 'translateY(0)' }], { duration: 180, easing: 'ease-out' })
+    const element = ref.current
+    if (!shouldEnter.current || !element || reducedMotion()) return
+    const { height, marginBottom } = getComputedStyle(element)
+    clip(element, element.animate([{ height: '0px', marginBottom: '0px', opacity: 0 }, { height, marginBottom, opacity: 1 }], enterMotion))
+  }, [ref])
+  useLayoutEffect(() => {
+    const element = ref.current
+    if (!leave || !element || reducedMotion()) return
+    const { height, marginBottom } = getComputedStyle(element)
+    const animation = element.animate([{ height, marginBottom, opacity: 1 }, { height: '0px', marginBottom: '0px', opacity: 0 }], { ...leaveMotion, fill: 'forwards' })
+    clip(element, animation)
+    return () => animation.cancel()
+  }, [ref, leave])
+}
+
+function clip(element: HTMLElement, animation: Animation) {
+  element.style.overflow = 'hidden'
+  const restore = () => { element.style.overflow = '' }
+  animation.addEventListener('finish', restore)
+  animation.addEventListener('cancel', restore)
+}
+
+function Animated({ as: Tag, enter, leave = false, children, ...props }: { as: 'section'; enter: boolean; leave?: boolean; className: string; children: ReactNode; 'aria-labelledby': string }) {
+  const element = useRef<HTMLElement>(null)
+  useEnterLeave(element, enter, leave)
+  return <Tag ref={element} {...props}>{children}</Tag>
+}
+
+function GroceryRow({ line, meta, enter, leave = false, onToggle, onOpen }: { line: GroceryLine; meta: string; enter: boolean; leave?: boolean; onToggle: () => void; onOpen: () => void }) {
+  const row = useRef<HTMLLIElement>(null)
+  const check = useRef<HTMLSpanElement>(null)
+  const wasCompleted = useRef(line.completed)
+  useEnterLeave(row, enter, leave)
+  // The check pops only when it is ticked here, not when a done row appears.
+  useLayoutEffect(() => {
+    if (line.completed && !wasCompleted.current && !reducedMotion()) {
+      check.current?.animate([{ transform: 'scale(.6)' }, { transform: 'scale(1.1)', offset: .6 }, { transform: 'scale(1)' }], { duration: 240, easing: 'ease-out' })
     }
-    previousTop.current = top
-  })
+    wasCompleted.current = line.completed
+  }, [line.completed])
   const adjusted = line.quantity !== line.generatedQuantity
   return (
     <li ref={row} className={`grocery-row${line.completed ? ' completed' : ''}`}>
       <button className="grocery-toggle" type="button" onClick={onToggle} aria-pressed={line.completed} aria-label={`${line.completed ? 'Mark incomplete' : 'Mark complete'}: ${line.name}`}>
-        <span className="grocery-check" aria-hidden="true">{line.completed && <CheckIcon />}</span>
+        <span ref={check} className="grocery-check" aria-hidden="true">{line.completed && <CheckIcon />}</span>
         <span className="grocery-text">
           <span className="grocery-name">{line.name}{line.optional && <span className="optional-label">Optional</span>}</span>
           {meta && <span className="grocery-meta">{meta}</span>}
