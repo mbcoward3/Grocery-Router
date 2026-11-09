@@ -407,9 +407,18 @@ It must:
 ### 8.2 Store sections
 
 - Every canonical grocery item receives a manually reviewed store section during true-up.
-- Sections display alphabetically in v1.
-- Custom ordering is deferred.
-- A manually added line goes into `Other`.
+- Sections follow a persistent household order, shared across current weeks and history.
+- Default: Produce, Bakery, Meat, Seafood, Dairy, Pantry, Baking, Spices, Condiments,
+  Wine & Beer, Frozen, Other, Non-shopping. Unknown sections default just before Other.
+- Reorder sections from the grocery header with drag handles or accessible up/down buttons.
+  Every section can move. Saving validates the complete order transactionally; Reset restores defaults.
+- Newly ingested sections enter immediately before Other without disturbing saved order.
+- Manual additions suggest existing household items by name and normalized identity. Selection
+  or an unambiguous exact match (case/whitespace insensitive) uses that item's section and ID.
+- Unknown additions enter Other immediately and offer a section picker. Any manual line can be
+  moved later. Manual lines remain separate, adjacent to matching generated items, with no recipe
+  contributions. Recipe changes retain manual identities and chosen sections.
+- No runtime AI, quantity parsing, remembered terms, or shared catalog aliases are introduced.
 
 ### 8.3 User editing
 
@@ -426,7 +435,12 @@ A weekly quantity override should be represented separately from the underlying 
 
 ### 8.4 Completion display
 
-Completed items remain in place, visibly crossed out and slightly de-emphasized. They do not disappear or move to another screen.
+Completed items stay crossed out and de-emphasized, then sink below remaining items within their
+section after about 1.8 seconds without another check. Undo reverses a check. Fully completed
+sections collapse to their header with a done count and can be expanded. Hide done optionally hides
+completed rows, showing a count and show action; this preference defaults off and persists per device.
+Unchecking restores original order among remaining rows. Header/footer counts include hidden items.
+Section positions remain stable and nonessential movement respects reduced-motion preferences.
 
 ### 8.5 Provenance display
 

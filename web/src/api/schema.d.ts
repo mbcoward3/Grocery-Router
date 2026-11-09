@@ -214,6 +214,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{householdID}/store-sections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        get: operations["getStoreSections"];
+        put: operations["setStoreSectionOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{householdID}/grocery-items": {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        get: operations["searchGroceryItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{householdID}/week/current/groceries": {
         parameters: {
             query?: never;
@@ -226,7 +264,7 @@ export interface paths {
         /** Return the current grouped grocery checklist. */
         get: operations["getCurrentGroceries"];
         put?: never;
-        /** Add a manual presence-only line to Other. */
+        /** Add a manual item with deterministic known-item matching. */
         post: operations["addCurrentGroceryLine"];
         delete?: never;
         options?: never;
@@ -345,8 +383,23 @@ export interface components {
             ingredientSections: components["schemas"]["RecipeIngredientSection"][];
             instructionSections: components["schemas"]["RecipeInstructionSection"][];
         };
+        StoreSection: {
+            id: number;
+            name: string;
+            key: string;
+        };
+        StoreSections: {
+            sections: components["schemas"]["StoreSection"][];
+        };
+        GroceryItemMatch: {
+            id: number;
+            name: string;
+            sectionId: number;
+            section: string;
+        };
         GroceryLine: {
             id: number;
+            sectionId: number;
             section: string;
             name: string;
             quantity: string | null;
@@ -760,6 +813,85 @@ export interface operations {
             422: components["responses"]["WeekOperationFailed"];
         };
     };
+    getStoreSections: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Household sections in shopping order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreSections"];
+                };
+            };
+        };
+    };
+    setStoreSectionOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    sectionIds?: number[];
+                    /** @default false */
+                    reset?: boolean;
+                };
+            };
+        };
+        responses: {
+            /** @description Saved household order. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreSections"];
+                };
+            };
+            422: components["responses"]["WeekOperationFailed"];
+        };
+    };
+    searchGroceryItems: {
+        parameters: {
+            query?: {
+                q?: string;
+            };
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Up to twelve deterministic household item matches. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        items: components["schemas"]["GroceryItemMatch"][];
+                    };
+                };
+            };
+        };
+    };
     getCurrentGroceries: {
         parameters: {
             query?: never;
@@ -788,6 +920,8 @@ export interface operations {
             content: {
                 "application/json": {
                     name: string;
+                    groceryItemId?: number;
+                    storeSectionId?: number;
                 };
             };
         };
@@ -829,6 +963,8 @@ export interface operations {
                     completed: boolean;
                 } | {
                     overrideText: string;
+                } | {
+                    storeSectionId: number;
                 };
             };
         };

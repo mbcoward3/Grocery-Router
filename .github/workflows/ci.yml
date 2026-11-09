@@ -61,3 +61,11 @@ jobs:
 
       - name: Lint and test
         run: task ci
+
+      - name: Install browser for shopping acceptance
+        working-directory: web
+        run: npx playwright install --with-deps chromium
+
+      - name: Test desktop and mobile shopping
+        working-directory: web
+        run: npm run test:e2e

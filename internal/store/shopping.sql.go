@@ -103,18 +103,19 @@ func (q *Queries) CreateGeneratedShoppingLine(ctx context.Context, arg CreateGen
 
 const createManualShoppingLine = `-- name: CreateManualShoppingLine :one
 INSERT INTO shopping_lines (
-    household_id, shopping_list_id, store_section_id, origin, display_name, quantity_kind,
+    household_id, shopping_list_id, store_section_id, grocery_item_id, origin, display_name, quantity_kind,
     display_position
-) VALUES ($5, $1, $2, 'manual', $3, 'unspecified', $4)
+) VALUES ($5, $1, $2, $6, 'manual', $3, 'unspecified', $4)
 RETURNING id, shopping_list_id, grocery_item_id, store_section_id, aggregation_key, origin, display_name, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, is_removed, is_completed, display_position, override_text, created_at, updated_at, household_id
 `
 
 type CreateManualShoppingLineParams struct {
-	ShoppingListID  int64  `db:"shopping_list_id" json:"shopping_list_id"`
-	StoreSectionID  int64  `db:"store_section_id" json:"store_section_id"`
-	DisplayName     string `db:"display_name" json:"display_name"`
-	DisplayPosition int64  `db:"display_position" json:"display_position"`
-	HouseholdID     string `db:"household_id" json:"household_id"`
+	ShoppingListID  int64         `db:"shopping_list_id" json:"shopping_list_id"`
+	StoreSectionID  int64         `db:"store_section_id" json:"store_section_id"`
+	DisplayName     string        `db:"display_name" json:"display_name"`
+	DisplayPosition int64         `db:"display_position" json:"display_position"`
+	HouseholdID     string        `db:"household_id" json:"household_id"`
+	GroceryItemID   sql.NullInt64 `db:"grocery_item_id" json:"grocery_item_id"`
 }
 
 func (q *Queries) CreateManualShoppingLine(ctx context.Context, arg CreateManualShoppingLineParams) (ShoppingLine, error) {
@@ -124,6 +125,7 @@ func (q *Queries) CreateManualShoppingLine(ctx context.Context, arg CreateManual
 		arg.DisplayName,
 		arg.DisplayPosition,
 		arg.HouseholdID,
+		arg.GroceryItemID,
 	)
 	var i ShoppingLine
 	err := row.Scan(
@@ -242,7 +244,7 @@ func (q *Queries) DeleteGeneratedShoppingLines(ctx context.Context, arg DeleteGe
 }
 
 const getOtherStoreSection = `-- name: GetOtherStoreSection :one
-SELECT id, key, name, household_id FROM store_sections WHERE household_id = $1 AND key = 'other'
+SELECT id, key, name, household_id, display_position FROM store_sections WHERE household_id = $1 AND key = 'other'
 `
 
 func (q *Queries) GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error) {
@@ -253,6 +255,7 @@ func (q *Queries) GetOtherStoreSection(ctx context.Context, householdID string) 
 		&i.Key,
 		&i.Name,
 		&i.HouseholdID,
+		&i.DisplayPosition,
 	)
 	return i, err
 }
@@ -454,11 +457,12 @@ SELECT sl.id, sl.shopping_list_id, sl.grocery_item_id, sl.store_section_id, sl.a
     psu.key AS package_size_unit_key, psu.symbol AS package_size_unit_symbol
 FROM shopping_lines sl
 JOIN store_sections ss ON ss.household_id = sl.household_id AND ss.id = sl.store_section_id
+LEFT JOIN grocery_items gi ON gi.household_id = sl.household_id AND gi.id = sl.grocery_item_id
 LEFT JOIN units u ON u.id = sl.unit_id
 LEFT JOIN units psu ON psu.id = sl.package_size_unit_id
 WHERE sl.household_id = $1
     AND sl.shopping_list_id = $2
-ORDER BY ss.name, sl.display_position, sl.display_name, sl.id
+ORDER BY ss.display_position, ss.name, coalesce(gi.name, sl.display_name), sl.origin, sl.display_position, sl.id
 `
 
 type ListShoppingLinesParams struct {
@@ -553,6 +557,16 @@ func (q *Queries) ListShoppingLines(ctx context.Context, arg ListShoppingLinesPa
 	return items, nil
 }
 
+const lockSectionOrder = `-- name: LockSectionOrder :one
+SELECT id FROM households WHERE id = $1 FOR UPDATE
+`
+
+func (q *Queries) LockSectionOrder(ctx context.Context, id string) (string, error) {
+	row := q.db.QueryRowContext(ctx, lockSectionOrder, id)
+	err := row.Scan(&id)
+	return id, err
+}
+
 const nextManualShoppingLinePosition = `-- name: NextManualShoppingLinePosition :one
 SELECT CAST(coalesce(max(display_position) + 1, 0) AS BIGINT)
 FROM shopping_lines
@@ -570,6 +584,61 @@ func (q *Queries) NextManualShoppingLinePosition(ctx context.Context, arg NextMa
 	var column_1 int64
 	err := row.Scan(&column_1)
 	return column_1, err
+}
+
+const resetSectionPositions = `-- name: ResetSectionPositions :exec
+UPDATE store_sections SET display_position = default_section_position(key) WHERE household_id = $1
+`
+
+func (q *Queries) ResetSectionPositions(ctx context.Context, householdID string) error {
+	_, err := q.db.ExecContext(ctx, resetSectionPositions, householdID)
+	return err
+}
+
+const setManualLineSection = `-- name: SetManualLineSection :execrows
+UPDATE shopping_lines SET store_section_id = $1
+WHERE shopping_lines.household_id = $2 AND shopping_lines.id = $3 AND origin = 'manual'
+    AND shopping_list_id = (
+        SELECT list.id FROM shopping_lists list
+        JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
+        WHERE w.household_id = $2 AND w.starts_on = $4
+    )
+`
+
+type SetManualLineSectionParams struct {
+	StoreSectionID int64  `db:"store_section_id" json:"store_section_id"`
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	LineID         int64  `db:"line_id" json:"line_id"`
+	StartsOn       string `db:"starts_on" json:"starts_on"`
+}
+
+func (q *Queries) SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, setManualLineSection,
+		arg.StoreSectionID,
+		arg.HouseholdID,
+		arg.LineID,
+		arg.StartsOn,
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
+const setSectionPosition = `-- name: SetSectionPosition :exec
+UPDATE store_sections SET display_position = $1
+WHERE household_id = $2 AND id = $3
+`
+
+type SetSectionPositionParams struct {
+	DisplayPosition int64  `db:"display_position" json:"display_position"`
+	HouseholdID     string `db:"household_id" json:"household_id"`
+	ID              int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) SetSectionPosition(ctx context.Context, arg SetSectionPositionParams) error {
+	_, err := q.db.ExecContext(ctx, setSectionPosition, arg.DisplayPosition, arg.HouseholdID, arg.ID)
+	return err
 }
 
 const setShoppingLineCompleted = `-- name: SetShoppingLineCompleted :execrows

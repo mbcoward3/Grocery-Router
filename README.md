@@ -67,3 +67,9 @@ clone to install missing frontend dependencies, ingest the corpus into the local
 start both servers. Open `http://localhost:5173`; another device on the same network can use the
 Network URL printed by Vite. The Week screen is the first live vertical slice. Grocery and
 recipe-detail endpoints and screens are next.
+
+
+Shopping browser acceptance tests run against a local Vite server with deterministic API fixtures
+(no Google sign-in or production data). Install Chromium once with
+`cd web && npx playwright install chromium`, then run `npm run test:e2e` from `web`.
+The suite covers desktop and iPhone-sized Chromium layouts. Use Node 22.12+ or 24.

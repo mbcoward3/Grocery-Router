@@ -209,3 +209,134 @@ func assertAllShoppingContributionsPresent(t *testing.T, db *sql.DB, weekID int6
 		t.Fatalf("shopping contributions = %d, want %d eligible ingredients", got, wanted)
 	}
 }
+
+func TestManualPlacementAndSharedSectionOrder(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	if _, err := service.Generate(ctx, testNow(), 2); err != nil {
+		t.Fatal(err)
+	}
+	var milk, dairy, baking int64
+	if err := db.QueryRow(`SELECT id, store_section_id FROM grocery_items WHERE household_id = $1 AND key = 'milk'`, household).Scan(&milk, &dairy); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 AND key = 'baking'`, household).Scan(&baking); err != nil {
+		t.Fatal(err)
+	}
+	exact, err := service.AddManualLine(ctx, testNow(), "  MILK  ")
+	if err != nil || exact.StoreSectionID != dairy || exact.GroceryItemID.Int64 != milk || exact.Origin != "manual" {
+		t.Fatalf("exact match = %#v, %v", exact, err)
+	}
+	picked, err := service.AddManualLine(ctx, testNow(), "mil", week.ManualLineOptions{GroceryItemID: milk})
+	if err != nil || picked.StoreSectionID != dairy {
+		t.Fatalf("picked match = %#v, %v", picked, err)
+	}
+	unknown, err := service.AddManualLine(ctx, testNow(), "Birthday candles")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.SetLineSection(ctx, testNow(), unknown.ID, baking); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := service.AddManualLine(ctx, testNow(), "Bad item", week.ManualLineOptions{GroceryItemID: -1}); err == nil {
+		t.Fatal("invalid item accepted")
+	}
+	if err := service.SetLineSection(ctx, testNow(), unknown.ID, -1); err == nil {
+		t.Fatal("invalid section accepted")
+	}
+	if _, err := service.Generate(ctx, testNow(), 3); err != nil {
+		t.Fatal(err)
+	}
+	checklist, err := service.Checklist(ctx, testNow())
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := 0
+	for _, line := range checklist.Lines {
+		if line.ID == unknown.ID {
+			found++
+			if line.StoreSectionID != baking {
+				t.Fatal("manual section lost")
+			}
+		}
+		if line.ID == exact.ID {
+			found++
+			if line.GroceryItemID.Int64 != milk {
+				t.Fatal("manual identity lost")
+			}
+		}
+	}
+	if found != 2 {
+		t.Fatal("manual lines lost on rebuild")
+	}
+	var traces int
+	if err := db.QueryRow(`SELECT count(*) FROM shopping_line_contributions WHERE shopping_line_id IN ($1, $2)`, exact.ID, picked.ID).Scan(&traces); err != nil || traces != 0 {
+		t.Fatalf("manual traces = %d, %v", traces, err)
+	}
+	rows, err := db.Query(`SELECT id FROM store_sections WHERE household_id = $1 ORDER BY display_position DESC, name DESC`, household)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ids []int64
+	for rows.Next() {
+		var id int64
+		if err := rows.Scan(&id); err != nil {
+			t.Fatal(err)
+		}
+		ids = append(ids, id)
+	}
+	if err := rows.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.SetSectionOrder(ctx, ids, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.SetSectionOrder(ctx, ids[:len(ids)-1], false); err == nil {
+		t.Fatal("incomplete order accepted")
+	}
+	duplicate := append([]int64{}, ids...)
+	duplicate[0] = duplicate[1]
+	if err := service.SetSectionOrder(ctx, duplicate, false); err == nil {
+		t.Fatal("duplicate order accepted")
+	}
+	var first int64
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 ORDER BY display_position, name LIMIT 1`, household).Scan(&first); err != nil || first != ids[0] {
+		t.Fatalf("saved order = %d, %v", first, err)
+	}
+	if _, err := db.Exec(`INSERT INTO store_sections (household_id, key, name) VALUES ($1, 'seasonal', 'Seasonal')`, household); err != nil {
+		t.Fatal(err)
+	}
+	var seasonalPosition, otherPosition int64
+	if err := db.QueryRow(`SELECT display_position FROM store_sections WHERE household_id = $1 AND key = 'seasonal'`, household).Scan(&seasonalPosition); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT display_position FROM store_sections WHERE household_id = $1 AND key = 'other'`, household).Scan(&otherPosition); err != nil || seasonalPosition != otherPosition-1 {
+		t.Fatalf("new section placement = %d, Other %d, %v", seasonalPosition, otherPosition, err)
+	}
+	if err := service.SetSectionOrder(ctx, nil, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 ORDER BY display_position, name LIMIT 1`, household).Scan(&first); err != nil {
+		t.Fatal(err)
+	}
+	var produce int64
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 AND key = 'produce'`, household).Scan(&produce); err != nil || first != produce {
+		t.Fatal("default did not restore Produce first")
+	}
+}
+
+func TestNewSectionPlacementBeforeAnyCustomization(t *testing.T) {
+	_, db := testService(t)
+	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	if _, err := db.Exec(`INSERT INTO store_sections (household_id, key, name) VALUES ($1, 'seasonal', 'Seasonal')`, household); err != nil {
+		t.Fatal(err)
+	}
+	var newPosition, otherPosition int64
+	if err := db.QueryRow(`SELECT display_position FROM store_sections WHERE household_id = $1 AND key = 'seasonal'`, household).Scan(&newPosition); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT display_position FROM store_sections WHERE household_id = $1 AND key = 'other'`, household).Scan(&otherPosition); err != nil || newPosition != otherPosition-1 {
+		t.Fatalf("new section %d, Other %d, error %v", newPosition, otherPosition, err)
+	}
+}

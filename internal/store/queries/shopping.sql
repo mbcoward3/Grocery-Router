@@ -35,11 +35,12 @@ SELECT sl.*, ss.name AS store_section_name, u.key AS unit_key, u.symbol AS unit_
     psu.key AS package_size_unit_key, psu.symbol AS package_size_unit_symbol
 FROM shopping_lines sl
 JOIN store_sections ss ON ss.household_id = sl.household_id AND ss.id = sl.store_section_id
+LEFT JOIN grocery_items gi ON gi.household_id = sl.household_id AND gi.id = sl.grocery_item_id
 LEFT JOIN units u ON u.id = sl.unit_id
 LEFT JOIN units psu ON psu.id = sl.package_size_unit_id
 WHERE sl.household_id = sqlc.arg(household_id)
     AND sl.shopping_list_id = sqlc.arg(shopping_list_id)
-ORDER BY ss.name, sl.display_position, sl.display_name, sl.id;
+ORDER BY ss.display_position, ss.name, coalesce(gi.name, sl.display_name), sl.origin, sl.display_position, sl.id;
 
 -- name: ListShoppingLineRecipeNames :many
 SELECT
@@ -83,9 +84,9 @@ WHERE household_id = sqlc.arg(household_id) AND shopping_list_id = sqlc.arg(shop
 
 -- name: CreateManualShoppingLine :one
 INSERT INTO shopping_lines (
-    household_id, shopping_list_id, store_section_id, origin, display_name, quantity_kind,
+    household_id, shopping_list_id, store_section_id, grocery_item_id, origin, display_name, quantity_kind,
     display_position
-) VALUES (sqlc.arg(household_id), $1, $2, 'manual', $3, 'unspecified', $4)
+) VALUES (sqlc.arg(household_id), $1, $2, sqlc.narg(grocery_item_id), 'manual', $3, 'unspecified', $4)
 RETURNING *;
 
 -- name: SetShoppingLineRemoved :execrows
@@ -117,3 +118,22 @@ WHERE shopping_lines.household_id = sqlc.arg(household_id)
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
         WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
     );
+
+-- name: SetManualLineSection :execrows
+UPDATE shopping_lines SET store_section_id = sqlc.arg(store_section_id)
+WHERE shopping_lines.household_id = sqlc.arg(household_id) AND shopping_lines.id = sqlc.arg(line_id) AND origin = 'manual'
+    AND shopping_list_id = (
+        SELECT list.id FROM shopping_lists list
+        JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
+        WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
+    );
+
+-- name: LockSectionOrder :one
+SELECT id FROM households WHERE id = $1 FOR UPDATE;
+
+-- name: SetSectionPosition :exec
+UPDATE store_sections SET display_position = sqlc.arg(display_position)
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
+
+-- name: ResetSectionPositions :exec
+UPDATE store_sections SET display_position = default_section_position(key) WHERE household_id = $1;

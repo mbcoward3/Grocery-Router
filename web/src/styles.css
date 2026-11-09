@@ -520,3 +520,50 @@ select {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Shopping controls share the existing quiet panels and Market teal accent. */
+.shopping-toolbar { display: flex; justify-content: space-between; gap: 10px; margin: -4px 0 14px; }
+.hide-done-toggle.active { color: var(--accent-text); border-color: var(--accent); background: #10251f; }
+.quick-add-wrap { position: relative; margin-bottom: 28px; }
+.quick-add-wrap .quick-add { margin-bottom: 0; }
+.quick-add:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px #50bfa514; }
+.grocery-suggestions { position: absolute; z-index: 5; top: calc(100% + 6px); left: 0; right: 0; list-style: none; padding: 5px; margin: 0; max-height: 310px; overflow: auto; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--panel); box-shadow: 0 16px 32px #0006; }
+.grocery-suggestions li { min-height: 48px; padding: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 5px; cursor: pointer; }
+.grocery-suggestions li:hover, .grocery-suggestions li[aria-selected="true"] { background: #17352c; }
+.grocery-suggestions strong { font-size: 14px; font-weight: 550; }
+.grocery-suggestions span { color: var(--muted); font-size: 12px; }
+.placement-panel { padding: 14px; margin: -12px 0 24px; background: var(--panel); border: 1px solid var(--line-strong); border-radius: 8px; }
+.placement-panel > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.placement-panel strong { font-size: 13px; font-weight: 550; }
+.section-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+.section-chip { color: var(--muted); border: 1px solid var(--line-strong); border-radius: 24px; background: transparent; padding: 8px 13px; min-height: 40px; cursor: pointer; font-size: 12px; }
+.section-chip.selected { color: var(--accent-text); border-color: var(--accent); background: #10251f; }
+.section-collapse { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; border: 0; color: var(--success); background: transparent; cursor: pointer; font-size: 12px; }
+.section-collapse svg { width: 14px; height: 14px; }
+.section-collapse[aria-expanded="true"] svg:last-child { transform: rotate(180deg); }
+.grocery-section > header { min-height: 44px; height: auto; }
+.grocery-lines[hidden] { display: none; }
+.shopping-undo { position: sticky; bottom: 20px; z-index: 10; width: fit-content; max-width: 100%; margin: 20px auto; padding: 8px 10px 8px 16px; display: flex; align-items: center; gap: 12px; color: var(--text); background: #19221f; border: 1px solid #375b4e; border-radius: 10px; box-shadow: 0 8px 28px #0007; font-size: 13px; }
+.shopping-undo > span { overflow-wrap: anywhere; }
+.section-order-dialog { margin: auto; width: min(480px, calc(100% - 24px)); max-height: calc(100dvh - 32px); overflow-y: auto; }
+.section-order-dialog::backdrop { background: #000b; backdrop-filter: blur(3px); }
+.section-order-dialog .dialog-note { padding: 0 18px; margin: 16px 0; }
+.section-order-list { padding: 0 12px; margin: 0 0 16px; list-style: none; }
+.section-order-list li { display: flex; gap: 10px; align-items: center; min-height: 52px; padding: 3px 4px; border-bottom: 1px solid var(--line); }
+.section-order-list strong { flex: 1; font-size: 13px; font-weight: 520; }
+.section-position { width: 20px; font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.drag-handle { padding: 10px 5px; color: var(--muted); cursor: grab; font-size: 23px; touch-action: none; }
+.section-order-list .icon-button { width: 40px; height: 44px; font-size: 20px; }
+.section-order-dialog footer { position: sticky; bottom: 0; justify-content: space-between; }
+@media (max-width: 700px) {
+  .shopping-toolbar .button { min-height: 44px; }
+  .section-chip { min-height: 44px; }
+  .shopping-undo { bottom: 84px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .grocery-row.completed { animation: grocery-checked 220ms ease-out; }
+  @keyframes grocery-checked { from { background: #16372c; } to { background: transparent; } }
+}
+
+.row-section-picker { grid-column: 1 / -1; padding: 8px 0 16px; }
+.row-section-picker > div:first-child { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--muted); }

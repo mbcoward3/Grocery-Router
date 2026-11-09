@@ -324,8 +324,8 @@ week's list only.
 **Why:** The list needs to behave like a practical checklist without turning incidental weekly
 choices into corpus mutations.
 
-**Consequence:** Manual additions use `Other`; generated edits retain underlying contribution
-provenance. Recipe correction UI is deferred.
+**Consequence:** Manual additions resolve known household items or enter `Other` with a section
+picker (D044). Generated edits retain contribution provenance. Recipe correction UI is deferred.
 
 **Revisit when:** A deliberate promotion flow from list correction to recipe correction is
 scoped.
@@ -630,3 +630,25 @@ suggestion needs a household snapshot before it can generate groceries, and a re
 is evidence of retention, not proof it was cooked or liked.
 
 **Revisit when:** That spec is written.
+
+
+## D044 — Shopping follows the household store walk
+
+**Decision:** Promote issues #36–#38 after a real 54-item shop exposed misplaced manual items,
+excessive scrolling through completed rows, and unsuitable alphabetical section ordering.
+Known manual items resolve deterministically against household names and normalized keys; unknown
+items enter Other immediately with a section picker. Manual lines stay separate from recipe
+requirements and preserve their identity and section through regeneration.
+
+**Why:** Shopping should follow the store and keep attention on what remains to pick up.
+
+**Consequence:** One persistent household section order applies to every week and history.
+Defaults follow the issue's perimeter-first layout. All sections, including Other and Non-shopping,
+can move; new sections insert before Other. Full-order saves validate membership and duplicates,
+serialize with section creation, and roll back on failure. Reset restores defaults. Completed rows
+sink within sections after a short idle delay, fully-done sections collapse, and Undo is available.
+Hide done defaults off and persists per device. Failures retain input and show errors. This
+supersedes the original in-place completion rule and D024's Other-only manual placement.
+
+**Revisit when:** Repeated unknown terms justify household aliases or within-section item ordering
+needs scope. Shared catalog aliases remain gated by the catalog phase.

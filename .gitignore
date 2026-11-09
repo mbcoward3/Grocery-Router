@@ -20,3 +20,7 @@ dist/
 .idea/
 .vscode/
 *.swp
+
+# Browser acceptance artifacts
+web/test-results/
+web/playwright-report/

@@ -329,10 +329,11 @@ type ShoppingList struct {
 }
 
 type StoreSection struct {
-	ID          int64  `db:"id" json:"id"`
-	Key         string `db:"key" json:"key"`
-	Name        string `db:"name" json:"name"`
-	HouseholdID string `db:"household_id" json:"household_id"`
+	ID              int64  `db:"id" json:"id"`
+	Key             string `db:"key" json:"key"`
+	Name            string `db:"name" json:"name"`
+	HouseholdID     string `db:"household_id" json:"household_id"`
+	DisplayPosition int64  `db:"display_position" json:"display_position"`
 }
 
 type Unit struct {

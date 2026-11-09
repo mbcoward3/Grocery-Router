@@ -267,3 +267,41 @@ func assertErrorCode(t *testing.T, response *httptest.ResponseRecorder, want str
 		t.Fatalf("error code = %#v, want %q", errorBody["code"], want)
 	}
 }
+
+func TestShoppingDiscoveryAndOrderAPI(t *testing.T) {
+	handler := testHandler(t)
+	const root = "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	matches := request(t, handler, http.MethodGet, root+"/grocery-items?q=mil", "")
+	if matches.Code != http.StatusOK || len(decodeObject(t, matches)["items"].([]any)) == 0 {
+		t.Fatalf("matches: %s", matches.Body)
+	}
+	sections := request(t, handler, http.MethodGet, root+"/store-sections", "")
+	rows := decodeObject(t, sections)["sections"].([]any)
+	if sections.Code != http.StatusOK || rows[0].(map[string]any)["name"] != "Produce" {
+		t.Fatalf("default sections: %s", sections.Body)
+	}
+	var ids []int64
+	for i := len(rows) - 1; i >= 0; i-- {
+		ids = append(ids, int64(rows[i].(map[string]any)["id"].(float64)))
+	}
+	body, err := json.Marshal(map[string]any{"sectionIds": ids})
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved := request(t, handler, http.MethodPut, root+"/store-sections", string(body))
+	if saved.Code != http.StatusOK || int64(decodeObject(t, saved)["sections"].([]any)[0].(map[string]any)["id"].(float64)) != ids[0] {
+		t.Fatalf("save order: %s", saved.Body)
+	}
+	invalid := request(t, handler, http.MethodPut, root+"/store-sections", `{"sectionIds":[-1]}`)
+	if invalid.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("invalid order status: %d", invalid.Code)
+	}
+	inaccessible := request(t, handler, http.MethodGet, "/api/v2/households/00000000-0000-0000-0000-000000000000/grocery-items?q=mil", "")
+	if inaccessible.Code != http.StatusNotFound {
+		t.Fatalf("cross-tenant search status: %d", inaccessible.Code)
+	}
+	reset := request(t, handler, http.MethodPut, root+"/store-sections", `{"reset":true}`)
+	if reset.Code != http.StatusOK || decodeObject(t, reset)["sections"].([]any)[0].(map[string]any)["name"] != "Produce" {
+		t.Fatalf("reset: %s", reset.Body)
+	}
+}

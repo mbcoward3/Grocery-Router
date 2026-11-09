@@ -493,8 +493,8 @@ func boolInt(value bool) int64 {
 	return 0
 }
 
-// AddManualLine adds a week-only arbitrary item to Other.
-func (service *Service) AddManualLine(ctx context.Context, now time.Time, name string) (store.ShoppingLine, error) {
+// AddManualLine adds a week-only item, resolving known names deterministically.
+func (service *Service) AddManualLine(ctx context.Context, now time.Time, name string, choices ...ManualLineOptions) (store.ShoppingLine, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return store.ShoppingLine{}, fmt.Errorf("manual line name is required")
@@ -516,13 +516,59 @@ func (service *Service) AddManualLine(ctx context.Context, now time.Time, name s
 		if err != nil {
 			return err
 		}
+		var itemID sql.NullInt64
+		var options ManualLineOptions
+		if len(choices) > 0 {
+			options = choices[0]
+		}
+		if options.GroceryItemID < 0 || options.StoreSectionID < 0 {
+			return fmt.Errorf("item and section IDs must be positive")
+		}
+		items, err := queries.ListGroceryItems(ctx, service.householdID)
+		if err != nil {
+			return err
+		}
+		var matches []store.ListGroceryItemsRow
+		for _, item := range items {
+			if options.GroceryItemID != 0 {
+				if item.ID == options.GroceryItemID {
+					matches = append(matches, item)
+				}
+			} else if normalizeItem(name) == normalizeItem(item.Name) || normalizeItem(name) == normalizeItem(strings.ReplaceAll(item.Key, "-", " ")) {
+				matches = append(matches, item)
+			}
+		}
+		if options.GroceryItemID != 0 && len(matches) != 1 {
+			return fmt.Errorf("grocery item not found")
+		}
+		if len(matches) == 1 {
+			itemID = sql.NullInt64{Int64: matches[0].ID, Valid: true}
+			section.ID = matches[0].StoreSectionID
+			name = matches[0].Name
+		}
+		if options.StoreSectionID != 0 {
+			sections, err := queries.ListStoreSections(ctx, service.householdID)
+			if err != nil {
+				return err
+			}
+			found := false
+			for _, candidate := range sections {
+				if candidate.ID == options.StoreSectionID {
+					section.ID = candidate.ID
+					found = true
+				}
+			}
+			if !found {
+				return fmt.Errorf("store section not found")
+			}
+		}
 		position, err := queries.NextManualShoppingLinePosition(ctx, store.NextManualShoppingLinePositionParams{HouseholdID: service.householdID, ShoppingListID: list.ID})
 		if err != nil {
 			return err
 		}
 		result, err = queries.CreateManualShoppingLine(ctx, store.CreateManualShoppingLineParams{
 			HouseholdID: service.householdID, ShoppingListID: list.ID, StoreSectionID: section.ID,
-			DisplayName: name, DisplayPosition: position,
+			DisplayName: name, DisplayPosition: position, GroceryItemID: itemID,
 		})
 		return err
 	})
@@ -631,6 +677,77 @@ func (service *Service) updateLine(ctx context.Context, update func(*store.Queri
 		}
 		if rows != 1 {
 			return fmt.Errorf("shopping line not found or operation is not supported")
+		}
+		return nil
+	})
+}
+
+// ManualLineOptions optionally identifies a known item and a household section.
+type ManualLineOptions struct {
+	GroceryItemID  int64
+	StoreSectionID int64
+}
+
+func normalizeItem(value string) string {
+	return strings.ToLower(strings.Join(strings.Fields(value), " "))
+}
+
+// SetLineSection changes only a manual line in the current week.
+func (service *Service) SetLineSection(ctx context.Context, now time.Time, lineID, sectionID int64) error {
+	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
+		sections, err := queries.ListStoreSections(ctx, service.householdID)
+		if err != nil {
+			return 0, err
+		}
+		found := false
+		for _, section := range sections {
+			if section.ID == sectionID {
+				found = true
+			}
+		}
+		if !found {
+			return 0, fmt.Errorf("store section not found")
+		}
+		return queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{
+			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID, StartsOn: CurrentSunday(now),
+		})
+	})
+}
+
+// SetSectionOrder validates and saves a complete household order, or resets the default.
+func (service *Service) SetSectionOrder(ctx context.Context, ids []int64, reset bool) error {
+	return service.transact(ctx, func(queries *store.Queries) error {
+		if _, err := queries.LockSectionOrder(ctx, service.householdID); err != nil {
+			return err
+		}
+		sections, err := queries.ListStoreSections(ctx, service.householdID)
+		if err != nil {
+			return err
+		}
+		if reset {
+			if len(ids) != 0 {
+				return fmt.Errorf("reset cannot include section IDs")
+			}
+			if err := queries.ResetSectionPositions(ctx, service.householdID); err != nil {
+				return err
+			}
+		} else {
+			if len(ids) != len(sections) {
+				return fmt.Errorf("provide every household section exactly once; reload and try again")
+			}
+			allowed := make(map[int64]bool, len(sections))
+			for _, section := range sections {
+				allowed[section.ID] = true
+			}
+			for position, id := range ids {
+				if !allowed[id] {
+					return fmt.Errorf("unknown or duplicate section")
+				}
+				delete(allowed, id)
+				if err := queries.SetSectionPosition(ctx, store.SetSectionPositionParams{HouseholdID: service.householdID, ID: id, DisplayPosition: int64(position)}); err != nil {
+					return err
+				}
+			}
 		}
 		return nil
 	})
