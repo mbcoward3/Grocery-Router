@@ -57,12 +57,15 @@ jobs:
       - run: npm ci && npm test && npm run build
         working-directory: web
       - run: python3 tools/test_chart.py
+      - run: python3 -m unittest discover -s tools -p 'test_update_dev_image.py'
 
   publish:
     needs: validate
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
     permissions:
       contents: read
       packages: write
@@ -147,3 +150,56 @@ jobs:
           # shellcheck disable=SC2016
           printf '### Published\n- Image: `%s@%s`\n- Chart: `%s:%s`\n- Chart digest: `%s`\n- Promoted chart tag: `latest`\n' \
             "$image" "$IMAGE_DIGEST" "$chart" "$version" "$digest" >> "$GITHUB_STEP_SUMMARY"
+
+  deploy-dev:
+    needs: publish
+    # Fork PRs cannot publish or access the GitOps deploy key.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: grocery-router-shared-dev
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure GitOps deploy key
+        env:
+          DEPLOY_KEY: ${{ secrets.GITOPS_DEPLOY_KEY }}
+        run: |
+          install -d -m 0700 ~/.ssh
+          printf '%s\n' "$DEPLOY_KEY" > ~/.ssh/grocery-router-gitops
+          chmod 0600 ~/.ssh/grocery-router-gitops
+          ssh-keyscan -H github.com > ~/.ssh/known_hosts
+
+      - name: Promote successful build to shared development
+        env:
+          IMAGE_DIGEST: ${{ needs.publish.outputs.image-digest }}
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          GIT_SSH_COMMAND: ssh -i ~/.ssh/grocery-router-gitops -o IdentitiesOnly=yes
+        run: |
+          set -euo pipefail
+          git clone git@github.com:mbcoward3/talos-cluster.git gitops
+          git -C gitops config user.name 'grocery-router-dev-bot'
+          git -C gitops config user.email 'grocery-router-dev-bot@users.noreply.github.com'
+          path=apps/grocery-router/dev/deployment.yaml
+          # Retry from current GitOps main if another application pushed meanwhile.
+          for attempt in 1 2 3 4 5; do
+            git -C gitops fetch origin main
+            git -C gitops reset --hard origin/main
+            python3 tools/update_dev_image.py "gitops/$path" "$IMAGE_DIGEST"
+            if git -C gitops diff --quiet -- "$path"; then
+              echo 'Development already uses this image'
+              exit 0
+            fi
+            git -C gitops add "$path"
+            git -C gitops commit -m "chore: deploy Grocery Router dev ${SOURCE_SHA:0:12}"
+            if git -C gitops push origin HEAD:main; then
+              # shellcheck disable=SC2016
+              printf '### Development promotion requested\n- URL: https://groceries-dev.matthewcoward.com\n- Commit: `%s`\n- Image: `ghcr.io/mbcoward3/grocery-router@%s`\n\nFlux will reconcile the GitOps commit.\n' \
+                "$SOURCE_SHA" "$IMAGE_DIGEST" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            sleep "$attempt"
+          done
+          echo 'Failed to update shared development after five attempts' >&2
+          exit 1
