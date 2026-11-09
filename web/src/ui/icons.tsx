@@ -41,3 +41,5 @@ export const CheckIcon = (props: IconProps) => <Icon {...props}><path d="m5 12 4
 export const ChevronIcon = (props: IconProps) => <Icon {...props}><path d="m8 10 4 4 4-4" /></Icon>
 export const EditIcon = (props: IconProps) => <Icon {...props}><path d="m4 20 4.5-1 10-10-3.5-3.5-10 10L4 20Zm9-12 3.5 3.5" /></Icon>
 export const ExternalIcon = (props: IconProps) => <Icon {...props}><path d="M14 5h5v5M19 5l-9 9M18 13v6H5V6h6" /></Icon>
+export const MoreIcon = (props: IconProps) => <Icon {...props}><path d="M6 12h.01M12 12h.01M18 12h.01" strokeWidth="2.6" strokeLinecap="round" /></Icon>
+export const SortIcon = (props: IconProps) => <Icon {...props}><path d="M8 4v16m0 0-3-3m3 3 3-3M16 20V4m0 0-3 3m3-3 3 3" /></Icon>

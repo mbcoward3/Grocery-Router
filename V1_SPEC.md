@@ -427,7 +427,7 @@ It must:
 The user may:
 
 - add an arbitrary grocery line;
-- remove a line from that week's list;
+- remove a line from that week's list, and undo the removal;
 - change a generated quantity for that week; and
 - mark a line done or not done.
 
@@ -437,13 +437,14 @@ A weekly quantity override should be represented separately from the underlying 
 
 ### 8.4 Completion display
 
-Completed items stay crossed out and de-emphasized, then sink below remaining items within their
-section after about 1.8 seconds without another check. Undo reverses a check. Hide done hides
-completed rows; a fully completed section then folds to its header with a done count and can be
-opened to show (and uncheck) its items. Show done keeps every row visible, completed rows sunk, and
-marks fully completed sections "All done" without folding them. Hide done defaults on and persists
-per device.
-Unchecking restores original order among remaining rows. Header/footer counts include hidden items.
+Tapping anywhere on a row checks it off; the screen updates immediately and saving never blocks
+further taps. A checked row stays in place, crossed out, until about 1.8 seconds pass without
+another check, then settles into one collapsed Done group at the bottom of the list. Done can be
+opened to see and uncheck items; unchecking returns a line to its section in original order.
+Sections show only what is left, and a section with nothing left disappears. Checking is reversed by
+tapping again, so it has no toast. The header shows one progress count that includes Done items.
+Each row has one quiet details control that opens a sheet with the week quantity (recipe lines),
+section (manual lines), recipe provenance, and Remove. Removing shows a short-lived Undo.
 Section positions remain stable and nonessential movement respects reduced-motion preferences.
 
 ### 8.5 Provenance display

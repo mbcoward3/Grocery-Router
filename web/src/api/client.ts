@@ -136,7 +136,7 @@ export function addGroceryLine(input: string | { name: string; groceryItemId?: n
   return request(householdPath('/week/current/groceries'), { method: 'POST', body: JSON.stringify(typeof input === 'string' ? { name: input } : input) })
 }
 
-export function updateGroceryLine(lineId: number, update: { completed: boolean } | { overrideText: string } | { storeSectionId: number }): Promise<Groceries> {
+export function updateGroceryLine(lineId: number, update: { completed: boolean } | { overrideText: string } | { storeSectionId: number } | { removed: false }): Promise<Groceries> {
   return request(householdPath(`/week/current/groceries/${lineId}`), { method: 'PATCH', body: JSON.stringify(update) })
 }
 

@@ -164,6 +164,8 @@ type groceryLineUpdate struct {
 	StoreSectionID *int64  `json:"storeSectionId"`
 	Completed      *bool   `json:"completed"`
 	OverrideText   *string `json:"overrideText"`
+	// Removed accepts only false: it restores a removed line (Undo). DELETE removes.
+	Removed *bool `json:"removed"`
 }
 
 type groceryResponse struct {
@@ -426,13 +428,18 @@ func (server *Server) updateGroceryLine(response http.ResponseWriter, request *h
 	if input.StoreSectionID != nil {
 		updates++
 	}
-	if updates != 1 {
+	if input.Removed != nil {
+		updates++
+	}
+	if updates != 1 || (input.Removed != nil && *input.Removed) {
 		writeError(response, http.StatusBadRequest, "invalid_request", "Provide exactly one supported grocery line update.")
 		return
 	}
 	var err error
 	if input.Completed != nil {
 		err = server.weeks.SetLineCompleted(request.Context(), server.now(), lineID, *input.Completed)
+	} else if input.Removed != nil {
+		err = server.weeks.SetLineRemoved(request.Context(), server.now(), lineID, false)
 	} else if input.StoreSectionID != nil {
 		err = server.weeks.SetLineSection(request.Context(), server.now(), lineID, *input.StoreSectionID)
 	} else {

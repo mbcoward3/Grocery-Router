@@ -263,7 +263,7 @@ paths:
         schema: { type: integer, minimum: 1 }
     patch:
       operationId: updateCurrentGroceryLine
-      summary: Toggle completion or set a week-only quantity override.
+      summary: Toggle completion, set a week-only quantity override, move a manual line, or restore a removed line.
       requestBody:
         required: true
         content:
@@ -282,6 +282,10 @@ paths:
                   additionalProperties: false
                   required: [storeSectionId]
                   properties: { storeSectionId: { type: integer, minimum: 1 } }
+                - type: object
+                  additionalProperties: false
+                  required: [removed]
+                  properties: { removed: { type: boolean, enum: [false] } }
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }

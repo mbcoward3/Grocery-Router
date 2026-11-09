@@ -124,6 +124,30 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 	if recipeNames, ok := manualLine["recipeNames"].([]any); !ok || len(recipeNames) != 0 {
 		t.Fatalf("manual grocery line recipe names = %#v", manualLine["recipeNames"])
 	}
+	linePath := fmt.Sprintf("/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries/%d", lineID)
+	removed := request(t, handler, http.MethodDelete, linePath, "")
+	if removed.Code != http.StatusOK || !lineRemoved(t, removed, lineID) {
+		t.Fatalf("remove status = %d, body %s", removed.Code, removed.Body.String())
+	}
+	if invalid := request(t, handler, http.MethodPatch, linePath, `{"removed":true}`); invalid.Code != http.StatusBadRequest {
+		t.Fatalf("removing through PATCH status = %d, want 400", invalid.Code)
+	}
+	restored := request(t, handler, http.MethodPatch, linePath, `{"removed":false}`)
+	if restored.Code != http.StatusOK || lineRemoved(t, restored, lineID) {
+		t.Fatalf("restore status = %d, body %s", restored.Code, restored.Body.String())
+	}
+}
+
+func lineRemoved(t *testing.T, response *httptest.ResponseRecorder, lineID int64) bool {
+	t.Helper()
+	for _, value := range decodeObject(t, response)["lines"].([]any) {
+		line := value.(map[string]any)
+		if int64(line["id"].(float64)) == lineID {
+			return line["removed"].(bool)
+		}
+	}
+	t.Fatalf("line %d missing from response", lineID)
+	return false
 }
 
 func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {

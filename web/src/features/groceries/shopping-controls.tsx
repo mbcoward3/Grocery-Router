@@ -27,7 +27,7 @@ export function QuickAdd({ pending, onAdd }: { pending: boolean; onAdd: (input: 
     <form className="quick-add" onSubmit={submit}>
       <PlusIcon /><label className="sr-only" htmlFor="new-grocery">Add grocery item</label>
       <input ref={input} id="new-grocery" role="combobox" aria-autocomplete="list" aria-expanded={show} aria-controls="grocery-suggestions" aria-activedescendant={show && active >= 0 ? `grocery-suggestion-${active}` : undefined}
-        value={text} placeholder="Add an item…" autoComplete="off" onFocus={() => setOpen(true)} onBlur={() => setOpen(false)}
+        value={text} placeholder="Add an item…" autoComplete="off" enterKeyHint="enter" onFocus={() => setOpen(true)} onBlur={() => setOpen(false)}
         onChange={event => { setText(event.target.value); setOpen(true); setActive(-1) }}
         onKeyDown={event => {
           if (event.key === 'Escape') { setOpen(false); setActive(-1) }
@@ -36,7 +36,7 @@ export function QuickAdd({ pending, onAdd }: { pending: boolean; onAdd: (input: 
             setActive(previous => items.length ? (previous + (event.key === 'ArrowDown' ? 1 : -1) + items.length) % items.length : -1)
           }
         }} />
-      <button className="button" type="submit" disabled={!text.trim() || pending}>{pending ? 'Adding…' : 'Add'}</button>
+      {text.trim() && <button className="button" type="submit" disabled={pending}>{pending ? 'Adding…' : 'Add'}</button>}
     </form>
     {show && <ul className="grocery-suggestions" id="grocery-suggestions" role="listbox" aria-label="Known grocery items">
       {items.map((item, index) => <li key={`${item.id ?? 'remembered'}-${item.name}`} id={`grocery-suggestion-${index}`} role="option" aria-selected={active === index} onMouseDown={event => event.preventDefault()} onClick={() => void add(item)}><strong>{item.name}</strong><span>{item.section}</span></li>)}
