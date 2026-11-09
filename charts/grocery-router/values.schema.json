@@ -31,7 +31,6 @@
         "secretKey": {"type": "string", "minLength": 1}
       }
     },
-    "catalogRelease": {"type": "string"},
     "resources": {"type": "object"},
     "httpRoute": {
       "type": "object",
