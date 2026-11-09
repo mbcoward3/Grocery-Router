@@ -10,21 +10,23 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// ItemReviews records the household's decision on each pair of grocery items whose names look
-// alike ("Salt" and "Kosher Salt"). A new look-alike pair must be decided before the corpus
-// audits clean, so a near-duplicate item cannot slip in quietly with a new recipe.
+// ItemReviews classifies each pair of grocery items whose names look alike ("Salt" and "Kosher
+// Salt"). A new look-alike pair must be classified before the corpus audits clean, so a
+// near-duplicate item cannot slip in quietly with a new recipe. The catalog freeze applies the
+// same classifications automatically (CATALOG_INGEST_SPEC §6.1).
 type ItemReviews struct {
 	Pairs []ItemReview `yaml:"pairs"`
 }
 
-// ItemReview is one look-alike pair and what the household decided.
+// ItemReview is one look-alike pair and its classification.
 type ItemReview struct {
 	Items []string `yaml:"items,flow"`
-	// Decision is distinct (different products, keep both), merge (approved to become one item,
-	// awaiting the corpus change), or undecided.
-	Decision   string `yaml:"decision"`
-	Suggestion string `yaml:"suggestion,omitempty"`
-	Note       string `yaml:"note,omitempty"`
+	// Decision is alias (the same product; to become one item), group (different products a
+	// household may choose to combine on its list), distinct (never combined), or undecided.
+	Decision string `yaml:"decision"`
+	// Group names the substitution group for a group decision.
+	Group string `yaml:"group,omitempty"`
+	Note  string `yaml:"note,omitempty"`
 }
 
 // LookAlike is a pair of item keys whose names share every word of the shorter name.
@@ -46,7 +48,16 @@ func ParseItemReviews(reader io.Reader) (ItemReviews, error) {
 		if len(review.Items) != 2 || review.Items[0] >= review.Items[1] {
 			return ItemReviews{}, fmt.Errorf("item review %v must name two item keys in sorted order", review.Items)
 		}
-		if review.Decision != "distinct" && review.Decision != "merge" && review.Decision != "undecided" {
+		switch review.Decision {
+		case "alias", "distinct", "undecided":
+			if review.Group != "" {
+				return ItemReviews{}, fmt.Errorf("item review %v names a group without a group decision", review.Items)
+			}
+		case "group":
+			if review.Group == "" {
+				return ItemReviews{}, fmt.Errorf("item review %v needs a group name", review.Items)
+			}
+		default:
 			return ItemReviews{}, fmt.Errorf("item review %v has invalid decision %q", review.Items, review.Decision)
 		}
 		key := [2]string{review.Items[0], review.Items[1]}
@@ -110,7 +121,7 @@ func CheckLookAlikes(documents []Document, reviews ItemReviews) ([]ItemReview, e
 		}
 	}
 	if len(missing) > 0 {
-		return nil, fmt.Errorf("grocery items with look-alike names need a decision in corpus/item-reviews.yaml:\n  %s", strings.Join(missing, "\n  "))
+		return nil, fmt.Errorf("grocery items with look-alike names need a classification in corpus/item-reviews.yaml:\n  %s", strings.Join(missing, "\n  "))
 	}
 	return undecided, nil
 }

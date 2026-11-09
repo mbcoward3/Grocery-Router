@@ -163,9 +163,9 @@ func auditCorpus(root, corpusPath, inventoryPath string) error {
 	}
 	fmt.Printf("corpus valid: %d approved of %d PDF recipes\n", len(documents), inventoryCount)
 	if len(undecided) > 0 {
-		fmt.Printf("%d look-alike grocery item pairs await a household decision in corpus/item-reviews.yaml:\n", len(undecided))
+		fmt.Printf("%d look-alike grocery item pairs are unclassified in corpus/item-reviews.yaml:\n", len(undecided))
 		for _, review := range undecided {
-			fmt.Printf("  %s / %s (suggested: %s)\n", review.Items[0], review.Items[1], review.Suggestion)
+			fmt.Printf("  %s / %s\n", review.Items[0], review.Items[1])
 		}
 	}
 	return nil

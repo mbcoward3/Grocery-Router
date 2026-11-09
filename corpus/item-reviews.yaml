@@ -1,36 +1,43 @@
-# Grocery items whose names look alike. corpus-audit fails when a look-alike pair is missing
-# here, so a new recipe cannot quietly add "Yellow Onion" beside "Onion".
+# Grocery items whose names look alike, and how each pair is classified. corpus-audit fails
+# when a look-alike pair is missing here, so a new recipe cannot quietly add "Yellow Onion"
+# beside "Onion" unclassified.
 #
 # decision:
-#   distinct   different products; keep both items.
-#   merge      approved to become one item; the corpus change follows.
-#   undecided  waiting on the household. The audit passes but lists these.
+#   alias      the same product; the two items should become one.
+#   group      different products a household may choose to combine on its list (group names
+#              the substitution group; see SUBSTITUTIONS_SPEC.md). Combining is the household's
+#              choice, asked when both appear in one week; nothing combines by default.
+#   distinct   different products that are never combined.
+#   undecided  not yet classified. The audit passes but lists these.
 #
-# Pairs marked distinct below were pre-filled as clearly different products. Change any that
-# are wrong.
+# Classified by the agent, following the catalog rule: alias only for clearly the same product,
+# because a wrong alias silently merges products; a wrong group costs one question. Edit any
+# classification that is wrong.
 pairs:
-  # Waiting on the household.
-  - {items: [kosher-salt, salt], decision: undecided, suggestion: merge, note: "Catalog spec default: one presence-only salt."}
-  - {items: [onion, yellow-onion], decision: undecided, suggestion: merge, note: "Does plain Onion mean yellow onion?"}
-  - {items: [onion, white-onion], decision: undecided, suggestion: distinct}
-  - {items: [onion, red-onion], decision: undecided, suggestion: distinct}
-  - {items: [dill-pickle-slices, dill-pickles], decision: undecided, suggestion: merge}
-  - {items: [pepperoncini, sliced-pepperoncini], decision: undecided, suggestion: merge}
-  - {items: [mustard, yellow-mustard], decision: undecided, suggestion: merge}
-  - {items: [ground-mild-italian-sausage, italian-sausage], decision: undecided, suggestion: merge}
-  - {items: [shredded-cheddar-cheese, shredded-cheese], decision: undecided, suggestion: merge, note: "Merge if plain Shredded Cheese means cheddar."}
-  - {items: [shredded-cheese, shredded-italian-cheese-blend], decision: undecided, suggestion: distinct}
-  - {items: [shredded-cheese, shredded-mexican-cheese-blend], decision: undecided, suggestion: distinct}
-  - {items: [reduced-sodium-soy-sauce, soy-sauce], decision: undecided, suggestion: distinct, note: "Low-sodium is a protected descriptor in the catalog spec."}
-  - {items: [butter, unsalted-butter], decision: undecided, suggestion: distinct, note: "Merge if the household buys one kind of butter."}
-  - {items: [ground-beef, lean-ground-beef], decision: undecided, suggestion: merge}
-  - {items: [85-percent-lean-ground-beef, ground-beef], decision: undecided, suggestion: distinct}
-  - {items: [85-percent-lean-ground-beef, lean-ground-beef], decision: undecided, suggestion: distinct}
-  - {items: [90-percent-lean-ground-beef, ground-beef], decision: undecided, suggestion: distinct}
-  - {items: [90-percent-lean-ground-beef, lean-ground-beef], decision: undecided, suggestion: distinct}
-  - {items: [potatoes, russet-potatoes], decision: undecided, suggestion: merge, note: "Merge if plain Potatoes means russets."}
-  - {items: [potatoes, yukon-gold-potatoes], decision: undecided, suggestion: distinct}
-  - {items: [baby-yukon-potatoes, potatoes], decision: undecided, suggestion: distinct}
+  # Same product.
+  - {items: [kosher-salt, salt], decision: alias, note: "Catalog spec default: one presence-only salt."}
+  - {items: [mustard, yellow-mustard], decision: alias, note: "Plain mustard in US recipes is yellow mustard."}
+
+  # Substitution groups.
+  - {items: [onion, yellow-onion], decision: group, group: onions}
+  - {items: [onion, white-onion], decision: group, group: onions}
+  - {items: [onion, red-onion], decision: group, group: onions}
+  - {items: [dill-pickle-slices, dill-pickles], decision: group, group: dill-pickles}
+  - {items: [pepperoncini, sliced-pepperoncini], decision: group, group: pepperoncini}
+  - {items: [ground-mild-italian-sausage, italian-sausage], decision: group, group: italian-sausage}
+  - {items: [shredded-cheddar-cheese, shredded-cheese], decision: group, group: shredded-cheese}
+  - {items: [shredded-cheese, shredded-italian-cheese-blend], decision: group, group: shredded-cheese}
+  - {items: [shredded-cheese, shredded-mexican-cheese-blend], decision: group, group: shredded-cheese}
+  - {items: [reduced-sodium-soy-sauce, soy-sauce], decision: group, group: soy-sauce}
+  - {items: [butter, unsalted-butter], decision: group, group: butter}
+  - {items: [ground-beef, lean-ground-beef], decision: group, group: ground-beef}
+  - {items: [85-percent-lean-ground-beef, ground-beef], decision: group, group: ground-beef}
+  - {items: [85-percent-lean-ground-beef, lean-ground-beef], decision: group, group: ground-beef}
+  - {items: [90-percent-lean-ground-beef, ground-beef], decision: group, group: ground-beef}
+  - {items: [90-percent-lean-ground-beef, lean-ground-beef], decision: group, group: ground-beef}
+  - {items: [potatoes, russet-potatoes], decision: group, group: potatoes}
+  - {items: [potatoes, yukon-gold-potatoes], decision: group, group: potatoes}
+  - {items: [baby-yukon-potatoes, potatoes], decision: group, group: potatoes}
 
   # Different products.
   - {items: [butter, garlic-butter], decision: distinct}

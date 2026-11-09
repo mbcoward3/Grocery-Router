@@ -1,6 +1,6 @@
 # Grocery Router — Shared Recipe Catalog Ingest Pipeline
 
-Status: **revision 4, approved 2026-11-09 (adds the look-alike item gate, §6.1). Slices 1–2 are
+Status: **revision 4, approved 2026-11-09 (adds the look-alike classification gate, §6.1). Slices 1–2 are
 authorized.** Slices 3–5 stay gated until
 the conditions in §8 are met. The §11 defaults are accepted.  
 Depends on: [`V1_SPEC.md`](V1_SPEC.md), [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md)  
@@ -139,8 +139,7 @@ Tasks:
 
 - [ ] Catalog tables (§9) and vocabulary snapshots.
 - [ ] Working build → frozen release manifest → qualification → publication (§6.1).
-- [ ] Look-alike item gate at freeze, reusing `ingest.FindLookAlikes` and recorded decisions
-  (§6.1).
+- [ ] Look-alike classification gate at freeze, reusing `ingest.FindLookAlikes` (§6.1).
 - [ ] The publication predicate (§6.4), enforced per candidate at publish time.
 - [ ] Exact de-duplication and duplicate-candidate groups (§7.6).
 - [ ] Overrides in `catalog/overrides.yaml`; invalidation; vocabulary merge and split staged into
@@ -289,11 +288,14 @@ Each site declares `us` or `metric`. `cup`, `tbsp`, and `tsp` map to existing US
 1. **Working build** — `catalog-build` creates candidates and may stage new provisional items,
    aliases, merges, and splits for the next vocabulary snapshot.
 2. **Freeze** — `catalog-freeze` creates an immutable vocabulary snapshot and a release manifest.
-   Freeze refuses while any provisional item's name looks like an existing item's (the corpus
-   look-alike rule: one name's normalized words contain the other's, plurals folded) without a
-   recorded owner decision: distinct, alias, or merge. AI may propose an item; only the owner
-   settles a look-alike, so near-duplicates such as `Onion` and `Yellow Onion` cannot enter a
-   snapshot unreviewed.
+   Freeze refuses while any pair of items whose names look alike (the corpus look-alike rule:
+   one name's normalized words contain the other's, plurals folded) lacks a classification in
+   the snapshot: `alias` (same product; one item), `group` (different products a household may
+   choose to combine; see the substitution proposal), or `distinct`. Each classification records
+   its method (`override`, `rule`, `ai`) and reason. No per-pair owner approval is required:
+   `alias` needs a rule or override because a wrong alias silently merges products, while `ai`
+   may assign `group` or `distinct` because a wrong group only costs a household one question.
+   Classifications are audited by sampling (§6.5) and corrected through overrides (§6.6).
 3. **Qualify** — `catalog-qualify` scores the manifest's candidates (§6.3). Any change to the
    manifest's contents requires a new manifest and new qualification.
 4. **Publish** — a qualified manifest may publish candidates from its listed sites in repeated

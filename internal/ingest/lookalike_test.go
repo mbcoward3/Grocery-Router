@@ -34,12 +34,12 @@ func TestLookAlikeItemsNeedADecision(t *testing.T) {
 
 	// Undecided pairs pass but are reported.
 	reviews, err = ingest.ParseItemReviews(strings.NewReader(
-		"pairs:\n  - {items: [onion, yellow-onion], decision: distinct}\n  - {items: [tomato, tomatoes], decision: undecided, suggestion: merge}\n"))
+		"pairs:\n  - {items: [onion, yellow-onion], decision: group, group: onions}\n  - {items: [tomato, tomatoes], decision: undecided}\n"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	undecided, err := ingest.CheckLookAlikes(documents, reviews)
-	if err != nil || len(undecided) != 1 || undecided[0].Suggestion != "merge" {
+	if err != nil || len(undecided) != 1 || undecided[0].Items[1] != "tomatoes" {
 		t.Fatalf("undecided = %#v, %v", undecided, err)
 	}
 }
@@ -49,7 +49,9 @@ func TestItemReviewsRejectInvalidEntries(t *testing.T) {
 		"unknown decision": "pairs:\n  - {items: [a, b], decision: maybe}\n",
 		"unsorted":         "pairs:\n  - {items: [b, a], decision: distinct}\n",
 		"one item":         "pairs:\n  - {items: [a], decision: distinct}\n",
-		"duplicate":        "pairs:\n  - {items: [a, b], decision: distinct}\n  - {items: [a, b], decision: merge}\n",
+		"duplicate":        "pairs:\n  - {items: [a, b], decision: distinct}\n  - {items: [a, b], decision: alias}\n",
+		"group needs name": "pairs:\n  - {items: [a, b], decision: group}\n",
+		"stray group":      "pairs:\n  - {items: [a, b], decision: distinct, group: x}\n",
 		"unknown field":    "pairs:\n  - {items: [a, b], decision: distinct, reason: x}\n",
 	} {
 		if _, err := ingest.ParseItemReviews(strings.NewReader(input)); err == nil {

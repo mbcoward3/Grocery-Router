@@ -38,7 +38,9 @@ scope requires a new phase with its own acceptance criteria.
 - **Household baseline batches.** Store a family-adjusted default distinct from the source
   batch when observed rather than guessed.
 - **Substitutions and alternatives.** Represent `butter or oil`, raw/cooked/rotisserie
-  options, variants, and user-selected defaults without duplicating recipes.
+  options, variants, and user-selected defaults without duplicating recipes. Household
+  substitution groups (combining yellow and white onion on one family's list) are proposed in
+  [`SUBSTITUTIONS_SPEC.md`](SUBSTITUTIONS_SPEC.md).
 - **Item-specific conversions.** Reviewed mappings such as count-to-volume for produce or
   raw-to-cooked yield. v1 keeps incompatible requirements separate.
 - **Purchase-unit conversion.** Translate recipe requirements into practical amounts to

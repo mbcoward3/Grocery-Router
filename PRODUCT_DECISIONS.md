@@ -697,8 +697,8 @@ for remove.
 **Decision:** The checklist shows each grocery item once. Exact addition still happens first;
 amounts that cannot be added exactly stay as separate quantities on the same row
 (`8 cloves + 1 tbsp`), and a requirement with no amount adds `+ more` instead of its own row.
-Separately, grocery items whose names look alike must have a recorded household decision before
-the corpus audits clean, and the catalog freeze applies the same gate.
+Separately, grocery items whose names look alike must be classified (alias, group, or distinct)
+before the corpus audits clean, and the catalog freeze applies the same gate automatically.
 
 **Why:** Real use showed Black Pepper twice (2 tsp from two recipes, and a "generous" amount from
 a third). Unspecified requirements were keyed per recipe and incompatible units per unit, so 18
@@ -708,9 +708,28 @@ are a vocabulary problem that aggregation cannot fix and that new recipes would 
 **Consequence:** Migration 00007 stores a row's second and later quantities; the current week
 rebuilds once on read and keeps checked, removed, and single-row adjusted state; history is not
 rebuilt. The catalog evaluation format is unchanged because grouping happens after aggregation.
-`corpus/item-reviews.yaml` holds 37 pairs: 16 pre-filled as distinct products and 21 awaiting the
-household. Merging approved pairs is a separate corpus change.
+`corpus/item-reviews.yaml` classifies 37 pairs: 2 aliases, 19 substitution-group pairs, and 16
+distinct. Turning aliases into one item is a separate corpus change; groups take effect only
+under D048.
 
 **Revisit when:** The catalog vocabulary supplies aliases for the bootstrap corpus, or a row's
 combined amount needs a purchase-oriented summary.
+
+## D048 — Substitution is a household choice over frozen groups (proposed)
+
+**Decision (proposed, not authorized):** Split "same product" from "would we buy one for both".
+The pipeline settles identity strictly (aliases from rules or overrides). It also assigns
+different-but-swappable products to flat substitution groups, which AI may propose. Each household
+chooses per group, when two members first meet in one week, whether to combine them on its list.
+See [`SUBSTITUTIONS_SPEC.md`](SUBSTITUTIONS_SPEC.md).
+
+**Why:** Households differ in how freely they substitute (yellow for white onion, any shredded
+cheese), so combining cannot be a shared rule, and the owner cannot review pipeline output item by
+item. Recipes and the list must stay deterministic.
+
+**Consequence:** Recipes never change; groups are frozen with the vocabulary; the list is a pure
+function of recipes, snapshot, and recorded answers; no AI runs while building a list. A wrong
+group costs one question, so AI may assign groups but not aliases.
+
+**Revisit when:** The owner approves or revises the proposal.
 
