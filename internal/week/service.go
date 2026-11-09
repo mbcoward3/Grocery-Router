@@ -43,22 +43,33 @@ func (securePicker) IntN(n int) (int, error) {
 	return int(value.Int64()), nil
 }
 
-// Service owns week mutations. Every mutation and grocery rebuild uses one transaction.
+// Service provides household-scoped week operations.
 type Service struct {
+	db     *sql.DB
+	picker Picker
+}
+
+// Household owns week mutations. Every mutation and grocery rebuild uses one transaction.
+type Household struct {
 	db          *sql.DB
 	picker      Picker
 	householdID string
 }
 
-// NewService constructs a household-scoped transactional week service. A nil picker uses secure randomness.
-func NewService(db *sql.DB, picker Picker, householdID string) *Service {
+// NewService constructs a week service. A nil picker uses secure randomness.
+func NewService(db *sql.DB, picker Picker) *Service {
 	if picker == nil {
 		picker = securePicker{}
 	}
+	return &Service{db: db, picker: picker}
+}
+
+// ForHousehold scopes all week operations to the requested household.
+func (service *Service) ForHousehold(householdID string) *Household {
 	if householdID == "" {
 		panic("week service requires an explicit household ID")
 	}
-	return &Service{db: db, picker: picker, householdID: householdID}
+	return &Household{db: service.db, picker: service.picker, householdID: householdID}
 }
 
 // View is the unordered current week and its stable recipe occurrences.
@@ -74,7 +85,7 @@ func CurrentSunday(now time.Time) string {
 }
 
 // Current returns the explicitly generated current week.
-func (service *Service) Current(ctx context.Context, now time.Time) (View, error) {
+func (service *Household) Current(ctx context.Context, now time.Time) (View, error) {
 	queries := store.New(service.db)
 	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
 	if errors.Is(err, sql.ErrNoRows) {
@@ -87,7 +98,7 @@ func (service *Service) Current(ctx context.Context, now time.Time) (View, error
 }
 
 // PastWeeks returns earlier generated weeks, newest first.
-func (service *Service) PastWeeks(ctx context.Context, now time.Time) ([]store.ListPastWeeksRow, error) {
+func (service *Household) PastWeeks(ctx context.Context, now time.Time) ([]store.ListPastWeeksRow, error) {
 	return store.New(service.db).ListPastWeeks(ctx, store.ListPastWeeksParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
 }
 
@@ -98,7 +109,7 @@ type HistoricalView struct {
 }
 
 // PastWeek returns a read-only earlier week with its retained checklist state.
-func (service *Service) PastWeek(ctx context.Context, now time.Time, weekID int64) (HistoricalView, error) {
+func (service *Household) PastWeek(ctx context.Context, now time.Time, weekID int64) (HistoricalView, error) {
 	queries := store.New(service.db)
 	weekRow, err := queries.GetPastWeek(ctx, store.GetPastWeekParams{HouseholdID: service.householdID, ID: weekID, StartsOn: CurrentSunday(now)})
 	if errors.Is(err, sql.ErrNoRows) {
@@ -119,7 +130,7 @@ func (service *Service) PastWeek(ctx context.Context, now time.Time, weekID int6
 }
 
 // Generate creates or fully regenerates the current week with unique verified recipes.
-func (service *Service) Generate(ctx context.Context, now time.Time, count int) (View, error) {
+func (service *Household) Generate(ctx context.Context, now time.Time, count int) (View, error) {
 	if count <= 0 {
 		return View{}, fmt.Errorf("recipe count must be positive")
 	}
@@ -159,7 +170,7 @@ func (service *Service) Generate(ctx context.Context, now time.Time, count int) 
 }
 
 // Add appends one specific verified recipe. Duplicate recipes are intentionally allowed.
-func (service *Service) Add(ctx context.Context, now time.Time, recipeID int64) (View, error) {
+func (service *Household) Add(ctx context.Context, now time.Time, recipeID int64) (View, error) {
 	return service.mutateCurrent(ctx, now, func(queries *store.Queries, weekRow store.Week) error {
 		position, err := queries.NextWeekRecipePosition(ctx, store.NextWeekRecipePositionParams{HouseholdID: service.householdID, WeekID: weekRow.ID})
 		if err != nil {
@@ -173,7 +184,7 @@ func (service *Service) Add(ctx context.Context, now time.Time, recipeID int64) 
 }
 
 // Remove deletes one occurrence, not every occurrence of its recipe.
-func (service *Service) Remove(ctx context.Context, now time.Time, occurrenceID int64) (View, error) {
+func (service *Household) Remove(ctx context.Context, now time.Time, occurrenceID int64) (View, error) {
 	return service.mutateCurrent(ctx, now, func(queries *store.Queries, weekRow store.Week) error {
 		occurrence, err := queries.GetWeekRecipe(ctx, store.GetWeekRecipeParams{HouseholdID: service.householdID, ID: occurrenceID})
 		if errors.Is(err, sql.ErrNoRows) || (err == nil && occurrence.WeekID != weekRow.ID) {
@@ -194,7 +205,7 @@ func (service *Service) Remove(ctx context.Context, now time.Time, occurrenceID 
 }
 
 // Swap replaces one occurrence with a specific verified recipe, including a duplicate.
-func (service *Service) Swap(ctx context.Context, now time.Time, occurrenceID, recipeID int64) (View, error) {
+func (service *Household) Swap(ctx context.Context, now time.Time, occurrenceID, recipeID int64) (View, error) {
 	return service.mutateCurrent(ctx, now, func(queries *store.Queries, weekRow store.Week) error {
 		occurrence, err := queries.GetWeekRecipe(ctx, store.GetWeekRecipeParams{HouseholdID: service.householdID, ID: occurrenceID})
 		if errors.Is(err, sql.ErrNoRows) || (err == nil && occurrence.WeekID != weekRow.ID) {
@@ -212,7 +223,7 @@ func (service *Service) Swap(ctx context.Context, now time.Time, occurrenceID, r
 
 // RandomSwap prefers a verified recipe absent from the pool, then falls back to any recipe
 // different from the replaced occurrence.
-func (service *Service) RandomSwap(ctx context.Context, now time.Time, occurrenceID int64) (View, error) {
+func (service *Household) RandomSwap(ctx context.Context, now time.Time, occurrenceID int64) (View, error) {
 	return service.mutateCurrent(ctx, now, func(queries *store.Queries, weekRow store.Week) error {
 		occurrence, err := queries.GetWeekRecipe(ctx, store.GetWeekRecipeParams{HouseholdID: service.householdID, ID: occurrenceID})
 		if errors.Is(err, sql.ErrNoRows) || (err == nil && occurrence.WeekID != weekRow.ID) {
@@ -264,7 +275,7 @@ func (service *Service) RandomSwap(ctx context.Context, now time.Time, occurrenc
 	})
 }
 
-func (service *Service) mutateCurrent(
+func (service *Household) mutateCurrent(
 	ctx context.Context,
 	now time.Time,
 	mutation func(*store.Queries, store.Week) error,
@@ -293,7 +304,7 @@ func (service *Service) mutateCurrent(
 	return result, err
 }
 
-func (service *Service) transact(ctx context.Context, operation func(*store.Queries) error) error {
+func (service *Household) transact(ctx context.Context, operation func(*store.Queries) error) error {
 	tx, err := service.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -563,7 +574,7 @@ func boolInt(value bool) int64 {
 }
 
 // AddManualLine adds a week-only item, resolving known names deterministically.
-func (service *Service) AddManualLine(ctx context.Context, now time.Time, name string, choices ...ManualLineOptions) (store.ShoppingLine, error) {
+func (service *Household) AddManualLine(ctx context.Context, now time.Time, name string, choices ...ManualLineOptions) (store.ShoppingLine, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return store.ShoppingLine{}, fmt.Errorf("manual line name is required")
@@ -660,7 +671,7 @@ type Checklist struct {
 }
 
 // Checklist returns the current week's compact grocery lines in store-section order.
-func (service *Service) Checklist(ctx context.Context, now time.Time) (Checklist, error) {
+func (service *Household) Checklist(ctx context.Context, now time.Time) (Checklist, error) {
 	queries := store.New(service.db)
 	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
 	if errors.Is(err, sql.ErrNoRows) {
@@ -677,7 +688,7 @@ func (service *Service) Checklist(ctx context.Context, now time.Time) (Checklist
 
 // upgradeList rebuilds a current week whose list predates one row per item. Past weeks are never
 // rebuilt: history shows the list as it was. Only one concurrent reader performs the rebuild.
-func (service *Service) upgradeList(ctx context.Context, weekID int64) error {
+func (service *Household) upgradeList(ctx context.Context, weekID int64) error {
 	list, err := store.New(service.db).GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: service.householdID, WeekID: weekID})
 	if err != nil || list.AggregationVersion >= aggregationVersion {
 		return err
@@ -732,7 +743,7 @@ func loadChecklist(ctx context.Context, queries *store.Queries, householdID stri
 }
 
 // Contributions returns the recipe traces behind a current generated line.
-func (service *Service) Contributions(
+func (service *Household) Contributions(
 	ctx context.Context,
 	now time.Time,
 	lineID int64,
@@ -755,7 +766,7 @@ func (service *Service) Contributions(
 }
 
 // SetLineRemoved removes or restores one current-week line without deleting its provenance.
-func (service *Service) SetLineRemoved(ctx context.Context, now time.Time, lineID int64, removed bool) error {
+func (service *Household) SetLineRemoved(ctx context.Context, now time.Time, lineID int64, removed bool) error {
 	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
 		return queries.SetShoppingLineRemoved(ctx, store.SetShoppingLineRemovedParams{
 			HouseholdID: service.householdID, Removed: boolInt(removed), LineID: lineID, StartsOn: CurrentSunday(now),
@@ -764,7 +775,7 @@ func (service *Service) SetLineRemoved(ctx context.Context, now time.Time, lineI
 }
 
 // SetLineCompleted updates one current-week checklist item's completion state.
-func (service *Service) SetLineCompleted(ctx context.Context, now time.Time, lineID int64, completed bool) error {
+func (service *Household) SetLineCompleted(ctx context.Context, now time.Time, lineID int64, completed bool) error {
 	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
 		return queries.SetShoppingLineCompleted(ctx, store.SetShoppingLineCompletedParams{
 			HouseholdID: service.householdID, Completed: boolInt(completed), LineID: lineID, StartsOn: CurrentSunday(now),
@@ -773,7 +784,7 @@ func (service *Service) SetLineCompleted(ctx context.Context, now time.Time, lin
 }
 
 // SetLineOverride stores a week-only display override on a generated line.
-func (service *Service) SetLineOverride(ctx context.Context, now time.Time, lineID int64, text string) error {
+func (service *Household) SetLineOverride(ctx context.Context, now time.Time, lineID int64, text string) error {
 	text = strings.TrimSpace(text)
 	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
 		return queries.SetShoppingLineOverride(ctx, store.SetShoppingLineOverrideParams{
@@ -783,7 +794,7 @@ func (service *Service) SetLineOverride(ctx context.Context, now time.Time, line
 	})
 }
 
-func (service *Service) updateLine(ctx context.Context, update func(*store.Queries) (int64, error)) error {
+func (service *Household) updateLine(ctx context.Context, update func(*store.Queries) (int64, error)) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
 		rows, err := update(queries)
 		if err != nil {
@@ -807,7 +818,7 @@ func normalizeItem(value string) string {
 }
 
 // SetLineSection changes only a manual line in the current week.
-func (service *Service) SetLineSection(ctx context.Context, now time.Time, lineID, sectionID int64) error {
+func (service *Household) SetLineSection(ctx context.Context, now time.Time, lineID, sectionID int64) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
 		if err := requireSection(ctx, queries, service.householdID, sectionID); err != nil {
 			return err
@@ -869,7 +880,7 @@ type ItemMatch struct {
 
 // SearchItems returns up to twelve suggestions, best match first: exact, prefix, word
 // prefix, then substring, alphabetical within each tier.
-func (service *Service) SearchItems(ctx context.Context, term string) ([]ItemMatch, error) {
+func (service *Household) SearchItems(ctx context.Context, term string) ([]ItemMatch, error) {
 	term = normalizeItem(term)
 	if term == "" {
 		return []ItemMatch{}, nil
@@ -941,7 +952,7 @@ func matchRank(term, candidate string) int {
 }
 
 // SetSectionOrder validates and saves a complete household order, or resets the default.
-func (service *Service) SetSectionOrder(ctx context.Context, ids []int64, reset bool) error {
+func (service *Household) SetSectionOrder(ctx context.Context, ids []int64, reset bool) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
 		if _, err := queries.LockSectionOrder(ctx, service.householdID); err != nil {
 			return err
