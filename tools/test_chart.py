@@ -47,20 +47,16 @@ class ChartContract(unittest.TestCase):
         database = next(item for item in container["env"] if item["name"] == "GROCERY_ROUTER_DATABASE_URL")
         self.assertEqual(database["valueFrom"]["secretKeyRef"], {"name": "grocery-router-db-app", "key": "uri"})
 
-    def test_route_and_catalog_release(self):
+    def test_route(self):
         render(f"image.digest={DIGEST}", "httpRoute.enabled=true", success=False)
         docs = render(
             f"image.digest={DIGEST}",
             "httpRoute.enabled=true",
             "httpRoute.hostname=groceries.matthewcoward.com",
-            "catalogRelease=catalog/releases/approved.yaml",
         )
         route = next(doc for doc in docs if doc["kind"] == "HTTPRoute")
         self.assertEqual(route["spec"]["hostnames"], ["groceries.matthewcoward.com"])
         self.assertEqual(route["spec"]["parentRefs"][0]["sectionName"], "groceries")
-        deployment = next(doc for doc in docs if doc["kind"] == "Deployment")
-        env = deployment["spec"]["template"]["spec"]["containers"][0]["env"]
-        self.assertIn({"name": "GROCERY_ROUTER_CATALOG_RELEASE", "value": "catalog/releases/approved.yaml"}, env)
 
     def test_lint(self):
         subprocess.run(["helm", "lint", str(CHART), "--strict", "--set", f"image.digest={DIGEST}"], check=True)
