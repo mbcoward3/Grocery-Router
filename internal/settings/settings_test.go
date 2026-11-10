@@ -97,3 +97,26 @@ func TestUpdateStoresOnlyValidNamedSettings(t *testing.T) {
 		t.Fatalf("count-only update params = %+v", params)
 	}
 }
+
+// TestValidationMessages pins the messages web/src/features/settings/settings-page.tsx relies on:
+// invalidField moves focus to the time zone when a message mentions "time zone", and to the
+// recipe count otherwise. Change both together.
+func TestValidationMessages(t *testing.T) {
+	zone := func(name string) settings.Change { return settings.Change{Timezone: &name} }
+	count := func(value int) settings.Change { return settings.Change{DefaultRecipeCount: &value} }
+	for _, tc := range []struct {
+		change settings.Change
+		want   string
+	}{
+		{zone(""), "time zone must be an IANA zone name such as America/Chicago"},
+		{zone("Local"), "time zone must be an IANA zone name such as America/Chicago"},
+		{zone("Not/AZone"), `unknown time zone "Not/AZone"`},
+		{count(0), "recipes per week must be between 1 and 21, not 0"},
+		{count(22), "recipes per week must be between 1 and 21, not 22"},
+	} {
+		var validation settings.ValidationError
+		if err := tc.change.Validate(); !errors.As(err, &validation) || validation.Message != tc.want {
+			t.Fatalf("Validate(%+v) = %v, want ValidationError %q", tc.change, err, tc.want)
+		}
+	}
+}

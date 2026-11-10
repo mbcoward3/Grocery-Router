@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { ApiRequestError, updateSettings, type HouseholdSettings } from '../../api/client'
 import { settingsQueryKey, settingsQueryOptions } from './queries'
 
@@ -34,21 +34,12 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   const queryClient = useQueryClient()
   const [timezone, setTimezone] = useState(saved.timezone)
   const [recipeCount, setRecipeCount] = useState(String(saved.defaultRecipeCount))
-  const [baseline, setBaseline] = useState(saved)
   const [countError, setCountError] = useState<string | null>(null)
   const [status, setStatus] = useState('')
   const timezoneRef = useRef<HTMLSelectElement>(null)
   const countRef = useRef<HTMLInputElement>(null)
   const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const zones = useMemo(() => timeZoneOptions([saved.timezone, timezone, deviceZone]), [saved.timezone, timezone, deviceZone])
-
-  // When the stored settings change (another member saved, or this form did), the fields follow
-  // them, so Save never offers to write back values nobody here chose.
-  if (saved.timezone !== baseline.timezone || saved.defaultRecipeCount !== baseline.defaultRecipeCount) {
-    setBaseline(saved)
-    setTimezone(saved.timezone)
-    setRecipeCount(String(saved.defaultRecipeCount))
-  }
 
   const mutation = useMutation({
     mutationFn: updateSettings,
@@ -66,6 +57,29 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   const parsedCount = recipeCount.trim() === '' ? Number.NaN : Number(recipeCount)
   if (parsedCount !== saved.defaultRecipeCount) change.defaultRecipeCount = parsedCount
   const changed = Object.keys(change).length > 0
+
+  // When a stored setting changes (another member saved, or this form did), its field follows it,
+  // so Save never offers to write back a value nobody here chose. Only the changed field resets.
+  const previous = useRef(saved)
+  const { reset } = mutation
+  useEffect(() => {
+    const before = previous.current
+    if (before.timezone === saved.timezone && before.defaultRecipeCount === saved.defaultRecipeCount) return
+    previous.current = saved
+    if (before.timezone !== saved.timezone) setTimezone(saved.timezone)
+    if (before.defaultRecipeCount !== saved.defaultRecipeCount) setRecipeCount(String(saved.defaultRecipeCount))
+    setCountError(null)
+    reset()
+  }, [saved, reset])
+
+  // A rejected save moves focus to the field it names. This runs after render, once the fields
+  // reflect the failed save.
+  useEffect(() => {
+    if (!mutation.error) return
+    const field = invalidField(mutation.error)
+    if (field === 'timezone') timezoneRef.current?.focus()
+    if (field === 'count') countRef.current?.focus()
+  }, [mutation.error])
   const saveUnavailable = mutation.isPending || !changed
 
   const edited = () => {
@@ -86,13 +100,7 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
       return
     }
     setCountError(null)
-    mutation.mutate(change, {
-      onError: (error) => {
-        const field = invalidField(error)
-        if (field === 'timezone') timezoneRef.current?.focus()
-        if (field === 'count') countRef.current?.focus()
-      },
-    })
+    mutation.mutate(change)
   }
 
   const serverField = mutation.error ? invalidField(mutation.error) : null
@@ -100,6 +108,8 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   const timezoneInvalid = !countError && serverField === 'timezone'
   const countInvalid = Boolean(countError) || serverField === 'count'
   return (
+    // While a save is pending the fields ignore edits but stay enabled, so focus (for example after
+    // Enter in the count field) never falls back to the page body.
     <form className="settings-panel" onSubmit={submit} noValidate>
       <div className="settings-field">
         <label htmlFor="settings-timezone">Time zone</label>
@@ -111,8 +121,8 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
             aria-describedby={timezoneInvalid ? 'settings-timezone-help settings-error' : 'settings-timezone-help'}
             aria-invalid={timezoneInvalid || undefined}
             value={timezone}
-            onChange={(event) => { setTimezone(event.target.value); edited() }}
-            disabled={mutation.isPending}
+            onChange={(event) => { if (!mutation.isPending) { setTimezone(event.target.value); edited() } }}
+            aria-readonly={mutation.isPending || undefined}
           >
             {zones.map((zone) => <option key={zone} value={zone}>{zone.replaceAll('_', ' ')}</option>)}
           </select>
@@ -141,8 +151,8 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
             max={maxRecipeCount}
             step={1}
             value={recipeCount}
-            onChange={(event) => { setRecipeCount(event.target.value); edited() }}
-            disabled={mutation.isPending}
+            onChange={(event) => { if (!mutation.isPending) { setRecipeCount(event.target.value); edited() } }}
+            readOnly={mutation.isPending}
           />
         </div>
       </div>
