@@ -6,10 +6,15 @@ RETURNING *;
 -- name: CloseExpiredWeek :exec
 -- Closes the household's open week once its automatic close time has passed, recording that
 -- time rather than when the close was noticed, and fixing its last local date in the
--- household's zone now (week.endsOn computes the same date for an open week).
+-- household's zone now (week.endsOn computes the same date for an open week). A week that
+-- closes before its start date, one started early, ends on its start date. Dates are ISO text,
+-- so GREATEST compares them as dates.
 UPDATE weeks AS w SET
     closed_at = w.auto_close_at,
-    ends_on = to_char((w.auto_close_at - INTERVAL '1 second') AT TIME ZONE h.timezone, 'YYYY-MM-DD')
+    ends_on = greatest(
+        to_char((w.auto_close_at - INTERVAL '1 second') AT TIME ZONE h.timezone, 'YYYY-MM-DD'),
+        w.starts_on
+    )
 FROM households AS h
 WHERE
     h.id = w.household_id
@@ -17,12 +22,13 @@ WHERE
     AND w.auto_close_at <= CAST(sqlc.arg(now) AS TIMESTAMPTZ);
 
 -- name: CloseOpenWeek :execrows
--- Closes the household's open week by hand at now with its last local date (week.lastDay). The
--- automatic close time stays as it was: while that rollover is still ahead, the next week opened
--- takes over the upcoming period instead of the one just ended (week.takesOver).
+-- Closes the household's open week by hand at now with its last local date (week.lastDay), but
+-- never before its start date: a week started early and closed again before its period began
+-- ends on its start date. The automatic close time stays as it was: while that rollover is still
+-- ahead, the next week opened takes over the upcoming period (week.skippedRollover).
 UPDATE weeks SET
     closed_at = CAST(sqlc.arg(closed_at) AS TIMESTAMPTZ),
-    ends_on = CAST(sqlc.arg(ends_on) AS TEXT)
+    ends_on = greatest(CAST(sqlc.arg(ends_on) AS TEXT), starts_on)
 WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
 
 -- name: GetLastClosedWeek :one
@@ -39,6 +45,12 @@ WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
 
 -- name: GetOpenWeek :one
 SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
+
+-- name: LockOpenWeek :one
+-- Taken before a change to the open week or its list. A concurrent close waits for the change,
+-- or, if it closed the week first, this finds no open week once it commits.
+SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL
+FOR NO KEY UPDATE;
 
 -- name: ListPastWeeks :many
 SELECT
@@ -60,7 +72,7 @@ WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at 
 
 -- name: TouchWeek :exec
 UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NULL;
 
 -- name: CreateWeekRecipe :one
 INSERT INTO week_recipes (household_id, week_id, recipe_id, position)

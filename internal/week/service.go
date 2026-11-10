@@ -173,6 +173,23 @@ func (service *Household) openWeek(ctx context.Context, queries *store.Queries, 
 	return weekRow, err
 }
 
+// lockOpenWeek closes an expired week, then returns the household's open week locked for a change
+// until the transaction ends. Every change to the open week or its list takes it first, so it never
+// writes into a week that a concurrent Close has just closed: Close either waits for the change, or
+// closes first, and then this finds no open week. Close and Generate take the household row
+// before the week, SaveSettings too; a change here takes only the week, and its writes reference
+// the household row with a key-share lock that none of those conflicts with, so no cycle forms.
+func (service *Household) lockOpenWeek(ctx context.Context, queries *store.Queries, now time.Time) (store.Week, error) {
+	if err := service.closeExpired(ctx, queries, now); err != nil {
+		return store.Week{}, err
+	}
+	weekRow, err := queries.LockOpenWeek(ctx, service.householdID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return store.Week{}, ErrNoCurrentWeek
+	}
+	return weekRow, err
+}
+
 // Current returns the explicitly generated current week.
 func (service *Household) Current(ctx context.Context, now time.Time) (View, error) {
 	queries := store.New(service.db)
@@ -417,7 +434,7 @@ func (service *Household) mutateCurrent(
 ) (View, error) {
 	var result View
 	err := service.transact(ctx, func(queries *store.Queries) error {
-		weekRow, err := service.openWeek(ctx, queries, now)
+		weekRow, err := service.lockOpenWeek(ctx, queries, now)
 		if err != nil {
 			return err
 		}
@@ -449,10 +466,10 @@ func (service *Household) transact(ctx context.Context, operation func(*store.Qu
 }
 
 // getOrOpenWeek returns the open week, after closing an expired one, or opens a new week under
-// the household's rollover rules (see rules.opening and takesOver).
+// the household's rollover rules (see rules.opening and skippedRollover).
 func (service *Household) getOrOpenWeek(ctx context.Context, queries *store.Queries, now time.Time, weekRules rules) (store.Week, error) {
 	householdID := service.householdID
-	weekRow, err := service.openWeek(ctx, queries, now)
+	weekRow, err := service.lockOpenWeek(ctx, queries, now)
 	if err == nil {
 		if _, listErr := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: householdID, WeekID: weekRow.ID}); errors.Is(listErr, sql.ErrNoRows) {
 			_, listErr = queries.CreateShoppingList(ctx, store.CreateShoppingListParams{HouseholdID: householdID, WeekID: weekRow.ID})
@@ -469,7 +486,7 @@ func (service *Household) getOrOpenWeek(ctx context.Context, queries *store.Quer
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return store.Week{}, err
 	}
-	startsOn, autoClose := weekRules.opening(now, takesOver(now, previous))
+	startsOn, autoClose := weekRules.opening(now, skippedRollover(now, previous))
 	weekRow, err = queries.CreateWeek(ctx, store.CreateWeekParams{
 		HouseholdID: householdID,
 		StartsOn:    startsOn,
@@ -492,7 +509,7 @@ func (service *Household) loadView(ctx context.Context, queries *store.Queries, 
 	if err != nil {
 		return View{}, err
 	}
-	return View{Week: weekRow, Recipes: recipes, EndsOn: endsOn(weekRow.EndsOn, weekRow.AutoCloseAt, location)}, nil
+	return View{Week: weekRow, Recipes: recipes, EndsOn: endsOn(weekRow.EndsOn, weekRow.AutoCloseAt, weekRow.StartsOn, location)}, nil
 }
 
 func shuffle[T any](picker Picker, values []T) error {

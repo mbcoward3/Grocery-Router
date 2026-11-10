@@ -171,6 +171,19 @@ func TestClosingAWeekStartedEarlyBeforeItBegins(t *testing.T) {
 		!again.Week.AutoCloseAt.Time.Equal(time.Date(2026, time.August, 30, 0, 0, 0, 0, time.UTC)) {
 		t.Fatalf("week planned again = %#v", again.Week)
 	}
+	// The week closed before its period began ends on its start date, not the day before.
+	past, err := service.PastWeeks(ctx, saturday.Add(20*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, closed := range past {
+		if closed.EndsOn.String < closed.StartsOn {
+			t.Fatalf("week %d ends %s before it starts %s", closed.ID, closed.EndsOn.String, closed.StartsOn)
+		}
+		if closed.ID == early.Week.ID && closed.EndsOn.String != "2026-08-23" {
+			t.Fatalf("week started early and closed again ends %s, want 2026-08-23", closed.EndsOn.String)
+		}
+	}
 }
 
 // In manual mode the week closes only by hand; the next week starts on the day it is planned.
@@ -224,5 +237,40 @@ func TestSaveSettingsKeepsAWeekStartedEarly(t *testing.T) {
 	}
 	if current, err := service.Current(ctx, time.Date(2026, time.August, 23, 7, 0, 0, 0, time.UTC)); err != nil || current.Week.ID != early.Week.ID {
 		t.Fatalf("Sunday 07:00 current = %#v, %v", current.Week, err)
+	}
+}
+
+// A change that waits for a concurrent close does not write into the week that closed.
+func TestChangeWaitingForACloseFindsNoWeek(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	generated, err := service.Generate(ctx, testNowUTC(), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	closing, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer closing.Rollback()
+	if _, err := closing.ExecContext(ctx, `UPDATE weeks SET closed_at = $1, ends_on = '2026-08-19' WHERE id = $2`,
+		testNowUTC().Add(time.Minute), generated.Week.ID); err != nil {
+		t.Fatal(err)
+	}
+	added := make(chan error, 1)
+	go func() {
+		_, err := service.Add(ctx, testNowUTC().Add(2*time.Minute), generated.Recipes[0].RecipeID)
+		added <- err
+	}()
+	time.Sleep(200 * time.Millisecond)
+	if err := closing.Commit(); err != nil {
+		t.Fatal(err)
+	}
+	if err := <-added; !errors.Is(err, week.ErrNoCurrentWeek) {
+		t.Fatalf("Add during a close error = %v, want ErrNoCurrentWeek", err)
+	}
+	var recipes int
+	if err := db.QueryRow(`SELECT count(*) FROM week_recipes WHERE week_id = $1`, generated.Week.ID).Scan(&recipes); err != nil || recipes != 2 {
+		t.Fatalf("closed week recipes = %d, %v; want 2", recipes, err)
 	}
 }

@@ -70,12 +70,15 @@ export function WeekPage() {
       // The History entry for the week just closed, if History can be reloaded now.
       let ended: WeekHistorySummary | undefined
       try {
-        ended = (await queryClient.fetchQuery({ ...historyQueryOptions, staleTime: 0 })).weeks[0]
+        // Planning never waits long on History: after a short wait the fallback below is shown,
+        // and the History list replaces it once it loads.
+        const history = queryClient.fetchQuery({ ...historyQueryOptions, staleTime: 0 })
+        ended = (await Promise.race([history, timeout(historyWaitMs)])).weeks[0]
       } catch {
         void queryClient.invalidateQueries({ queryKey: historyQueryKey })
       }
       setClosedWeek(ended?.id === closing.id ? ended : {
-        id: closing.id, startsOn: closing.startsOn, endsOn: deviceToday(), recipeCount: closing.recipes.length, groceryCount: 0, completedCount: 0,
+        id: closing.id, startsOn: closing.startsOn, endsOn: max(deviceToday(), closing.startsOn), recipeCount: closing.recipes.length, groceryCount: 0, completedCount: 0,
       })
       setFocusCount(true)
       setConfirmingClose(false)
@@ -132,7 +135,9 @@ export function WeekPage() {
         selectRef={countSelect}
       />
     )
-    const lastWeek = closedWeek ?? historyQuery.data?.weeks?.[0]
+    // History, once it holds the week closed here, is the better record of it than the fallback.
+    const latest = historyQuery.data?.weeks?.[0]
+    const lastWeek = closedWeek && latest?.id !== closedWeek.id ? closedWeek : latest
     if (lastWeek) {
       return (
         <section aria-labelledby="week-heading">
@@ -203,6 +208,7 @@ export function WeekPage() {
         <span>{week.recipes.length} {week.recipes.length === 1 ? 'recipe' : 'recipes'}</span>
       </div>
       <MutationError error={mutation.error} />
+      {!confirmingClose && <MutationError error={closeMutation.error} />}
       <div className="week-close">
         <button ref={startNextButton} className="button" type="button" onClick={() => { closeMutation.reset(); setConfirmingClose(true) }} disabled={mutation.isPending}>
           Start next week
@@ -320,7 +326,11 @@ function ConfirmStartNextWeek({ pending, error, onCancel, onConfirm }: {
   useEffect(() => { const element = dialog.current; element?.showModal(); return () => element?.close() }, [])
   return (
     <dialog ref={dialog} className="picker-dialog confirm-dialog" aria-labelledby="start-next-title" aria-describedby="start-next-description"
-      onCancel={(event) => { event.preventDefault(); if (!pending) onCancel() }}>
+      onCancel={(event) => { event.preventDefault(); if (!pending) onCancel() }}
+      // However the dialog is closed, the page follows; a close still running reports its error on
+      // the page instead. The close event is queued, so one from a close() the page has since
+      // undone by reopening (as React's development double mount does) is ignored.
+      onClose={(event) => { if (!event.currentTarget.open) onCancel() }}>
       <header>
         <div><div className="eyebrow">Current week</div><h2 id="start-next-title">Start next week</h2></div>
       </header>
@@ -409,6 +419,17 @@ function durationLabel(recipe: RecipeSummary): string | null {
   if (minimum === maximum || maximum === null) return `${minimum} min hands-on`
   if (minimum === null) return `Up to ${maximum} min hands-on`
   return `${minimum}–${maximum} min hands-on`
+}
+
+// historyWaitMs bounds how long a close waits for History before showing the next step.
+const historyWaitMs = 2500
+
+function timeout(ms: number): Promise<never> {
+  return new Promise((_, reject) => setTimeout(() => reject(new Error('timed out')), ms))
+}
+
+function max(first: string, second: string): string {
+  return first > second ? first : second
 }
 
 // closeWeek closes the week shown. If it had already closed, by its rollover or by another member,
