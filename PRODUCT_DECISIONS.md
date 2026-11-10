@@ -44,7 +44,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D023 | Keep list provenance compact but available | Active |
 | D024 | Weekly list edits do not alter recipes | Active |
 | D025 | No explicit week lock | Active |
-| D026 | Current week is manually created | Partly superseded by D038 (past weeks are now shown in History) |
+| D026 | Current week is manually created | Partly superseded by D038 (past weeks are now shown in History) and D050 (the household chooses when the week rolls over) |
 | D027 | Responsive Linear-inspired UI | Active |
 | D028 | Go, SQLite, Goose, and sqlc | Partly superseded by D036 and D042 (SQLite, deferred hosting; ADK rationale) |
 | D029 | No authentication or offline mode locally | Partly superseded by AUTH_HOUSEHOLDS_SPEC.md and D036 (no auth, local-only) |
@@ -68,6 +68,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D047 | One checklist row per grocery item; look-alike items need a decision | Active |
 | D048 | Substitution is a household choice over frozen groups (proposed) | Direction only (not implemented) |
 | D049 | Household preferences live per household and are edited in the app | Active |
+| D050 | The household chooses its rollover day, time, and mode | Active |
 
 ---
 
@@ -448,7 +449,8 @@ best effort. Sophisticated reconciliation is deferred.
 
 ## D026 — Current week is manually created
 
-**Status:** Partly superseded by D038 (past weeks are now shown in History)
+**Status:** Partly superseded by D038 (past weeks are now shown in History) and D050 (the
+household chooses when the week rolls over)
 
 **Decision:** The user explicitly generates a week; the application assigns the current
 Sunday. It does not auto-roll over or expose future/past week interfaces.
@@ -907,3 +909,35 @@ member.
 **Revisit when:** A preference needs to differ between members, or a household-level setting
 needs to be restricted to some members.
 
+## D050 — The household chooses its rollover day, time, and mode
+
+**Status:** Active
+
+**Decision:** Each household chooses, on the Settings screen, the local day its week starts
+(default Sunday), the local time it rolls over (default 12:00 AM), and whether it rolls over
+automatically (the open week closes itself at that day and time) or manually (the week stays
+open until someone starts the next one). Rolling over only closes the week; the next week still
+exists only once someone presses Generate, and the Week and Groceries screens then lead into
+that step with a link to the week that just ended.
+
+**Why:** A household that shops on a different day, or late on Friday, has a different week than
+the fixed Sunday-to-Saturday one, and a household that plans irregularly does not want its week
+to close by the calendar at all.
+
+**Consequence:** Migration 00012 adds `households.week_start_day` (0-6, 0 is Sunday),
+`rollover_minutes` (0-1439), and `rollover_mode` (`automatic` or `manual`), drops the Sunday
+check on `weeks.starts_on`, and replaces the unique `(household_id, starts_on)` constraint with a
+plain index, because a week closed early and its successor can share a start date. An automatic
+week starts on the local date of the most recent rollover at or before it was opened and closes
+at the next one; a manual week starts on today's local date and has no close time. Saving a
+change to the time zone, day, time, or mode moves the open week's close time, in the same
+transaction, to the next rollover after now under the new settings (none in manual mode); saving
+never closes a week, so a week is not cut short or ended by a settings change. The
+`household-timezone` command moves the open week the same way. Weeks and History report
+`endsOn`, the local date one second before the week closes or closed, so a Sunday 12:00 AM
+rollover ends on Saturday and a Friday 6:00 PM rollover ends on Friday. This partly supersedes
+D026: the household, not the application, decides when its week rolls over. Until a "Start next
+week" action exists, a manual week can be ended only by switching back to automatic.
+
+**Revisit when:** A household needs more than one rollover a week, or wants the next week
+generated automatically at the rollover.
