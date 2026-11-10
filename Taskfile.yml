@@ -95,6 +95,11 @@ tasks:
     cmds:
       - go run ./cmd/grocery-router migrate {{.CLI_ARGS}}
 
+  household-timezone:
+    desc: Set a household's IANA time zone, e.g. task household-timezone -- America/Chicago
+    cmds:
+      - go run ./cmd/grocery-router household-timezone {{.CLI_ARGS}}
+
   serve:
     desc: Start the local JSON API (pass CLI flags after --)
     cmds:

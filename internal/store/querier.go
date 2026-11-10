@@ -47,6 +47,8 @@ type Querier interface {
 	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
 	ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
+	GetHouseholdName(ctx context.Context, householdID string) (string, error)
+	GetHouseholdTimezone(ctx context.Context, householdID string) (string, error)
 	GetIngestEvidence(ctx context.Context, id int64) (IngestEvidence, error)
 	GetIngestHostRateLimit(ctx context.Context, host string) (GetIngestHostRateLimitRow, error)
 	GetIngestRun(ctx context.Context, id int64) (IngestRun, error)
@@ -128,6 +130,7 @@ type Querier interface {
 	// Deactivates a site the registry no longer lists. Its evidence, pages, and pauses stay.
 	RetireIngestSite(ctx context.Context, id string) (int64, error)
 	ReturnRecipeToDraft(ctx context.Context, arg ReturnRecipeToDraftParams) (Recipe, error)
+	SetHouseholdTimezone(ctx context.Context, arg SetHouseholdTimezoneParams) (int64, error)
 	SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (SetManualLineSectionRow, error)
 	SetSectionPosition(ctx context.Context, arg SetSectionPositionParams) error
 	SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error)
