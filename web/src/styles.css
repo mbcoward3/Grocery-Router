@@ -236,6 +236,7 @@ button:disabled, button[aria-disabled="true"] { cursor: not-allowed; opacity: 0.
 .recipe-row:hover .icon-button, .recipe-actions .icon-button:focus-visible { opacity: 1; }
 .specific-swap { font-size: 11px; letter-spacing: 1px; }
 .week-footer { min-height: 43px; padding: 0 4px; display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; }
+.week-close { padding: 6px 4px 0; display: flex; justify-content: flex-end; }
 
 .empty-week {
   min-height: 370px;
@@ -605,6 +606,10 @@ select {
 .drag-handle { padding: 10px 5px; color: var(--faint); cursor: grab; font-size: 20px; touch-action: none; }
 .section-order-list .icon-button { width: 36px; height: 36px; font-size: 16px; color: var(--muted); background: transparent; border-color: transparent; }
 .section-order-dialog footer { position: sticky; bottom: 0; justify-content: space-between; }
+.confirm-dialog { margin: auto; width: min(420px, calc(100% - 24px)); }
+.confirm-dialog::backdrop { background: #000a; backdrop-filter: blur(2px); }
+.confirm-dialog .dialog-note { margin: 16px 18px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.confirm-dialog .dialog-error { margin: 0 18px 14px; }
 
 /* Entrances are quick fades with a few pixels of travel; nothing bounces or lingers. */
 .grocery-name, .grocery-quantity, .grocery-meta { transition: color 160ms ease, text-decoration-color 160ms ease; }
@@ -614,9 +619,9 @@ select {
   .placement { animation: rise-in 180ms cubic-bezier(0, 0, .2, 1); }
   .grocery-suggestions { animation: rise-in 120ms cubic-bezier(0, 0, .2, 1); transform-origin: top; }
   @keyframes rise-in { from { opacity: 0; transform: translateY(-4px); } }
-  .line-sheet[open], .section-order-dialog[open] { animation: dialog-in 180ms cubic-bezier(0, 0, .2, 1); }
+  .line-sheet[open], .section-order-dialog[open], .confirm-dialog[open] { animation: dialog-in 180ms cubic-bezier(0, 0, .2, 1); }
   @keyframes dialog-in { from { opacity: 0; transform: translateY(6px) scale(.985); } }
-  .line-sheet[open]::backdrop, .section-order-dialog[open]::backdrop { animation: backdrop-in 180ms ease-out; }
+  .line-sheet[open]::backdrop, .section-order-dialog[open]::backdrop, .confirm-dialog[open]::backdrop { animation: backdrop-in 180ms ease-out; }
   @keyframes backdrop-in { from { opacity: 0; } }
 }
 @media (prefers-reduced-motion: no-preference) and (max-width: 800px) {

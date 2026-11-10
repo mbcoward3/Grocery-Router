@@ -231,7 +231,7 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
         <div className="settings-control settings-choices">
           {([
             ['automatic', 'Automatic', 'The week closes itself at that day and time.'],
-            ['manual', 'Manual', 'The week stays open until someone starts the next one.'],
+            ['manual', 'Manual', 'The week stays open until someone presses “Start next week” on the Week page.'],
           ] as const).map(([mode, name, help]) => (
             <div className="settings-choice" key={mode}>
               <label>

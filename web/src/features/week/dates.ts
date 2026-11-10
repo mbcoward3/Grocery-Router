@@ -23,3 +23,9 @@ export function formatWeekRange(startsOn: string, endsOn: string | null, locale?
 export function formatWeekday(value: string, locale?: string): string {
   return new Intl.DateTimeFormat(locale, { weekday: 'long', timeZone: 'UTC' }).format(asDate(value))
 }
+
+// deviceToday is the viewer's own calendar date (YYYY-MM-DD), for when the household's is not known.
+export function deviceToday(now = new Date()): string {
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}

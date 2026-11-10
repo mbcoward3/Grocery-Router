@@ -83,7 +83,7 @@ test('rollover day, time, and mode are saved together', async ({ page }) => {
   await expect(time).toHaveValue('00:00')
   await expect(page.getByRole('radio', { name: 'Automatic' })).toBeChecked()
   await expect(page.getByText('The week closes itself at that day and time.')).toBeVisible()
-  await expect(page.getByText('The week stays open until someone starts the next one.')).toBeVisible()
+  await expect(page.getByText('The week stays open until someone presses “Start next week” on the Week page.')).toBeVisible()
 
   await day.selectOption({ label: 'Friday' })
   await time.fill('18:00')

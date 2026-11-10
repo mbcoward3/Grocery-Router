@@ -103,6 +103,11 @@ export function generateWeek(recipeCount: number): Promise<Week> {
   })
 }
 
+// closeCurrentWeek ends the open week now. It never generates the next one.
+export async function closeCurrentWeek(): Promise<void> {
+  await request(householdPath('/week/current/close'), { method: 'POST' })
+}
+
 export function addRecipe(recipeId: number): Promise<Week> {
   return request(householdPath('/week/current/recipes'), {
     method: 'POST', body: JSON.stringify({ recipeId }),
