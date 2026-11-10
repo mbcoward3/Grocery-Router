@@ -26,6 +26,8 @@ var (
 )
 
 // ValidationError is a user-facing rejection whose message is safe to return to clients.
+// Construct it with invalid(), which returns the value form: callers match it with
+// errors.As against a week.ValidationError value, so a *ValidationError would not match.
 type ValidationError struct {
 	Message string
 }

@@ -314,6 +314,30 @@ func TestRequestsUseAuthorizedPathHousehold(t *testing.T) {
 	if countA != 0 || countB != 1 {
 		t.Fatalf("week counts: first household %d, second household %d", countA, countB)
 	}
+
+	var recipeA int64
+	if err := db.QueryRow("SELECT id FROM recipes WHERE household_id = $1 AND status = 'verified' ORDER BY id LIMIT 1", householdA).Scan(&recipeA); err != nil {
+		t.Fatal(err)
+	}
+	assertRecipeNotFound := func(name string, response *httptest.ResponseRecorder) {
+		t.Helper()
+		if response.Code != http.StatusUnprocessableEntity {
+			t.Fatalf("%s status = %d, body %s", name, response.Code, response.Body.String())
+		}
+		assertErrorCode(t, response, "week_operation_failed")
+		if message := decodeObject(t, response)["error"].(map[string]any)["message"]; message != "recipe not found" {
+			t.Fatalf("%s message = %#v", name, message)
+		}
+	}
+	assertRecipeNotFound("cross-household add", request(t, handler, http.MethodPost, path(householdB, "/week/current/recipes"),
+		fmt.Sprintf(`{"recipeId":%d}`, recipeA)))
+	occurrences := decodeObject(t, generated)["recipes"].([]any)
+	if len(occurrences) != 1 {
+		t.Fatalf("second household occurrences = %#v", occurrences)
+	}
+	occurrenceID := int64(occurrences[0].(map[string]any)["id"].(float64))
+	assertRecipeNotFound("missing recipe swap", request(t, handler, http.MethodPut,
+		path(householdB, fmt.Sprintf("/week/current/recipes/%d", occurrenceID)), `{"recipeId":999999}`))
 }
 
 func handlerForDB(db *sql.DB) http.Handler {
