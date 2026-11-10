@@ -109,7 +109,11 @@ func SundayIn(now time.Time, location *time.Location) string {
 // currentSunday loads the household's time zone once and returns its current week's Sunday.
 func (service *Household) currentSunday(ctx context.Context, queries *store.Queries, now time.Time) (string, error) {
 	zone, err := queries.GetHouseholdTimezone(ctx, service.householdID)
-	if err != nil {
+	if errors.Is(err, sql.ErrNoRows) {
+		// A household without a row has no weeks. UTC, the zone used before households had one,
+		// keeps every caller's previous outcome (no current week, empty history).
+		zone = "UTC"
+	} else if err != nil {
 		return "", fmt.Errorf("load household time zone: %w", err)
 	}
 	location, err := settings.ValidateTimezone(zone)

@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const getHouseholdName = `-- name: GetHouseholdName :one
+SELECT name FROM households WHERE id = $1
+`
+
+func (q *Queries) GetHouseholdName(ctx context.Context, householdID string) (string, error) {
+	row := q.db.QueryRowContext(ctx, getHouseholdName, householdID)
+	var name string
+	err := row.Scan(&name)
+	return name, err
+}
+
 const getHouseholdTimezone = `-- name: GetHouseholdTimezone :one
 SELECT timezone FROM households WHERE id = $1
 `

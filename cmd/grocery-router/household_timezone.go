@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/settings"
@@ -26,6 +27,9 @@ func (command *householdTimezoneCommand) Run() error {
 	if _, err := settings.ValidateTimezone(command.Zone); err != nil {
 		return err
 	}
+	if !householdIDPattern.MatchString(command.Household) {
+		return fmt.Errorf("household ID %q is not a UUID", command.Household)
+	}
 	if err := migrate(command.DatabaseURL); err != nil {
 		return err
 	}
@@ -40,7 +44,8 @@ func (command *householdTimezoneCommand) Run() error {
 		return err
 	}
 	defer func() { _ = tx.Rollback() }()
-	rows, err := store.New(tx).SetHouseholdTimezone(ctx, store.SetHouseholdTimezoneParams{
+	queries := store.New(tx)
+	rows, err := queries.SetHouseholdTimezone(ctx, store.SetHouseholdTimezoneParams{
 		HouseholdID: command.Household, Timezone: command.Zone,
 	})
 	if err != nil {
@@ -49,8 +54,8 @@ func (command *householdTimezoneCommand) Run() error {
 	if rows != 1 {
 		return fmt.Errorf("household %s not found", command.Household)
 	}
-	var name string
-	if err := tx.QueryRowContext(ctx, "SELECT name FROM households WHERE id = $1", command.Household).Scan(&name); err != nil {
+	name, err := queries.GetHouseholdName(ctx, command.Household)
+	if err != nil {
 		return fmt.Errorf("read household name: %w", err)
 	}
 	if err := tx.Commit(); err != nil {
@@ -59,6 +64,9 @@ func (command *householdTimezoneCommand) Run() error {
 	fmt.Printf("household %s time zone set to %s\n", name, command.Zone)
 	return nil
 }
+
+// householdIDPattern accepts the canonical UUID form that household IDs use.
+var householdIDPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$`)
 
 // cliVars supplies kong defaults that come from Go constants.
 var cliVars = map[string]string{"coward_household_id": tenant.CowardHouseholdID}

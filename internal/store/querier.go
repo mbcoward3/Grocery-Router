@@ -47,6 +47,7 @@ type Querier interface {
 	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
 	ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
+	GetHouseholdName(ctx context.Context, householdID string) (string, error)
 	GetHouseholdTimezone(ctx context.Context, householdID string) (string, error)
 	GetIngestEvidence(ctx context.Context, id int64) (IngestEvidence, error)
 	GetIngestHostRateLimit(ctx context.Context, host string) (GetIngestHostRateLimitRow, error)

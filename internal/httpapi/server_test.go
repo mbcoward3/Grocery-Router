@@ -510,12 +510,20 @@ func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
 	if starts := historyStarts(); len(starts) != 0 {
 		t.Fatalf("Chicago history = %#v, want no past weeks", starts)
 	}
+	added := request(t, handler, http.MethodPost, path("/week/current/groceries"), `{"name":"Paper towels"}`)
+	if added.Code != http.StatusOK || decodeObject(t, added)["startsOn"] != "2026-08-09" {
+		t.Fatalf("Chicago manual line status = %d, body %s", added.Code, added.Body.String())
+	}
 
 	setZone("UTC")
-	for _, suffix := range []string{"/week/current", "/week/current/groceries"} {
-		response := request(t, handler, http.MethodGet, path(suffix), "")
+	for _, call := range []struct{ method, suffix, body string }{
+		{http.MethodGet, "/week/current", ""},
+		{http.MethodGet, "/week/current/groceries", ""},
+		{http.MethodPost, "/week/current/groceries", `{"name":"Paper towels"}`},
+	} {
+		response := request(t, handler, call.method, path(call.suffix), call.body)
 		if response.Code != http.StatusNotFound {
-			t.Fatalf("UTC %s status = %d, body %s", suffix, response.Code, response.Body.String())
+			t.Fatalf("UTC %s %s status = %d, body %s", call.method, call.suffix, response.Code, response.Body.String())
 		}
 		assertErrorCode(t, response, "no_current_week")
 	}
