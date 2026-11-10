@@ -28,6 +28,8 @@ func (server *Server) updateSettings(response http.ResponseWriter, request *http
 	if !decodeJSON(response, request, &input) {
 		return
 	}
+	// An empty change is a malformed request (400, minProperties in the contract), rejected here
+	// before settings.Change.Validate, whose own empty-change check serves other callers.
 	if input.Timezone == nil && input.DefaultRecipeCount == nil {
 		writeError(response, http.StatusBadRequest, "invalid_request", "Provide timezone, defaultRecipeCount, or both.")
 		return

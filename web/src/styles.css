@@ -199,8 +199,8 @@ h1 { margin: 0; font-size: 23px; font-weight: 620; line-height: 1.2; letter-spac
 .button svg { width: 14px; height: 14px; }
 .button:hover:not(:disabled), .icon-button:hover:not(:disabled) { background: #202329; border-color: #3b3f47; }
 .button.primary { color: var(--accent-ink); background: var(--accent); border-color: #69d0b8; }
-.button.primary:hover:not(:disabled) { background: var(--accent-hover); }
-button:disabled { cursor: not-allowed; opacity: 0.48; }
+.button.primary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--accent-hover); }
+button:disabled, button[aria-disabled="true"] { cursor: not-allowed; opacity: 0.48; }
 .icon-button { width: 32px; height: 32px; padding: 0; color: #a5aab3; }
 .icon-button svg { width: 14px; height: 14px; stroke-width: 1.5; }
 .icon-button.danger:hover:not(:disabled) { color: var(--danger); border-color: #58363a; background: #241719; }
