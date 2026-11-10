@@ -5,6 +5,12 @@ import { settingsQueryKey, settingsQueryOptions } from './queries'
 
 const minRecipeCount = 1
 const maxRecipeCount = 21
+// Index is the API's weekStartDay: 0 is Sunday, as in JavaScript's Date.getDay.
+const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const clockPattern = /^([01][0-9]|2[0-3]):[0-5][0-9]$/
+
+type RolloverMode = HouseholdSettings['rolloverMode']
+type Field = 'timezone' | 'count' | 'day' | 'time' | 'mode'
 
 export function SettingsPage() {
   const query = useQuery(settingsQueryOptions)
@@ -34,10 +40,21 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   const queryClient = useQueryClient()
   const [timezone, setTimezone] = useState(saved.timezone)
   const [recipeCount, setRecipeCount] = useState(String(saved.defaultRecipeCount))
-  const [countError, setCountError] = useState<string | null>(null)
+  const [weekStartDay, setWeekStartDay] = useState(saved.weekStartDay)
+  const [rolloverTime, setRolloverTime] = useState(saved.rolloverTime)
+  const [rolloverMode, setRolloverMode] = useState<RolloverMode>(saved.rolloverMode)
+  // A field the form itself rejected before saving, with the message to show.
+  const [localError, setLocalError] = useState<{ field: Field; message: string } | null>(null)
   const [status, setStatus] = useState('')
   const timezoneRef = useRef<HTMLSelectElement>(null)
   const countRef = useRef<HTMLInputElement>(null)
+  const dayRef = useRef<HTMLSelectElement>(null)
+  const timeRef = useRef<HTMLInputElement>(null)
+  const modeRef = useRef<HTMLInputElement>(null)
+  const focusField = (field: Field | null) => {
+    const refs = { timezone: timezoneRef, count: countRef, day: dayRef, time: timeRef, mode: modeRef }
+    if (field) refs[field].current?.focus()
+  }
   const deviceZone = Intl.DateTimeFormat().resolvedOptions().timeZone
   const zones = useMemo(() => timeZoneOptions([saved.timezone, timezone, deviceZone]), [saved.timezone, timezone, deviceZone])
 
@@ -46,7 +63,8 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
     onSuccess: (settings) => {
       queryClient.setQueryData(settingsQueryKey, settings)
       setStatus('Settings saved.')
-      // A new time zone can move the current week, so the week, its groceries, and history reload.
+      // A new time zone or rollover moves the current week's end, so the week, its groceries, and
+      // history reload.
       void queryClient.invalidateQueries({ queryKey: ['week'] })
       void queryClient.invalidateQueries({ queryKey: ['weeks'] })
     },
@@ -56,6 +74,9 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   if (timezone !== saved.timezone) change.timezone = timezone
   const parsedCount = recipeCount.trim() === '' ? Number.NaN : Number(recipeCount)
   if (parsedCount !== saved.defaultRecipeCount) change.defaultRecipeCount = parsedCount
+  if (weekStartDay !== saved.weekStartDay) change.weekStartDay = weekStartDay
+  if (rolloverTime !== saved.rolloverTime) change.rolloverTime = rolloverTime
+  if (rolloverMode !== saved.rolloverMode) change.rolloverMode = rolloverMode
   const changed = Object.keys(change).length > 0
 
   // When a stored setting changes (another member saved, or this form did), its field follows it,
@@ -64,27 +85,30 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   const { reset } = mutation
   useEffect(() => {
     const before = previous.current
-    if (before.timezone === saved.timezone && before.defaultRecipeCount === saved.defaultRecipeCount) return
+    if (before.timezone === saved.timezone && before.defaultRecipeCount === saved.defaultRecipeCount &&
+      before.weekStartDay === saved.weekStartDay && before.rolloverTime === saved.rolloverTime &&
+      before.rolloverMode === saved.rolloverMode) return
     previous.current = saved
     if (before.timezone !== saved.timezone) setTimezone(saved.timezone)
     if (before.defaultRecipeCount !== saved.defaultRecipeCount) setRecipeCount(String(saved.defaultRecipeCount))
-    setCountError(null)
+    if (before.weekStartDay !== saved.weekStartDay) setWeekStartDay(saved.weekStartDay)
+    if (before.rolloverTime !== saved.rolloverTime) setRolloverTime(saved.rolloverTime)
+    if (before.rolloverMode !== saved.rolloverMode) setRolloverMode(saved.rolloverMode)
+    setLocalError(null)
     reset()
   }, [saved, reset])
 
   // A rejected save moves focus to the field it names. This runs after render, once the fields
   // reflect the failed save.
   useEffect(() => {
-    if (!mutation.error) return
-    const field = invalidField(mutation.error)
-    if (field === 'timezone') timezoneRef.current?.focus()
-    if (field === 'count') countRef.current?.focus()
+    // focusField reads only refs, so the error alone decides when this runs.
+    if (mutation.error) focusField(invalidField(mutation.error))
   }, [mutation.error])
   const saveUnavailable = mutation.isPending || !changed
 
   const edited = () => {
     setStatus('')
-    setCountError(null)
+    setLocalError(null)
     mutation.reset()
   }
 
@@ -94,19 +118,23 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
     if (saveUnavailable) return
     setStatus('')
     const count = change.defaultRecipeCount
+    let rejected: { field: Field; message: string } | null = null
     if (count !== undefined && !(Number.isInteger(count) && count >= minRecipeCount && count <= maxRecipeCount)) {
-      setCountError(`Recipes per week must be a whole number from ${minRecipeCount} to ${maxRecipeCount}.`)
-      countRef.current?.focus()
+      rejected = { field: 'count', message: `Recipes per week must be a whole number from ${minRecipeCount} to ${maxRecipeCount}.` }
+    } else if (change.rolloverTime !== undefined && !clockPattern.test(change.rolloverTime)) {
+      rejected = { field: 'time', message: 'Choose the time of day the week rolls over.' }
+    }
+    setLocalError(rejected)
+    if (rejected) {
+      focusField(rejected.field)
       return
     }
-    setCountError(null)
     mutation.mutate(change)
   }
 
-  const serverField = mutation.error ? invalidField(mutation.error) : null
-  const error = countError ?? mutation.error?.message ?? null
-  const timezoneInvalid = !countError && serverField === 'timezone'
-  const countInvalid = Boolean(countError) || serverField === 'count'
+  const invalid = localError?.field ?? (mutation.error ? invalidField(mutation.error) : null)
+  const error = localError?.message ?? mutation.error?.message ?? null
+  const describedBy = (field: Field, help: string) => (invalid === field ? `${help} settings-error` : help)
   return (
     // While a save is pending the fields ignore edits but stay enabled, so focus (for example after
     // Enter in the count field) never falls back to the page body.
@@ -118,8 +146,8 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
           <select
             id="settings-timezone"
             ref={timezoneRef}
-            aria-describedby={timezoneInvalid ? 'settings-timezone-help settings-error' : 'settings-timezone-help'}
-            aria-invalid={timezoneInvalid || undefined}
+            aria-describedby={describedBy('timezone', 'settings-timezone-help')}
+            aria-invalid={invalid === 'timezone' || undefined}
             value={timezone}
             onChange={(event) => { if (!mutation.isPending) { setTimezone(event.target.value); edited() } }}
             aria-readonly={mutation.isPending || undefined}
@@ -143,8 +171,8 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
           <input
             id="settings-recipe-count"
             ref={countRef}
-            aria-describedby={countInvalid ? 'settings-recipe-count-help settings-error' : 'settings-recipe-count-help'}
-            aria-invalid={countInvalid || undefined}
+            aria-describedby={describedBy('count', 'settings-recipe-count-help')}
+            aria-invalid={invalid === 'count' || undefined}
             type="number"
             inputMode="numeric"
             min={minRecipeCount}
@@ -154,6 +182,67 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
             onChange={(event) => { if (!mutation.isPending) { setRecipeCount(event.target.value); edited() } }}
             readOnly={mutation.isPending}
           />
+        </div>
+      </div>
+      <div className="settings-field">
+        <label htmlFor="settings-week-start">Week starts on</label>
+        <p className="settings-help" id="settings-week-start-help">The day one week ends and the next begins.</p>
+        <div className="settings-control">
+          <select
+            id="settings-week-start"
+            ref={dayRef}
+            aria-describedby={describedBy('day', 'settings-week-start-help')}
+            aria-invalid={invalid === 'day' || undefined}
+            value={weekStartDay}
+            onChange={(event) => { if (!mutation.isPending) { setWeekStartDay(Number(event.target.value)); edited() } }}
+            aria-readonly={mutation.isPending || undefined}
+          >
+            {weekdays.map((day, index) => <option key={day} value={index}>{day}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="settings-field">
+        <label htmlFor="settings-rollover-time">Rolls over at</label>
+        <p className="settings-help" id="settings-rollover-time-help">The time on that day, in your household’s time zone.</p>
+        <div className="settings-control">
+          <input
+            id="settings-rollover-time"
+            ref={timeRef}
+            className="settings-time"
+            aria-describedby={describedBy('time', 'settings-rollover-time-help')}
+            aria-invalid={invalid === 'time' || undefined}
+            type="time"
+            step={60}
+            value={rolloverTime}
+            onChange={(event) => { if (!mutation.isPending) { setRolloverTime(event.target.value); edited() } }}
+            readOnly={mutation.isPending}
+          />
+        </div>
+      </div>
+      <div className="settings-field" role="radiogroup" aria-labelledby="settings-mode-label" aria-describedby={invalid === 'mode' ? 'settings-error' : undefined}>
+        <span className="settings-label" id="settings-mode-label">Rollover</span>
+        <p className="settings-help">How the week ends.</p>
+        <div className="settings-control settings-choices">
+          {([
+            ['automatic', 'Automatic', 'The week closes itself at that day and time.'],
+            ['manual', 'Manual', 'The week stays open until someone starts the next one.'],
+          ] as const).map(([mode, name, help]) => (
+            <div className="settings-choice" key={mode}>
+              <label>
+                <input
+                  ref={mode === rolloverMode ? modeRef : undefined}
+                  type="radio"
+                  name="settings-rollover-mode"
+                  value={mode}
+                  checked={rolloverMode === mode}
+                  aria-describedby={`settings-mode-${mode}-help`}
+                  onChange={() => { if (!mutation.isPending) { setRolloverMode(mode); edited() } }}
+                />
+                {name}
+              </label>
+              <p className="settings-help" id={`settings-mode-${mode}-help`}>{help}</p>
+            </div>
+          ))}
         </div>
       </div>
       {error && <p className="inline-error" id="settings-error" role="alert">{error}</p>}
@@ -167,10 +256,15 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   )
 }
 
-// invalidField names the field a rejected save points at, so focus can move there.
-function invalidField(error: Error): 'timezone' | 'count' | null {
+// invalidField names the field a rejected save points at, so focus can move there. The messages
+// are pinned by TestValidationMessages in internal/settings.
+function invalidField(error: Error): Field | null {
   if (!(error instanceof ApiRequestError) || error.code !== 'invalid_settings') return null
-  return /time zone/i.test(error.message) ? 'timezone' : 'count'
+  if (/time zone/i.test(error.message)) return 'timezone'
+  if (/week start day/i.test(error.message)) return 'day'
+  if (/rollover time/i.test(error.message)) return 'time'
+  if (/rollover mode/i.test(error.message)) return 'mode'
+  return 'count'
 }
 
 // timeZoneOptions lists the browser's zones plus any extra (the saved zone, the device zone)

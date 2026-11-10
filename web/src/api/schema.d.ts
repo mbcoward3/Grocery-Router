@@ -248,7 +248,10 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Change either or both household preferences; any household member may. */
+        /**
+         * Change one or more household preferences; any household member may.
+         * @description Changing the time zone, rollover day, time, or mode moves the open week's automatic close time to the next rollover under the new settings (none in manual mode). Saving never closes a week.
+         */
         patch: operations["updateHouseholdSettings"];
         trace?: never;
     };
@@ -455,12 +458,22 @@ export interface components {
             id: number;
             /** Format: date */
             startsOn: string;
+            /**
+             * Format: date
+             * @description The week's last household-local date: the date one second before it closed, or before it closes itself while open. Null for an open week in manual mode.
+             */
+            endsOn: string | null;
             recipes: components["schemas"]["RecipeOccurrence"][];
         };
         WeekHistorySummary: {
             id: number;
             /** Format: date */
             startsOn: string;
+            /**
+             * Format: date
+             * @description The household-local date one second before the week closed.
+             */
+            endsOn: string;
             recipeCount: number;
             groceryCount: number;
             completedCount: number;
@@ -474,7 +487,19 @@ export interface components {
             timezone: string;
             /** @description Recipes offered when generating a week. */
             defaultRecipeCount: number;
+            weekStartDay: components["schemas"]["WeekStartDay"];
+            rolloverTime: components["schemas"]["RolloverTime"];
+            rolloverMode: components["schemas"]["RolloverMode"];
         };
+        /** @description The local day the week rolls over on: 0 is Sunday, 6 is Saturday. */
+        WeekStartDay: number;
+        /** @description The local time of day the week rolls over, HH:MM on a 24-hour clock. */
+        RolloverTime: string;
+        /**
+         * @description automatic: the week closes itself at the rollover day and time. manual: the week stays open until someone starts the next one.
+         * @enum {string}
+         */
+        RolloverMode: "automatic" | "manual";
         APIError: {
             error: {
                 code: string;
@@ -957,6 +982,9 @@ export interface operations {
                     /** @description IANA time zone name, for example America/Chicago. */
                     timezone?: string;
                     defaultRecipeCount?: number;
+                    weekStartDay?: components["schemas"]["WeekStartDay"];
+                    rolloverTime?: components["schemas"]["RolloverTime"];
+                    rolloverMode?: components["schemas"]["RolloverMode"];
                 };
             };
         };
