@@ -654,6 +654,7 @@ There is no approximate conversion in the v1 unit graph.
 - stable ID;
 - start date under the household's configured week start (any day; two weeks may share one);
 - open, automatic-close, and closed times;
+- last local date, fixed when the week closes;
 - creation/update timestamps.
 
 Weeks are retained. v1 only exposes the explicitly generated current week.

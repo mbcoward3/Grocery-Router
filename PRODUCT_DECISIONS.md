@@ -935,7 +935,9 @@ transaction, to the next rollover after now under the new settings (none in manu
 never closes a week, so a week is not cut short or ended by a settings change. The
 `household-timezone` command moves the open week the same way. Weeks and History report
 `endsOn`, the local date one second before the week closes or closed, so a Sunday 12:00 AM
-rollover ends on Saturday and a Friday 6:00 PM rollover ends on Friday. This partly supersedes
+rollover ends on Saturday and a Friday 6:00 PM rollover ends on Friday. A closed week stores that
+date (`weeks.ends_on`) in the zone the household had when it closed, so a later time-zone change
+never re-cuts History; any code that closes a week must set it. This partly supersedes
 D026: the household, not the application, decides when its week rolls over. Until a "Start next
 week" action exists, a manual week can be ended only by switching back to automatic.
 
