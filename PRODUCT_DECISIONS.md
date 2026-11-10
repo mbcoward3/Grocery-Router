@@ -950,11 +950,14 @@ on the local date of that rollover and closes at the one after it, so a househol
 Saturday for a week starting Sunday is not rolled over again on Sunday. This holds for a close in
 the middle of the week too: the next week still starts at the upcoming rollover, and the days
 between the close and that rollover belong to no week. Once that rollover has passed, the next
-week opens by the ordinary rule. If the settings changed after the close, the new week takes over
-the period, under the new settings, that begins at the rollover nearest the skipped one. A
+week opens by the ordinary rule. If the settings changed after the close, the new week begins at
+whichever of two rollovers under the new settings is nearer the skipped rollover: the last one at
+or before now, or the next one after now; it closes at the rollover after its beginning. A
 settings change saved while such a week has not yet reached the rollover it skips moves its close
 to whichever of the next two rollovers under the new settings is nearer its old close, so it
-neither ends at the rollover it was opened to skip nor runs a week longer. A week that closes,
+neither ends at the rollover it was opened to skip nor runs a week longer. Because that close is
+recomputed from now, a settings change after a mid-week close can shorten a week started early,
+but its date range never goes backwards. A week that closes,
 by hand or by its rollover, before its own start date (one started early and closed again before
 its period began) ends on its start date.
 

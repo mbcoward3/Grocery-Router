@@ -262,12 +262,37 @@ func TestChangeWaitingForACloseFindsNoWeek(t *testing.T) {
 		_, err := service.Add(ctx, testNowUTC().Add(2*time.Minute), generated.Recipes[0].RecipeID)
 		added <- err
 	}()
-	time.Sleep(200 * time.Millisecond)
+	// Add must wait for the close's row lock; without LockOpenWeek it would not, and would finish.
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		var waiting int
+		if err := db.QueryRowContext(ctx, `SELECT count(*) FROM pg_stat_activity
+			WHERE datname = current_database() AND wait_event_type = 'Lock'`).Scan(&waiting); err != nil {
+			t.Fatal(err)
+		}
+		if waiting > 0 {
+			break
+		}
+		select {
+		case err := <-added:
+			t.Fatalf("Add finished without waiting for the close: %v", err)
+		default:
+		}
+		if time.Now().After(deadline) {
+			t.Fatal("Add never waited for the close's lock")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 	if err := closing.Commit(); err != nil {
 		t.Fatal(err)
 	}
-	if err := <-added; !errors.Is(err, week.ErrNoCurrentWeek) {
-		t.Fatalf("Add during a close error = %v, want ErrNoCurrentWeek", err)
+	select {
+	case err := <-added:
+		if !errors.Is(err, week.ErrNoCurrentWeek) {
+			t.Fatalf("Add during a close error = %v, want ErrNoCurrentWeek", err)
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("Add did not finish after the close committed")
 	}
 	var recipes int
 	if err := db.QueryRow(`SELECT count(*) FROM week_recipes WHERE week_id = $1`, generated.Week.ID).Scan(&recipes); err != nil || recipes != 2 {
