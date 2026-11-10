@@ -178,10 +178,10 @@ jobs:
           GIT_SSH_COMMAND: ssh -i ~/.ssh/grocery-router-gitops -o IdentitiesOnly=yes
         run: |
           set -euo pipefail
-          git clone git@github.com:mbcoward3/talos-cluster.git gitops
+          git clone git@github.com:mbcoward3/homelab.git gitops
           git -C gitops config user.name 'grocery-router-dev-bot'
           git -C gitops config user.email 'grocery-router-dev-bot@users.noreply.github.com'
-          path=apps/grocery-router/dev/deployment.yaml
+          path=apps/grocery-router/dev/release.yaml
           # Retry from current GitOps main if another application pushed meanwhile.
           for attempt in 1 2 3 4 5; do
             git -C gitops fetch origin main
