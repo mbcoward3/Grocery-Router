@@ -1,9 +1,29 @@
 -- name: CreateWeek :one
-INSERT INTO weeks (household_id, starts_on) VALUES (sqlc.arg(household_id), sqlc.arg(starts_on))
+INSERT INTO weeks (household_id, starts_on, opened_at)
+VALUES (sqlc.arg(household_id), sqlc.arg(starts_on), sqlc.arg(opened_at))
 RETURNING *;
 
--- name: GetWeekByStart :one
-SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND starts_on = sqlc.arg(starts_on);
+-- name: CloseOpenWeek :execrows
+-- Closes the household's open plan at now with its last local date, never before its start
+-- date. Dates are ISO text, so GREATEST compares them as dates.
+UPDATE weeks SET
+    closed_at = CAST(sqlc.arg(closed_at) AS TIMESTAMPTZ),
+    ends_on = greatest(CAST(sqlc.arg(ends_on) AS TEXT), starts_on)
+WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
+
+-- name: ReopenWeek :execrows
+-- Makes a past plan the open one again. The caller closes the open plan first.
+UPDATE weeks SET closed_at = NULL, ends_on = NULL
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NOT NULL;
+
+-- name: GetOpenWeek :one
+SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
+
+-- name: LockOpenWeek :one
+-- Taken before a change to the open week or its list. A concurrent close waits for the change,
+-- or, if it closed the week first, this finds no open week once it commits.
+SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL
+FOR NO KEY UPDATE;
 
 -- name: ListPastWeeks :many
 SELECT
@@ -16,16 +36,16 @@ SELECT
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
         WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
 FROM weeks w
-WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on < sqlc.arg(starts_on)
-ORDER BY w.starts_on DESC;
+WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NOT NULL
+ORDER BY w.starts_on DESC, w.id DESC;
 
 -- name: GetPastWeek :one
 SELECT * FROM weeks
-WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND starts_on < sqlc.arg(starts_on);
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NOT NULL;
 
 -- name: TouchWeek :exec
 UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NULL;
 
 -- name: CreateWeekRecipe :one
 INSERT INTO week_recipes (household_id, week_id, recipe_id, position)

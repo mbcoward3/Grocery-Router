@@ -15,9 +15,67 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 3. This record — rationale and revisit conditions.
 4. Completed true-up ledger and raw interview archives — historical evidence only.
 
+## Decision index
+
+| ID | Title | Status |
+| --- | --- | --- |
+| D001 | Reset instead of repairing the current application | Partly superseded by D036 (SQLite rebuild; now PostgreSQL) |
+| D002 | Reduce the product to corpus → week → groceries | Partly superseded by D038 (screen count; History added) |
+| D003 | Random planning now; agent planning later | Partly superseded by D042 (Google ADK in revisit condition) |
+| D004 | The week is an unordered pool | Active |
+| D005 | Direct week manipulation | Active |
+| D006 | No guest or serving scaling in v1 | Active |
+| D007 | Include every ingredient | Partly superseded by D033 (non-shopping inputs such as water are excluded) |
+| D008 | Preserve recipe requirements; do not estimate purchases | Active |
+| D009 | Exact conversions only | Active |
+| D010 | Shopping modes are reviewed item data | Active |
+| D011 | Canonical grocery mapping happens during ingestion | Active |
+| D012 | Purchased form matters | Active |
+| D013 | Preserve package sizes | Active |
+| D014 | Optional ingredients stay visible | Active |
+| D015 | The PDF controls membership; websites control linked content | Active |
+| D016 | Source completeness and recipe completeness are different | Active |
+| D017 | Agent assistance is allowed only before approval | Active |
+| D018 | Distinguish sourced from adapted recipes | Active |
+| D019 | Preserve source text and structured interpretation | Partly superseded by D036 (SQLite storage; now PostgreSQL) |
+| D020 | SQLite is the sole runtime recipe truth | Partly superseded by D036 (SQLite runtime truth; now PostgreSQL) |
+| D021 | True up recipes one at a time | Active |
+| D022 | Store full in-app recipes | Partly superseded by D036 (SQLite storage; now PostgreSQL) |
+| D023 | Keep list provenance compact but available | Active |
+| D024 | Weekly list edits do not alter recipes | Active |
+| D025 | No explicit week lock | Active |
+| D026 | Current week is manually created | Partly superseded by D038 (past weeks are now shown in History) and D051 (a plan lasts until the household starts a new one) |
+| D027 | Responsive Linear-inspired UI | Active |
+| D028 | Go, SQLite, Goose, and sqlc | Partly superseded by D036 and D042 (SQLite, deferred hosting; ADK rationale) |
+| D029 | No authentication or offline mode locally | Partly superseded by AUTH_HOUSEHOLDS_SPEC.md and D036 (no auth, local-only) |
+| D030 | Keep an injectable, approved Markdown corpus | Partly superseded by D036 (SQLite ingest target; now PostgreSQL) |
+| D031 | Keep deferred ideas visible but out of v1 | Active |
+| D032 | Suggestions do not replace recipe requirements | Active |
+| D033 | Non-purchased inputs remain explicit | Active |
+| D034 | Use a TanStack-first TypeScript frontend | Active |
+| D035 | Use the three-stroke basket/list identity for v1 | Active |
+| D036 | Replace SQLite with PostgreSQL managed by CloudNativePG | Active |
+| D037 | Make the verified corpus directly browsable | Partly superseded by D038 (four-screen count) |
+| D038 | Expose retained weeks as read-only history | Active |
+| D039 | Shared catalog plus household-owned copies | Active |
+| D040 | Release-qualified publication for catalog recipes | Active |
+| D041 | AI runs offline only | Active |
+| D042 | OpenAI through the official Go SDK | Active |
+| D043 | Suggested recipes enter the week marked, and join when kept | Direction only (not implemented) |
+| D044 | Shopping follows the household store walk | Partly superseded by D045 and D046 (completed-row sinking, section folding, Undo on check, Hide done and its default) |
+| D045 | Remember where unknown items go; Hide done owns folding | Partly superseded by D046 (Hide done control and section folding) |
+| D046 | Plain rows, one Done group, undo only for removal | Active |
+| D047 | One checklist row per grocery item; look-alike items need a decision | Active |
+| D048 | Substitution is a household choice over frozen groups (proposed) | Direction only (not implemented) |
+| D049 | Household preferences live per household and are edited in the app | Active |
+| D050 | The household chooses its rollover day, time, and mode | Superseded by D051 |
+| D051 | A plan lasts from one shopping trip to the next and can be reopened | Active |
+
 ---
 
 ## D001 — Reset instead of repairing the current application
+
+**Status:** Partly superseded by D036 (SQLite rebuild; now PostgreSQL)
 
 **Decision:** Treat all existing implementation, derived recipe Markdown, deployment work,
 and superseded specifications as disposable. Preserve Git history and raw corpus evidence.
@@ -34,6 +92,8 @@ legacy evidence only when they satisfy the new tests and data contract.
 
 ## D002 — Reduce the product to corpus → week → groceries
 
+**Status:** Partly superseded by D038 (screen count; History added)
+
 **Decision:** v1 has one path: select known recipes, form an unordered week, and generate a
 traceable grocery checklist.
 
@@ -45,6 +105,8 @@ feature. Discovery, learning, inventory, and agent reasoning obscure whether the
 **Revisit when:** The complete workflow is trusted in real household use.
 
 ## D003 — Random planning now; agent planning later
+
+**Status:** Partly superseded by D042 (Google ADK in revisit condition)
 
 **Decision:** Generate the initial week uniformly at random from verified recipes.
 
@@ -59,6 +121,8 @@ scoped contract and evaluation plan.
 
 ## D004 — The week is an unordered pool
 
+**Status:** Active
+
 **Decision:** Do not assign recipes to days.
 
 **Why:** The household's weeks are dynamic; day labels would create false precision and
@@ -69,6 +133,8 @@ additional maintenance.
 **Revisit when:** Actual use demonstrates value in day assignment.
 
 ## D005 — Direct week manipulation
+
+**Status:** Active
 
 **Decision:** Support add, remove, random swap, specific swap, and full regeneration.
 
@@ -81,6 +147,8 @@ Each occurrence contributes another complete batch.
 **Revisit when:** These controls prove insufficient in use.
 
 ## D006 — No guest or serving scaling in v1
+
+**Status:** Active
 
 **Decision:** Use one approved source-baseline batch per recipe occurrence.
 
@@ -95,6 +163,8 @@ receives dedicated fixtures.
 
 ## D007 — Include every ingredient
 
+**Status:** Partly superseded by D033 (non-shopping inputs such as water are excluded)
+
 **Decision:** Generate groceries from every approved recipe ingredient, including salt,
 spices, oil, and optional ingredients.
 
@@ -107,6 +177,8 @@ remain visibly optional.
 **Revisit when:** Inventory is based on observed state rather than assumptions.
 
 ## D008 — Preserve recipe requirements; do not estimate purchases
+
+**Status:** Active
 
 **Decision:** v1 reports approved recipe requirements and explicit package details. It does
 not round, pad, or translate them into advice about how much to buy.
@@ -122,6 +194,8 @@ underbuying.
 
 ## D009 — Exact conversions only
 
+**Status:** Active
+
 **Decision:** Aggregate through universally exact unit conversions; keep incompatible or
 item-specific quantities separate.
 
@@ -135,6 +209,8 @@ conversion exists.
 
 ## D010 — Shopping modes are reviewed item data
 
+**Status:** Active
+
 **Decision:** Each canonical grocery item is `measured`, `counted`, or `presence-only`.
 
 **Why:** Recipe measurements are not always useful shopping quantities. Salt should appear as
@@ -145,6 +221,8 @@ conversion exists.
 **Revisit when:** Store products or inventory provide a stronger purchase representation.
 
 ## D011 — Canonical grocery mapping happens during ingestion
+
+**Status:** Active
 
 **Decision:** Every recipe ingredient maps to a canonical shoppable item before the recipe is
 verified.
@@ -160,6 +238,8 @@ must retain verification.
 
 ## D012 — Purchased form matters
 
+**Status:** Active
+
 **Decision:** Related foods remain separate grocery items when they are bought differently.
 
 **Why:** Raw chicken breast, cooked chicken, and rotisserie chicken are not interchangeable
@@ -171,6 +251,8 @@ relationships are deferred.
 **Revisit when:** A first-class substitution model is scoped.
 
 ## D013 — Preserve package sizes
+
+**Status:** Active
 
 **Decision:** Keep package count and package size in grocery requirements, and do not merge
 different requested sizes.
@@ -185,6 +267,8 @@ weights could be added mathematically.
 
 ## D014 — Optional ingredients stay visible
 
+**Status:** Active
+
 **Decision:** Include optional ingredients by default and mark them visibly optional.
 
 **Why:** Omitting them silently creates an incomplete list; treating them as mandatory loses
@@ -195,6 +279,8 @@ source meaning.
 **Revisit when:** The user requests per-week optional-item inclusion controls.
 
 ## D015 — The PDF controls membership; websites control linked content
+
+**Status:** Active
 
 **Decision:** `sources/Recipes.pdf` determines which recipes belong. For linked entries, the
 website inspected during true-up controls ingredients, quantities, and instructions.
@@ -210,6 +296,8 @@ exists.
 
 ## D016 — Source completeness and recipe completeness are different
 
+**Status:** Active
+
 **Decision:** A source may be sparse; a selectable database recipe must be complete.
 
 **Why:** Several genuine family recipes are only grocery lists in the PDF. Rejecting them would
@@ -222,6 +310,8 @@ backfilled, reviewed, and approved.
 **Revisit when:** Never as an invariant. Future onboarding should preserve the same distinction.
 
 ## D017 — Agent assistance is allowed only before approval
+
+**Status:** Active
 
 **Decision:** The coding agent may propose missing recipe facts during true-up, including
 entire ingredients and quantities. The user approves each recipe before verification.
@@ -236,6 +326,8 @@ recipes are selectable.
 
 ## D018 — Distinguish sourced from adapted recipes
 
+**Status:** Active
+
 **Decision:** Record whether an approved recipe is a direct source or adapted from a reference.
 
 **Why:** A similar online recipe can fill gaps for a PDF-only family recipe, but the final
@@ -246,6 +338,8 @@ household version should not be represented as an exact copy.
 **Revisit when:** A richer source/revision model is introduced.
 
 ## D019 — Preserve source text and structured interpretation
+
+**Status:** Partly superseded by D036 (SQLite storage; now PostgreSQL)
 
 **Decision:** Store every original ingredient line beside exact structured quantity, package,
 preparation, optional state, and canonical grocery mapping.
@@ -259,6 +353,8 @@ current truth rather than a complete correction history.
 **Revisit when:** Revision history is scoped.
 
 ## D020 — SQLite is the sole runtime recipe truth
+
+**Status:** Partly superseded by D036 (SQLite runtime truth; now PostgreSQL)
 
 **Decision:** Keep one strict, approved Markdown file per recipe as the Git/bootstrap corpus,
 then ingest it one-way into SQLite. The running application reads only SQLite and never writes
@@ -277,6 +373,8 @@ through versioned ingestion migrations.
 
 ## D021 — True up recipes one at a time
 
+**Status:** Active
+
 **Decision:** Present and approve one completed recipe per review by default. The household may
 explicitly delegate a completion pass, but every recipe is still reviewed independently and
 all non-obvious calls are written to a named re-review queue.
@@ -293,6 +391,8 @@ recipe verification.
 
 ## D022 — Store full in-app recipes
 
+**Status:** Partly superseded by D036 (SQLite storage; now PostgreSQL)
+
 **Decision:** Recipe details include sections, ingredients, hands-on and unattended time,
 source attribution, and ordered read-only instructions from SQLite.
 
@@ -306,6 +406,8 @@ may be rewritten clearly during true-up.
 
 ## D023 — Keep list provenance compact but available
 
+**Status:** Active
+
 **Decision:** Group groceries by store section and expose contributing recipes behind an expand
 action.
 
@@ -317,6 +419,8 @@ scanability.
 **Revisit when:** Mobile use indicates another presentation is clearer.
 
 ## D024 — Weekly list edits do not alter recipes
+
+**Status:** Active
 
 **Decision:** Allow arbitrary additions, removal, completion, and quantity overrides on the
 week's list only.
@@ -332,6 +436,8 @@ scoped.
 
 ## D025 — No explicit week lock
 
+**Status:** Active
+
 **Decision:** Assume users settle recipes before shopping, but do not add a lock/unlock state.
 
 **Why:** The natural workflow already minimizes recipe/list collisions. Enforcing it adds
@@ -343,6 +449,9 @@ best effort. Sophisticated reconciliation is deferred.
 **Revisit when:** Real usage demonstrates repeated destructive conflicts.
 
 ## D026 — Current week is manually created
+
+**Status:** Partly superseded by D038 (past weeks are now shown in History) and D051 (a plan
+lasts until the household starts a new one)
 
 **Decision:** The user explicitly generates a week; the application assigns the current
 Sunday. It does not auto-roll over or expose future/past week interfaces.
@@ -356,6 +465,8 @@ flow.
 
 ## D027 — Responsive Linear-inspired UI
 
+**Status:** Active
+
 **Decision:** Use Linear as the primary visual and interaction reference, following its visual
 grammar closely where it fits Grocery Router. Both planning and shopping must work well on
 iPhone.
@@ -367,14 +478,16 @@ motion.
 
 **Consequence:** React and TypeScript are the preferred frontend; mobile is a first-class layout.
 Borrow aggressively from Linear's presentation without copying its branding or importing
-product-specific controls that do not serve Grocery Router's three-screen workflow. The Atlas
-workspace exploration (`design/ui-explorations/concept-a.html`) is the production starting
+product-specific controls that do not serve Grocery Router's five-screen workflow (D037, D038).
+The Atlas workspace exploration (`design/ui-explorations/concept-a.html`) is the production starting
 composition. Concept C may inform one-handed grocery interactions, but Atlas controls the
 visual language and information architecture.
 
 **Revisit when:** User testing identifies a clearer visual direction.
 
 ## D028 — Go, SQLite, Goose, and sqlc
+
+**Status:** Partly superseded by D036 and D042 (SQLite, deferred hosting; ADK rationale)
 
 **Decision:** Build the backend in Go with local SQLite, Goose migrations, and sqlc queries.
 
@@ -388,6 +501,8 @@ single-binary packaging are deferred.
 
 ## D029 — No authentication or offline mode locally
 
+**Status:** Partly superseded by AUTH_HOUSEHOLDS_SPEC.md and D036 (no auth, local-only)
+
 **Decision:** Trust clients on the local network and require the host computer to remain
 available.
 
@@ -398,6 +513,8 @@ available.
 **Revisit when:** Hosting or offline shopping becomes an explicit phase.
 
 ## D030 — Keep an injectable, approved Markdown corpus
+
+**Status:** Partly superseded by D036 (SQLite ingest target; now PostgreSQL)
 
 **Decision:** Commit Goose migrations and one strictly structured approved Markdown file per
 recipe, not the live SQLite database or a hand-maintained SQL dump.
@@ -414,6 +531,8 @@ synchronization are deferred.
 
 ## D031 — Keep deferred ideas visible but out of v1
 
+**Status:** Active
+
 **Decision:** Track all “not yets” in `UP_NEXT.md` rather than leaving placeholders in schema,
 navigation, or implementation.
 
@@ -425,6 +544,8 @@ scope expansion that made the prototype incoherent.
 **Revisit when:** An item meets the promotion rule in `UP_NEXT.md`.
 
 ## D032 — Suggestions do not replace recipe requirements
+
+**Status:** Active
 
 **Decision:** Keep a generic approved requirement when the source allows multiple ways to
 satisfy it, and preserve a preferred option as a short suggestion note.
@@ -441,6 +562,8 @@ change aggregation identity or quantity.
 
 ## D033 — Non-purchased inputs remain explicit
 
+**Status:** Active
+
 **Decision:** Retain non-purchased recipe inputs such as tap water in the structured recipe,
 but mark them explicitly as non-shopping so grocery generation excludes them.
 
@@ -455,6 +578,8 @@ infers it.
 **Revisit when:** Household inventory or configurable staple policies enter scope.
 
 ## D034 — Use a TanStack-first TypeScript frontend
+
+**Status:** Active
 
 **Decision:** Build the React frontend with strict TypeScript and Vite. Use TanStack Router for
 typed navigation and TanStack Query for PostgreSQL-backed server state. Prefer a mature TanStack
@@ -473,6 +598,8 @@ state.
 library or the library is not production-ready.
 
 ## D035 — Use the three-stroke basket/list identity for v1
+
+**Status:** Active
 
 **Decision:** Use Concept I as the provisional v1 mark: a basket handle above two grocery-list
 rows. Replace the prototype purple accent with Market teal (`#50BFA5`) and its documented dark,
@@ -493,6 +620,8 @@ requires a broader marketing identity.
 
 ## D036 — Replace SQLite with PostgreSQL managed by CloudNativePG
 
+**Status:** Active
+
 **Decision:** PostgreSQL is the sole runtime data store. Production and preview databases run
 as CloudNativePG `Cluster` resources on the Talos Kubernetes cluster; local development uses a
 containerized PostgreSQL instance. Goose and sqlc remain the migration and query tools.
@@ -510,6 +639,8 @@ point-in-time recovery, or a tested disaster-recovery policy.
 
 ## D037 — Make the verified corpus directly browsable
 
+**Status:** Partly superseded by D038 (four-screen count)
+
 **Decision:** Add a permanent Recipes screen that lists verified recipes alphabetically, supports
 name search, opens the existing recipe detail view, and allows adding a recipe to an existing
 current week.
@@ -525,6 +656,8 @@ use cases justify them. The active query is preserved when returning from recipe
 **Revisit when:** Corpus size or observed lookup behavior makes name search insufficient.
 
 ## D038 — Expose retained weeks as read-only history
+
+**Status:** Active
 
 **Decision:** Add a dedicated History destination listing earlier Sunday-to-Saturday weeks.
 Each historical detail shows the final meal pool and retained grocery checklist state, including
@@ -547,6 +680,8 @@ D039–D043 were approved with [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md
 
 ## D039 — Shared catalog plus household-owned copies
 
+**Status:** Active
+
 **Decision:** Grocery Router is built for one known household but shaped so other households can
 join later. Every new table is either shared catalog data with no household, or household-owned
 data scoped like the existing tenant tables. A household adopts a catalog recipe by receiving its
@@ -565,6 +700,8 @@ the same adoption path as a single suggested recipe.
 visibility rules.
 
 ## D040 — Release-qualified publication for catalog recipes
+
+**Status:** Active
 
 **Decision:** Catalog recipes publish automatically, but only under a pipeline release
 that has passed qualification against a reviewed evaluation set, with sampled audits and stop rules
@@ -585,6 +722,8 @@ from catalog recipes.
 
 ## D041 — AI runs offline only
 
+**Status:** Active
+
 **Decision:** Models may be called only from operator-run pipeline commands. No user request, week
 operation, or grocery operation calls a model. Recipe suggestions are computed from data prepared
 offline, such as embeddings, without runtime AI.
@@ -602,6 +741,8 @@ onboarding is scoped.
 
 ## D042 — OpenAI through the official Go SDK
 
+**Status:** Active
+
 **Decision:** Use OpenAI through the official `openai-go` SDK behind a narrow internal interface.
 Do not adopt Google ADK for structured extraction and embeddings. This supersedes
 the ADK direction in D003's revisit condition.
@@ -616,6 +757,8 @@ real conversational agent is scoped.
 clearly better for the pipeline's tasks.
 
 ## D043 — Suggested recipes enter the week marked, and join when kept
+
+**Status:** Direction only (not implemented)
 
 **Decision (direction for a later phase):** A household sets how many new recipes it wants per
 week. Suggested catalog recipes appear in the week with a subtle "picked for you" marker and can be
@@ -633,6 +776,8 @@ is evidence of retention, not proof it was cooked or liked.
 
 
 ## D044 — Shopping follows the household store walk
+
+**Status:** Partly superseded by D045 and D046 (completed-row sinking, section folding, Undo on check, Hide done and its default)
 
 **Decision:** Promote issues #36–#38 after a real 54-item shop exposed misplaced manual items,
 excessive scrolling through completed rows, and unsuitable alphabetical section ordering.
@@ -655,6 +800,8 @@ needs scope. Shared catalog aliases remain gated by the catalog phase.
 
 ## D045 — Remember where unknown items go; Hide done owns folding
 
+**Status:** Partly superseded by D046 (Hide done control and section folding)
+
 **Decision:** When the household places an unknown manual item in a section, remember that name's
 section for the household and reuse it in suggestions and later additions. Hide done is the single
 control for getting completed rows out of the way: it hides checked rows and folds fully completed
@@ -672,6 +819,8 @@ supersedes D044's "remembered terms require separate scope" and its Hide done de
 replace or seed household memory.
 
 ## D046 — Plain rows, one Done group, undo only for removal
+
+**Status:** Active
 
 **Decision:** The grocery row is the check target. Every other line action (quantity, section,
 recipes, remove) lives behind one quiet details control. Checked lines settle into a single collapsed
@@ -693,6 +842,8 @@ DELETE. Done group open state is not persisted.
 for remove.
 
 ## D047 — One checklist row per grocery item; look-alike items need a decision
+
+**Status:** Active
 
 **Decision:** The checklist shows each grocery item once. Exact addition still happens first;
 amounts that cannot be added exactly stay as separate quantities on the same row
@@ -717,6 +868,8 @@ combined amount needs a purchase-oriented summary.
 
 ## D048 — Substitution is a household choice over frozen groups (proposed)
 
+**Status:** Direction only (not implemented)
+
 **Decision (proposed, not authorized):** Split "same product" from "would we buy one for both".
 The pipeline settles identity strictly (aliases from rules or overrides). It also assigns
 different-but-swappable products to flat substitution groups, which AI may propose. Each household
@@ -732,4 +885,112 @@ function of recipes, snapshot, and recorded answers; no AI runs while building a
 group costs one question, so AI may assign groups but not aliases.
 
 **Revisit when:** The owner approves or revises the proposal.
+
+## D049 — Household preferences live per household and are edited in the app
+
+**Status:** Active
+
+**Decision:** Preferences that change how a household plans (its time zone and how many recipes
+a new week offers) are stored on the household row and edited by any member on the Settings
+screen. Deployment configuration (environment variables, secrets, operator commands) is for the
+operator only and never carries household preferences.
+
+**Why:** The time zone could only be changed by an operator command and the recipe count was a
+constant in the Week screen. Both are household choices; asking an operator to change them, or
+redeploying to do so, puts household decisions in the wrong hands.
+
+**Consequence:** Migration 00010 adds `households.default_recipe_count` (1-21, default 5) beside
+the time zone. `GET`/`PATCH /households/{householdID}/settings` read and change either or both
+values; an invalid value is rejected with 422 and nothing is stored. The Week screen starts from
+the household's count, still capped by the recipes available, and saving reloads the current
+week, its groceries, and history because a new time zone can move the week. The
+`household-timezone` command remains for operators. Preferences are per household, not per
+member.
+
+**Revisit when:** A preference needs to differ between members, or a household-level setting
+needs to be restricted to some members.
+
+## D050 — The household chooses its rollover day, time, and mode
+
+**Status:** Superseded by D051. Kept for history; migration 00013 removes its settings.
+
+**Decision:** Each household chooses, on the Settings screen, the local day its week starts
+(default Sunday), the local time it rolls over (default 12:00 AM), and whether it rolls over
+automatically (the open week closes itself at that day and time) or manually (the week stays
+open until someone starts the next one). Rolling over only closes the week; the next week still
+exists only once someone presses Generate, and the Week and Groceries screens then lead into
+that step with a link to the week that just ended.
+
+**Why:** A household that shops on a different day, or late on Friday, has a different week than
+the fixed Sunday-to-Saturday one, and a household that plans irregularly does not want its week
+to close by the calendar at all.
+
+**Consequence:** Migration 00012 adds `households.week_start_day` (0-6, 0 is Sunday),
+`rollover_minutes` (0-1439), and `rollover_mode` (`automatic` or `manual`), drops the Sunday
+check on `weeks.starts_on`, and replaces the unique `(household_id, starts_on)` constraint with a
+plain index, because a week closed early and its successor can share a start date. An automatic
+week starts on the local date of the most recent rollover at or before it was opened and closes
+at the next one; a manual week starts on today's local date and has no close time. Saving a
+change to the time zone, day, time, or mode moves the open week's close time, in the same
+transaction, to the next rollover after now under the new settings (none in manual mode); saving
+never closes a week, so a week is not cut short or ended by a settings change. The
+`household-timezone` command moves the open week the same way. Weeks and History report
+`endsOn`, the local date one second before the week closes or closed, so a Sunday 12:00 AM
+rollover ends on Saturday and a Friday 6:00 PM rollover ends on Friday. A closed week stores that
+date (`weeks.ends_on`) in the zone the household had when it closed, so a later time-zone change
+never re-cuts History; any code that closes a week must set it. This partly supersedes
+D026: the household, not the application, decides when its week rolls over.
+
+Manual rollover exists in both modes: any household member can press "Start next week" on the
+Week screen (`POST .../week/current/close`), which closes the open week now and moves it to
+History. Closing never generates the next week; the Week screen goes straight to the "Plan next
+week" step, and the next week exists only once someone presses Generate. A week closed by hand
+keeps its `auto_close_at`. If the next week is generated in automatic mode while that rollover is
+still ahead, the new week takes over the upcoming period instead of the one just ended: it starts
+on the local date of that rollover and closes at the one after it, so a household that shops on
+Saturday for a week starting Sunday is not rolled over again on Sunday. This holds for a close in
+the middle of the week too: the next week still starts at the upcoming rollover, and the days
+between the close and that rollover belong to no week. Once that rollover has passed, the next
+week opens by the ordinary rule. If the settings changed after the close, the new week begins at
+whichever of two rollovers under the new settings is nearer the skipped rollover: the last one at
+or before now, or the next one after now; it closes at the rollover after its beginning. A
+settings change saved while such a week has not yet reached the rollover it skips moves its close
+to whichever of the next two rollovers under the new settings is nearer its old close, so it
+neither ends at the rollover it was opened to skip nor runs a week longer. Because that close is
+recomputed from now, a settings change after a mid-week close can shorten a week started early,
+but its date range never goes backwards. A week that closes,
+by hand or by its rollover, before its own start date (one started early and closed again before
+its period began) ends on its start date.
+
+**Revisit when:** A household needs more than one rollover a week, wants the next week
+generated automatically at the rollover or when the week is closed by hand, or wants to plan a
+future week while the current one stays open.
+
+## D051 — A plan lasts from one shopping trip to the next and can be reopened
+
+**Status:** Active
+
+**Decision:** The current week becomes a *plan*: the meals and groceries between two shopping
+trips, of no fixed length. Generate starts a plan on today's household-local date when none is
+current. A plan stays current until a household member presses "Start new plan" (which closes it
+and moves it to History) or reopens a past plan from History. Reopening makes that plan current
+again with its meals and checklist as they were, and closes the plan that was current, if any.
+There is still one current plan at a time, and nothing closes a plan by the calendar. The app
+says "Plan" on screen; the code, API paths, and tables keep the name "week".
+
+**Why:** D050 still assumed a seven-day cadence, which does not fit shopping for ten days, or for
+a few, and it had no way back into a plan that was closed too early or is wanted again. Letting
+the trip, not the calendar, end a plan covers every cadence with fewer settings and less code
+than configuring when a week rolls over.
+
+**Consequence:** Migration 00013 drops `households.week_start_day`, `rollover_minutes`,
+`rollover_mode`, and `weeks.auto_close_at`; an open week stays open. Settings are again only the
+time zone, which dates plans, and the default recipe count, which stays a fixed default and does
+not scale with a plan's length. `POST /households/{householdID}/weeks/history/{weekID}/reopen`
+reopens a plan; `endsOn` is null while a plan is current and is the local date it closed once it
+is in History. Opening, closing, and reopening a plan lock the household row, so they run one at
+a time per household. This supersedes D050 and the parts of D026 about when a week begins.
+
+**Revisit when:** A household wants to plan the next trip while the current plan is still in
+use, or to start a new plan from a past plan's meals without reopening it.
 

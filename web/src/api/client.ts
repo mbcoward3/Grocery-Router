@@ -103,6 +103,16 @@ export function generateWeek(recipeCount: number): Promise<Week> {
   })
 }
 
+// closeCurrentWeek ends the current plan now. It never generates the next one.
+export async function closeCurrentWeek(): Promise<void> {
+  await request(householdPath('/week/current/close'), { method: 'POST' })
+}
+
+// reopenWeek makes a past plan current again; the current plan, if any, moves to History.
+export function reopenWeek(weekId: number): Promise<Week> {
+  return request(householdPath(`/weeks/history/${weekId}/reopen`), { method: 'POST' })
+}
+
 export function addRecipe(recipeId: number): Promise<Week> {
   return request(householdPath('/week/current/recipes'), {
     method: 'POST', body: JSON.stringify({ recipeId }),
@@ -156,4 +166,10 @@ export function setStoreSections(input: { sectionIds: number[] } | { reset: true
 }
 export function searchGroceryItems(term: string): Promise<{ items: GroceryItemMatch[] }> {
   return request(householdPath(`/grocery-items?q=${encodeURIComponent(term)}`))
+}
+
+export type HouseholdSettings = components['schemas']['HouseholdSettings']
+export function getSettings(): Promise<HouseholdSettings> { return request(householdPath('/settings')) }
+export function updateSettings(change: Partial<HouseholdSettings>): Promise<HouseholdSettings> {
+  return request(householdPath('/settings'), { method: 'PATCH', body: JSON.stringify(change) })
 }

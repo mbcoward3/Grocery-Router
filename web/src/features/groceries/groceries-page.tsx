@@ -12,6 +12,7 @@ import {
   type GroceryLine,
   type StoreSection,
 } from '../../api/client'
+import { historyQueryOptions } from '../history/queries'
 import { QuickAdd, SectionPicker, SectionOrderEditor } from './shopping-controls'
 import { CheckIcon, ChevronIcon, CloseIcon, MoreIcon, SortIcon, TrashIcon } from '../../ui/icons'
 
@@ -34,6 +35,9 @@ type LineChange =
 export function GroceriesPage() {
   const query = useQuery({ queryKey: groceriesKey, queryFn: getGroceries })
   const sectionQuery = useQuery({ queryKey: ['store-sections'], queryFn: getStoreSections })
+  // With no current plan, a household that has finished a plan is pointed at that plan's list and
+  // at planning the next one. It is only needed then, and never blocks the page.
+  const historyQuery = useQuery({ ...historyQueryOptions, enabled: query.isSuccess && query.data === null })
   const [detailId, setDetailId] = useState<number | null>(null)
   const [placingId, setPlacingId] = useState<number | null>(null)
   const quick = useLineChange()
@@ -53,17 +57,34 @@ export function GroceriesPage() {
     return () => clearTimeout(timer)
   }, [removed])
 
-  if (query.isLoading) return <GroceriesSkeleton />
+  if (query.isLoading || (query.data === null && historyQuery.isLoading)) return <GroceriesSkeleton />
   if (query.error) return <ErrorPanel message={query.error.message} onRetry={() => void query.refetch()} />
+  const lastWeek = query.data ? undefined : historyQuery.data?.weeks?.[0]
+  if (lastWeek) {
+    return (
+      <section>
+        <PageHeading />
+        <div className="empty-week">
+          <div className="empty-mark" aria-hidden="true">✦</div>
+          <h2>Your last list is in History</h2>
+          <p>A new grocery checklist starts with your next plan. You can also reopen the last one.</p>
+          <div className="empty-actions">
+            <Link className="button" to="/history/$weekId" params={{ weekId: String(lastWeek.id) }}>See the last list</Link>
+            <Link className="button primary" to="/">Start a new plan</Link>
+          </div>
+        </div>
+      </section>
+    )
+  }
   if (!query.data) {
     return (
       <section>
         <PageHeading />
         <div className="empty-week">
           <div className="empty-mark" aria-hidden="true">✦</div>
-          <h2>Generate a week first</h2>
+          <h2>Generate a plan first</h2>
           <p>Your grocery checklist is built from the recipes in the current pool.</p>
-          <Link className="button primary" to="/">Go to week</Link>
+          <Link className="button primary" to="/">Go to plan</Link>
         </div>
       </section>
     )
@@ -118,7 +139,7 @@ export function GroceriesPage() {
       {sectionQuery.error && <p role="alert" className="inline-error">{sectionQuery.error.message} <button className="button" onClick={() => void sectionQuery.refetch()}>Retry sections</button></p>}
       {error && <p className="inline-error" role="alert">{error.message}</p>}
 
-      {lines.length === 0 && <div className="grocery-empty">No grocery items this week.</div>}
+      {lines.length === 0 && <div className="grocery-empty">No grocery items in this plan.</div>}
       {lines.length > 0 && active.length === 0 && <p className="grocery-clear"><CheckIcon /> Everything’s in the cart.</p>}
       {groupBySection(active).map(([section, sectionLines]) => (
         <Animated as="section" className="grocery-section" key={section} aria-labelledby={`section-${slug(section)}`} enter={ready.current} leave={sectionLines.every(leaving)}>
@@ -293,7 +314,7 @@ function GroceryRow({ line, meta, enter, leave = false, onToggle, onOpen }: { li
           <span className="grocery-name">{line.name}{line.optional && <span className="optional-label">Optional</span>}</span>
           {meta && <span className="grocery-meta">{meta}</span>}
         </span>
-        {line.quantity && <span className={`grocery-quantity${adjusted ? ' adjusted' : ''}`} title={adjusted ? 'Adjusted for this week' : undefined}>{line.quantity}</span>}
+        {line.quantity && <span className={`grocery-quantity${adjusted ? ' adjusted' : ''}`} title={adjusted ? 'Adjusted for this plan' : undefined}>{line.quantity}</span>}
       </button>
       <button className="row-more" type="button" onClick={onOpen} aria-label={`Details for ${line.name}`}><MoreIcon /></button>
     </li>
@@ -332,7 +353,7 @@ function LineSheet({ line, sections, pending, error, onClose, onChange, onRemove
         </div>
       ) : (
         <form className="sheet-field" onSubmit={save}>
-          <label className="sheet-label" htmlFor="line-quantity">Quantity this week</label>
+          <label className="sheet-label" htmlFor="line-quantity">Quantity for this plan</label>
           <div className="sheet-input">
             <input id="line-quantity" value={value} onChange={event => setValue(event.target.value)} placeholder={line.generatedQuantity ?? 'No quantity'} autoComplete="off" />
             <button className="button" type="submit" disabled={pending || value === (line.quantity ?? '')}>{pending ? 'Saving…' : 'Save'}</button>
@@ -353,7 +374,7 @@ function Contributions({ lineId }: { lineId: number }) {
   const query = useQuery({ queryKey: ['groceries', lineId, 'contributions'], queryFn: () => getGroceryContributions(lineId) })
   return (
     <div className="sheet-field">
-      <span className="sheet-label">For this week’s recipes</span>
+      <span className="sheet-label">For this plan’s recipes</span>
       {query.isLoading && <span className="muted">Loading…</span>}
       {query.error && <span className="contribution-error">{query.error.message}</span>}
       {query.data && (
@@ -377,7 +398,7 @@ function PageHeading({ weekOf, left, total, children }: { weekOf?: string; left?
       <div>
         <div className="eyebrow">Shopping list</div>
         <h1 id="groceries-heading">Groceries</h1>
-        {weekOf && <p>Week of {formatDate(weekOf)}</p>}
+        {weekOf && <p>Started {formatDate(weekOf)}</p>}
       </div>
       {total ? (
         <div className="grocery-heading-meta">

@@ -94,8 +94,8 @@ WHERE gi.household_id = $1
 ORDER BY gi.name;
 
 -- name: CreateIngredientSection :one
-INSERT INTO recipe_ingredient_sections (recipe_id, name, position)
-VALUES ($1, $2, $3)
+INSERT INTO recipe_ingredient_sections (household_id, recipe_id, name, position)
+VALUES (sqlc.arg(household_id), $1, $2, $3)
 RETURNING *;
 
 -- name: ListIngredientSections :many
@@ -106,13 +106,13 @@ ORDER BY position;
 
 -- name: CreateRecipeIngredient :one
 INSERT INTO recipe_ingredients (
-    section_id, grocery_item_id, position, source_text, quantity_kind,
+    household_id, section_id, grocery_item_id, position, source_text, quantity_kind,
     amount_min_numerator, amount_min_denominator,
     amount_max_numerator, amount_max_denominator,
     unit_id, package_type,
     package_size_numerator, package_size_denominator, package_size_unit_id,
     preparation, is_optional, include_on_grocery_list, display_note
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+) VALUES (sqlc.arg(household_id), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
 RETURNING *;
 
 -- name: ListRecipeIngredients :many

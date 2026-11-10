@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { ApiRequestError, generateWeek, getCurrentWeek, listRecipes, setHouseholdId } from './client'
+import { ApiRequestError, generateWeek, getCurrentWeek, listRecipes, setHouseholdId, updateSettings } from './client'
 
 const emptyWeek = { id: 1, startsOn: '2026-08-16', recipes: [] }
 
@@ -39,5 +39,20 @@ describe('API client', () => {
     const error = await listRecipes().catch((reason: unknown) => reason)
     expect(error).toBeInstanceOf(ApiRequestError)
     expect(error).toMatchObject({ status: 500, code: 'internal_error', message: 'Could not load recipes.' })
+  })
+
+  it('patches only the settings that changed', async () => {
+    const settings = { timezone: 'UTC', defaultRecipeCount: 3 }
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(settings), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(updateSettings({ defaultRecipeCount: 3 })).resolves.toEqual(settings)
+    expect(fetchMock).toHaveBeenCalledWith('/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/settings', expect.objectContaining({
+      method: 'PATCH',
+      body: JSON.stringify({ defaultRecipeCount: 3 }),
+    }))
   })
 })

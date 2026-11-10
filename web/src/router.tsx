@@ -10,6 +10,7 @@ import { GroceriesPage } from './features/groceries/groceries-page'
 import { HistoricalWeekPage, HistoryPage } from './features/history/history-page'
 import { RecipePage } from './features/recipe/recipe-page'
 import { RecipesPage } from './features/recipes/recipes-page'
+import { SettingsPage } from './features/settings/settings-page'
 import { WeekPage } from './features/week/week-page'
 
 interface RouterContext {
@@ -20,7 +21,7 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: AppShell,
   notFoundComponent: () => (
     <StatePage eyebrow="Not found" title="That page does not exist.">
-      <Link className="button" to="/">Return to this week</Link>
+      <Link className="button" to="/">Return to your plan</Link>
     </StatePage>
   ),
 })
@@ -50,6 +51,12 @@ const historyRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/history',
   component: HistoryPage,
+})
+
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings',
+  component: SettingsPage,
 })
 
 const historicalWeekRoute = createRoute({
@@ -93,6 +100,7 @@ const routeTree = rootRoute.addChildren([
   historyRoute,
   historicalWeekRoute,
   recipeRoute,
+  settingsRoute,
 ])
 
 export const router = createRouter({ routeTree, context: { queryClient: undefined! } })

@@ -8,7 +8,31 @@ package store
 import (
 	"context"
 	"database/sql"
+	"time"
 )
+
+const closeOpenWeek = `-- name: CloseOpenWeek :execrows
+UPDATE weeks SET
+    closed_at = CAST($1 AS TIMESTAMPTZ),
+    ends_on = greatest(CAST($2 AS TEXT), starts_on)
+WHERE household_id = $3 AND closed_at IS NULL
+`
+
+type CloseOpenWeekParams struct {
+	ClosedAt    time.Time `db:"closed_at" json:"closed_at"`
+	EndsOn      string    `db:"ends_on" json:"ends_on"`
+	HouseholdID string    `db:"household_id" json:"household_id"`
+}
+
+// Closes the household's open plan at now with its last local date, never before its start
+// date. Dates are ISO text, so GREATEST compares them as dates.
+func (q *Queries) CloseOpenWeek(ctx context.Context, arg CloseOpenWeekParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, closeOpenWeek, arg.ClosedAt, arg.EndsOn, arg.HouseholdID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
 
 const createShoppingList = `-- name: CreateShoppingList :one
 INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)
@@ -35,17 +59,19 @@ func (q *Queries) CreateShoppingList(ctx context.Context, arg CreateShoppingList
 }
 
 const createWeek = `-- name: CreateWeek :one
-INSERT INTO weeks (household_id, starts_on) VALUES ($1, $2)
-RETURNING id, starts_on, created_at, updated_at, household_id
+INSERT INTO weeks (household_id, starts_on, opened_at)
+VALUES ($1, $2, $3)
+RETURNING id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on
 `
 
 type CreateWeekParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
+	HouseholdID string    `db:"household_id" json:"household_id"`
+	StartsOn    string    `db:"starts_on" json:"starts_on"`
+	OpenedAt    time.Time `db:"opened_at" json:"opened_at"`
 }
 
 func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, createWeek, arg.HouseholdID, arg.StartsOn)
+	row := q.db.QueryRowContext(ctx, createWeek, arg.HouseholdID, arg.StartsOn, arg.OpenedAt)
 	var i Week
 	err := row.Scan(
 		&i.ID,
@@ -53,6 +79,9 @@ func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.ClosedAt,
+		&i.EndsOn,
 	)
 	return i, err
 }
@@ -121,19 +150,12 @@ func (q *Queries) DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesPa
 	return err
 }
 
-const getPastWeek = `-- name: GetPastWeek :one
-SELECT id, starts_on, created_at, updated_at, household_id FROM weeks
-WHERE household_id = $1 AND id = $2 AND starts_on < $3
+const getOpenWeek = `-- name: GetOpenWeek :one
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on FROM weeks WHERE household_id = $1 AND closed_at IS NULL
 `
 
-type GetPastWeekParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	ID          int64  `db:"id" json:"id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-}
-
-func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, getPastWeek, arg.HouseholdID, arg.ID, arg.StartsOn)
+func (q *Queries) GetOpenWeek(ctx context.Context, householdID string) (Week, error) {
+	row := q.db.QueryRowContext(ctx, getOpenWeek, householdID)
 	var i Week
 	err := row.Scan(
 		&i.ID,
@@ -141,6 +163,35 @@ func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.ClosedAt,
+		&i.EndsOn,
+	)
+	return i, err
+}
+
+const getPastWeek = `-- name: GetPastWeek :one
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on FROM weeks
+WHERE household_id = $1 AND id = $2 AND closed_at IS NOT NULL
+`
+
+type GetPastWeekParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error) {
+	row := q.db.QueryRowContext(ctx, getPastWeek, arg.HouseholdID, arg.ID)
+	var i Week
+	err := row.Scan(
+		&i.ID,
+		&i.StartsOn,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.ClosedAt,
+		&i.EndsOn,
 	)
 	return i, err
 }
@@ -165,28 +216,6 @@ func (q *Queries) GetShoppingListByWeek(ctx context.Context, arg GetShoppingList
 		&i.UpdatedAt,
 		&i.HouseholdID,
 		&i.AggregationVersion,
-	)
-	return i, err
-}
-
-const getWeekByStart = `-- name: GetWeekByStart :one
-SELECT id, starts_on, created_at, updated_at, household_id FROM weeks WHERE household_id = $1 AND starts_on = $2
-`
-
-type GetWeekByStartParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-}
-
-func (q *Queries) GetWeekByStart(ctx context.Context, arg GetWeekByStartParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, getWeekByStart, arg.HouseholdID, arg.StartsOn)
-	var i Week
-	err := row.Scan(
-		&i.ID,
-		&i.StartsOn,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.HouseholdID,
 	)
 	return i, err
 }
@@ -216,7 +245,7 @@ func (q *Queries) GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (W
 
 const listPastWeeks = `-- name: ListPastWeeks :many
 SELECT
-    w.id, w.starts_on, w.created_at, w.updated_at, w.household_id,
+    w.id, w.starts_on, w.created_at, w.updated_at, w.household_id, w.opened_at, w.closed_at, w.ends_on,
     CAST((SELECT count(*) FROM week_recipes wr WHERE wr.week_id = w.id) AS BIGINT) AS recipe_count,
     CAST((SELECT count(*) FROM shopping_lines sl
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
@@ -225,28 +254,26 @@ SELECT
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
         WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
 FROM weeks w
-WHERE w.household_id = $1 AND w.starts_on < $2
-ORDER BY w.starts_on DESC
+WHERE w.household_id = $1 AND w.closed_at IS NOT NULL
+ORDER BY w.starts_on DESC, w.id DESC
 `
 
-type ListPastWeeksParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-}
-
 type ListPastWeeksRow struct {
-	ID             int64  `db:"id" json:"id"`
-	StartsOn       string `db:"starts_on" json:"starts_on"`
-	CreatedAt      string `db:"created_at" json:"created_at"`
-	UpdatedAt      string `db:"updated_at" json:"updated_at"`
-	HouseholdID    string `db:"household_id" json:"household_id"`
-	RecipeCount    int64  `db:"recipe_count" json:"recipe_count"`
-	GroceryCount   int64  `db:"grocery_count" json:"grocery_count"`
-	CompletedCount int64  `db:"completed_count" json:"completed_count"`
+	ID             int64          `db:"id" json:"id"`
+	StartsOn       string         `db:"starts_on" json:"starts_on"`
+	CreatedAt      string         `db:"created_at" json:"created_at"`
+	UpdatedAt      string         `db:"updated_at" json:"updated_at"`
+	HouseholdID    string         `db:"household_id" json:"household_id"`
+	OpenedAt       time.Time      `db:"opened_at" json:"opened_at"`
+	ClosedAt       sql.NullTime   `db:"closed_at" json:"closed_at"`
+	EndsOn         sql.NullString `db:"ends_on" json:"ends_on"`
+	RecipeCount    int64          `db:"recipe_count" json:"recipe_count"`
+	GroceryCount   int64          `db:"grocery_count" json:"grocery_count"`
+	CompletedCount int64          `db:"completed_count" json:"completed_count"`
 }
 
-func (q *Queries) ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([]ListPastWeeksRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPastWeeks, arg.HouseholdID, arg.StartsOn)
+func (q *Queries) ListPastWeeks(ctx context.Context, householdID string) ([]ListPastWeeksRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPastWeeks, householdID)
 	if err != nil {
 		return nil, err
 	}
@@ -260,6 +287,9 @@ func (q *Queries) ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.HouseholdID,
+			&i.OpenedAt,
+			&i.ClosedAt,
+			&i.EndsOn,
 			&i.RecipeCount,
 			&i.GroceryCount,
 			&i.CompletedCount,
@@ -521,6 +551,29 @@ func (q *Queries) ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams
 	return items, nil
 }
 
+const lockOpenWeek = `-- name: LockOpenWeek :one
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on FROM weeks WHERE household_id = $1 AND closed_at IS NULL
+FOR NO KEY UPDATE
+`
+
+// Taken before a change to the open week or its list. A concurrent close waits for the change,
+// or, if it closed the week first, this finds no open week once it commits.
+func (q *Queries) LockOpenWeek(ctx context.Context, householdID string) (Week, error) {
+	row := q.db.QueryRowContext(ctx, lockOpenWeek, householdID)
+	var i Week
+	err := row.Scan(
+		&i.ID,
+		&i.StartsOn,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.ClosedAt,
+		&i.EndsOn,
+	)
+	return i, err
+}
+
 const nextWeekRecipePosition = `-- name: NextWeekRecipePosition :one
 SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes
 WHERE household_id = $1 AND week_id = $2
@@ -538,9 +591,28 @@ func (q *Queries) NextWeekRecipePosition(ctx context.Context, arg NextWeekRecipe
 	return column_1, err
 }
 
+const reopenWeek = `-- name: ReopenWeek :execrows
+UPDATE weeks SET closed_at = NULL, ends_on = NULL
+WHERE household_id = $1 AND id = $2 AND closed_at IS NOT NULL
+`
+
+type ReopenWeekParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+// Makes a past plan the open one again. The caller closes the open plan first.
+func (q *Queries) ReopenWeek(ctx context.Context, arg ReopenWeekParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, reopenWeek, arg.HouseholdID, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const touchWeek = `-- name: TouchWeek :exec
 UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
-WHERE household_id = $1 AND id = $2
+WHERE household_id = $1 AND id = $2 AND closed_at IS NULL
 `
 
 type TouchWeekParams struct {

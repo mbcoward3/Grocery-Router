@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	_ "time/tzdata" // household time zones load without operating-system zone data
 
 	"github.com/alecthomas/kong"
 	"github.com/mbcoward3/grocery-router/internal/auth"
@@ -113,6 +114,7 @@ type cli struct {
 	catalogSitesCommands
 	catalogQualifyCommands
 	catalogFetchCommands
+	householdTimezoneCommands
 
 	Bootstrap       bootstrapCommand       `cmd:"" help:"Migrate and load the approved corpus when the database is empty."`
 	CorpusAudit     corpusAuditCommand     `cmd:"" help:"Validate the approved corpus against the PDF inventory."`
@@ -138,6 +140,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		kong.Description("Build and validate the Grocery Router corpus and database."),
 		kong.UsageOnError(),
 		kong.Writers(stdout, stderr),
+		kong.Vars(cliVars),
 	)
 	if err != nil {
 		return fmt.Errorf("configure CLI: %w", err)
@@ -197,7 +200,7 @@ func ingestCorpus(databasePath, root, corpusPath, inventoryPath string) error {
 		return err
 	}
 	defer db.Close()
-	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
+	if err := ingest.Import(context.Background(), db, tenant.CowardHouseholdID, documents); err != nil {
 		return err
 	}
 	fmt.Printf("ingested %d approved recipes\n", len(documents))
@@ -287,7 +290,7 @@ func bootstrap(databaseURL, root, corpusPath, inventoryPath string) error {
 	if err != nil {
 		return err
 	}
-	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
+	if err := ingest.Import(context.Background(), db, tenant.CowardHouseholdID, documents); err != nil {
 		return err
 	}
 	fmt.Printf("ingested %d approved recipes\n", len(documents))
@@ -304,8 +307,8 @@ func serve(databasePath, address, webRoot string, authConfig auth.Config) error 
 	}
 	defer db.Close()
 
-	weekService := week.NewService(db, nil, tenant.CowardHouseholdID)
-	api := httpapi.New(db, weekService, nil, tenant.CowardHouseholdID, auth.AuthorizeHousehold)
+	weekService := week.NewService(db, nil)
+	api := httpapi.New(db, weekService, nil, auth.AuthorizeHousehold)
 	provider, err := auth.NewGoogleProvider(context.Background(), authConfig)
 	if err != nil {
 		return err

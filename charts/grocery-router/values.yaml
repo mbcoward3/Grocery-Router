@@ -10,7 +10,6 @@ authSecret:
 database:
   secretName: grocery-router-db-app
   secretKey: uri
-catalogRelease: ""
 resources:
   requests:
     cpu: 50m

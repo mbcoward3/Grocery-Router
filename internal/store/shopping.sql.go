@@ -871,7 +871,7 @@ WHERE shopping_lines.household_id = $2 AND shopping_lines.id = $3 AND origin = '
     AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = $2 AND w.starts_on = $4
+        WHERE w.household_id = $2 AND w.closed_at IS NULL
     )
 RETURNING display_name, grocery_item_id
 `
@@ -880,7 +880,6 @@ type SetManualLineSectionParams struct {
 	StoreSectionID int64  `db:"store_section_id" json:"store_section_id"`
 	HouseholdID    string `db:"household_id" json:"household_id"`
 	LineID         int64  `db:"line_id" json:"line_id"`
-	StartsOn       string `db:"starts_on" json:"starts_on"`
 }
 
 type SetManualLineSectionRow struct {
@@ -889,12 +888,7 @@ type SetManualLineSectionRow struct {
 }
 
 func (q *Queries) SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (SetManualLineSectionRow, error) {
-	row := q.db.QueryRowContext(ctx, setManualLineSection,
-		arg.StoreSectionID,
-		arg.HouseholdID,
-		arg.LineID,
-		arg.StartsOn,
-	)
+	row := q.db.QueryRowContext(ctx, setManualLineSection, arg.StoreSectionID, arg.HouseholdID, arg.LineID)
 	var i SetManualLineSectionRow
 	err := row.Scan(&i.DisplayName, &i.GroceryItemID)
 	return i, err
@@ -923,7 +917,7 @@ WHERE shopping_lines.household_id = $2
     AND shopping_lines.id = $3 AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = $2 AND w.starts_on = $4
+        WHERE w.household_id = $2 AND w.closed_at IS NULL
     )
 `
 
@@ -931,16 +925,10 @@ type SetShoppingLineCompletedParams struct {
 	Completed   int64  `db:"completed" json:"completed"`
 	HouseholdID string `db:"household_id" json:"household_id"`
 	LineID      int64  `db:"line_id" json:"line_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
 }
 
 func (q *Queries) SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setShoppingLineCompleted,
-		arg.Completed,
-		arg.HouseholdID,
-		arg.LineID,
-		arg.StartsOn,
-	)
+	result, err := q.db.ExecContext(ctx, setShoppingLineCompleted, arg.Completed, arg.HouseholdID, arg.LineID)
 	if err != nil {
 		return 0, err
 	}
@@ -954,7 +942,7 @@ WHERE shopping_lines.household_id = $2
     AND shopping_lines.id = $3 AND origin = 'generated' AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = $2 AND w.starts_on = $4
+        WHERE w.household_id = $2 AND w.closed_at IS NULL
     )
 `
 
@@ -962,16 +950,10 @@ type SetShoppingLineOverrideParams struct {
 	OverrideText sql.NullString `db:"override_text" json:"override_text"`
 	HouseholdID  string         `db:"household_id" json:"household_id"`
 	LineID       int64          `db:"line_id" json:"line_id"`
-	StartsOn     string         `db:"starts_on" json:"starts_on"`
 }
 
 func (q *Queries) SetShoppingLineOverride(ctx context.Context, arg SetShoppingLineOverrideParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setShoppingLineOverride,
-		arg.OverrideText,
-		arg.HouseholdID,
-		arg.LineID,
-		arg.StartsOn,
-	)
+	result, err := q.db.ExecContext(ctx, setShoppingLineOverride, arg.OverrideText, arg.HouseholdID, arg.LineID)
 	if err != nil {
 		return 0, err
 	}
@@ -985,7 +967,7 @@ WHERE shopping_lines.household_id = $2
     AND shopping_lines.id = $3 AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = $2 AND w.starts_on = $4
+        WHERE w.household_id = $2 AND w.closed_at IS NULL
     )
 `
 
@@ -993,16 +975,10 @@ type SetShoppingLineRemovedParams struct {
 	Removed     int64  `db:"removed" json:"removed"`
 	HouseholdID string `db:"household_id" json:"household_id"`
 	LineID      int64  `db:"line_id" json:"line_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
 }
 
 func (q *Queries) SetShoppingLineRemoved(ctx context.Context, arg SetShoppingLineRemovedParams) (int64, error) {
-	result, err := q.db.ExecContext(ctx, setShoppingLineRemoved,
-		arg.Removed,
-		arg.HouseholdID,
-		arg.LineID,
-		arg.StartsOn,
-	)
+	result, err := q.db.ExecContext(ctx, setShoppingLineRemoved, arg.Removed, arg.HouseholdID, arg.LineID)
 	if err != nil {
 		return 0, err
 	}

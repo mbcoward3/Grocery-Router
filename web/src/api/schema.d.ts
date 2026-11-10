@@ -86,7 +86,7 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** Return the explicitly generated current week. */
+        /** Return the current plan. */
         get: operations["getCurrentWeek"];
         put?: never;
         post?: never;
@@ -105,7 +105,7 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** List earlier generated weeks, newest first. */
+        /** List past plans, newest first. */
         get: operations["listWeekHistory"];
         put?: never;
         post?: never;
@@ -125,10 +125,30 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** Return an earlier week's final meals and retained grocery checklist. */
+        /** Return a past plan's meals and retained grocery checklist. */
         get: operations["getHistoricalWeek"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{householdID}/weeks/history/{weekID}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+                weekID: number;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make a past plan the current plan again; the current plan, if any, moves to History. */
+        post: operations["reopenHistoricalWeek"];
         delete?: never;
         options?: never;
         head?: never;
@@ -146,8 +166,27 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create or fully regenerate the current week. */
+        /** Fill the current plan with new meals, or start a new plan today when there is none. */
         post: operations["generateCurrentWeek"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{householdID}/week/current/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close the current plan now and move it to History. The next plan is not generated. */
+        post: operations["closeCurrentWeek"];
         delete?: never;
         options?: never;
         head?: never;
@@ -230,6 +269,26 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/households/{householdID}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        /** Return the household's preferences. */
+        get: operations["getHouseholdSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change one or more household preferences; any household member may. */
+        patch: operations["updateHouseholdSettings"];
         trace?: never;
     };
     "/households/{householdID}/grocery-items": {
@@ -435,12 +494,22 @@ export interface components {
             id: number;
             /** Format: date */
             startsOn: string;
+            /**
+             * Format: date
+             * @description The household-local date the plan was closed, or null while it is the current plan. A plan has no fixed length; it stays current until a new one is started or a past one is reopened.
+             */
+            endsOn: string | null;
             recipes: components["schemas"]["RecipeOccurrence"][];
         };
         WeekHistorySummary: {
             id: number;
             /** Format: date */
             startsOn: string;
+            /**
+             * Format: date
+             * @description The household-local date the plan was closed.
+             */
+            endsOn: string;
             recipeCount: number;
             groceryCount: number;
             completedCount: number;
@@ -448,6 +517,12 @@ export interface components {
         HistoricalWeek: {
             week: components["schemas"]["Week"];
             groceries: components["schemas"]["Groceries"];
+        };
+        HouseholdSettings: {
+            /** @description IANA time zone used to date the household's plans. */
+            timezone: string;
+            /** @description Recipes offered when generating a plan. */
+            defaultRecipeCount: number;
         };
         APIError: {
             error: {
@@ -475,7 +550,7 @@ export interface components {
                 "application/json": components["schemas"]["APIError"];
             };
         };
-        /** @description Canonical current week after the operation. */
+        /** @description Canonical current plan after the operation. */
         Week: {
             headers: {
                 [name: string]: unknown;
@@ -493,7 +568,7 @@ export interface components {
                 "application/json": components["schemas"]["APIError"];
             };
         };
-        /** @description The current week has not been explicitly generated. */
+        /** @description There is no current plan. */
         NoCurrentWeek: {
             headers: {
                 [name: string]: unknown;
@@ -529,8 +604,26 @@ export interface components {
                 "application/json": components["schemas"]["Groceries"];
             };
         };
-        /** @description The requested resource was not found. */
+        /** @description The requested resource, or the household itself, was not found. */
         NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["APIError"];
+            };
+        };
+        /** @description The household's full settings. */
+        HouseholdSettings: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["HouseholdSettings"];
+            };
+        };
+        /** @description A setting value was rejected; nothing was stored. */
+        InvalidSettings: {
             headers: {
                 [name: string]: unknown;
             };
@@ -628,6 +721,7 @@ export interface operations {
                     };
                 };
             };
+            404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
     };
@@ -652,6 +746,7 @@ export interface operations {
                     "application/json": components["schemas"]["RecipeDetail"];
                 };
             };
+            400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
@@ -669,6 +764,7 @@ export interface operations {
         responses: {
             200: components["responses"]["Week"];
             404: components["responses"]["NoCurrentWeek"];
+            500: components["responses"]["InternalError"];
         };
     };
     listWeekHistory: {
@@ -682,7 +778,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Read-only past-week summaries. */
+            /** @description Past-plan summaries. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -693,6 +789,7 @@ export interface operations {
                     };
                 };
             };
+            404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
     };
@@ -708,7 +805,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Read-only historical week detail. */
+            /** @description Past plan detail. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -717,6 +814,25 @@ export interface operations {
                     "application/json": components["schemas"]["HistoricalWeek"];
                 };
             };
+            400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    reopenHistoricalWeek: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+                weekID: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Week"];
+            400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
@@ -740,7 +856,31 @@ export interface operations {
         responses: {
             200: components["responses"]["Week"];
             400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    closeCurrentWeek: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The week was closed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NoCurrentWeek"];
+            500: components["responses"]["InternalError"];
         };
     };
     addCurrentWeekRecipe: {
@@ -758,6 +898,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NoCurrentWeek"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     swapCurrentWeekRecipe: {
@@ -776,6 +917,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["OccurrenceNotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     removeCurrentWeekRecipe: {
@@ -794,6 +936,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["OccurrenceNotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     randomSwapCurrentWeekRecipe: {
@@ -812,6 +955,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["OccurrenceNotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     getStoreSections: {
@@ -834,6 +978,8 @@ export interface operations {
                     "application/json": components["schemas"]["StoreSections"];
                 };
             };
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
         };
     };
     setStoreSectionOrder: {
@@ -864,7 +1010,51 @@ export interface operations {
                     "application/json": components["schemas"]["StoreSections"];
                 };
             };
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getHouseholdSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["HouseholdSettings"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    updateHouseholdSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description IANA time zone name, for example America/Chicago. */
+                    timezone?: string;
+                    defaultRecipeCount?: number;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["HouseholdSettings"];
+            400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["InvalidSettings"];
+            500: components["responses"]["InternalError"];
         };
     };
     searchGroceryItems: {
@@ -891,6 +1081,8 @@ export interface operations {
                     };
                 };
             };
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
         };
     };
     getCurrentGroceries: {
@@ -906,6 +1098,7 @@ export interface operations {
         responses: {
             200: components["responses"]["Groceries"];
             404: components["responses"]["NoCurrentWeek"];
+            500: components["responses"]["InternalError"];
         };
     };
     addCurrentGroceryLine: {
@@ -930,6 +1123,8 @@ export interface operations {
             200: components["responses"]["Groceries"];
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NoCurrentWeek"];
+            422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     removeCurrentGroceryLine: {
@@ -945,7 +1140,10 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["Groceries"];
+            400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     updateCurrentGroceryLine: {
@@ -975,7 +1173,9 @@ export interface operations {
         responses: {
             200: components["responses"]["Groceries"];
             400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     getCurrentGroceryLineContributions: {
@@ -1001,7 +1201,10 @@ export interface operations {
                     };
                 };
             };
+            400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
 }

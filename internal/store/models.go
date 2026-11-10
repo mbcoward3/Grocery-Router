@@ -45,10 +45,12 @@ type GroceryItem struct {
 }
 
 type Household struct {
-	ID        string    `db:"id" json:"id"`
-	Name      string    `db:"name" json:"name"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+	ID                 string    `db:"id" json:"id"`
+	Name               string    `db:"name" json:"name"`
+	CreatedAt          time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt          time.Time `db:"updated_at" json:"updated_at"`
+	Timezone           string    `db:"timezone" json:"timezone"`
+	DefaultRecipeCount int32     `db:"default_recipe_count" json:"default_recipe_count"`
 }
 
 type HouseholdMembership struct {
@@ -230,13 +232,15 @@ type RecipeIngredient struct {
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	IncludeOnGroceryList   int64          `db:"include_on_grocery_list" json:"include_on_grocery_list"`
 	DisplayNote            sql.NullString `db:"display_note" json:"display_note"`
+	HouseholdID            string         `db:"household_id" json:"household_id"`
 }
 
 type RecipeIngredientSection struct {
-	ID       int64  `db:"id" json:"id"`
-	RecipeID int64  `db:"recipe_id" json:"recipe_id"`
-	Name     string `db:"name" json:"name"`
-	Position int64  `db:"position" json:"position"`
+	ID          int64  `db:"id" json:"id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+	Name        string `db:"name" json:"name"`
+	Position    int64  `db:"position" json:"position"`
+	HouseholdID string `db:"household_id" json:"household_id"`
 }
 
 type RecipeInstructionSection struct {
@@ -384,11 +388,14 @@ type UserIdentity struct {
 }
 
 type Week struct {
-	ID          int64  `db:"id" json:"id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-	CreatedAt   string `db:"created_at" json:"created_at"`
-	UpdatedAt   string `db:"updated_at" json:"updated_at"`
-	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64          `db:"id" json:"id"`
+	StartsOn    string         `db:"starts_on" json:"starts_on"`
+	CreatedAt   string         `db:"created_at" json:"created_at"`
+	UpdatedAt   string         `db:"updated_at" json:"updated_at"`
+	HouseholdID string         `db:"household_id" json:"household_id"`
+	OpenedAt    time.Time      `db:"opened_at" json:"opened_at"`
+	ClosedAt    sql.NullTime   `db:"closed_at" json:"closed_at"`
+	EndsOn      sql.NullString `db:"ends_on" json:"ends_on"`
 }
 
 type WeekRecipe struct {

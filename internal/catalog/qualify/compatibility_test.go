@@ -69,11 +69,11 @@ func TestCompatibilityFixture(t *testing.T) {
 		t.Fatal(err)
 	}
 	now := time.Date(2026, 11, 8, 12, 0, 0, 0, time.UTC)
-	service := week.NewService(db, nil, tenant.CowardHouseholdID)
+	service := week.NewService(db, nil).ForHousehold(tenant.CowardHouseholdID)
 	if _, err := service.Generate(ctx, now, 1); err != nil {
 		t.Fatal(err)
 	}
-	checklist, err := service.Checklist(ctx, now)
+	checklist, err := service.Checklist(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +110,7 @@ func TestCompatibilityFixture(t *testing.T) {
 			}
 			row.Quantities = append(row.Quantities, quantity)
 		}
-		contributions, err := service.Contributions(ctx, now, line.ID)
+		contributions, err := service.Contributions(ctx, line.ID)
 		if err != nil {
 			t.Fatal(err)
 		}

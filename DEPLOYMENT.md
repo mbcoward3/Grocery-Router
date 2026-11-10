@@ -18,6 +18,16 @@ The server fails startup if authentication configuration is absent or inconsiste
 
 The entrypoint applies pending Goose migrations and ingests the approved corpus only when the Coward household's recipe table is empty. CNPG owns database storage and credentials; the application pod is stateless.
 
+## Household time zone
+
+Each household's plans are dated in its own time zone, stored in PostgreSQL (default `UTC`). Household members set it on the Settings screen, together with the number of recipes a new plan offers (D049). The operator command remains for setting it without the app, for example:
+
+```sh
+kubectl exec -n <namespace> deploy/<release> -- grocery-router household-timezone America/Chicago
+```
+
+The container already has `GROCERY_ROUTER_DATABASE_URL`. `--household <id>` selects another household; it defaults to the Coward household. An unknown zone or household exits non-zero and changes nothing. Until the zone is set on the Settings screen or by the command, plans are dated in UTC.
+
 ## Environments and cutover
 
 - Production: `https://groceries.matthewcoward.com`

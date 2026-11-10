@@ -14,6 +14,9 @@ type Querier interface {
 	// GetIngestHostRateLimit to learn how long. Safe across concurrent processes.
 	AcquireIngestHostSlot(ctx context.Context, arg AcquireIngestHostSlotParams) (AcquireIngestHostSlotRow, error)
 	ApproveReviewFlag(ctx context.Context, id int64) (RecipeReviewFlag, error)
+	// Closes the household's open plan at now with its last local date, never before its start
+	// date. Dates are ISO text, so GREATEST compares them as dates.
+	CloseOpenWeek(ctx context.Context, arg CloseOpenWeekParams) (int64, error)
 	// Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
 	CountIngestNoRecipePagesBySite(ctx context.Context) ([]CountIngestNoRecipePagesBySiteRow, error)
 	CountIngestSourceNodesBySite(ctx context.Context) ([]CountIngestSourceNodesBySiteRow, error)
@@ -47,6 +50,9 @@ type Querier interface {
 	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
 	ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
+	GetHouseholdName(ctx context.Context, householdID string) (string, error)
+	GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error)
+	GetHouseholdTimezone(ctx context.Context, householdID string) (string, error)
 	GetIngestEvidence(ctx context.Context, id int64) (IngestEvidence, error)
 	GetIngestHostRateLimit(ctx context.Context, host string) (GetIngestHostRateLimitRow, error)
 	GetIngestRun(ctx context.Context, id int64) (IngestRun, error)
@@ -54,6 +60,7 @@ type Querier interface {
 	GetIngestSiteByHost(ctx context.Context, host string) (IngestSite, error)
 	GetIngestSourcePage(ctx context.Context, id int64) (IngestSourcePage, error)
 	GetOpenIngestSitePause(ctx context.Context, siteID string) (IngestSitePause, error)
+	GetOpenWeek(ctx context.Context, householdID string) (Week, error)
 	GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error)
 	GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error)
 	GetRecipe(ctx context.Context, arg GetRecipeParams) (Recipe, error)
@@ -63,7 +70,6 @@ type Querier interface {
 	GetStoreSectionByKey(ctx context.Context, arg GetStoreSectionByKeyParams) (StoreSection, error)
 	GetUnitByKey(ctx context.Context, key string) (Unit, error)
 	GetVerifiedRecipe(ctx context.Context, arg GetVerifiedRecipeParams) (Recipe, error)
-	GetWeekByStart(ctx context.Context, arg GetWeekByStartParams) (Week, error)
 	GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (WeekRecipe, error)
 	InsertIngestEvidence(ctx context.Context, arg InsertIngestEvidenceParams) (int64, error)
 	InsertIngestFetchAttempt(ctx context.Context, arg InsertIngestFetchAttemptParams) (int64, error)
@@ -87,7 +93,7 @@ type Querier interface {
 	ListIngredientSections(ctx context.Context, arg ListIngredientSectionsParams) ([]RecipeIngredientSection, error)
 	ListInstructionSections(ctx context.Context, arg ListInstructionSectionsParams) ([]RecipeInstructionSection, error)
 	ListOpenIngestSitePauses(ctx context.Context) ([]IngestSitePause, error)
-	ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([]ListPastWeeksRow, error)
+	ListPastWeeks(ctx context.Context, householdID string) ([]ListPastWeeksRow, error)
 	ListRecipeIngredients(ctx context.Context, arg ListRecipeIngredientsParams) ([]ListRecipeIngredientsRow, error)
 	ListRecipeReviewFlags(ctx context.Context, arg ListRecipeReviewFlagsParams) ([]RecipeReviewFlag, error)
 	ListRecipeSources(ctx context.Context, arg ListRecipeSourcesParams) ([]RecipeSource, error)
@@ -105,6 +111,13 @@ type Querier interface {
 	ListWeekIngredientRequirements(ctx context.Context, arg ListWeekIngredientRequirementsParams) ([]ListWeekIngredientRequirementsRow, error)
 	ListWeekRecipeIDs(ctx context.Context, arg ListWeekRecipeIDsParams) ([]int64, error)
 	ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams) ([]ListWeekRecipesRow, error)
+	// Taken before a plan is opened, closed, or reopened, so those changes run one at a time per
+	// household and a household never has two open plans. Changes inside the open plan lock only
+	// the plan row (LockOpenWeek), so they never wait for this.
+	LockHouseholdPlans(ctx context.Context, householdID string) (string, error)
+	// Taken before a change to the open week or its list. A concurrent close waits for the change,
+	// or, if it closed the week first, this finds no open week once it commits.
+	LockOpenWeek(ctx context.Context, householdID string) (Week, error)
 	LockSectionOrder(ctx context.Context, id string) (string, error)
 	MarkIngestSourcePageFailed(ctx context.Context, arg MarkIngestSourcePageFailedParams) error
 	MarkIngestSourcePageFetched(ctx context.Context, arg MarkIngestSourcePageFetchedParams) error
@@ -121,6 +134,8 @@ type Querier interface {
 	ReleaseIngestHostSlot(ctx context.Context, arg ReleaseIngestHostSlotParams) (int64, error)
 	ReleaseIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
 	RememberItemSection(ctx context.Context, arg RememberItemSectionParams) error
+	// Makes a past plan the open one again. The caller closes the open plan first.
+	ReopenWeek(ctx context.Context, arg ReopenWeekParams) (int64, error)
 	// Explicitly queues a page again; a re-fetch creates new evidence and never edits the old.
 	RequeueIngestSourcePage(ctx context.Context, id int64) error
 	ResetSectionPositions(ctx context.Context, householdID string) error
@@ -138,6 +153,9 @@ type Querier interface {
 	TouchWeek(ctx context.Context, arg TouchWeekParams) error
 	// Stage locks (§7.3). Session-level: call on one *sql.Conn and unlock on the same connection.
 	TryIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
+	// A NULL argument keeps the stored value, so a change to one setting cannot overwrite a
+	// concurrent change to another.
+	UpdateHouseholdSettings(ctx context.Context, arg UpdateHouseholdSettingsParams) (UpdateHouseholdSettingsRow, error)
 	UpdateIngestRunCounters(ctx context.Context, arg UpdateIngestRunCountersParams) error
 	UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekRecipeRecipeParams) (WeekRecipe, error)
 	UpsertIngestSite(ctx context.Context, arg UpsertIngestSiteParams) error

@@ -42,6 +42,7 @@ paths:
                   recipes:
                     type: array
                     items: { $ref: "#/components/schemas/RecipeSummary" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/recipes/{recipeID}:
     parameters:
@@ -59,6 +60,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/RecipeDetail" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current:
@@ -66,19 +68,20 @@ paths:
       - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: getCurrentWeek
-      summary: Return the explicitly generated current week.
+      summary: Return the current plan.
       responses:
         "200": { $ref: "#/components/responses/Week" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/weeks/history:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: listWeekHistory
-      summary: List earlier generated weeks, newest first.
+      summary: List past plans, newest first.
       responses:
         "200":
-          description: Read-only past-week summaries.
+          description: Past-plan summaries.
           content:
             application/json:
               schema:
@@ -88,6 +91,7 @@ paths:
                   weeks:
                     type: array
                     items: { $ref: "#/components/schemas/WeekHistorySummary" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/weeks/history/{weekID}:
     parameters:
@@ -98,13 +102,29 @@ paths:
         schema: { type: integer, minimum: 1 }
     get:
       operationId: getHistoricalWeek
-      summary: Return an earlier week's final meals and retained grocery checklist.
+      summary: Return a past plan's meals and retained grocery checklist.
       responses:
         "200":
-          description: Read-only historical week detail.
+          description: Past plan detail.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/HistoricalWeek" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /households/{householdID}/weeks/history/{weekID}/reopen:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+      - name: weekID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    post:
+      operationId: reopenHistoricalWeek
+      summary: Make a past plan the current plan again; the current plan, if any, moves to History.
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/generate:
@@ -112,7 +132,7 @@ paths:
       - $ref: "#/components/parameters/HouseholdID"
     post:
       operationId: generateCurrentWeek
-      summary: Create or fully regenerate the current week.
+      summary: Fill the current plan with new meals, or start a new plan today when there is none.
       requestBody:
         required: true
         content:
@@ -128,7 +148,19 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Week" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /households/{householdID}/week/current/close:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+    post:
+      operationId: closeCurrentWeek
+      summary: Close the current plan now and move it to History. The next plan is not generated.
+      responses:
+        "204": { description: The week was closed. }
+        "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/recipes:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -142,6 +174,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/recipes/{occurrenceID}:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -154,6 +187,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
     put:
       operationId: swapCurrentWeekRecipe
       summary: Replace one occurrence with a specific verified recipe.
@@ -164,6 +198,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/recipes/{occurrenceID}/random-swap:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -176,6 +211,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/store-sections:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -187,6 +223,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/StoreSections" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
     put:
       operationId: setStoreSectionOrder
       requestBody:
@@ -205,7 +243,39 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/StoreSections" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /households/{householdID}/settings:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+    get:
+      operationId: getHouseholdSettings
+      summary: Return the household's preferences.
+      responses:
+        "200": { $ref: "#/components/responses/HouseholdSettings" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+    patch:
+      operationId: updateHouseholdSettings
+      summary: Change one or more household preferences; any household member may.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              minProperties: 1
+              properties:
+                timezone: { type: string, description: "IANA time zone name, for example America/Chicago." }
+                defaultRecipeCount: { type: integer, minimum: 1, maximum: 21 }
+      responses:
+        "200": { $ref: "#/components/responses/HouseholdSettings" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/InvalidSettings" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/grocery-items:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -226,6 +296,8 @@ paths:
                   items:
                     type: array
                     items: { $ref: "#/components/schemas/GroceryItemMatch" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/groceries:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -235,6 +307,7 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "500": { $ref: "#/components/responses/InternalError" }
     post:
       operationId: addCurrentGroceryLine
       summary: Add a manual item with deterministic known-item matching.
@@ -254,6 +327,8 @@ paths:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/groceries/{lineID}:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -289,13 +364,18 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
     delete:
       operationId: removeCurrentGroceryLine
       summary: Remove a line from this week's visible checklist.
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/groceries/{lineID}/contributions:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -318,7 +398,10 @@ paths:
                   contributions:
                     type: array
                     items: { $ref: "#/components/schemas/GroceryContribution" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
 components:
   parameters:
     HouseholdID:
@@ -513,19 +596,27 @@ components:
         recipe: { $ref: "#/components/schemas/RecipeSummary" }
     Week:
       type: object
-      required: [id, startsOn, recipes]
+      required: [id, startsOn, endsOn, recipes]
       properties:
         id: { type: integer }
         startsOn: { type: string, format: date }
+        endsOn:
+          type: [string, "null"]
+          format: date
+          description: >-
+            The household-local date the plan was closed, or null while it is the current plan.
+            A plan has no fixed length; it stays current until a new one is started or a past
+            one is reopened.
         recipes:
           type: array
           items: { $ref: "#/components/schemas/RecipeOccurrence" }
     WeekHistorySummary:
       type: object
-      required: [id, startsOn, recipeCount, groceryCount, completedCount]
+      required: [id, startsOn, endsOn, recipeCount, groceryCount, completedCount]
       properties:
         id: { type: integer }
         startsOn: { type: string, format: date }
+        endsOn: { type: string, format: date, description: "The household-local date the plan was closed." }
         recipeCount: { type: integer, minimum: 0 }
         groceryCount: { type: integer, minimum: 0 }
         completedCount: { type: integer, minimum: 0 }
@@ -535,6 +626,12 @@ components:
       properties:
         week: { $ref: "#/components/schemas/Week" }
         groceries: { $ref: "#/components/schemas/Groceries" }
+    HouseholdSettings:
+      type: object
+      required: [timezone, defaultRecipeCount]
+      properties:
+        timezone: { type: string, description: "IANA time zone used to date the household's plans." }
+        defaultRecipeCount: { type: integer, minimum: 1, maximum: 21, description: "Recipes offered when generating a plan." }
     APIError:
       type: object
       required: [error]
@@ -557,7 +654,7 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }
     Week:
-      description: Canonical current week after the operation.
+      description: Canonical current plan after the operation.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Week" }
@@ -567,7 +664,7 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }
     NoCurrentWeek:
-      description: The current week has not been explicitly generated.
+      description: There is no current plan.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }
@@ -587,7 +684,17 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Groceries" }
     NotFound:
-      description: The requested resource was not found.
+      description: The requested resource, or the household itself, was not found.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    HouseholdSettings:
+      description: The household's full settings.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/HouseholdSettings" }
+    InvalidSettings:
+      description: A setting value was rejected; nothing was stored.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }

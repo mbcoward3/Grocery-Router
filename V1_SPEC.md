@@ -4,6 +4,8 @@ Status: **approved direction, ready for implementation planning**
 Scope settled by product interview.  
 Canonical for v1: **this document supersedes the existing `.scratch/spec/`, architecture documents, prototype behavior, and prior implementation decisions.**
 
+Sections 1.1, 1.2, 3.2, and 12.4 (no accounts, local-only operation, no Docker or deployment, and trusting the local network) were superseded by [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) and D036 in [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md).
+
 ---
 
 ## 1. Product statement
@@ -253,7 +255,8 @@ Shopping mode is reviewed corpus data, not inferred at list-generation time.
 
 ### Week
 
-A manually generated, unordered pool associated with the current Sunday-to-Saturday period.
+A manually generated, unordered pool for the time until the household's next shopping trip, shown
+as a *plan* in the app (D051). It has no fixed length.
 
 ### Week recipe
 
@@ -274,10 +277,14 @@ The trace from a generated grocery line to a particular week-recipe occurrence a
 ### 6.1 Creating the week
 
 - A week is created only through an explicit user action.
-- Creation automatically assigns the current week's Sunday date.
+- Creation assigns today's household-local date as the start date (D051).
+- The week stays current until a household member closes it with "Start new plan" or reopens a
+  past week from History. Closing moves it to History and never creates the next week.
+  Reopening makes the past week current again, as it was, and moves the current week, if any,
+  to History.
 - The user supplies the number of dinners/recipes.
 - No guest count or serving count is requested.
-- No week is created automatically on Sunday.
+- Nothing creates or closes a week by the calendar.
 - Future weeks cannot be selected in v1.
 
 ### 6.2 Random generation
@@ -308,10 +315,11 @@ Earlier generated weeks are available from a dedicated History screen, newest fi
 past week shows its final meal pool and retained grocery checklist, including completed,
 incomplete, removed, manual, and quantity-adjusted lines. History is read-only: it does not
 restore, copy, or mutate a past or current week. Regenerations and edits are not separate
-historical versions; each Sunday-to-Saturday week has one final retained state.
+historical versions; each week has one final retained state.
 
-The current Week screen clearly distinguishes `Planned` from `Not planned` and shows the
-Sunday-to-Saturday date range when planned.
+The current Week screen clearly distinguishes `Planned` from `Not planned` and shows the week's
+date range when planned: its start date through its last local day, or "Since" its start date
+for an open week in manual mode.
 
 ### 6.5 Natural workflow
 
@@ -646,7 +654,9 @@ There is no approximate conversion in the v1 unit graph.
 ### 11.8 `weeks`
 
 - stable ID;
-- unique Sunday start date;
+- start date under the household's configured week start (any day; two weeks may share one);
+- open, automatic-close, and closed times;
+- last local date, fixed when the week closes;
 - creation/update timestamps.
 
 Weeks are retained. v1 only exposes the explicitly generated current week.
@@ -702,7 +712,7 @@ The database and domain layer must enforce:
 - no grocery item without a store section and shopping mode;
 - valid exact-quantity denominators and ranges;
 - unique ordering within each ordered parent;
-- Sunday week dates;
+- valid calendar week start dates;
 - no cross-dimension unit conversion;
 - no contribution without its week-recipe and ingredient; and
 - no silent deletion of contribution data during aggregation.
@@ -858,7 +868,7 @@ Representative outputs should be stored as readable golden fixtures.
 Tests must prove:
 
 - explicit creation only;
-- current-Sunday assignment;
+- start-date assignment under the household's configured week start;
 - requested count;
 - uniqueness of generated results;
 - uniform/history-blind eligibility;
@@ -933,7 +943,7 @@ Grocery Router v1 is done when:
 8. every selectable recipe satisfies the verification contract;
 9. the complete-corpus audit passes and a fresh database can ingest every committed approved recipe file;
 10. reusable ingestion rules, fixtures, validation queries, and future-agent context remain after true-up;
-11. the four required screens work well on desktop and iPhone;
+11. the five required screens work well on desktop and iPhone;
 12. random generation and all specified pool edits work without AI;
 13. grocery generation includes every recipe requirement with exact, traceable aggregation and no inventory assumptions;
 14. weekly list editing and completion work without modifying recipe truth;

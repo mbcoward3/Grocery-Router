@@ -43,10 +43,6 @@ spec:
                 secretKeyRef:
                   name: {{ required "database.secretName is required" .Values.database.secretName }}
                   key: {{ required "database.secretKey is required" .Values.database.secretKey }}
-            {{- if .Values.catalogRelease }}
-            - name: GROCERY_ROUTER_CATALOG_RELEASE
-              value: {{ .Values.catalogRelease | quote }}
-            {{- end }}
           ports:
             - name: http
               containerPort: 8080

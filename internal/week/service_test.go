@@ -20,12 +20,9 @@ func (zeroPicker) IntN(int) (int, error) { return 0, nil }
 
 func TestCurrentWeekRequiresExplicitGeneration(t *testing.T) {
 	service, _ := testService(t)
-	_, err := service.Current(context.Background(), testNow())
+	_, err := service.Current(context.Background())
 	if !errors.Is(err, week.ErrNoCurrentWeek) {
 		t.Fatalf("Current error = %v, want ErrNoCurrentWeek", err)
-	}
-	if got := week.CurrentSunday(testNow()); got != "2026-08-16" {
-		t.Fatalf("CurrentSunday = %q", got)
 	}
 }
 
@@ -37,7 +34,7 @@ func TestGenerateIsUniqueAndFailureIsTransactional(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if view.Week.StartsOn != "2026-08-16" || len(view.Recipes) != 4 {
+	if view.Week.StartsOn != "2026-08-19" || len(view.Recipes) != 4 {
 		t.Fatalf("generated view = %#v", view)
 	}
 	seen := map[int64]bool{}
@@ -48,11 +45,11 @@ func TestGenerateIsUniqueAndFailureIsTransactional(t *testing.T) {
 		seen[occurrence.RecipeID] = true
 	}
 	assertAllShoppingContributionsPresent(t, db, view.Week.ID)
-	checklist, err := service.Checklist(ctx, testNow())
+	checklist, err := service.Checklist(ctx)
 	if err != nil || len(checklist.Lines) == 0 {
 		t.Fatalf("Checklist = %#v, %v", checklist, err)
 	}
-	contributions, err := service.Contributions(ctx, testNow(), checklist.Lines[0].ID)
+	contributions, err := service.Contributions(ctx, checklist.Lines[0].ID)
 	if err != nil || len(contributions) == 0 {
 		t.Fatalf("Contributions = %#v, %v", contributions, err)
 	}
@@ -60,7 +57,7 @@ func TestGenerateIsUniqueAndFailureIsTransactional(t *testing.T) {
 	if _, err := service.Generate(ctx, testNow(), 100); err == nil {
 		t.Fatal("oversized generation unexpectedly succeeded")
 	}
-	current, err := service.Current(ctx, testNow())
+	current, err := service.Current(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +75,7 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	}
 
 	// Manual add permits a duplicate occurrence.
-	view, err = service.Add(ctx, testNow(), view.Recipes[0].RecipeID)
+	view, err = service.Add(ctx, view.Recipes[0].RecipeID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,19 +96,19 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	`).Scan(&lineID, &key, &sourceBefore); err != nil {
 		t.Fatal(err)
 	}
-	if err := service.SetLineCompleted(ctx, testNow(), lineID, true); err != nil {
+	if err := service.SetLineCompleted(ctx, lineID, true); err != nil {
 		t.Fatal(err)
 	}
-	if err := service.SetLineOverride(ctx, testNow(), lineID, "buy two large containers"); err != nil {
+	if err := service.SetLineOverride(ctx, lineID, "buy two large containers"); err != nil {
 		t.Fatal(err)
 	}
-	manual, err := service.AddManualLine(ctx, testNow(), "Birthday candles")
+	manual, err := service.AddManualLine(ctx, "Birthday candles")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Recompute preserves generated state by aggregation key and leaves manual lines alone.
-	view, err = service.Add(ctx, testNow(), view.Recipes[0].RecipeID)
+	view, err = service.Add(ctx, view.Recipes[0].RecipeID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -140,7 +137,7 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	}
 
 	removedID := view.Recipes[1].ID
-	view, err = service.Remove(ctx, testNow(), removedID)
+	view, err = service.Remove(ctx, removedID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +147,7 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	assertAllShoppingContributionsPresent(t, db, view.Week.ID)
 
 	oldRecipe := view.Recipes[0].RecipeID
-	view, err = service.RandomSwap(ctx, testNow(), view.Recipes[0].ID)
+	view, err = service.RandomSwap(ctx, view.Recipes[0].ID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,7 +156,7 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	}
 
 	target := view.Recipes[1].RecipeID
-	view, err = service.Swap(ctx, testNow(), view.Recipes[0].ID, target)
+	view, err = service.Swap(ctx, view.Recipes[0].ID, target)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -168,7 +165,7 @@ func TestWeekMutationsAndGroceryState(t *testing.T) {
 	}
 }
 
-func testService(t *testing.T) (*week.Service, *sql.DB) {
+func testService(t *testing.T) (*week.Household, *sql.DB) {
 	t.Helper()
 	db := testdatabase.Open(t)
 	documents, err := ingest.ReadDirectory(filepath.Join("..", "..", "corpus", "recipes"))
@@ -178,7 +175,7 @@ func testService(t *testing.T) (*week.Service, *sql.DB) {
 	if err := ingest.Import(context.Background(), db, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5", documents); err != nil {
 		t.Fatal(err)
 	}
-	return week.NewService(db, zeroPicker{}, "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"), db
+	return week.NewService(db, zeroPicker{}).ForHousehold("c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"), db
 }
 
 func testNow() time.Time {
@@ -225,31 +222,31 @@ func TestManualPlacementAndSharedSectionOrder(t *testing.T) {
 	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 AND key = 'baking'`, household).Scan(&baking); err != nil {
 		t.Fatal(err)
 	}
-	exact, err := service.AddManualLine(ctx, testNow(), "  MILK  ")
+	exact, err := service.AddManualLine(ctx, "  MILK  ")
 	if err != nil || exact.StoreSectionID != dairy || exact.GroceryItemID.Int64 != milk || exact.Origin != "manual" {
 		t.Fatalf("exact match = %#v, %v", exact, err)
 	}
-	picked, err := service.AddManualLine(ctx, testNow(), "mil", week.ManualLineOptions{GroceryItemID: milk})
+	picked, err := service.AddManualLine(ctx, "mil", week.ManualLineOptions{GroceryItemID: milk})
 	if err != nil || picked.StoreSectionID != dairy {
 		t.Fatalf("picked match = %#v, %v", picked, err)
 	}
-	unknown, err := service.AddManualLine(ctx, testNow(), "Birthday candles")
+	unknown, err := service.AddManualLine(ctx, "Birthday candles")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := service.SetLineSection(ctx, testNow(), unknown.ID, baking); err != nil {
+	if err := service.SetLineSection(ctx, unknown.ID, baking); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.AddManualLine(ctx, testNow(), "Bad item", week.ManualLineOptions{GroceryItemID: -1}); err == nil {
+	if _, err := service.AddManualLine(ctx, "Bad item", week.ManualLineOptions{GroceryItemID: -1}); err == nil {
 		t.Fatal("invalid item accepted")
 	}
-	if err := service.SetLineSection(ctx, testNow(), unknown.ID, -1); err == nil {
+	if err := service.SetLineSection(ctx, unknown.ID, -1); err == nil {
 		t.Fatal("invalid section accepted")
 	}
 	if _, err := service.Generate(ctx, testNow(), 3); err != nil {
 		t.Fatal(err)
 	}
-	checklist, err := service.Checklist(ctx, testNow())
+	checklist, err := service.Checklist(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -358,11 +355,11 @@ func TestUnknownManualItemRemembersChosenSection(t *testing.T) {
 	}
 
 	// First time: unknown, lands in Other, then the user places it in Dairy.
-	first, err := service.AddManualLine(ctx, testNow(), "Cottage cheese")
+	first, err := service.AddManualLine(ctx, "Cottage cheese")
 	if err != nil || first.StoreSectionID != other {
 		t.Fatalf("first add = %#v, %v", first, err)
 	}
-	if err := service.SetLineSection(ctx, testNow(), first.ID, dairy); err != nil {
+	if err := service.SetLineSection(ctx, first.ID, dairy); err != nil {
 		t.Fatal(err)
 	}
 
@@ -373,17 +370,17 @@ func TestUnknownManualItemRemembersChosenSection(t *testing.T) {
 	}
 
 	// Typing it again goes straight to Dairy.
-	second, err := service.AddManualLine(ctx, testNow(), "  cottage CHEESE ")
+	second, err := service.AddManualLine(ctx, "  cottage CHEESE ")
 	if err != nil || second.StoreSectionID != dairy {
 		t.Fatalf("second add = %#v, %v", second, err)
 	}
 
 	// Choosing a section while adding is remembered too; moving back to Other forgets it.
-	candles, err := service.AddManualLine(ctx, testNow(), "Birthday candles", week.ManualLineOptions{StoreSectionID: dairy})
+	candles, err := service.AddManualLine(ctx, "Birthday candles", week.ManualLineOptions{StoreSectionID: dairy})
 	if err != nil || candles.StoreSectionID != dairy {
 		t.Fatalf("explicit add = %#v, %v", candles, err)
 	}
-	if err := service.SetLineSection(ctx, testNow(), candles.ID, other); err != nil {
+	if err := service.SetLineSection(ctx, candles.ID, other); err != nil {
 		t.Fatal(err)
 	}
 	if matches, err := service.SearchItems(ctx, "birthday"); err != nil || len(matches) != 0 {
@@ -391,11 +388,11 @@ func TestUnknownManualItemRemembersChosenSection(t *testing.T) {
 	}
 
 	// Known grocery items keep their corpus section and are not remembered.
-	milk, err := service.AddManualLine(ctx, testNow(), "milk")
+	milk, err := service.AddManualLine(ctx, "milk")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := service.SetLineSection(ctx, testNow(), milk.ID, other); err != nil {
+	if err := service.SetLineSection(ctx, milk.ID, other); err != nil {
 		t.Fatal(err)
 	}
 	var remembered int
@@ -420,7 +417,7 @@ func TestChecklistHasOneRowPerItemAndUpgradesOldLists(t *testing.T) {
 		if err := db.QueryRow(`SELECT id FROM recipes WHERE key = $1`, key).Scan(&recipeID); err != nil {
 			t.Fatal(err)
 		}
-		if _, err := service.Add(ctx, testNow(), recipeID); err != nil {
+		if _, err := service.Add(ctx, recipeID); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -432,7 +429,7 @@ func TestChecklistHasOneRowPerItemAndUpgradesOldLists(t *testing.T) {
 		t.Fatalf("generated rows = %d for %d items, want one row per item", rows, items)
 	}
 	pepper := func() (int64, string, int64, bool) {
-		checklist, err := service.Checklist(ctx, testNow())
+		checklist, err := service.Checklist(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}

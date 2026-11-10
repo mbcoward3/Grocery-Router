@@ -1,12 +1,13 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link, useParams } from '@tanstack/react-router'
-import { getHistoricalWeek, listWeekHistory, type GroceryLine } from '../../api/client'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { getHistoricalWeek, reopenWeek, type GroceryLine } from '../../api/client'
 import { ArrowIcon, CheckIcon } from '../../ui/icons'
-
-const historyKey = ['weeks', 'history'] as const
+import { formatShortDate, formatWeekRange } from '../week/dates'
+import { weekQueryKey } from '../week/queries'
+import { historyQueryOptions } from './queries'
 
 export function HistoryPage() {
-  const query = useQuery({ queryKey: historyKey, queryFn: listWeekHistory })
+  const query = useQuery(historyQueryOptions)
 
   if (query.isLoading) return <HistorySkeleton />
   if (query.error) return <ErrorPanel message={query.error.message} onRetry={() => void query.refetch()} />
@@ -18,25 +19,25 @@ export function HistoryPage() {
         <div>
           <div className="eyebrow">Past plans</div>
           <h1 id="history-heading">History</h1>
-          <p>Your final meal pools and shopping progress, week by week.</p>
+          <p>Your past meal pools and shopping progress. Open one to reopen it.</p>
         </div>
-        <span className="page-count">{weeks.length} weeks</span>
+        <span className="page-count">{weeks.length} {weeks.length === 1 ? 'plan' : 'plans'}</span>
       </header>
 
       {weeks.length === 0 ? (
         <div className="empty-week history-empty">
           <div className="empty-mark" aria-hidden="true">↺</div>
-          <h2>No past weeks yet</h2>
-          <p>Once a new week begins, your previous plan and grocery checklist will appear here.</p>
-          <Link className="button primary" to="/">Go to this week</Link>
+          <h2>No past plans yet</h2>
+          <p>When you start a new plan, your previous plan and grocery checklist will appear here.</p>
+          <Link className="button primary" to="/">Go to your plan</Link>
         </div>
       ) : (
         <div className="history-list">
           {weeks.map((week) => (
             <Link className="history-row" key={week.id} to="/history/$weekId" params={{ weekId: String(week.id) }}>
               <div className="history-date">
-                <strong>{formatWeekRange(week.startsOn)}</strong>
-                <span>Week of {formatShortDate(week.startsOn)}</span>
+                <strong>{formatWeekRange(week.startsOn, week.endsOn)}</strong>
+                <span>Started {formatShortDate(week.startsOn)}</span>
               </div>
               <div className="history-stat"><strong>{week.recipeCount}</strong><span>meals</span></div>
               <div className="history-stat history-progress">
@@ -60,6 +61,19 @@ export function HistoricalWeekPage() {
     queryFn: () => getHistoricalWeek(id),
     enabled: Number.isInteger(id) && id > 0,
   })
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  // Reopening makes this plan current and moves the current one to History, so the plan, its
+  // groceries, and History all reload.
+  const reopen = useMutation({
+    mutationFn: () => reopenWeek(id),
+    onSuccess: async (week) => {
+      queryClient.setQueryData(weekQueryKey, week)
+      void queryClient.invalidateQueries({ queryKey: ['week', 'groceries'] })
+      void queryClient.invalidateQueries({ queryKey: ['weeks'] })
+      await navigate({ to: '/' })
+    },
+  })
 
   if (query.isLoading) return <HistorySkeleton />
   if (query.error) return <ErrorPanel message={query.error.message} onRetry={() => void query.refetch()} />
@@ -75,9 +89,16 @@ export function HistoricalWeekPage() {
       <Link className="recipe-back" to="/history">← Back to history</Link>
       <header className="history-detail-heading">
         <div>
-          <div className="eyebrow">Past week · Read only</div>
-          <h1 id="historical-week-heading">{formatWeekRange(week.startsOn)}</h1>
+          <div className="eyebrow">Past plan</div>
+          <h1 id="historical-week-heading">{formatWeekRange(week.startsOn, week.endsOn)}</h1>
           <p>{week.recipes.length} {week.recipes.length === 1 ? 'meal' : 'meals'} · {completed} of {activeLines.length} groceries checked</p>
+        </div>
+        <div className="history-reopen">
+          <button className="button primary" type="button" onClick={() => reopen.mutate()} disabled={reopen.isPending} aria-describedby="reopen-help">
+            {reopen.isPending ? 'Reopening…' : 'Reopen this plan'}
+          </button>
+          <p id="reopen-help">Makes it your current plan again. Your current plan, if any, moves to History.</p>
+          {reopen.error && <p className="inline-error" role="alert">{reopen.error.message}</p>}
         </div>
       </header>
 
@@ -133,17 +154,4 @@ function HistorySkeleton() {
 
 function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
   return <div className="error-panel" role="alert"><div><strong>Couldn’t load history.</strong><p>{message}</p></div><button className="button" onClick={onRetry}>Try again</button></div>
-}
-
-function formatShortDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`))
-}
-
-function formatWeekRange(value: string) {
-  const start = new Date(`${value}T00:00:00Z`)
-  const end = new Date(start)
-  end.setUTCDate(end.getUTCDate() + 6)
-  const startText = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(start)
-  const endText = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(end)
-  return `${startText} – ${endText}`
 }
