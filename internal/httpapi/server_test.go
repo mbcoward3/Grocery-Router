@@ -314,6 +314,30 @@ func TestRequestsUseAuthorizedPathHousehold(t *testing.T) {
 	if countA != 0 || countB != 1 {
 		t.Fatalf("week counts: first household %d, second household %d", countA, countB)
 	}
+
+	var recipeA int64
+	if err := db.QueryRow("SELECT id FROM recipes WHERE household_id = $1 AND status = 'verified' ORDER BY id LIMIT 1", householdA).Scan(&recipeA); err != nil {
+		t.Fatal(err)
+	}
+	assertRecipeNotFound := func(name string, response *httptest.ResponseRecorder) {
+		t.Helper()
+		if response.Code != http.StatusUnprocessableEntity {
+			t.Fatalf("%s status = %d, body %s", name, response.Code, response.Body.String())
+		}
+		assertErrorCode(t, response, "week_operation_failed")
+		if message := decodeObject(t, response)["error"].(map[string]any)["message"]; message != "recipe not found" {
+			t.Fatalf("%s message = %#v", name, message)
+		}
+	}
+	assertRecipeNotFound("cross-household add", request(t, handler, http.MethodPost, path(householdB, "/week/current/recipes"),
+		fmt.Sprintf(`{"recipeId":%d}`, recipeA)))
+	occurrences := decodeObject(t, generated)["recipes"].([]any)
+	if len(occurrences) != 1 {
+		t.Fatalf("second household occurrences = %#v", occurrences)
+	}
+	occurrenceID := int64(occurrences[0].(map[string]any)["id"].(float64))
+	assertRecipeNotFound("missing recipe swap", request(t, handler, http.MethodPut,
+		path(householdB, fmt.Sprintf("/week/current/recipes/%d", occurrenceID)), `{"recipeId":999999}`))
 }
 
 func handlerForDB(db *sql.DB) http.Handler {
@@ -390,5 +414,54 @@ func TestShoppingDiscoveryAndOrderAPI(t *testing.T) {
 	reset := request(t, handler, http.MethodPut, root+"/store-sections", `{"reset":true}`)
 	if reset.Code != http.StatusOK || decodeObject(t, reset)["sections"].([]any)[0].(map[string]any)["name"] != "Produce" {
 		t.Fatalf("reset: %s", reset.Body)
+	}
+}
+
+func TestInternalErrorsReturnGenericBody(t *testing.T) {
+	db := testDB(t)
+	handler := handlerForDB(db)
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	response := request(t, handler, http.MethodGet, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current", "")
+	if response.Code != http.StatusInternalServerError {
+		t.Fatalf("closed database status = %d, body %s", response.Code, response.Body.String())
+	}
+	assertErrorCode(t, response, "internal_error")
+	body := response.Body.String()
+	for _, leak := range []string{"sql", "pq", "pgx", "SQLSTATE"} {
+		if strings.Contains(body, leak) {
+			t.Fatalf("internal error body leaks %q: %s", leak, body)
+		}
+	}
+}
+
+func TestGenerateBeyondCorpusIsValidationError(t *testing.T) {
+	handler := testHandler(t)
+	response := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", `{"recipeCount":25}`)
+	if response.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("oversized generate status = %d, body %s", response.Code, response.Body.String())
+	}
+	assertErrorCode(t, response, "week_operation_failed")
+	message := decodeObject(t, response)["error"].(map[string]any)["message"]
+	if message != "requested 25 recipes but only 24 verified recipes are available" {
+		t.Fatalf("oversized generate message = %#v", message)
+	}
+}
+
+func TestAddMissingRecipeIsValidationError(t *testing.T) {
+	handler := testHandler(t)
+	const root = "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	if generated := request(t, handler, http.MethodPost, root+"/week/current/generate", `{"recipeCount":1}`); generated.Code != http.StatusOK {
+		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
+	}
+	response := request(t, handler, http.MethodPost, root+"/week/current/recipes", `{"recipeId":999999}`)
+	if response.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("missing recipe status = %d, body %s", response.Code, response.Body.String())
+	}
+	assertErrorCode(t, response, "week_operation_failed")
+	message := decodeObject(t, response)["error"].(map[string]any)["message"]
+	if message != "recipe not found" {
+		t.Fatalf("missing recipe message = %#v", message)
 	}
 }

@@ -25,6 +25,21 @@ var (
 	ErrPastWeek = errors.New("past week not found")
 )
 
+// ValidationError is a user-facing rejection whose message is safe to return to clients.
+// Construct it with invalid(), which returns the value form: callers match it with
+// errors.As against a week.ValidationError value, so a *ValidationError would not match.
+type ValidationError struct {
+	Message string
+}
+
+func (err ValidationError) Error() string {
+	return err.Message
+}
+
+func invalid(format string, args ...any) error {
+	return ValidationError{Message: fmt.Sprintf(format, args...)}
+}
+
 // Picker supplies unbiased indexes and can be replaced by deterministic tests.
 type Picker interface {
 	IntN(n int) (int, error)
@@ -132,7 +147,7 @@ func (service *Household) PastWeek(ctx context.Context, now time.Time, weekID in
 // Generate creates or fully regenerates the current week with unique verified recipes.
 func (service *Household) Generate(ctx context.Context, now time.Time, count int) (View, error) {
 	if count <= 0 {
-		return View{}, fmt.Errorf("recipe count must be positive")
+		return View{}, invalid("recipe count must be positive")
 	}
 	var result View
 	err := service.transact(ctx, func(queries *store.Queries) error {
@@ -141,7 +156,7 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 			return err
 		}
 		if count > len(verified) {
-			return fmt.Errorf("requested %d recipes but only %d verified recipes are available", count, len(verified))
+			return invalid("requested %d recipes but only %d verified recipes are available", count, len(verified))
 		}
 		if err := shuffle(service.picker, verified); err != nil {
 			return err
@@ -172,6 +187,9 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 // Add appends one specific verified recipe. Duplicate recipes are intentionally allowed.
 func (service *Household) Add(ctx context.Context, now time.Time, recipeID int64) (View, error) {
 	return service.mutateCurrent(ctx, now, func(queries *store.Queries, weekRow store.Week) error {
+		if err := requireVerifiedRecipe(ctx, queries, service.householdID, recipeID); err != nil {
+			return err
+		}
 		position, err := queries.NextWeekRecipePosition(ctx, store.NextWeekRecipePositionParams{HouseholdID: service.householdID, WeekID: weekRow.ID})
 		if err != nil {
 			return err
@@ -212,6 +230,9 @@ func (service *Household) Swap(ctx context.Context, now time.Time, occurrenceID,
 			return ErrOccurrence
 		}
 		if err != nil {
+			return err
+		}
+		if err := requireVerifiedRecipe(ctx, queries, service.householdID, recipeID); err != nil {
 			return err
 		}
 		_, err = queries.UpdateWeekRecipeRecipe(ctx, store.UpdateWeekRecipeRecipeParams{
@@ -258,7 +279,7 @@ func (service *Household) RandomSwap(ctx context.Context, now time.Time, occurre
 			}
 		}
 		if len(candidates) == 0 {
-			return fmt.Errorf("no replacement recipe is available")
+			return invalid("no replacement recipe is available")
 		}
 		index, err := service.picker.IntN(len(candidates))
 		if err != nil {
@@ -273,6 +294,14 @@ func (service *Household) RandomSwap(ctx context.Context, now time.Time, occurre
 		})
 		return err
 	})
+}
+
+func requireVerifiedRecipe(ctx context.Context, queries *store.Queries, householdID string, recipeID int64) error {
+	_, err := queries.GetVerifiedRecipe(ctx, store.GetVerifiedRecipeParams{HouseholdID: householdID, ID: recipeID})
+	if errors.Is(err, sql.ErrNoRows) {
+		return invalid("recipe not found")
+	}
+	return err
 }
 
 func (service *Household) mutateCurrent(
@@ -577,7 +606,7 @@ func boolInt(value bool) int64 {
 func (service *Household) AddManualLine(ctx context.Context, now time.Time, name string, choices ...ManualLineOptions) (store.ShoppingLine, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
-		return store.ShoppingLine{}, fmt.Errorf("manual line name is required")
+		return store.ShoppingLine{}, invalid("manual line name is required")
 	}
 	var result store.ShoppingLine
 	err := service.transact(ctx, func(queries *store.Queries) error {
@@ -602,7 +631,7 @@ func (service *Household) AddManualLine(ctx context.Context, now time.Time, name
 			options = choices[0]
 		}
 		if options.GroceryItemID < 0 || options.StoreSectionID < 0 {
-			return fmt.Errorf("item and section IDs must be positive")
+			return invalid("item and section IDs must be positive")
 		}
 		items, err := queries.ListGroceryItems(ctx, service.householdID)
 		if err != nil {
@@ -619,7 +648,7 @@ func (service *Household) AddManualLine(ctx context.Context, now time.Time, name
 			}
 		}
 		if options.GroceryItemID != 0 && len(matches) != 1 {
-			return fmt.Errorf("grocery item not found")
+			return invalid("grocery item not found")
 		}
 		if len(matches) == 1 {
 			itemID = sql.NullInt64{Int64: matches[0].ID, Valid: true}
@@ -760,7 +789,7 @@ func (service *Household) Contributions(
 		}
 	}
 	if !found {
-		return nil, fmt.Errorf("shopping line not found")
+		return nil, invalid("shopping line not found")
 	}
 	return store.New(service.db).ListShoppingLineContributions(ctx, store.ListShoppingLineContributionsParams{HouseholdID: service.householdID, ShoppingLineID: lineID})
 }
@@ -801,7 +830,7 @@ func (service *Household) updateLine(ctx context.Context, update func(*store.Que
 			return err
 		}
 		if rows != 1 {
-			return fmt.Errorf("shopping line not found or operation is not supported")
+			return invalid("shopping line not found or operation is not supported")
 		}
 		return nil
 	})
@@ -827,7 +856,7 @@ func (service *Household) SetLineSection(ctx context.Context, now time.Time, lin
 			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID, StartsOn: CurrentSunday(now),
 		})
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("shopping line not found or operation is not supported")
+			return invalid("shopping line not found or operation is not supported")
 		}
 		if err != nil {
 			return err
@@ -854,7 +883,7 @@ func requireSection(ctx context.Context, queries *store.Queries, householdID str
 			return nil
 		}
 	}
-	return fmt.Errorf("store section not found")
+	return invalid("store section not found")
 }
 
 // rememberSection saves the household's placement of an unknown item name. Placing it in
@@ -963,14 +992,14 @@ func (service *Household) SetSectionOrder(ctx context.Context, ids []int64, rese
 		}
 		if reset {
 			if len(ids) != 0 {
-				return fmt.Errorf("reset cannot include section IDs")
+				return invalid("reset cannot include section IDs")
 			}
 			if err := queries.ResetSectionPositions(ctx, service.householdID); err != nil {
 				return err
 			}
 		} else {
 			if len(ids) != len(sections) {
-				return fmt.Errorf("provide every household section exactly once; reload and try again")
+				return invalid("provide every household section exactly once; reload and try again")
 			}
 			allowed := make(map[int64]bool, len(sections))
 			for _, section := range sections {
@@ -978,7 +1007,7 @@ func (service *Household) SetSectionOrder(ctx context.Context, ids []int64, rese
 			}
 			for position, id := range ids {
 				if !allowed[id] {
-					return fmt.Errorf("unknown or duplicate section")
+					return invalid("unknown or duplicate section")
 				}
 				delete(allowed, id)
 				if err := queries.SetSectionPosition(ctx, store.SetSectionPositionParams{HouseholdID: service.householdID, ID: id, DisplayPosition: int64(position)}); err != nil {
