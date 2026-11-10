@@ -42,6 +42,7 @@ paths:
                   recipes:
                     type: array
                     items: { $ref: "#/components/schemas/RecipeSummary" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/recipes/{recipeID}:
     parameters:
@@ -59,6 +60,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/RecipeDetail" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current:
@@ -70,6 +72,7 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Week" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/weeks/history:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -88,6 +91,7 @@ paths:
                   weeks:
                     type: array
                     items: { $ref: "#/components/schemas/WeekHistorySummary" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/weeks/history/{weekID}:
     parameters:
@@ -105,6 +109,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/HistoricalWeek" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/generate:
@@ -128,7 +133,9 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Week" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/recipes:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -142,6 +149,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/recipes/{occurrenceID}:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -154,6 +162,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
     put:
       operationId: swapCurrentWeekRecipe
       summary: Replace one occurrence with a specific verified recipe.
@@ -164,6 +173,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/recipes/{occurrenceID}/random-swap:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -176,6 +186,7 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/OccurrenceNotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/store-sections:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -187,6 +198,8 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/StoreSections" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
     put:
       operationId: setStoreSectionOrder
       requestBody:
@@ -205,7 +218,9 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/StoreSections" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/grocery-items:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -226,6 +241,8 @@ paths:
                   items:
                     type: array
                     items: { $ref: "#/components/schemas/GroceryItemMatch" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/groceries:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -235,6 +252,7 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "500": { $ref: "#/components/responses/InternalError" }
     post:
       operationId: addCurrentGroceryLine
       summary: Add a manual item with deterministic known-item matching.
@@ -254,6 +272,8 @@ paths:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/groceries/{lineID}:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -289,13 +309,18 @@ paths:
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
     delete:
       operationId: removeCurrentGroceryLine
       summary: Remove a line from this week's visible checklist.
       responses:
         "200": { $ref: "#/components/responses/Groceries" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/groceries/{lineID}/contributions:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -318,7 +343,10 @@ paths:
                   contributions:
                     type: array
                     items: { $ref: "#/components/schemas/GroceryContribution" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
+        "500": { $ref: "#/components/responses/InternalError" }
 components:
   parameters:
     HouseholdID:
@@ -587,7 +615,7 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/Groceries" }
     NotFound:
-      description: The requested resource was not found.
+      description: The requested resource, or the household itself, was not found.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }
