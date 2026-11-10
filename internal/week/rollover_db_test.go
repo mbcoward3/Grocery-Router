@@ -94,7 +94,7 @@ func TestFridayEveningRollover(t *testing.T) {
 	}
 	// History shows the week ending on the Friday it closed, not the day before.
 	past, err := service.PastWeeks(ctx, fridayEvening)
-	if err != nil || len(past) != 1 || past[0].ID != generated.Week.ID || past[0].EndsOn != "2026-08-28" ||
+	if err != nil || len(past) != 1 || past[0].ID != generated.Week.ID || past[0].EndsOn.String != "2026-08-28" ||
 		!past[0].ClosedAt.Time.Equal(fridayEvening) {
 		t.Fatalf("Friday 18:00 history = %#v, %v", past, err)
 	}
@@ -243,5 +243,63 @@ func TestSaveSettingsRejectsBeforeStoring(t *testing.T) {
 	var stored string
 	if err := db.QueryRow(`SELECT rollover_mode FROM households WHERE id = 'c0a7a2d8-669b-4e47-91c1-4d9a32f339d5'`).Scan(&stored); err != nil || stored != settings.Automatic {
 		t.Fatalf("rollover_mode = %q, %v", stored, err)
+	}
+}
+
+// A week that has ended keeps the dates it closed with: a later zone change, even one that would
+// put its last instant on another local date, does not re-cut History.
+func TestHistoryKeepsEndDateAfterZoneChange(t *testing.T) {
+	service, _ := testService(t)
+	ctx := context.Background()
+	chicago := "America/Chicago"
+	saveSettings(t, service, testNowUTC(), settings.Change{Timezone: &chicago})
+	generated, err := service.Generate(ctx, testNowUTC(), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Chicago's Sunday midnight is 05:00 UTC; the week's last local day is Saturday.
+	closedAt := time.Date(2026, time.August, 23, 5, 0, 0, 0, time.UTC)
+	past, err := service.PastWeeks(ctx, closedAt)
+	if err != nil || len(past) != 1 || past[0].ID != generated.Week.ID || past[0].EndsOn.String != "2026-08-22" {
+		t.Fatalf("history in Chicago = %#v, %v", past, err)
+	}
+
+	// In Tokyo the same closing instant, less a second, is Sunday afternoon.
+	tokyo := "Asia/Tokyo"
+	saveSettings(t, service, closedAt.Add(time.Hour), settings.Change{Timezone: &tokyo})
+	past, err = service.PastWeeks(ctx, closedAt.Add(time.Hour))
+	if err != nil || len(past) != 1 || past[0].EndsOn.String != "2026-08-22" {
+		t.Fatalf("history after moving to Tokyo = %#v, %v", past, err)
+	}
+	detail, err := service.PastWeek(ctx, closedAt.Add(time.Hour), generated.Week.ID)
+	if err != nil || detail.EndsOn.String != "2026-08-22" {
+		t.Fatalf("closed week detail after moving to Tokyo = ends %v, %v", detail.EndsOn, err)
+	}
+}
+
+// Saving settings after a week's close time has passed, before anyone read it, closes the week at
+// that time as any read would; it is not kept open or moved by the new settings.
+func TestSaveSettingsAfterCloseTimeClosesTheWeekFirst(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	generated, err := service.Generate(ctx, testNowUTC(), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	oldBoundary := time.Date(2026, time.August, 23, 0, 0, 0, 0, time.UTC)
+	later := oldBoundary.Add(36 * time.Hour)
+	manual := settings.Manual
+	saveSettings(t, service, later, settings.Change{RolloverMode: &manual})
+
+	autoClose, closed := weekCloseTimes(t, db, generated.Week.ID)
+	if !closed.Valid || !closed.Time.Equal(oldBoundary) || !autoClose.Time.Equal(oldBoundary) {
+		t.Fatalf("week after a late save: auto_close_at = %v, closed_at = %v; want both %s", autoClose, closed, oldBoundary)
+	}
+	if _, err := service.Current(ctx, later); !errors.Is(err, week.ErrNoCurrentWeek) {
+		t.Fatalf("Current error = %v, want ErrNoCurrentWeek", err)
+	}
+	past, err := service.PastWeeks(ctx, later)
+	if err != nil || len(past) != 1 || past[0].ID != generated.Week.ID || past[0].EndsOn.String != "2026-08-22" {
+		t.Fatalf("history = %#v, %v", past, err)
 	}
 }

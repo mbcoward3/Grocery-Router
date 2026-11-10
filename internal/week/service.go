@@ -183,32 +183,13 @@ func (service *Household) Current(ctx context.Context, now time.Time) (View, err
 	return service.loadView(ctx, queries, weekRow)
 }
 
-// PastWeekSummary is a closed week in History with its last local date.
-type PastWeekSummary struct {
-	store.ListPastWeeksRow
-	EndsOn string
-}
-
-// PastWeeks returns closed weeks, newest first.
-func (service *Household) PastWeeks(ctx context.Context, now time.Time) ([]PastWeekSummary, error) {
+// PastWeeks returns closed weeks, newest first. Each carries the ends_on stored when it closed.
+func (service *Household) PastWeeks(ctx context.Context, now time.Time) ([]store.ListPastWeeksRow, error) {
 	queries := store.New(service.db)
 	if err := service.closeExpired(ctx, queries, now); err != nil {
 		return nil, err
 	}
-	rows, err := queries.ListPastWeeks(ctx, service.householdID)
-	if err != nil {
-		return nil, err
-	}
-	location, err := service.location(ctx, queries)
-	if err != nil {
-		return nil, err
-	}
-	summaries := make([]PastWeekSummary, 0, len(rows))
-	for _, row := range rows {
-		// A closed week always has closed_at, so it always has an end date.
-		summaries = append(summaries, PastWeekSummary{ListPastWeeksRow: row, EndsOn: endsOn(row.ClosedAt, row.AutoCloseAt, location).String})
-	}
-	return summaries, nil
+	return queries.ListPastWeeks(ctx, service.householdID)
 }
 
 // HistoricalView is the final recipe pool and grocery checklist retained for an earlier week.
@@ -248,9 +229,9 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 	}
 	// A new week can collide with a week another request opened at the same moment; a household
 	// has one open week. The second attempt finds that week and regenerates its pool, as if the
-	// requests had run in turn. Weeks may share a start date, so nothing else conflicts.
+	// requests had run in turn. Weeks may share a start date; any other conflict is an error.
 	view, err := service.generate(ctx, now, count)
-	if !isUniqueViolation(err) {
+	if !isOpenWeekConflict(err) {
 		return view, err
 	}
 	return service.generate(ctx, now, count)
@@ -259,9 +240,12 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 // uniqueViolation is PostgreSQL's SQLSTATE for a unique constraint violation.
 const uniqueViolation = "23505"
 
-func isUniqueViolation(err error) bool {
+// openWeekIndex allows one open week per household (migration 00011).
+const openWeekIndex = "weeks_one_open_per_household"
+
+func isOpenWeekConflict(err error) bool {
 	var pgErr *pgconn.PgError
-	return errors.As(err, &pgErr) && pgErr.Code == uniqueViolation
+	return errors.As(err, &pgErr) && pgErr.Code == uniqueViolation && pgErr.ConstraintName == openWeekIndex
 }
 
 func (service *Household) generate(ctx context.Context, now time.Time, count int) (View, error) {
@@ -504,7 +488,7 @@ func (service *Household) loadView(ctx context.Context, queries *store.Queries, 
 	if err != nil {
 		return View{}, err
 	}
-	return View{Week: weekRow, Recipes: recipes, EndsOn: endsOn(weekRow.ClosedAt, weekRow.AutoCloseAt, location)}, nil
+	return View{Week: weekRow, Recipes: recipes, EndsOn: endsOn(weekRow.EndsOn, weekRow.AutoCloseAt, location)}, nil
 }
 
 func shuffle[T any](picker Picker, values []T) error {

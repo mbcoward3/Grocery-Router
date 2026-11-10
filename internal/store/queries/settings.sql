@@ -13,7 +13,7 @@ FROM households WHERE id = sqlc.arg(household_id);
 -- replaces even when another member saves at the same moment.
 SELECT timezone, default_recipe_count, week_start_day, rollover_minutes, rollover_mode
 FROM households WHERE id = sqlc.arg(household_id)
-FOR UPDATE;
+FOR NO KEY UPDATE;
 
 -- name: GetWeekRules :one
 -- Read when a week is opened. FOR SHARE waits for a settings change in progress, and holds off a

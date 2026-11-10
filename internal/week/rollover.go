@@ -67,18 +67,24 @@ func localDate(instant time.Time, location *time.Location) string {
 	return instant.In(location).Format(time.DateOnly)
 }
 
-// endsOn returns the last local date of a week: the date of the instant one second before it
-// closed, or before it closes itself while open. A week that rolls over at Sunday 12:00 AM ends on
-// Saturday; one that rolls over at Friday 6:00 PM ends on Friday. An open manual week has no end.
-func endsOn(closedAt, autoCloseAt sql.NullTime, location *time.Location) sql.NullString {
-	end := closedAt
-	if !end.Valid {
-		end = autoCloseAt
+// lastDay returns the last local date of a week that ends at end: the date of the instant one
+// second before it. A week that rolls over at Sunday 12:00 AM ends on Saturday; one that rolls
+// over at Friday 6:00 PM ends on Friday. Closing a week stores lastDay(closed_at) in the zone the
+// household has at that moment (weeks.ends_on); CloseExpiredWeek computes the same in SQL.
+func lastDay(end time.Time, location *time.Location) string {
+	return localDate(end.Add(-time.Second), location)
+}
+
+// endsOn returns a week's last local date: the date stored when it closed, or, while it is open,
+// the last day before it closes itself. An open manual week has no end.
+func endsOn(stored sql.NullString, autoCloseAt sql.NullTime, location *time.Location) sql.NullString {
+	if stored.Valid {
+		return stored
 	}
-	if !end.Valid {
+	if !autoCloseAt.Valid {
 		return sql.NullString{}
 	}
-	return sql.NullString{String: localDate(end.Time.Add(-time.Second), location), Valid: true}
+	return sql.NullString{String: lastDay(autoCloseAt.Time, location), Valid: true}
 }
 
 // weekRules loads the household's rollover settings and holds them until the transaction ends,

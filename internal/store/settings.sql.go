@@ -88,7 +88,7 @@ func (q *Queries) GetWeekRules(ctx context.Context, householdID string) (GetWeek
 const lockHouseholdSettings = `-- name: LockHouseholdSettings :one
 SELECT timezone, default_recipe_count, week_start_day, rollover_minutes, rollover_mode
 FROM households WHERE id = $1
-FOR UPDATE
+FOR NO KEY UPDATE
 `
 
 type LockHouseholdSettingsRow struct {

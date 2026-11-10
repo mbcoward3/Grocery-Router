@@ -15,7 +15,8 @@ type Querier interface {
 	AcquireIngestHostSlot(ctx context.Context, arg AcquireIngestHostSlotParams) (AcquireIngestHostSlotRow, error)
 	ApproveReviewFlag(ctx context.Context, id int64) (RecipeReviewFlag, error)
 	// Closes the household's open week once its automatic close time has passed, recording that
-	// time rather than when the close was noticed.
+	// time rather than when the close was noticed, and fixing its last local date in the
+	// household's zone now (week.endsOn computes the same date for an open week).
 	CloseExpiredWeek(ctx context.Context, arg CloseExpiredWeekParams) error
 	// Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
 	CountIngestNoRecipePagesBySite(ctx context.Context) ([]CountIngestNoRecipePagesBySiteRow, error)

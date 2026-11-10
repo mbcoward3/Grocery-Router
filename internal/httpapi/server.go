@@ -314,7 +314,7 @@ func (server *Server) weekHistory(response http.ResponseWriter, request *http.Re
 	result := make([]weekHistorySummary, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, weekHistorySummary{
-			ID: row.ID, StartsOn: row.StartsOn, EndsOn: row.EndsOn, RecipeCount: row.RecipeCount,
+			ID: row.ID, StartsOn: row.StartsOn, EndsOn: row.EndsOn.String, RecipeCount: row.RecipeCount,
 			GroceryCount: row.GroceryCount, CompletedCount: row.CompletedCount,
 		})
 	}

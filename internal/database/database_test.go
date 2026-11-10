@@ -98,6 +98,8 @@ func TestRecipeMustPassReviewBeforeVerification(t *testing.T) {
 func TestWeekDateAndVerifiedRecipeConstraints(t *testing.T) {
 	db := migratedDB(t)
 
+	// Weeks no longer have to start on a Sunday (migration 00012), so this checks the
+	// YYYY-MM-DD format CHECK on starts_on instead of the old weekday rule.
 	_, err := db.Exec("INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-8-16', now())")
 	assertErrorContains(t, err, "violates check constraint")
 	_, err = db.Exec("INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-99-99', now())")

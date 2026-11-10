@@ -95,27 +95,44 @@ func TestOpening(t *testing.T) {
 	}
 }
 
+func TestLastDay(t *testing.T) {
+	chicago := loadZone(t, "America/Chicago")
+	cases := []struct {
+		name     string
+		end      time.Time
+		location *time.Location
+		want     string
+	}{
+		{"Sunday 00:00 rollover ends Saturday", time.Date(2026, time.August, 23, 0, 0, 0, 0, chicago), chicago, "2026-08-22"},
+		{"Friday 18:00 rollover ends Friday", time.Date(2026, time.August, 21, 18, 0, 0, 0, chicago), chicago, "2026-08-21"},
+		{"closed by hand mid-afternoon ends that day", time.Date(2026, time.August, 22, 15, 4, 0, 0, chicago), chicago, "2026-08-22"},
+		{"the date is household-local", time.Date(2026, time.August, 23, 0, 0, 0, 0, chicago), time.UTC, "2026-08-23"},
+	}
+	for _, testCase := range cases {
+		if got := lastDay(testCase.end, testCase.location); got != testCase.want {
+			t.Errorf("%s: lastDay = %s, want %s", testCase.name, got, testCase.want)
+		}
+	}
+}
+
 func TestEndsOn(t *testing.T) {
 	chicago := loadZone(t, "America/Chicago")
 	at := func(instant time.Time) sql.NullTime { return sql.NullTime{Time: instant, Valid: true} }
+	date := func(value string) sql.NullString { return sql.NullString{String: value, Valid: true} }
 	sundayMidnight := time.Date(2026, time.August, 23, 0, 0, 0, 0, chicago)
-	fridayEvening := time.Date(2026, time.August, 21, 18, 0, 0, 0, chicago)
 	cases := []struct {
 		name        string
-		closedAt    sql.NullTime
+		stored      sql.NullString
 		autoCloseAt sql.NullTime
-		location    *time.Location
 		want        sql.NullString
 	}{
-		{"Sunday 00:00 rollover ends Saturday", sql.NullTime{}, at(sundayMidnight), chicago, sql.NullString{String: "2026-08-22", Valid: true}},
-		{"Friday 18:00 rollover ends Friday", sql.NullTime{}, at(fridayEvening), chicago, sql.NullString{String: "2026-08-21", Valid: true}},
-		{"closed by time at Friday 18:00 ends Friday", at(fridayEvening), at(fridayEvening), chicago, sql.NullString{String: "2026-08-21", Valid: true}},
-		{"closed time wins over the automatic one", at(fridayEvening), at(sundayMidnight), chicago, sql.NullString{String: "2026-08-21", Valid: true}},
-		{"the date is household-local", sql.NullTime{}, at(sundayMidnight), time.UTC, sql.NullString{String: "2026-08-23", Valid: true}},
-		{"open manual week has no end", sql.NullTime{}, sql.NullTime{}, chicago, sql.NullString{}},
+		{"an open automatic week ends the day before its rollover", sql.NullString{}, at(sundayMidnight), date("2026-08-22")},
+		// A closed week keeps the date fixed when it closed, whatever the zone is now.
+		{"a closed week keeps its stored date", date("2026-08-21"), at(sundayMidnight), date("2026-08-21")},
+		{"an open manual week has no end", sql.NullString{}, sql.NullTime{}, sql.NullString{}},
 	}
 	for _, testCase := range cases {
-		if got := endsOn(testCase.closedAt, testCase.autoCloseAt, testCase.location); got != testCase.want {
+		if got := endsOn(testCase.stored, testCase.autoCloseAt, chicago); got != testCase.want {
 			t.Errorf("%s: endsOn = %v, want %v", testCase.name, got, testCase.want)
 		}
 	}
