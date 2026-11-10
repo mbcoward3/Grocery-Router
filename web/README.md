@@ -22,11 +22,26 @@ From the repository root:
 
 ```sh
 task web-install
-task serve       # terminal one; expects an ingested database
+task serve       # terminal one; expects an ingested database and the auth environment below
 task web-dev     # terminal two
 ```
 
 Vite serves `http://localhost:5173` and proxies `/api` to `http://127.0.0.1:8080`.
+
+`serve` refuses to start unless the authentication environment described in
+[`DEPLOYMENT.md`](../DEPLOYMENT.md) is set; there is no authentication-disabled mode. `task dev`
+does not set these either, so it needs the same variables. For local development, export:
+
+- `GROCERY_ROUTER_AUTH_ORIGIN=http://localhost:5173` (plain HTTP is accepted only for
+  `localhost` or `127.0.0.1`)
+- `GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_ID` and `GROCERY_ROUTER_AUTH_GOOGLE_CLIENT_SECRET` from a
+  Google OAuth client that registers `http://localhost:5173/api/v2/auth/google/callback`
+- `GROCERY_ROUTER_AUTH_SESSION_SECRET`: base64url, at least 32 decoded bytes
+- `GROCERY_ROUTER_AUTH_BOOTSTRAP_USERS`: the Google email addresses allowed to sign in
+- `GROCERY_ROUTER_AUTH_BOOTSTRAP_HOUSEHOLD=Coward`
+
+`GROCERY_ROUTER_AUTH_OIDC_ISSUER` defaults to `https://accounts.google.com`. `serve` contacts the
+issuer at startup, so it also needs network access.
 
 Regenerate API declarations after changing `api/openapi.yaml`:
 

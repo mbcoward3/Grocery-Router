@@ -4,6 +4,8 @@ Status: **approved direction, ready for implementation planning**
 Scope settled by product interview.  
 Canonical for v1: **this document supersedes the existing `.scratch/spec/`, architecture documents, prototype behavior, and prior implementation decisions.**
 
+Sections 1.1, 1.2, 3.2, and 12.4 (no accounts, local-only operation, no Docker or deployment, and trusting the local network) were superseded by [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) and D036 in [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md).
+
 ---
 
 ## 1. Product statement
@@ -933,7 +935,7 @@ Grocery Router v1 is done when:
 8. every selectable recipe satisfies the verification contract;
 9. the complete-corpus audit passes and a fresh database can ingest every committed approved recipe file;
 10. reusable ingestion rules, fixtures, validation queries, and future-agent context remain after true-up;
-11. the four required screens work well on desktop and iPhone;
+11. the five required screens work well on desktop and iPhone;
 12. random generation and all specified pool edits work without AI;
 13. grocery generation includes every recipe requirement with exact, traceable aggregation and no inventory assumptions;
 14. weekly list editing and completion work without modifying recipe truth;

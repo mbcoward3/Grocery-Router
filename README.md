@@ -1,20 +1,25 @@
 # Grocery Router
 
-Grocery Router v1 will turn this household's verified recipe corpus into an editable weekly
+Grocery Router v1 turns this household's verified recipe corpus into an editable weekly
 recipe pool and a deterministic grocery checklist.
 
 ## Status
 
-**The previous prototype has been removed from the active tree.** The Go/PostgreSQL corpus
-foundation, current-week HTTP API, and initial React application shell are now in place. The
-PDF-controlled ledger contains 25 recipes. Completed household re-review includes 24 in the
+**The previous prototype has been removed from the active tree.** The Week, Groceries, Recipes,
+History, and Recipe detail screens are implemented on the Go/PostgreSQL foundation. Users sign in
+with Google and share one household
+([`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md)), and the application is deployed as a
+container ([`DEPLOYMENT.md`](DEPLOYMENT.md)). The PDF-controlled ledger contains 25 recipes. Completed household re-review includes 24 in the
 strict Markdown bootstrap and explicitly excludes Chicken and Dumplings.
 
 ## Start here
 
 1. [`V1_SPEC.md`](V1_SPEC.md) — product, behavior, data model, architecture, and acceptance
-2. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
-3. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
+2. [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) — approved post-v1 Google sign-in and
+   shared household
+3. [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md) — approved shared recipe catalog pipeline
+4. [`UP_NEXT.md`](UP_NEXT.md) — explicitly deferred features
+5. [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — rationale and revisit conditions
 
 The raw interview is archived at
 [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md). It is
@@ -38,7 +43,7 @@ TypeScript, Vite, TanStack Router, and TanStack Query.
 
 ```sh
 task dev                  # bootstrap and run the API and web application
-task test                 # schema, ingestion, CLI, and inventory invariants
+task test                 # run all Go tests
 task lint                 # run the Go and SQL lint policies
 task sql-lint             # lint migrations and sqlc query sources with SQLFluff
 task ci                   # all checks enforced by GitHub Actions
@@ -65,8 +70,7 @@ GitHub Actions runs `task ci` for pull requests and pushes to `main`. Local Go i
 use PostgreSQL; run `task db-up` first or set `GROCERY_ROUTER_TEST_DATABASE_URL`. Run `task dev` from a fresh
 clone to install missing frontend dependencies, ingest the corpus into the local database, and
 start both servers. Open `http://localhost:5173`; another device on the same network can use the
-Network URL printed by Vite. The Week screen is the first live vertical slice. Grocery and
-recipe-detail endpoints and screens are next.
+Network URL printed by Vite.
 
 
 Shopping browser acceptance tests run against a local Vite server with deterministic API fixtures
