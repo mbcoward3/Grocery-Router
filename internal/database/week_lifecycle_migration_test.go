@@ -108,4 +108,15 @@ func TestOpenAndClosedWeeksMigrationBackfillsInHouseholdZone(t *testing.T) {
 	_, err = db.Exec(`INSERT INTO weeks (household_id, starts_on, opened_at, closed_at)
 		VALUES ($1, '2020-01-05', now(), now() - interval '1 day')`, tenant.CowardHouseholdID)
 	assertErrorContains(t, err, "weeks_closed_after_opened")
+
+	// With backfilled and closed weeks present, the migration rolls back and reapplies.
+	if _, err := provider.DownTo(ctx, 10); err != nil {
+		t.Fatalf("roll back open and closed weeks with data: %v", err)
+	}
+	if err := database.Migrate(ctx, db); err != nil {
+		t.Fatalf("reapply open and closed weeks with data: %v", err)
+	}
+	if err := db.QueryRow("SELECT count(*) FROM weeks WHERE household_id = $1 AND closed_at IS NULL", tenant.CowardHouseholdID).Scan(&open); err != nil || open != 1 {
+		t.Fatalf("open weeks after reapplying = %d, %v; want 1", open, err)
+	}
 }

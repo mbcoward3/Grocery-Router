@@ -543,8 +543,9 @@ func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
 	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
 	db := testDB(t)
 	service := week.NewService(db, zeroPicker{})
-	// A week's closing time is fixed in the household's zone when it is generated, so each zone
-	// below plans the week afresh.
+	// This test used to switch the zone under an open week and expect it to become History. That
+	// contradicts #45 design choice 4: a week's closing time is fixed in the household's zone when
+	// it is generated, and a zone change never closes it. So each zone below plans the week afresh.
 	generate := func() {
 		t.Helper()
 		if _, err := db.Exec("DELETE FROM weeks WHERE household_id = $1", household); err != nil {

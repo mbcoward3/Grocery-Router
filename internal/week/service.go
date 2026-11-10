@@ -10,6 +10,8 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
+
 	"github.com/mbcoward3/grocery-router/internal/settings"
 	"github.com/mbcoward3/grocery-router/internal/store"
 )
@@ -223,6 +225,37 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 	if count <= 0 {
 		return View{}, invalid("recipe count must be positive")
 	}
+	// A new week can collide with a week another request opened at the same moment, or with a
+	// closed week that has the same start date. A second attempt tells them apart: it finds the
+	// other request's open week and regenerates its pool, as if the requests had run in turn.
+	view, err := service.generate(ctx, now, count)
+	var conflict weekConflict
+	if !errors.As(err, &conflict) {
+		return view, err
+	}
+	view, err = service.generate(ctx, now, count)
+	if errors.As(err, &conflict) && conflict.constraint == "weeks_household_start_key" {
+		return View{}, invalid("This week already ended and is in History. You can plan the next week from %s.",
+			conflict.nextStart.Format("Monday, January 2"))
+	}
+	return view, err
+}
+
+// uniqueViolation is PostgreSQL's SQLSTATE for a unique constraint violation.
+const uniqueViolation = "23505"
+
+// weekConflict is a new week rejected by a uniqueness constraint.
+type weekConflict struct {
+	constraint string
+	// nextStart is when the household's next week begins, in its own zone.
+	nextStart time.Time
+	err       error
+}
+
+func (conflict weekConflict) Error() string { return conflict.err.Error() }
+func (conflict weekConflict) Unwrap() error { return conflict.err }
+
+func (service *Household) generate(ctx context.Context, now time.Time, count int) (View, error) {
 	var result View
 	err := service.transact(ctx, func(queries *store.Queries) error {
 		verified, err := queries.ListVerifiedRecipes(ctx, service.householdID)
@@ -437,12 +470,17 @@ func (service *Household) getOrOpenWeek(ctx context.Context, queries *store.Quer
 	if err != nil {
 		return store.Week{}, err
 	}
+	autoClose := nextBoundary(now, time.Sunday, 0, location)
 	weekRow, err = queries.CreateWeek(ctx, store.CreateWeekParams{
 		HouseholdID: householdID,
 		StartsOn:    SundayIn(now, location),
 		OpenedAt:    now,
-		AutoCloseAt: sql.NullTime{Time: nextBoundary(now, time.Sunday, 0, location), Valid: true},
+		AutoCloseAt: sql.NullTime{Time: autoClose, Valid: true},
 	})
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
+		return store.Week{}, weekConflict{constraint: pgErr.ConstraintName, nextStart: autoClose.In(location), err: err}
+	}
 	if err != nil {
 		return store.Week{}, err
 	}
