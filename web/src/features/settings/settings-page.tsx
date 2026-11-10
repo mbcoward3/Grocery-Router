@@ -219,9 +219,15 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
           />
         </div>
       </div>
-      <div className="settings-field" role="radiogroup" aria-labelledby="settings-mode-label" aria-describedby={invalid === 'mode' ? 'settings-error' : undefined}>
+      <div
+        className="settings-field"
+        role="radiogroup"
+        aria-labelledby="settings-mode-label"
+        aria-describedby={describedBy('mode', 'settings-mode-help')}
+        aria-invalid={invalid === 'mode' || undefined}
+      >
         <span className="settings-label" id="settings-mode-label">Rollover</span>
-        <p className="settings-help">How the week ends.</p>
+        <p className="settings-help" id="settings-mode-help">How the week ends.</p>
         <div className="settings-control settings-choices">
           {([
             ['automatic', 'Automatic', 'The week closes itself at that day and time.'],

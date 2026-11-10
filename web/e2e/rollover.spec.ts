@@ -3,8 +3,11 @@ import { expect, test, type Page } from '@playwright/test'
 // Dates on the page are formatted for the viewer's locale.
 test.use({ locale: 'en-US' })
 
-// A household whose week of Nov 1 – Nov 7 has rolled over: no week is open and History holds it.
-async function setup(page: Page) {
+type CurrentWeek = { id: number; startsOn: string; endsOn: string | null; recipes: unknown[] }
+
+// By default, a household whose week of Nov 1 – Nov 7 has rolled over: no week is open and
+// History holds it.
+async function setup(page: Page, options: { pastWeeks?: boolean; current?: CurrentWeek } = {}) {
   const settings = { timezone: 'America/Chicago', defaultRecipeCount: 4, weekStartDay: 0, rolloverTime: '00:00', rolloverMode: 'automatic' }
   const generated: unknown[] = []
   const duration = { minimumMinutes: null, maximumMinutes: null }
@@ -13,7 +16,8 @@ async function setup(page: Page) {
     imageUrl: null, yield: null, handsOn: duration, unattended: duration,
   }))
   const closedWeek = { id: 7, startsOn: '2026-11-01', endsOn: '2026-11-07', recipeCount: 3, groceryCount: 12, completedCount: 10 }
-  let current: { id: number; startsOn: string; endsOn: string | null; recipes: unknown[] } | null = null
+  let current: CurrentWeek | null = options.current ?? null
+  const pastWeeks = options.pastWeeks ?? true
   const noCurrentWeek = { error: { code: 'no_current_week', message: 'The current week has not been generated.' } }
   await page.route('**/api/v2/**', async route => {
     const request = route.request(); const path = new URL(request.url()).pathname
@@ -33,7 +37,7 @@ async function setup(page: Page) {
     }
     if (path.endsWith('/week/current')) return current ? route.fulfill({ json: current }) : route.fulfill({ status: 404, json: noCurrentWeek })
     if (path.endsWith('/recipes')) return route.fulfill({ json: { recipes } })
-    if (path.endsWith('/weeks/history')) return route.fulfill({ json: { weeks: [closedWeek] } })
+    if (path.endsWith('/weeks/history')) return route.fulfill({ json: { weeks: pastWeeks ? [closedWeek] : [] } })
     if (path.endsWith(`/weeks/history/${closedWeek.id}`)) {
       return route.fulfill({ json: {
         week: { id: closedWeek.id, startsOn: closedWeek.startsOn, endsOn: closedWeek.endsOn, recipes: [] },
@@ -88,4 +92,23 @@ test('History shows each week from its start to its reported end', async ({ page
   await setup(page)
   await page.goto('/history')
   await expect(page.locator('.history-row').first()).toContainText('Nov 1 – Nov 7, 2026')
+})
+
+test('a household with no weeks at all keeps the first-time start', async ({ page }) => {
+  await setup(page, { pastWeeks: false })
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Build this week’s recipe pool' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Plan next week' })).toHaveCount(0)
+  await expect(page.locator('.count-field select')).toHaveValue('4')
+
+  await page.goto('/groceries')
+  await expect(page.getByRole('heading', { name: 'Generate a week first' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Plan next week' })).toHaveCount(0)
+})
+
+test('an open manual week shows where it began instead of an end date', async ({ page }) => {
+  await setup(page, { current: { id: 9, startsOn: '2026-11-11', endsOn: null, recipes: [] } })
+  await page.goto('/')
+  await expect(page.getByText('Planned · 0 meals')).toBeVisible()
+  await expect(page.locator('.page-heading p')).toHaveText('Since Nov 11, 2026')
 })
