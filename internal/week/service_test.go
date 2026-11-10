@@ -566,37 +566,3 @@ func TestWeekClosesAtNextLocalSundayMidnight(t *testing.T) {
 		t.Fatalf("history after next week = %#v, %v", past, err)
 	}
 }
-
-func TestGenerateAfterZoneChangeIntoAClosedWeekIsRejected(t *testing.T) {
-	service, db := testService(t)
-	ctx := context.Background()
-	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
-	closedWeek, err := service.Generate(ctx, time.Date(2026, time.August, 12, 12, 0, 0, 0, time.UTC), 2)
-	if err != nil || closedWeek.Week.StartsOn != "2026-08-09" {
-		t.Fatalf("UTC week = %#v, %v", closedWeek.Week, err)
-	}
-	if _, err := service.Current(ctx, time.Date(2026, time.August, 16, 0, 0, 0, 0, time.UTC)); !errors.Is(err, week.ErrNoCurrentWeek) {
-		t.Fatalf("Sunday 00:00 UTC Current error = %v, want ErrNoCurrentWeek", err)
-	}
-
-	// Saturday evening in Chicago is still the week of 2026-08-09, which has already closed.
-	if _, err := db.Exec(`UPDATE households SET timezone = 'America/Chicago' WHERE id = $1`, household); err != nil {
-		t.Fatal(err)
-	}
-	_, err = service.Generate(ctx, time.Date(2026, time.August, 16, 0, 30, 0, 0, time.UTC), 2)
-	var validation week.ValidationError
-	if !errors.As(err, &validation) ||
-		validation.Message != "This week already ended and is in History. You can plan the next week from Sunday, August 16." {
-		t.Fatalf("Generate into a closed week error = %v, want a validation error", err)
-	}
-	var weeks int
-	if err := db.QueryRow(`SELECT count(*) FROM weeks WHERE household_id = $1`, household).Scan(&weeks); err != nil || weeks != 1 {
-		t.Fatalf("weeks = %d, %v; want only the closed week", weeks, err)
-	}
-
-	// From Chicago's Sunday midnight the next week can be planned.
-	next, err := service.Generate(ctx, time.Date(2026, time.August, 16, 5, 0, 0, 0, time.UTC), 2)
-	if err != nil || next.Week.StartsOn != "2026-08-16" {
-		t.Fatalf("next week = %#v, %v", next.Week, err)
-	}
-}

@@ -233,7 +233,11 @@ paths:
         "500": { $ref: "#/components/responses/InternalError" }
     patch:
       operationId: updateHouseholdSettings
-      summary: Change either or both household preferences; any household member may.
+      summary: Change one or more household preferences; any household member may.
+      description: >-
+        Changing the time zone, rollover day, time, or mode moves the open week's automatic close
+        time to the next rollover under the new settings (none in manual mode). Saving never
+        closes a week.
       requestBody:
         required: true
         content:
@@ -245,6 +249,9 @@ paths:
               properties:
                 timezone: { type: string, description: "IANA time zone name, for example America/Chicago." }
                 defaultRecipeCount: { type: integer, minimum: 1, maximum: 21 }
+                weekStartDay: { $ref: "#/components/schemas/WeekStartDay" }
+                rolloverTime: { $ref: "#/components/schemas/RolloverTime" }
+                rolloverMode: { $ref: "#/components/schemas/RolloverMode" }
       responses:
         "200": { $ref: "#/components/responses/HouseholdSettings" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
@@ -571,19 +578,26 @@ components:
         recipe: { $ref: "#/components/schemas/RecipeSummary" }
     Week:
       type: object
-      required: [id, startsOn, recipes]
+      required: [id, startsOn, endsOn, recipes]
       properties:
         id: { type: integer }
         startsOn: { type: string, format: date }
+        endsOn:
+          type: [string, "null"]
+          format: date
+          description: >-
+            The week's last household-local date: the date one second before it closed, or
+            before it closes itself while open. Null for an open week in manual mode.
         recipes:
           type: array
           items: { $ref: "#/components/schemas/RecipeOccurrence" }
     WeekHistorySummary:
       type: object
-      required: [id, startsOn, recipeCount, groceryCount, completedCount]
+      required: [id, startsOn, endsOn, recipeCount, groceryCount, completedCount]
       properties:
         id: { type: integer }
         startsOn: { type: string, format: date }
+        endsOn: { type: string, format: date, description: "The household-local date one second before the week closed." }
         recipeCount: { type: integer, minimum: 0 }
         groceryCount: { type: integer, minimum: 0 }
         completedCount: { type: integer, minimum: 0 }
@@ -595,10 +609,28 @@ components:
         groceries: { $ref: "#/components/schemas/Groceries" }
     HouseholdSettings:
       type: object
-      required: [timezone, defaultRecipeCount]
+      required: [timezone, defaultRecipeCount, weekStartDay, rolloverTime, rolloverMode]
       properties:
         timezone: { type: string, description: "IANA time zone that decides when the household's week begins." }
         defaultRecipeCount: { type: integer, minimum: 1, maximum: 21, description: "Recipes offered when generating a week." }
+        weekStartDay: { $ref: "#/components/schemas/WeekStartDay" }
+        rolloverTime: { $ref: "#/components/schemas/RolloverTime" }
+        rolloverMode: { $ref: "#/components/schemas/RolloverMode" }
+    WeekStartDay:
+      type: integer
+      minimum: 0
+      maximum: 6
+      description: "The local day the week rolls over on: 0 is Sunday, 6 is Saturday."
+    RolloverTime:
+      type: string
+      pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+      description: "The local time of day the week rolls over, HH:MM on a 24-hour clock."
+    RolloverMode:
+      type: string
+      enum: [automatic, manual]
+      description: >-
+        automatic: the week closes itself at the rollover day and time. manual: the week stays
+        open until someone starts the next one.
     APIError:
       type: object
       required: [error]

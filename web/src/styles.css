@@ -261,6 +261,8 @@ button:disabled, button[aria-disabled="true"] { cursor: not-allowed; opacity: 0.
 }
 .empty-week h2 { margin: 0 0 6px; font-size: 17px; font-weight: 610; }
 .empty-week p { max-width: 380px; margin: 0 0 22px; color: var(--muted); }
+.empty-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.plan-next-week p a { color: var(--accent-text); }
 .count-field { margin-bottom: 14px; display: flex; align-items: center; gap: 10px; color: #b9bdc4; font-size: 12px; }
 select {
   min-height: 34px;
@@ -403,6 +405,12 @@ select {
 .settings-control { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
 .settings-control select { min-width: 0; flex: 1 1 220px; }
 .settings-control input { width: 96px; min-height: 34px; padding: 0 10px; color: var(--text); background: #111316; border: 1px solid #343840; border-radius: 6px; }
+.settings-control input.settings-time { width: 128px; }
+.settings-label { color: var(--text); font-weight: 590; }
+.settings-choices { display: grid; gap: 10px; }
+.settings-choice label { display: inline-flex; align-items: center; gap: 8px; color: var(--text); }
+.settings-control .settings-choice input { width: auto; min-height: 0; margin: 0; accent-color: var(--accent); }
+.settings-choice .settings-help { margin: 2px 0 0 24px; }
 .settings-panel .inline-error { margin: 14px 18px 0; }
 .settings-footer { padding: 12px 18px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; background: #0f1114; }
 .settings-saved { color: var(--accent-text); font-size: 12px; }

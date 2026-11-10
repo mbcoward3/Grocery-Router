@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from '@tanstack/react-router'
-import { getHistoricalWeek, listWeekHistory, type GroceryLine } from '../../api/client'
+import { getHistoricalWeek, type GroceryLine } from '../../api/client'
 import { ArrowIcon, CheckIcon } from '../../ui/icons'
-
-const historyKey = ['weeks', 'history'] as const
+import { formatShortDate, formatWeekRange } from '../week/dates'
+import { historyQueryOptions } from './queries'
 
 export function HistoryPage() {
-  const query = useQuery({ queryKey: historyKey, queryFn: listWeekHistory })
+  const query = useQuery(historyQueryOptions)
 
   if (query.isLoading) return <HistorySkeleton />
   if (query.error) return <ErrorPanel message={query.error.message} onRetry={() => void query.refetch()} />
@@ -35,7 +35,7 @@ export function HistoryPage() {
           {weeks.map((week) => (
             <Link className="history-row" key={week.id} to="/history/$weekId" params={{ weekId: String(week.id) }}>
               <div className="history-date">
-                <strong>{formatWeekRange(week.startsOn)}</strong>
+                <strong>{formatWeekRange(week.startsOn, week.endsOn)}</strong>
                 <span>Week of {formatShortDate(week.startsOn)}</span>
               </div>
               <div className="history-stat"><strong>{week.recipeCount}</strong><span>meals</span></div>
@@ -76,7 +76,7 @@ export function HistoricalWeekPage() {
       <header className="history-detail-heading">
         <div>
           <div className="eyebrow">Past week · Read only</div>
-          <h1 id="historical-week-heading">{formatWeekRange(week.startsOn)}</h1>
+          <h1 id="historical-week-heading">{formatWeekRange(week.startsOn, week.endsOn)}</h1>
           <p>{week.recipes.length} {week.recipes.length === 1 ? 'meal' : 'meals'} · {completed} of {activeLines.length} groceries checked</p>
         </div>
       </header>
@@ -133,17 +133,4 @@ function HistorySkeleton() {
 
 function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
   return <div className="error-panel" role="alert"><div><strong>Couldn’t load history.</strong><p>{message}</p></div><button className="button" onClick={onRetry}>Try again</button></div>
-}
-
-function formatShortDate(value: string) {
-  return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`))
-}
-
-function formatWeekRange(value: string) {
-  const start = new Date(`${value}T00:00:00Z`)
-  const end = new Date(start)
-  end.setUTCDate(end.getUTCDate() + 6)
-  const startText = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' }).format(start)
-  const endText = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }).format(end)
-  return `${startText} – ${endText}`
 }

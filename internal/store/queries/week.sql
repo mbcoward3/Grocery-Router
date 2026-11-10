@@ -5,10 +5,22 @@ RETURNING *;
 
 -- name: CloseExpiredWeek :exec
 -- Closes the household's open week once its automatic close time has passed, recording that
--- time rather than when the close was noticed.
-UPDATE weeks SET closed_at = auto_close_at
-WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL
-    AND auto_close_at <= CAST(sqlc.arg(now) AS TIMESTAMPTZ);
+-- time rather than when the close was noticed, and fixing its last local date in the
+-- household's zone now (week.endsOn computes the same date for an open week).
+UPDATE weeks AS w SET
+    closed_at = w.auto_close_at,
+    ends_on = to_char((w.auto_close_at - INTERVAL '1 second') AT TIME ZONE h.timezone, 'YYYY-MM-DD')
+FROM households AS h
+WHERE
+    h.id = w.household_id
+    AND w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
+    AND w.auto_close_at <= CAST(sqlc.arg(now) AS TIMESTAMPTZ);
+
+-- name: SetOpenWeekAutoClose :exec
+-- Moves the open week's automatic close time after a settings change; NULL leaves it open until
+-- closed by hand. It never closes a week.
+UPDATE weeks SET auto_close_at = sqlc.narg(auto_close_at)
+WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
 
 -- name: GetOpenWeek :one
 SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;

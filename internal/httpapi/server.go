@@ -102,6 +102,7 @@ type durationRange struct {
 type weekResponse struct {
 	ID       int64              `json:"id"`
 	StartsOn string             `json:"startsOn"`
+	EndsOn   *string            `json:"endsOn"`
 	Recipes  []recipeOccurrence `json:"recipes"`
 }
 
@@ -179,6 +180,7 @@ type groceryResponse struct {
 type weekHistorySummary struct {
 	ID             int64  `json:"id"`
 	StartsOn       string `json:"startsOn"`
+	EndsOn         string `json:"endsOn"`
 	RecipeCount    int64  `json:"recipeCount"`
 	GroceryCount   int64  `json:"groceryCount"`
 	CompletedCount int64  `json:"completedCount"`
@@ -312,7 +314,7 @@ func (server *Server) weekHistory(response http.ResponseWriter, request *http.Re
 	result := make([]weekHistorySummary, 0, len(rows))
 	for _, row := range rows {
 		result = append(result, weekHistorySummary{
-			ID: row.ID, StartsOn: row.StartsOn, RecipeCount: row.RecipeCount,
+			ID: row.ID, StartsOn: row.StartsOn, EndsOn: row.EndsOn.String, RecipeCount: row.RecipeCount,
 			GroceryCount: row.GroceryCount, CompletedCount: row.CompletedCount,
 		})
 	}
@@ -550,7 +552,10 @@ func (server *Server) writeWeekResult(response http.ResponseWriter, request *htt
 }
 
 func responseFromView(view week.View) weekResponse {
-	result := weekResponse{ID: view.Week.ID, StartsOn: view.Week.StartsOn, Recipes: make([]recipeOccurrence, 0, len(view.Recipes))}
+	result := weekResponse{
+		ID: view.Week.ID, StartsOn: view.Week.StartsOn, EndsOn: nullableString(view.EndsOn),
+		Recipes: make([]recipeOccurrence, 0, len(view.Recipes)),
+	}
 	for _, occurrence := range view.Recipes {
 		result.Recipes = append(result.Recipes, recipeOccurrence{
 			ID:       occurrence.ID,

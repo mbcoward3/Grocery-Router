@@ -12,6 +12,7 @@ import {
   type GroceryLine,
   type StoreSection,
 } from '../../api/client'
+import { historyQueryOptions } from '../history/queries'
 import { QuickAdd, SectionPicker, SectionOrderEditor } from './shopping-controls'
 import { CheckIcon, ChevronIcon, CloseIcon, MoreIcon, SortIcon, TrashIcon } from '../../ui/icons'
 
@@ -34,6 +35,9 @@ type LineChange =
 export function GroceriesPage() {
   const query = useQuery({ queryKey: groceriesKey, queryFn: getGroceries })
   const sectionQuery = useQuery({ queryKey: ['store-sections'], queryFn: getStoreSections })
+  // With no open week, a household that has finished a week is pointed at that week's list and
+  // at planning the next one. It is only needed then, and never blocks the page.
+  const historyQuery = useQuery({ ...historyQueryOptions, enabled: query.isSuccess && query.data === null })
   const [detailId, setDetailId] = useState<number | null>(null)
   const [placingId, setPlacingId] = useState<number | null>(null)
   const quick = useLineChange()
@@ -53,8 +57,25 @@ export function GroceriesPage() {
     return () => clearTimeout(timer)
   }, [removed])
 
-  if (query.isLoading) return <GroceriesSkeleton />
+  if (query.isLoading || (query.data === null && historyQuery.isLoading)) return <GroceriesSkeleton />
   if (query.error) return <ErrorPanel message={query.error.message} onRetry={() => void query.refetch()} />
+  const lastWeek = query.data ? undefined : historyQuery.data?.weeks?.[0]
+  if (lastWeek) {
+    return (
+      <section>
+        <PageHeading />
+        <div className="empty-week">
+          <div className="empty-mark" aria-hidden="true">✦</div>
+          <h2>Last week’s list is in History</h2>
+          <p>A new grocery checklist starts when you plan next week.</p>
+          <div className="empty-actions">
+            <Link className="button" to="/history/$weekId" params={{ weekId: String(lastWeek.id) }}>See last week’s list</Link>
+            <Link className="button primary" to="/">Plan next week</Link>
+          </div>
+        </div>
+      </section>
+    )
+  }
   if (!query.data) {
     return (
       <section>
