@@ -388,11 +388,14 @@ type UserIdentity struct {
 }
 
 type Week struct {
-	ID          int64  `db:"id" json:"id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-	CreatedAt   string `db:"created_at" json:"created_at"`
-	UpdatedAt   string `db:"updated_at" json:"updated_at"`
-	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64        `db:"id" json:"id"`
+	StartsOn    string       `db:"starts_on" json:"starts_on"`
+	CreatedAt   string       `db:"created_at" json:"created_at"`
+	UpdatedAt   string       `db:"updated_at" json:"updated_at"`
+	HouseholdID string       `db:"household_id" json:"household_id"`
+	OpenedAt    time.Time    `db:"opened_at" json:"opened_at"`
+	AutoCloseAt sql.NullTime `db:"auto_close_at" json:"auto_close_at"`
+	ClosedAt    sql.NullTime `db:"closed_at" json:"closed_at"`
 }
 
 type WeekRecipe struct {

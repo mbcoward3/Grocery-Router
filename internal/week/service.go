@@ -10,6 +10,8 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
+
 	"github.com/mbcoward3/grocery-router/internal/settings"
 	"github.com/mbcoward3/grocery-router/internal/store"
 )
@@ -103,48 +105,89 @@ func SundayIn(now time.Time, location *time.Location) string {
 	return CurrentSunday(now.In(location))
 }
 
-// currentSunday loads the household's time zone once and returns its current week's Sunday.
-func (service *Household) currentSunday(ctx context.Context, queries *store.Queries, now time.Time) (string, error) {
+// nextBoundary returns the first instant strictly after after at which location's clock reads
+// startDay at atMinutes past midnight. Days are counted on the calendar, so a daylight-saving
+// change during the week still lands on local wall-clock time.
+func nextBoundary(after time.Time, startDay time.Weekday, atMinutes int, location *time.Location) time.Time {
+	local := after.In(location)
+	year, month, day := local.Date()
+	day += (int(startDay) - int(local.Weekday()) + 7) % 7
+	for {
+		boundary := wallClock(year, month, day, atMinutes, location)
+		if boundary.After(after) {
+			return boundary
+		}
+		day += 7
+	}
+}
+
+// wallClock returns the instant at which location's clock reads minutes past midnight on the
+// given date. For a time skipped by a daylight-saving gap, time.Date returns an instant before
+// the gap, possibly on the previous day; this moves it to the matching instant after the gap,
+// as PostgreSQL does, so a boundary never falls before its own day has begun.
+func wallClock(year int, month time.Month, day, minutes int, location *time.Location) time.Time {
+	instant := time.Date(year, month, day, 0, minutes, 0, 0, location)
+	want := time.Date(year, month, day, 0, minutes, 0, 0, time.UTC)
+	gotYear, gotMonth, gotDay := instant.Date()
+	hour, minute, second := instant.Clock()
+	if got := time.Date(gotYear, gotMonth, gotDay, hour, minute, second, 0, time.UTC); got.Before(want) {
+		instant = instant.Add(want.Sub(got))
+	}
+	return instant
+}
+
+// location loads the household's time zone.
+func (service *Household) location(ctx context.Context, queries *store.Queries) (*time.Location, error) {
 	zone, err := queries.GetHouseholdTimezone(ctx, service.householdID)
 	if errors.Is(err, sql.ErrNoRows) {
-		// A household without a row has no weeks. UTC, the zone used before households had one,
-		// keeps every caller's previous outcome (no current week, empty history).
+		// A household without a row has no weeks. UTC is the zone used before households had one.
 		zone = "UTC"
 	} else if err != nil {
-		return "", fmt.Errorf("load household time zone: %w", err)
+		return nil, fmt.Errorf("load household time zone: %w", err)
 	}
 	location, err := settings.ValidateTimezone(zone)
 	if err != nil {
-		return "", fmt.Errorf("household time zone: %w", err)
+		return nil, fmt.Errorf("household time zone: %w", err)
 	}
-	return SundayIn(now, location), nil
+	return location, nil
+}
+
+// closeExpired closes the household's open week when its automatic close time is at or before
+// now. Every read or change of the current week or History runs it first; no background job
+// closes weeks.
+func (service *Household) closeExpired(ctx context.Context, queries *store.Queries, now time.Time) error {
+	return queries.CloseExpiredWeek(ctx, store.CloseExpiredWeekParams{HouseholdID: service.householdID, Now: now})
+}
+
+// openWeek closes an expired week, then returns the household's open week.
+func (service *Household) openWeek(ctx context.Context, queries *store.Queries, now time.Time) (store.Week, error) {
+	if err := service.closeExpired(ctx, queries, now); err != nil {
+		return store.Week{}, err
+	}
+	weekRow, err := queries.GetOpenWeek(ctx, service.householdID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return store.Week{}, ErrNoCurrentWeek
+	}
+	return weekRow, err
 }
 
 // Current returns the explicitly generated current week.
 func (service *Household) Current(ctx context.Context, now time.Time) (View, error) {
 	queries := store.New(service.db)
-	sunday, err := service.currentSunday(ctx, queries, now)
-	if err != nil {
-		return View{}, err
-	}
-	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
-	if errors.Is(err, sql.ErrNoRows) {
-		return View{}, ErrNoCurrentWeek
-	}
+	weekRow, err := service.openWeek(ctx, queries, now)
 	if err != nil {
 		return View{}, err
 	}
 	return loadView(ctx, queries, service.householdID, weekRow)
 }
 
-// PastWeeks returns earlier generated weeks, newest first.
+// PastWeeks returns closed weeks, newest first.
 func (service *Household) PastWeeks(ctx context.Context, now time.Time) ([]store.ListPastWeeksRow, error) {
 	queries := store.New(service.db)
-	sunday, err := service.currentSunday(ctx, queries, now)
-	if err != nil {
+	if err := service.closeExpired(ctx, queries, now); err != nil {
 		return nil, err
 	}
-	return queries.ListPastWeeks(ctx, store.ListPastWeeksParams{HouseholdID: service.householdID, StartsOn: sunday})
+	return queries.ListPastWeeks(ctx, service.householdID)
 }
 
 // HistoricalView is the final recipe pool and grocery checklist retained for an earlier week.
@@ -156,11 +199,10 @@ type HistoricalView struct {
 // PastWeek returns a read-only earlier week with its retained checklist state.
 func (service *Household) PastWeek(ctx context.Context, now time.Time, weekID int64) (HistoricalView, error) {
 	queries := store.New(service.db)
-	sunday, err := service.currentSunday(ctx, queries, now)
-	if err != nil {
+	if err := service.closeExpired(ctx, queries, now); err != nil {
 		return HistoricalView{}, err
 	}
-	weekRow, err := queries.GetPastWeek(ctx, store.GetPastWeekParams{HouseholdID: service.householdID, ID: weekID, StartsOn: sunday})
+	weekRow, err := queries.GetPastWeek(ctx, store.GetPastWeekParams{HouseholdID: service.householdID, ID: weekID})
 	if errors.Is(err, sql.ErrNoRows) {
 		return HistoricalView{}, ErrPastWeek
 	}
@@ -183,6 +225,37 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 	if count <= 0 {
 		return View{}, invalid("recipe count must be positive")
 	}
+	// A new week can collide with a week another request opened at the same moment, or with a
+	// closed week that has the same start date. A second attempt tells them apart: it finds the
+	// other request's open week and regenerates its pool, as if the requests had run in turn.
+	view, err := service.generate(ctx, now, count)
+	var conflict weekConflict
+	if !errors.As(err, &conflict) {
+		return view, err
+	}
+	view, err = service.generate(ctx, now, count)
+	if errors.As(err, &conflict) && conflict.constraint == "weeks_household_start_key" {
+		return View{}, invalid("This week already ended and is in History. You can plan the next week from %s.",
+			conflict.nextStart.Format("Monday, January 2"))
+	}
+	return view, err
+}
+
+// uniqueViolation is PostgreSQL's SQLSTATE for a unique constraint violation.
+const uniqueViolation = "23505"
+
+// weekConflict is a new week rejected by a uniqueness constraint.
+type weekConflict struct {
+	constraint string
+	// nextStart is when the household's next week begins, in its own zone.
+	nextStart time.Time
+	err       error
+}
+
+func (conflict weekConflict) Error() string { return conflict.err.Error() }
+func (conflict weekConflict) Unwrap() error { return conflict.err }
+
+func (service *Household) generate(ctx context.Context, now time.Time, count int) (View, error) {
 	var result View
 	err := service.transact(ctx, func(queries *store.Queries) error {
 		verified, err := queries.ListVerifiedRecipes(ctx, service.householdID)
@@ -195,11 +268,7 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 		if err := shuffle(service.picker, verified); err != nil {
 			return err
 		}
-		sunday, err := service.currentSunday(ctx, queries, now)
-		if err != nil {
-			return err
-		}
-		weekRow, err := getOrCreateWeek(ctx, queries, service.householdID, sunday)
+		weekRow, err := service.getOrOpenWeek(ctx, queries, now)
 		if err != nil {
 			return err
 		}
@@ -349,14 +418,7 @@ func (service *Household) mutateCurrent(
 ) (View, error) {
 	var result View
 	err := service.transact(ctx, func(queries *store.Queries) error {
-		sunday, err := service.currentSunday(ctx, queries, now)
-		if err != nil {
-			return err
-		}
-		weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
-		if errors.Is(err, sql.ErrNoRows) {
-			return ErrNoCurrentWeek
-		}
+		weekRow, err := service.openWeek(ctx, queries, now)
 		if err != nil {
 			return err
 		}
@@ -387,8 +449,11 @@ func (service *Household) transact(ctx context.Context, operation func(*store.Qu
 	return tx.Commit()
 }
 
-func getOrCreateWeek(ctx context.Context, queries *store.Queries, householdID, startsOn string) (store.Week, error) {
-	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: householdID, StartsOn: startsOn})
+// getOrOpenWeek returns the open week, after closing an expired one, or opens a new week. A new
+// week starts on the local date of the most recent Sunday midnight and closes itself at the next.
+func (service *Household) getOrOpenWeek(ctx context.Context, queries *store.Queries, now time.Time) (store.Week, error) {
+	householdID := service.householdID
+	weekRow, err := service.openWeek(ctx, queries, now)
 	if err == nil {
 		if _, listErr := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: householdID, WeekID: weekRow.ID}); errors.Is(listErr, sql.ErrNoRows) {
 			_, listErr = queries.CreateShoppingList(ctx, store.CreateShoppingListParams{HouseholdID: householdID, WeekID: weekRow.ID})
@@ -398,10 +463,24 @@ func getOrCreateWeek(ctx context.Context, queries *store.Queries, householdID, s
 		}
 		return weekRow, nil
 	}
-	if !errors.Is(err, sql.ErrNoRows) {
+	if !errors.Is(err, ErrNoCurrentWeek) {
 		return store.Week{}, err
 	}
-	weekRow, err = queries.CreateWeek(ctx, store.CreateWeekParams{HouseholdID: householdID, StartsOn: startsOn})
+	location, err := service.location(ctx, queries)
+	if err != nil {
+		return store.Week{}, err
+	}
+	autoClose := nextBoundary(now, time.Sunday, 0, location)
+	weekRow, err = queries.CreateWeek(ctx, store.CreateWeekParams{
+		HouseholdID: householdID,
+		StartsOn:    SundayIn(now, location),
+		OpenedAt:    now,
+		AutoCloseAt: sql.NullTime{Time: autoClose, Valid: true},
+	})
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) && pgErr.Code == uniqueViolation {
+		return store.Week{}, weekConflict{constraint: pgErr.ConstraintName, nextStart: autoClose.In(location), err: err}
+	}
 	if err != nil {
 		return store.Week{}, err
 	}

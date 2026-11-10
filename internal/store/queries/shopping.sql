@@ -96,7 +96,7 @@ WHERE shopping_lines.household_id = sqlc.arg(household_id)
     AND shopping_lines.id = sqlc.arg(line_id) AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
+        WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
     );
 
 -- name: SetShoppingLineCompleted :execrows
@@ -106,7 +106,7 @@ WHERE shopping_lines.household_id = sqlc.arg(household_id)
     AND shopping_lines.id = sqlc.arg(line_id) AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
+        WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
     );
 
 -- name: SetShoppingLineOverride :execrows
@@ -116,7 +116,7 @@ WHERE shopping_lines.household_id = sqlc.arg(household_id)
     AND shopping_lines.id = sqlc.arg(line_id) AND origin = 'generated' AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
+        WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
     );
 
 -- name: SetManualLineSection :one
@@ -125,7 +125,7 @@ WHERE shopping_lines.household_id = sqlc.arg(household_id) AND shopping_lines.id
     AND shopping_list_id = (
         SELECT list.id FROM shopping_lists list
         JOIN weeks w ON w.household_id = list.household_id AND w.id = list.week_id
-        WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on = sqlc.arg(starts_on)
+        WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
     )
 RETURNING display_name, grocery_item_id;
 

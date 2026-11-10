@@ -19,14 +19,7 @@ func (service *Household) AddManualLine(ctx context.Context, now time.Time, name
 	}
 	var result store.ShoppingLine
 	err := service.transact(ctx, func(queries *store.Queries) error {
-		sunday, err := service.currentSunday(ctx, queries, now)
-		if err != nil {
-			return err
-		}
-		weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
-		if errors.Is(err, sql.ErrNoRows) {
-			return ErrNoCurrentWeek
-		}
+		weekRow, err := service.openWeek(ctx, queries, now)
 		if err != nil {
 			return err
 		}
@@ -117,12 +110,11 @@ func (service *Household) SetLineSection(ctx context.Context, now time.Time, lin
 		if err := requireSection(ctx, queries, service.householdID, sectionID); err != nil {
 			return err
 		}
-		sunday, err := service.currentSunday(ctx, queries, now)
-		if err != nil {
+		if err := service.closeExpired(ctx, queries, now); err != nil {
 			return err
 		}
 		line, err := queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{
-			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID, StartsOn: sunday,
+			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID,
 		})
 		if errors.Is(err, sql.ErrNoRows) {
 			return invalid("shopping line not found or operation is not supported")
