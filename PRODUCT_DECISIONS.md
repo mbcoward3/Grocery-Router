@@ -42,7 +42,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D021 | True up recipes one at a time | Active |
 | D022 | Store full in-app recipes | Partly superseded by D036 (SQLite storage; now PostgreSQL) |
 | D023 | Keep list provenance compact but available | Active |
-| D024 | Weekly list edits do not alter recipes | Partly superseded by D044 (Other-only manual placement) |
+| D024 | Weekly list edits do not alter recipes | Active |
 | D025 | No explicit week lock | Active |
 | D026 | Current week is manually created | Partly superseded by D038 (past weeks are now shown in History) |
 | D027 | Responsive Linear-inspired UI | Active |
@@ -62,7 +62,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D041 | AI runs offline only | Active |
 | D042 | OpenAI through the official Go SDK | Active |
 | D043 | Suggested recipes enter the week marked, and join when kept | Direction only (not implemented) |
-| D044 | Shopping follows the household store walk | Partly superseded by D045 and D046 (Hide done, remembered terms, folding, Undo) |
+| D044 | Shopping follows the household store walk | Partly superseded by D045 and D046 (completed-row sinking, section folding, Undo on check, Hide done and its default) |
 | D045 | Remember where unknown items go; Hide done owns folding | Partly superseded by D046 (Hide done control and section folding) |
 | D046 | Plain rows, one Done group, undo only for removal | Active |
 | D047 | One checklist row per grocery item; look-alike items need a decision | Active |
@@ -417,7 +417,7 @@ scanability.
 
 ## D024 — Weekly list edits do not alter recipes
 
-**Status:** Partly superseded by D044 (Other-only manual placement)
+**Status:** Active
 
 **Decision:** Allow arbitrary additions, removal, completion, and quantity overrides on the
 week's list only.
@@ -773,7 +773,7 @@ is evidence of retention, not proof it was cooked or liked.
 
 ## D044 — Shopping follows the household store walk
 
-**Status:** Partly superseded by D045 and D046 (Hide done, remembered terms, folding, Undo)
+**Status:** Partly superseded by D045 and D046 (completed-row sinking, section folding, Undo on check, Hide done and its default)
 
 **Decision:** Promote issues #36–#38 after a real 54-item shop exposed misplaced manual items,
 excessive scrolling through completed rows, and unsuitable alphabetical section ordering.
