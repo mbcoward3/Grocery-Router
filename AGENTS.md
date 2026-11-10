@@ -8,8 +8,10 @@ Read in this order:
 2. `AUTH_HOUSEHOLDS_SPEC.md` for the current approved post-v1 authentication phase
 3. `CATALOG_INGEST_SPEC.md` for the approved shared recipe catalog pipeline (slices 1–2
    authorized; later slices follow its §8 gates)
-4. `UP_NEXT.md`
-5. `PRODUCT_DECISIONS.md` for rationale
+4. `SUBSTITUTIONS_SPEC.md` for household substitution groups (approved direction,
+   documentation only; implementation not authorized)
+5. `UP_NEXT.md`
+6. `PRODUCT_DECISIONS.md` for rationale
 
 The completed true-up ledger is archived at `archive/trueup/recipes.csv`; it is evidence, not
 an active planning authority. Reviews under `archive/reviews/` are history, not requirements.
@@ -25,8 +27,8 @@ Python prototype or prior deployment infrastructure as a base.
 The corpus foundation is Go, PostgreSQL, Goose, and sqlc. `archive/trueup/recipes.csv` records the
 completed disposition of all 25 PDF recipes. Completed household re-review includes 24 approved
 bootstrap recipes under `corpus/recipes/` and explicitly excludes Chicken and Dumplings. The
-frontend is React/TypeScript/Vite with TanStack Router and TanStack Query; the Week vertical
-slice is runnable.
+frontend is React/TypeScript/Vite with TanStack Router and TanStack Query; all five screens
+(Week, Groceries, Recipes, History, and Recipe detail) are implemented.
 Runtime AI, pantry inference, scaling, and recipe discovery remain out of scope. Authentication
 is still excluded from the original v1 contract, but direct Google OIDC and the shared `Coward`
 household are now authorized as the focused post-v1 phase in `AUTH_HOUSEHOLDS_SPEC.md`. Public
@@ -65,5 +67,6 @@ must match `internal/store/queries/` and `sqlc.yaml`. Open PostgreSQL connection
 
 ## Working rule
 
-When a desirable capability is outside `V1_SPEC.md`, record or refine it in `UP_NEXT.md`; do
-not add speculative schema, controls, dependencies, or placeholder architecture to v1.
+When a desirable capability is outside the documents in the Authority list, record or refine it
+in `UP_NEXT.md`; do not add speculative schema, controls, dependencies, or placeholder
+architecture to v1.

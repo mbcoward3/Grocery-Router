@@ -367,8 +367,8 @@ motion.
 
 **Consequence:** React and TypeScript are the preferred frontend; mobile is a first-class layout.
 Borrow aggressively from Linear's presentation without copying its branding or importing
-product-specific controls that do not serve Grocery Router's three-screen workflow. The Atlas
-workspace exploration (`design/ui-explorations/concept-a.html`) is the production starting
+product-specific controls that do not serve Grocery Router's five-screen workflow (D037, D038).
+The Atlas workspace exploration (`design/ui-explorations/concept-a.html`) is the production starting
 composition. Concept C may inform one-handed grocery interactions, but Atlas controls the
 visual language and information architecture.
 
