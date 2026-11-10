@@ -529,7 +529,7 @@ export interface components {
                 "application/json": components["schemas"]["Groceries"];
             };
         };
-        /** @description The requested resource was not found. */
+        /** @description The requested resource, or the household itself, was not found. */
         NotFound: {
             headers: {
                 [name: string]: unknown;
@@ -628,6 +628,7 @@ export interface operations {
                     };
                 };
             };
+            404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
     };
@@ -669,6 +670,7 @@ export interface operations {
         responses: {
             200: components["responses"]["Week"];
             404: components["responses"]["NoCurrentWeek"];
+            500: components["responses"]["InternalError"];
         };
     };
     listWeekHistory: {
@@ -693,6 +695,7 @@ export interface operations {
                     };
                 };
             };
+            404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
     };
@@ -740,7 +743,9 @@ export interface operations {
         responses: {
             200: components["responses"]["Week"];
             400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     addCurrentWeekRecipe: {
@@ -758,6 +763,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NoCurrentWeek"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     swapCurrentWeekRecipe: {
@@ -776,6 +782,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["OccurrenceNotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     removeCurrentWeekRecipe: {
@@ -794,6 +801,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["OccurrenceNotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     randomSwapCurrentWeekRecipe: {
@@ -812,6 +820,7 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["OccurrenceNotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     getStoreSections: {
@@ -834,6 +843,8 @@ export interface operations {
                     "application/json": components["schemas"]["StoreSections"];
                 };
             };
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
         };
     };
     setStoreSectionOrder: {
@@ -864,7 +875,9 @@ export interface operations {
                     "application/json": components["schemas"]["StoreSections"];
                 };
             };
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     searchGroceryItems: {
@@ -891,6 +904,8 @@ export interface operations {
                     };
                 };
             };
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
         };
     };
     getCurrentGroceries: {
@@ -906,6 +921,7 @@ export interface operations {
         responses: {
             200: components["responses"]["Groceries"];
             404: components["responses"]["NoCurrentWeek"];
+            500: components["responses"]["InternalError"];
         };
     };
     addCurrentGroceryLine: {
@@ -930,6 +946,7 @@ export interface operations {
             200: components["responses"]["Groceries"];
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NoCurrentWeek"];
+            500: components["responses"]["InternalError"];
         };
     };
     removeCurrentGroceryLine: {
@@ -945,7 +962,9 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["Groceries"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     updateCurrentGroceryLine: {
@@ -975,7 +994,9 @@ export interface operations {
         responses: {
             200: components["responses"]["Groceries"];
             400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
     getCurrentGroceryLineContributions: {
@@ -1001,7 +1022,9 @@ export interface operations {
                     };
                 };
             };
+            404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
         };
     };
 }

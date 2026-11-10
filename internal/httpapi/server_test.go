@@ -129,7 +129,7 @@ func TestRecipeDetailAndGroceryAPI(t *testing.T) {
 	if removed.Code != http.StatusOK || !lineRemoved(t, removed, lineID) {
 		t.Fatalf("remove status = %d, body %s", removed.Code, removed.Body.String())
 	}
-	if invalid := request(t, handler, http.MethodPatch, linePath, `{"removed":true}`); invalid.Code != http.StatusBadRequest {
+	if invalid := requestExpecting(t, handler, nonconformingRequest, http.MethodPatch, linePath, `{"removed":true}`); invalid.Code != http.StatusBadRequest {
 		t.Fatalf("removing through PATCH status = %d, want 400", invalid.Code)
 	}
 	restored := request(t, handler, http.MethodPatch, linePath, `{"removed":false}`)
@@ -178,7 +178,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	handler := handlerForDB(db)
+	handler := handlerForDB(t, db)
 	history := request(t, handler, http.MethodGet, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/weeks/history", "")
 	if history.Code != http.StatusOK {
 		t.Fatalf("history status = %d, body %s", history.Code, history.Body.String())
@@ -225,13 +225,13 @@ func TestRecipesAPIAndRequestValidation(t *testing.T) {
 		t.Fatalf("verified recipes = %d", len(recipes))
 	}
 
-	invalid := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", `{"recipeCount":3,"surprise":true}`)
+	invalid := requestExpecting(t, handler, nonconformingRequest, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", `{"recipeCount":3,"surprise":true}`)
 	if invalid.Code != http.StatusBadRequest {
 		t.Fatalf("invalid request status = %d, body %s", invalid.Code, invalid.Body.String())
 	}
 	assertErrorCode(t, invalid, "invalid_json")
 
-	wrongMethod := request(t, handler, http.MethodDelete, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", "")
+	wrongMethod := requestExpecting(t, handler, undocumentedOperation, http.MethodDelete, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", "")
 	if wrongMethod.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("wrong method status = %d", wrongMethod.Code)
 	}
@@ -239,7 +239,7 @@ func TestRecipesAPIAndRequestValidation(t *testing.T) {
 
 func testHandler(t *testing.T) http.Handler {
 	t.Helper()
-	return handlerForDB(testDB(t))
+	return handlerForDB(t, testDB(t))
 }
 
 func testDB(t *testing.T) *sql.DB {
@@ -281,9 +281,9 @@ func TestRequestsUseAuthorizedPathHousehold(t *testing.T) {
 			t.Fatalf("seed second household: %v: %s", err, statement.query)
 		}
 	}
-	handler := httpapi.New(db, week.NewService(db, zeroPicker{}), func() time.Time {
+	handler := contractHandler(t, httpapi.New(db, week.NewService(db, zeroPicker{}), func() time.Time {
 		return time.Date(2026, time.August, 19, 12, 0, 0, 0, time.UTC)
-	}, func(_ context.Context, id string) bool { return id == householdB }).Handler()
+	}, func(_ context.Context, id string) bool { return id == householdB }).Handler())
 
 	path := func(id, suffix string) string { return "/api/v2/households/" + id + suffix }
 	for _, id := range []string{householdA, missing} {
@@ -291,6 +291,7 @@ func TestRequestsUseAuthorizedPathHousehold(t *testing.T) {
 		if response.Code != http.StatusNotFound {
 			t.Fatalf("household %s recipes status = %d", id, response.Code)
 		}
+		assertErrorCode(t, response, "not_found")
 	}
 	recipes := request(t, handler, http.MethodGet, path(householdB, "/recipes"), "")
 	if recipes.Code != http.StatusOK {
@@ -340,20 +341,28 @@ func TestRequestsUseAuthorizedPathHousehold(t *testing.T) {
 		path(householdB, fmt.Sprintf("/week/current/recipes/%d", occurrenceID)), `{"recipeId":999999}`))
 }
 
-func handlerForDB(db *sql.DB) http.Handler {
+func handlerForDB(t *testing.T, db *sql.DB) http.Handler {
+	t.Helper()
 	service := week.NewService(db, zeroPicker{})
 	now := func() time.Time {
 		return time.Date(2026, time.August, 19, 12, 0, 0, 0, time.Local)
 	}
-	return httpapi.New(db, service, now, func(_ context.Context, id string) bool {
+	return contractHandler(t, httpapi.New(db, service, now, func(_ context.Context, id string) bool {
 		return id == "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
-	}).Handler()
+	}).Handler())
 }
 
+// request sends a request that must conform to api/openapi.yaml.
 func request(t *testing.T, handler http.Handler, method, path, body string) *httptest.ResponseRecorder {
 	t.Helper()
+	return requestExpecting(t, handler, conformingRequest, method, path, body)
+}
+
+// requestExpecting sends a request that a test deliberately marks as violating the contract.
+func requestExpecting(t *testing.T, handler http.Handler, expectation contractExpectation, method, path, body string) *httptest.ResponseRecorder {
+	t.Helper()
 	recorder := httptest.NewRecorder()
-	req := httptest.NewRequest(method, path, strings.NewReader(body))
+	req := withContractExpectation(httptest.NewRequest(method, path, strings.NewReader(body)), expectation)
 	if body != "" {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -403,7 +412,7 @@ func TestShoppingDiscoveryAndOrderAPI(t *testing.T) {
 	if saved.Code != http.StatusOK || int64(decodeObject(t, saved)["sections"].([]any)[0].(map[string]any)["id"].(float64)) != ids[0] {
 		t.Fatalf("save order: %s", saved.Body)
 	}
-	invalid := request(t, handler, http.MethodPut, root+"/store-sections", `{"sectionIds":[-1]}`)
+	invalid := requestExpecting(t, handler, nonconformingRequest, http.MethodPut, root+"/store-sections", `{"sectionIds":[-1]}`)
 	if invalid.Code != http.StatusUnprocessableEntity {
 		t.Fatalf("invalid order status: %d", invalid.Code)
 	}
@@ -411,6 +420,7 @@ func TestShoppingDiscoveryAndOrderAPI(t *testing.T) {
 	if inaccessible.Code != http.StatusNotFound {
 		t.Fatalf("cross-tenant search status: %d", inaccessible.Code)
 	}
+	assertErrorCode(t, inaccessible, "not_found")
 	reset := request(t, handler, http.MethodPut, root+"/store-sections", `{"reset":true}`)
 	if reset.Code != http.StatusOK || decodeObject(t, reset)["sections"].([]any)[0].(map[string]any)["name"] != "Produce" {
 		t.Fatalf("reset: %s", reset.Body)
@@ -419,7 +429,7 @@ func TestShoppingDiscoveryAndOrderAPI(t *testing.T) {
 
 func TestInternalErrorsReturnGenericBody(t *testing.T) {
 	db := testDB(t)
-	handler := handlerForDB(db)
+	handler := handlerForDB(t, db)
 	if err := db.Close(); err != nil {
 		t.Fatal(err)
 	}
@@ -463,5 +473,59 @@ func TestAddMissingRecipeIsValidationError(t *testing.T) {
 	message := decodeObject(t, response)["error"].(map[string]any)["message"]
 	if message != "recipe not found" {
 		t.Fatalf("missing recipe message = %#v", message)
+	}
+}
+
+func TestSwapAndRandomSwapAPI(t *testing.T) {
+	handler := testHandler(t)
+	const root = "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	generated := request(t, handler, http.MethodPost, root+"/week/current/generate", `{"recipeCount":2}`)
+	if generated.Code != http.StatusOK {
+		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
+	}
+	occurrences := decodeObject(t, generated)["recipes"].([]any)
+	first := occurrences[0].(map[string]any)
+	second := occurrences[1].(map[string]any)
+	occurrenceID := int64(first["id"].(float64))
+	secondRecipeID := int64(second["recipe"].(map[string]any)["id"].(float64))
+
+	swapped := request(t, handler, http.MethodPut, fmt.Sprintf("%s/week/current/recipes/%d", root, occurrenceID),
+		fmt.Sprintf(`{"recipeId":%d}`, secondRecipeID))
+	if swapped.Code != http.StatusOK {
+		t.Fatalf("swap status = %d, body %s", swapped.Code, swapped.Body.String())
+	}
+	swappedFirst := decodeObject(t, swapped)["recipes"].([]any)[0].(map[string]any)
+	if int64(swappedFirst["recipe"].(map[string]any)["id"].(float64)) != secondRecipeID {
+		t.Fatalf("swapped occurrence = %#v", swappedFirst)
+	}
+
+	swappedID := int64(swappedFirst["id"].(float64))
+	random := request(t, handler, http.MethodPost, fmt.Sprintf("%s/week/current/recipes/%d/random-swap", root, swappedID), "")
+	if random.Code != http.StatusOK {
+		t.Fatalf("random swap status = %d, body %s", random.Code, random.Body.String())
+	}
+	if recipes := decodeObject(t, random)["recipes"].([]any); len(recipes) != 2 {
+		t.Fatalf("recipes after random swap = %d", len(recipes))
+	}
+
+	missing := request(t, handler, http.MethodPost, root+"/week/current/recipes/999999/random-swap", "")
+	if missing.Code != http.StatusNotFound {
+		t.Fatalf("missing occurrence status = %d, body %s", missing.Code, missing.Body.String())
+	}
+	assertErrorCode(t, missing, "occurrence_not_found")
+}
+
+func TestGroceriesWithoutCurrentWeek(t *testing.T) {
+	handler := testHandler(t)
+	const groceries = "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries"
+	for _, tc := range []struct{ method, body string }{
+		{http.MethodGet, ""},
+		{http.MethodPost, `{"name":"Paper towels"}`},
+	} {
+		response := request(t, handler, tc.method, groceries, tc.body)
+		if response.Code != http.StatusNotFound {
+			t.Fatalf("%s groceries without a week status = %d, body %s", tc.method, response.Code, response.Body.String())
+		}
+		assertErrorCode(t, response, "no_current_week")
 	}
 }

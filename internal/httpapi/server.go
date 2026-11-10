@@ -74,7 +74,8 @@ func (server *Server) guard(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
 		householdID := request.PathValue("householdID")
 		if !server.authorize(request.Context(), householdID) {
-			http.NotFound(response, request)
+			// 404, not 403, so the response does not disclose whether another household exists.
+			writeError(response, http.StatusNotFound, "not_found", "The requested resource was not found.")
 			return
 		}
 		next.ServeHTTP(response, request)
