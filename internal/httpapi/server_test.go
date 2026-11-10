@@ -219,6 +219,66 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 	}
 }
 
+func TestCloseCurrentWeekAPI(t *testing.T) {
+	handler := testHandler(t)
+	const root = "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+
+	missing := request(t, handler, http.MethodPost, root+"/week/current/close", "")
+	if missing.Code != http.StatusNotFound {
+		t.Fatalf("close without a week status = %d, body %s", missing.Code, missing.Body.String())
+	}
+	assertErrorCode(t, missing, "no_current_week")
+
+	generated := request(t, handler, http.MethodPost, root+"/week/current/generate", `{"recipeCount":2}`)
+	if generated.Code != http.StatusOK {
+		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
+	}
+	weekID := int64(decodeObject(t, generated)["id"].(float64))
+	groceries := request(t, handler, http.MethodGet, root+"/week/current/groceries", "")
+	lineID := int64(decodeObject(t, groceries)["lines"].([]any)[0].(map[string]any)["id"].(float64))
+	if completed := request(t, handler, http.MethodPatch, fmt.Sprintf("%s/week/current/groceries/%d", root, lineID), `{"completed":true}`); completed.Code != http.StatusOK {
+		t.Fatalf("complete status = %d, body %s", completed.Code, completed.Body.String())
+	}
+
+	closed := request(t, handler, http.MethodPost, root+"/week/current/close", "")
+	if closed.Code != http.StatusNoContent || closed.Body.Len() != 0 {
+		t.Fatalf("close status = %d, body %q", closed.Code, closed.Body.String())
+	}
+	current := request(t, handler, http.MethodGet, root+"/week/current", "")
+	if current.Code != http.StatusNotFound {
+		t.Fatalf("current after close status = %d, body %s", current.Code, current.Body.String())
+	}
+	assertErrorCode(t, current, "no_current_week")
+
+	history := request(t, handler, http.MethodGet, root+"/weeks/history", "")
+	weeks := decodeObject(t, history)["weeks"].([]any)
+	if history.Code != http.StatusOK || len(weeks) != 1 || weeks[0].(map[string]any)["id"] != float64(weekID) ||
+		weeks[0].(map[string]any)["completedCount"] != float64(1) {
+		t.Fatalf("history after close status = %d, body %s", history.Code, history.Body.String())
+	}
+	detail := request(t, handler, http.MethodGet, fmt.Sprintf("%s/weeks/history/%d", root, weekID), "")
+	if detail.Code != http.StatusOK || !lineCompleted(t, detail, lineID) {
+		t.Fatalf("closed week detail status = %d, body %s", detail.Code, detail.Body.String())
+	}
+
+	again := request(t, handler, http.MethodPost, root+"/week/current/close", "")
+	if again.Code != http.StatusNotFound {
+		t.Fatalf("second close status = %d, body %s", again.Code, again.Body.String())
+	}
+	assertErrorCode(t, again, "no_current_week")
+}
+
+func lineCompleted(t *testing.T, response *httptest.ResponseRecorder, lineID int64) bool {
+	t.Helper()
+	for _, value := range decodeObject(t, response)["groceries"].(map[string]any)["lines"].([]any) {
+		line := value.(map[string]any)
+		if int64(line["id"].(float64)) == lineID {
+			return line["completed"] == true
+		}
+	}
+	return false
+}
+
 func TestRecipesAPIAndRequestValidation(t *testing.T) {
 	handler := testHandler(t)
 

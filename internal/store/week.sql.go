@@ -35,6 +35,30 @@ func (q *Queries) CloseExpiredWeek(ctx context.Context, arg CloseExpiredWeekPara
 	return err
 }
 
+const closeOpenWeek = `-- name: CloseOpenWeek :execrows
+UPDATE weeks SET
+    closed_at = CAST($1 AS TIMESTAMPTZ),
+    ends_on = CAST($2 AS TEXT)
+WHERE household_id = $3 AND closed_at IS NULL
+`
+
+type CloseOpenWeekParams struct {
+	ClosedAt    time.Time `db:"closed_at" json:"closed_at"`
+	EndsOn      string    `db:"ends_on" json:"ends_on"`
+	HouseholdID string    `db:"household_id" json:"household_id"`
+}
+
+// Closes the household's open week by hand at now with its last local date (week.lastDay). The
+// automatic close time stays as it was: while that rollover is still ahead, the next week opened
+// takes over the upcoming period instead of the one just ended (week.takesOver).
+func (q *Queries) CloseOpenWeek(ctx context.Context, arg CloseOpenWeekParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, closeOpenWeek, arg.ClosedAt, arg.EndsOn, arg.HouseholdID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const createShoppingList = `-- name: CreateShoppingList :one
 INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)
 RETURNING id, week_id, created_at, updated_at, household_id, aggregation_version
@@ -156,6 +180,30 @@ type DeleteWeekRecipesParams struct {
 func (q *Queries) DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesParams) error {
 	_, err := q.db.ExecContext(ctx, deleteWeekRecipes, arg.HouseholdID, arg.WeekID)
 	return err
+}
+
+const getLastClosedWeek = `-- name: GetLastClosedWeek :one
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at, ends_on FROM weeks
+WHERE household_id = $1 AND closed_at IS NOT NULL
+ORDER BY closed_at DESC, id DESC
+LIMIT 1
+`
+
+func (q *Queries) GetLastClosedWeek(ctx context.Context, householdID string) (Week, error) {
+	row := q.db.QueryRowContext(ctx, getLastClosedWeek, householdID)
+	var i Week
+	err := row.Scan(
+		&i.ID,
+		&i.StartsOn,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.AutoCloseAt,
+		&i.ClosedAt,
+		&i.EndsOn,
+	)
+	return i, err
 }
 
 const getOpenWeek = `-- name: GetOpenWeek :one

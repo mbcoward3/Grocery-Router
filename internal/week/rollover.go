@@ -33,10 +33,16 @@ func rulesFrom(zone string, startDay, minutes int, mode string) (rules, error) {
 
 // opening returns the start date and automatic close time of a week opened at now. An automatic
 // week starts on the local date of the most recent rollover at or before now and closes at the
-// next one; a manual week starts today and has no close time.
-func (rules rules) opening(now time.Time) (string, sql.NullTime) {
+// next one; a week that takes over the upcoming period (see takesOver) instead starts on the date
+// of that upcoming rollover and closes at the one after it. A manual week starts today and has no
+// close time.
+func (rules rules) opening(now time.Time, takeover bool) (string, sql.NullTime) {
 	if rules.manual {
 		return localDate(now, rules.location), sql.NullTime{}
+	}
+	if takeover {
+		upcoming := rules.next(now)
+		return localDate(upcoming, rules.location), sql.NullTime{Time: rules.next(upcoming), Valid: true}
 	}
 	return previousBoundaryDate(now, rules.startDay, rules.minutes, rules.location), rules.autoClose(now)
 }
@@ -47,7 +53,44 @@ func (rules rules) autoClose(now time.Time) sql.NullTime {
 	if rules.manual {
 		return sql.NullTime{}
 	}
-	return sql.NullTime{Time: nextBoundary(now, rules.startDay, rules.minutes, rules.location), Valid: true}
+	return sql.NullTime{Time: rules.next(now), Valid: true}
+}
+
+// next returns the first rollover strictly after after.
+func (rules rules) next(after time.Time) time.Time {
+	return nextBoundary(after, rules.startDay, rules.minutes, rules.location)
+}
+
+// takesOver reports whether a week opened at now takes over the upcoming period rather than the
+// one already running: the household's previous week was closed by hand before its own rollover,
+// and that rollover is still ahead. A household that shops on Saturday for a week starting Sunday
+// closes the old week and plans the new one on Saturday; without this, the new week would close
+// itself on Sunday. previous is the most recently closed week, or the zero Week if there is none.
+//
+// The upcoming period begins at the next rollover under the household's current settings.
+// When nothing has changed that rollover is previous.auto_close_at itself; taking it from the
+// current settings instead keeps a settings change made in between, and a week that was itself
+// started early and then closed again before its period began, from skipping a whole week.
+func takesOver(now time.Time, previous store.Week) bool {
+	return previous.ClosedAt.Valid && previous.AutoCloseAt.Valid &&
+		previous.ClosedAt.Time.Before(previous.AutoCloseAt.Time) && previous.AutoCloseAt.Time.After(now)
+}
+
+// rescheduled returns the open week's automatic close time when a settings change from before to
+// after is saved at now: the next rollover after now under the new settings, or none in manual
+// mode. A week started early that has not yet reached the rollover it skips keeps skipping one:
+// it closes at the second rollover after now. Such a week is recognised by a rollover under the
+// old settings falling between now and its close time; an ordinary week closes at the old
+// settings' next rollover, which a settings change or opening the week set.
+func rescheduled(now time.Time, closeAt sql.NullTime, before, after rules) sql.NullTime {
+	if after.manual {
+		return sql.NullTime{}
+	}
+	next := after.next(now)
+	if closeAt.Valid && !before.manual && before.next(now).Before(closeAt.Time) {
+		next = after.next(next)
+	}
+	return sql.NullTime{Time: next, Valid: true}
 }
 
 // previousBoundaryDate returns the local calendar date of the most recent instant at or before
@@ -102,9 +145,9 @@ func (service *Household) weekRules(ctx context.Context, queries *store.Queries)
 }
 
 // SaveSettings validates and stores a settings change. When it changes the time zone, rollover
-// day, time, or mode, the open week's automatic close time moves in the same transaction: to
-// the next rollover after now under the new settings, or to none in manual mode. Saving never
-// closes a week; a week whose close time had already passed closes first, as on any read.
+// day, time, or mode, the open week's automatic close time moves in the same transaction (see
+// rescheduled). Saving never closes a week; a week whose close time had already passed closes
+// first, as on any read.
 func (service *Household) SaveSettings(ctx context.Context, now time.Time, change settings.Change) (settings.Settings, error) {
 	if err := change.Validate(); err != nil {
 		return settings.Settings{}, err
@@ -126,16 +169,59 @@ func (service *Household) SaveSettings(ctx context.Context, now time.Time, chang
 		if saved.SameRollover(before) {
 			return nil
 		}
+		open, err := queries.GetOpenWeek(ctx, service.householdID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		previous, err := rulesFrom(before.Timezone, before.WeekStartDay, before.RolloverMinutes, before.RolloverMode)
+		if err != nil {
+			return err
+		}
 		after, err := rulesFrom(saved.Timezone, saved.WeekStartDay, saved.RolloverMinutes, saved.RolloverMode)
 		if err != nil {
 			return err
 		}
 		return queries.SetOpenWeekAutoClose(ctx, store.SetOpenWeekAutoCloseParams{
-			HouseholdID: service.householdID, AutoCloseAt: after.autoClose(now),
+			HouseholdID: service.householdID, AutoCloseAt: rescheduled(now, open.AutoCloseAt, previous, after),
 		})
 	})
 	if err != nil {
 		return settings.Settings{}, err
 	}
 	return saved, nil
+}
+
+// Close ends the household's open week now, by hand, in either rollover mode. The week moves to
+// History with its meals and checklist as they are, and its last local date is fixed in the zone
+// the household has now. Closing never generates the next week (D050). The week's automatic close
+// time is kept, so a week opened before that rollover takes over the upcoming period (takesOver).
+// With no open week, after an expired one has closed, it returns ErrNoCurrentWeek.
+func (service *Household) Close(ctx context.Context, now time.Time) error {
+	var closed int64
+	err := service.transact(ctx, func(queries *store.Queries) error {
+		// The household's zone is read, and held, before the week row is touched, in the same
+		// order as Generate and SaveSettings.
+		weekRules, err := service.weekRules(ctx, queries)
+		if err != nil {
+			return err
+		}
+		if err := service.closeExpired(ctx, queries, now); err != nil {
+			return err
+		}
+		closed, err = queries.CloseOpenWeek(ctx, store.CloseOpenWeekParams{
+			HouseholdID: service.householdID, ClosedAt: now, EndsOn: lastDay(now, weekRules.location),
+		})
+		return err
+	})
+	if err != nil {
+		return err
+	}
+	if closed == 0 {
+		// An expired week closed at its own rollover above, and that is kept.
+		return ErrNoCurrentWeek
+	}
+	return nil
 }

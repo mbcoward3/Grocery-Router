@@ -449,7 +449,7 @@ func (service *Household) transact(ctx context.Context, operation func(*store.Qu
 }
 
 // getOrOpenWeek returns the open week, after closing an expired one, or opens a new week under
-// the household's rollover rules (see rules.opening).
+// the household's rollover rules (see rules.opening and takesOver).
 func (service *Household) getOrOpenWeek(ctx context.Context, queries *store.Queries, now time.Time, weekRules rules) (store.Week, error) {
 	householdID := service.householdID
 	weekRow, err := service.openWeek(ctx, queries, now)
@@ -465,7 +465,11 @@ func (service *Household) getOrOpenWeek(ctx context.Context, queries *store.Quer
 	if !errors.Is(err, ErrNoCurrentWeek) {
 		return store.Week{}, err
 	}
-	startsOn, autoClose := weekRules.opening(now)
+	previous, err := queries.GetLastClosedWeek(ctx, householdID)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return store.Week{}, err
+	}
+	startsOn, autoClose := weekRules.opening(now, takesOver(now, previous))
 	weekRow, err = queries.CreateWeek(ctx, store.CreateWeekParams{
 		HouseholdID: householdID,
 		StartsOn:    startsOn,

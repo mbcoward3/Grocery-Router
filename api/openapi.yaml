@@ -136,6 +136,16 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
         "500": { $ref: "#/components/responses/InternalError" }
+  /households/{householdID}/week/current/close:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+    post:
+      operationId: closeCurrentWeek
+      summary: Close the current week now and move it to History. The next week is not generated.
+      responses:
+        "204": { description: The week was closed. }
+        "404": { $ref: "#/components/responses/NoCurrentWeek" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current/recipes:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"

@@ -154,6 +154,25 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{householdID}/week/current/close": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Close the current week now and move it to History. The next week is not generated. */
+        post: operations["closeCurrentWeek"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/households/{householdID}/week/current/recipes": {
         parameters: {
             query?: never;
@@ -816,6 +835,28 @@ export interface operations {
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    closeCurrentWeek: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The week was closed. */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            404: components["responses"]["NoCurrentWeek"];
             500: components["responses"]["InternalError"];
         };
     };

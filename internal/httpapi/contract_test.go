@@ -161,6 +161,7 @@ func TestContractHelperRejectsDrift(t *testing.T) {
 		t.Fatal(err)
 	}
 	const groceries = apiPrefix + "/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/groceries"
+	const closeWeek = apiPrefix + "/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/close"
 	const line = `{"id":1,"sectionId":2,"section":"Produce","name":"Onion","quantity":null,"generatedQuantity":"1",` +
 		`"origin":"generated","optional":false,"removed":false,"completed":false,"hasContributions":true,"recipeNames":["Soup"]}`
 	canned := func(status int, contentType, body string) http.Handler {
@@ -204,6 +205,10 @@ func TestContractHelperRejectsDrift(t *testing.T) {
 			canned(http.StatusBadRequest, jsonType, `{"error":{"code":"invalid_json","message":"m"}}`), false},
 		{"nonconforming request that conforms", http.MethodPost, groceries, `{"name":"Milk"}`, nonconformingRequest,
 			canned(http.StatusOK, jsonType, `{"startsOn":"2026-08-16","lines":[]}`), true},
+		{"documented empty success", http.MethodPost, closeWeek, "", conformingRequest,
+			canned(http.StatusNoContent, "", ""), false},
+		{"empty success with an undocumented body", http.MethodPost, closeWeek, "", conformingRequest,
+			canned(http.StatusOK, jsonType, `{}`), true},
 		{"undocumented method", http.MethodDelete, groceries, "", undocumentedOperation,
 			canned(http.StatusMethodNotAllowed, "text/plain", "Method Not Allowed\n"), false},
 		{"undocumented operation answered with success", http.MethodDelete, groceries, "", undocumentedOperation,

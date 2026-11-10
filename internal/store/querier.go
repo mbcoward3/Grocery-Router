@@ -18,6 +18,10 @@ type Querier interface {
 	// time rather than when the close was noticed, and fixing its last local date in the
 	// household's zone now (week.endsOn computes the same date for an open week).
 	CloseExpiredWeek(ctx context.Context, arg CloseExpiredWeekParams) error
+	// Closes the household's open week by hand at now with its last local date (week.lastDay). The
+	// automatic close time stays as it was: while that rollover is still ahead, the next week opened
+	// takes over the upcoming period instead of the one just ended (week.takesOver).
+	CloseOpenWeek(ctx context.Context, arg CloseOpenWeekParams) (int64, error)
 	// Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
 	CountIngestNoRecipePagesBySite(ctx context.Context) ([]CountIngestNoRecipePagesBySiteRow, error)
 	CountIngestSourceNodesBySite(ctx context.Context) ([]CountIngestSourceNodesBySiteRow, error)
@@ -60,6 +64,7 @@ type Querier interface {
 	GetIngestSite(ctx context.Context, id string) (IngestSite, error)
 	GetIngestSiteByHost(ctx context.Context, host string) (IngestSite, error)
 	GetIngestSourcePage(ctx context.Context, id int64) (IngestSourcePage, error)
+	GetLastClosedWeek(ctx context.Context, householdID string) (Week, error)
 	GetOpenIngestSitePause(ctx context.Context, siteID string) (IngestSitePause, error)
 	GetOpenWeek(ctx context.Context, householdID string) (Week, error)
 	GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error)
