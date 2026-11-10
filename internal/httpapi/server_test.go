@@ -392,3 +392,52 @@ func TestShoppingDiscoveryAndOrderAPI(t *testing.T) {
 		t.Fatalf("reset: %s", reset.Body)
 	}
 }
+
+func TestInternalErrorsReturnGenericBody(t *testing.T) {
+	db := testDB(t)
+	handler := handlerForDB(db)
+	if err := db.Close(); err != nil {
+		t.Fatal(err)
+	}
+	response := request(t, handler, http.MethodGet, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current", "")
+	if response.Code != http.StatusInternalServerError {
+		t.Fatalf("closed database status = %d, body %s", response.Code, response.Body.String())
+	}
+	assertErrorCode(t, response, "internal_error")
+	body := response.Body.String()
+	for _, leak := range []string{"sql", "pq", "pgx", "SQLSTATE"} {
+		if strings.Contains(body, leak) {
+			t.Fatalf("internal error body leaks %q: %s", leak, body)
+		}
+	}
+}
+
+func TestGenerateBeyondCorpusIsValidationError(t *testing.T) {
+	handler := testHandler(t)
+	response := request(t, handler, http.MethodPost, "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5/week/current/generate", `{"recipeCount":25}`)
+	if response.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("oversized generate status = %d, body %s", response.Code, response.Body.String())
+	}
+	assertErrorCode(t, response, "week_operation_failed")
+	message := decodeObject(t, response)["error"].(map[string]any)["message"]
+	if message != "requested 25 recipes but only 24 verified recipes are available" {
+		t.Fatalf("oversized generate message = %#v", message)
+	}
+}
+
+func TestAddMissingRecipeIsValidationError(t *testing.T) {
+	handler := testHandler(t)
+	const root = "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	if generated := request(t, handler, http.MethodPost, root+"/week/current/generate", `{"recipeCount":1}`); generated.Code != http.StatusOK {
+		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
+	}
+	response := request(t, handler, http.MethodPost, root+"/week/current/recipes", `{"recipeId":999999}`)
+	if response.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("missing recipe status = %d, body %s", response.Code, response.Body.String())
+	}
+	assertErrorCode(t, response, "week_operation_failed")
+	message := decodeObject(t, response)["error"].(map[string]any)["message"]
+	if message != "recipe not found" {
+		t.Fatalf("missing recipe message = %#v", message)
+	}
+}
