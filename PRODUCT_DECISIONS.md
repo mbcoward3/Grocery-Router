@@ -67,6 +67,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D046 | Plain rows, one Done group, undo only for removal | Active |
 | D047 | One checklist row per grocery item; look-alike items need a decision | Active |
 | D048 | Substitution is a household choice over frozen groups (proposed) | Direction only (not implemented) |
+| D049 | Household preferences live per household and are edited in the app | Active |
 
 ---
 
@@ -881,4 +882,28 @@ function of recipes, snapshot, and recorded answers; no AI runs while building a
 group costs one question, so AI may assign groups but not aliases.
 
 **Revisit when:** The owner approves or revises the proposal.
+
+## D049 — Household preferences live per household and are edited in the app
+
+**Status:** Active
+
+**Decision:** Preferences that change how a household plans (its time zone and how many recipes
+a new week offers) are stored on the household row and edited by any member on the Settings
+screen. Deployment configuration (environment variables, secrets, operator commands) is for the
+operator only and never carries household preferences.
+
+**Why:** The time zone could only be changed by an operator command and the recipe count was a
+constant in the Week screen. Both are household choices; asking an operator to change them, or
+redeploying to do so, puts household decisions in the wrong hands.
+
+**Consequence:** Migration 00010 adds `households.default_recipe_count` (1-21, default 5) beside
+the time zone. `GET`/`PATCH /households/{householdID}/settings` read and change either or both
+values; an invalid value is rejected with 422 and nothing is stored. The Week screen starts from
+the household's count, still capped by the recipes available, and saving reloads the current
+week, its groceries, and history because a new time zone can move the week. The
+`household-timezone` command remains for operators. Preferences are per household, not per
+member.
+
+**Revisit when:** A preference needs to differ between members, or a household-level setting
+needs to be restricted to some members.
 

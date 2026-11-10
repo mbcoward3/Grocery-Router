@@ -48,6 +48,7 @@ type Querier interface {
 	ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
 	GetHouseholdName(ctx context.Context, householdID string) (string, error)
+	GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error)
 	GetHouseholdTimezone(ctx context.Context, householdID string) (string, error)
 	GetIngestEvidence(ctx context.Context, id int64) (IngestEvidence, error)
 	GetIngestHostRateLimit(ctx context.Context, host string) (GetIngestHostRateLimitRow, error)
@@ -141,6 +142,9 @@ type Querier interface {
 	TouchWeek(ctx context.Context, arg TouchWeekParams) error
 	// Stage locks (§7.3). Session-level: call on one *sql.Conn and unlock on the same connection.
 	TryIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
+	// A NULL argument keeps the stored value, so a change to one setting cannot overwrite a
+	// concurrent change to the other.
+	UpdateHouseholdSettings(ctx context.Context, arg UpdateHouseholdSettingsParams) (UpdateHouseholdSettingsRow, error)
 	UpdateIngestRunCounters(ctx context.Context, arg UpdateIngestRunCountersParams) error
 	UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekRecipeRecipeParams) (WeekRecipe, error)
 	UpsertIngestSite(ctx context.Context, arg UpsertIngestSiteParams) error

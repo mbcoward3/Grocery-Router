@@ -45,11 +45,12 @@ type GroceryItem struct {
 }
 
 type Household struct {
-	ID        string    `db:"id" json:"id"`
-	Name      string    `db:"name" json:"name"`
-	CreatedAt time.Time `db:"created_at" json:"created_at"`
-	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
-	Timezone  string    `db:"timezone" json:"timezone"`
+	ID                 string    `db:"id" json:"id"`
+	Name               string    `db:"name" json:"name"`
+	CreatedAt          time.Time `db:"created_at" json:"created_at"`
+	UpdatedAt          time.Time `db:"updated_at" json:"updated_at"`
+	Timezone           string    `db:"timezone" json:"timezone"`
+	DefaultRecipeCount int32     `db:"default_recipe_count" json:"default_recipe_count"`
 }
 
 type HouseholdMembership struct {

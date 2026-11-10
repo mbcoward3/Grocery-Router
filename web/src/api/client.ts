@@ -157,3 +157,9 @@ export function setStoreSections(input: { sectionIds: number[] } | { reset: true
 export function searchGroceryItems(term: string): Promise<{ items: GroceryItemMatch[] }> {
   return request(householdPath(`/grocery-items?q=${encodeURIComponent(term)}`))
 }
+
+export type HouseholdSettings = components['schemas']['HouseholdSettings']
+export function getSettings(): Promise<HouseholdSettings> { return request(householdPath('/settings')) }
+export function updateSettings(change: Partial<HouseholdSettings>): Promise<HouseholdSettings> {
+  return request(householdPath('/settings'), { method: 'PATCH', body: JSON.stringify(change) })
+}

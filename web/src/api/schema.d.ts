@@ -232,6 +232,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/households/{householdID}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        /** Return the household's preferences. */
+        get: operations["getHouseholdSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change either or both household preferences; any household member may. */
+        patch: operations["updateHouseholdSettings"];
+        trace?: never;
+    };
     "/households/{householdID}/grocery-items": {
         parameters: {
             query?: {
@@ -449,6 +469,12 @@ export interface components {
             week: components["schemas"]["Week"];
             groceries: components["schemas"]["Groceries"];
         };
+        HouseholdSettings: {
+            /** @description IANA time zone that decides when the household's week begins. */
+            timezone: string;
+            /** @description Recipes offered when generating a week. */
+            defaultRecipeCount: number;
+        };
         APIError: {
             error: {
                 code: string;
@@ -531,6 +557,24 @@ export interface components {
         };
         /** @description The requested resource, or the household itself, was not found. */
         NotFound: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["APIError"];
+            };
+        };
+        /** @description The household's full settings. */
+        HouseholdSettings: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["HouseholdSettings"];
+            };
+        };
+        /** @description A setting value was rejected; nothing was stored. */
+        InvalidSettings: {
             headers: {
                 [name: string]: unknown;
             };
@@ -879,6 +923,48 @@ export interface operations {
             };
             404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    getHouseholdSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["HouseholdSettings"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    updateHouseholdSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description IANA time zone name, for example America/Chicago. */
+                    timezone?: string;
+                    defaultRecipeCount?: number;
+                };
+            };
+        };
+        responses: {
+            200: components["responses"]["HouseholdSettings"];
+            400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
+            422: components["responses"]["InvalidSettings"];
             500: components["responses"]["InternalError"];
         };
     };

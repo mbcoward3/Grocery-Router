@@ -221,6 +221,36 @@ paths:
         "404": { $ref: "#/components/responses/NotFound" }
         "422": { $ref: "#/components/responses/WeekOperationFailed" }
         "500": { $ref: "#/components/responses/InternalError" }
+  /households/{householdID}/settings:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+    get:
+      operationId: getHouseholdSettings
+      summary: Return the household's preferences.
+      responses:
+        "200": { $ref: "#/components/responses/HouseholdSettings" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+    patch:
+      operationId: updateHouseholdSettings
+      summary: Change either or both household preferences; any household member may.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              minProperties: 1
+              properties:
+                timezone: { type: string, description: "IANA time zone name, for example America/Chicago." }
+                defaultRecipeCount: { type: integer, minimum: 1, maximum: 21 }
+      responses:
+        "200": { $ref: "#/components/responses/HouseholdSettings" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/InvalidSettings" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/grocery-items:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -563,6 +593,12 @@ components:
       properties:
         week: { $ref: "#/components/schemas/Week" }
         groceries: { $ref: "#/components/schemas/Groceries" }
+    HouseholdSettings:
+      type: object
+      required: [timezone, defaultRecipeCount]
+      properties:
+        timezone: { type: string, description: "IANA time zone that decides when the household's week begins." }
+        defaultRecipeCount: { type: integer, minimum: 1, maximum: 21, description: "Recipes offered when generating a week." }
     APIError:
       type: object
       required: [error]
@@ -616,6 +652,16 @@ components:
           schema: { $ref: "#/components/schemas/Groceries" }
     NotFound:
       description: The requested resource, or the household itself, was not found.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/APIError" }
+    HouseholdSettings:
+      description: The household's full settings.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/HouseholdSettings" }
+    InvalidSettings:
+      description: A setting value was rejected; nothing was stored.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }

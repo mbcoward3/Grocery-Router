@@ -11,6 +11,7 @@ import {
   type Week,
 } from '../../api/client'
 import { ArrowIcon, CloseIcon, PlusIcon, SwapIcon, TrashIcon } from '../../ui/icons'
+import { settingsQueryOptions } from '../settings/queries'
 import { currentWeekQueryOptions, recipesQueryOptions, weekQueryKey } from './queries'
 
 type WeekAction =
@@ -26,7 +27,9 @@ export function WeekPage() {
   const queryClient = useQueryClient()
   const weekQuery = useQuery(currentWeekQueryOptions)
   const recipesQuery = useQuery(recipesQueryOptions)
-  const [recipeCount, setRecipeCount] = useState(5)
+  const settingsQuery = useQuery(settingsQueryOptions)
+  // null until someone picks a count here; until then the household's default applies.
+  const [recipeCount, setRecipeCount] = useState<number | null>(null)
   const [picker, setPicker] = useState<PickerState | null>(null)
 
   const mutation = useMutation({
@@ -41,9 +44,9 @@ export function WeekPage() {
   const week = weekQuery.data
   const recipes = recipesQuery.data?.recipes ?? []
   const maxCount = Math.max(1, recipes.length)
-  const selectedCount = Math.min(recipeCount, maxCount)
-  const isLoading = weekQuery.isLoading || recipesQuery.isLoading
-  const readError = weekQuery.error ?? recipesQuery.error
+  const selectedCount = Math.min(recipeCount ?? settingsQuery.data?.defaultRecipeCount ?? 1, maxCount)
+  const isLoading = weekQuery.isLoading || recipesQuery.isLoading || settingsQuery.isLoading
+  const readError = weekQuery.error ?? recipesQuery.error ?? settingsQuery.error
 
   if (isLoading) return <WeekSkeleton />
   if (readError) {

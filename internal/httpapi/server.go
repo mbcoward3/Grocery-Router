@@ -24,7 +24,7 @@ type Clock func() time.Time
 // AuthorizeHousehold checks membership after ServeMux has resolved the path value.
 type AuthorizeHousehold func(context.Context, string) bool
 
-// Server is the HTTP boundary around corpus reads and week operations.
+// Server is the HTTP boundary around corpus reads, week operations, and household settings.
 type Server struct {
 	queries   *store.Queries
 	weeks     *week.Service
@@ -61,6 +61,8 @@ func New(db *sql.DB, weeks *week.Service, clock Clock, authorize AuthorizeHouseh
 	mux.Handle("GET /api/v2/households/{householdID}/grocery-items", server.guard(http.HandlerFunc(server.searchGroceryItems)))
 	mux.Handle("GET /api/v2/households/{householdID}/store-sections", server.guard(http.HandlerFunc(server.storeSections)))
 	mux.Handle("PUT /api/v2/households/{householdID}/store-sections", server.guard(http.HandlerFunc(server.setStoreSections)))
+	mux.Handle("GET /api/v2/households/{householdID}/settings", server.guard(http.HandlerFunc(server.getSettings)))
+	mux.Handle("PATCH /api/v2/households/{householdID}/settings", server.guard(http.HandlerFunc(server.updateSettings)))
 	server.handler = requestHeaders(mux)
 	return server
 }

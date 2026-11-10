@@ -7,6 +7,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 )
 
 const getHouseholdName = `-- name: GetHouseholdName :one
@@ -18,6 +19,22 @@ func (q *Queries) GetHouseholdName(ctx context.Context, householdID string) (str
 	var name string
 	err := row.Scan(&name)
 	return name, err
+}
+
+const getHouseholdSettings = `-- name: GetHouseholdSettings :one
+SELECT timezone, default_recipe_count FROM households WHERE id = $1
+`
+
+type GetHouseholdSettingsRow struct {
+	Timezone           string `db:"timezone" json:"timezone"`
+	DefaultRecipeCount int32  `db:"default_recipe_count" json:"default_recipe_count"`
+}
+
+func (q *Queries) GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error) {
+	row := q.db.QueryRowContext(ctx, getHouseholdSettings, householdID)
+	var i GetHouseholdSettingsRow
+	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount)
+	return i, err
 }
 
 const getHouseholdTimezone = `-- name: GetHouseholdTimezone :one
@@ -47,4 +64,33 @@ func (q *Queries) SetHouseholdTimezone(ctx context.Context, arg SetHouseholdTime
 		return 0, err
 	}
 	return result.RowsAffected()
+}
+
+const updateHouseholdSettings = `-- name: UpdateHouseholdSettings :one
+UPDATE households SET
+    timezone = coalesce($1, timezone),
+    default_recipe_count = coalesce($2, default_recipe_count),
+    updated_at = clock_timestamp()
+WHERE id = $3
+RETURNING timezone, default_recipe_count
+`
+
+type UpdateHouseholdSettingsParams struct {
+	Timezone           sql.NullString `db:"timezone" json:"timezone"`
+	DefaultRecipeCount sql.NullInt32  `db:"default_recipe_count" json:"default_recipe_count"`
+	HouseholdID        string         `db:"household_id" json:"household_id"`
+}
+
+type UpdateHouseholdSettingsRow struct {
+	Timezone           string `db:"timezone" json:"timezone"`
+	DefaultRecipeCount int32  `db:"default_recipe_count" json:"default_recipe_count"`
+}
+
+// A NULL argument keeps the stored value, so a change to one setting cannot overwrite a
+// concurrent change to the other.
+func (q *Queries) UpdateHouseholdSettings(ctx context.Context, arg UpdateHouseholdSettingsParams) (UpdateHouseholdSettingsRow, error) {
+	row := q.db.QueryRowContext(ctx, updateHouseholdSettings, arg.Timezone, arg.DefaultRecipeCount, arg.HouseholdID)
+	var i UpdateHouseholdSettingsRow
+	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount)
+	return i, err
 }
