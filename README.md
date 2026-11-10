@@ -9,8 +9,9 @@ recipe pool and a deterministic grocery checklist.
 History, and Recipe detail screens are implemented on the Go/PostgreSQL foundation. Users sign in
 with Google and share one household
 ([`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md)), and the application is deployed as a
-container ([`DEPLOYMENT.md`](DEPLOYMENT.md)). The PDF-controlled ledger contains 25 recipes. Completed household re-review includes 24 in the
-strict Markdown bootstrap and explicitly excludes Chicken and Dumplings.
+container ([`DEPLOYMENT.md`](DEPLOYMENT.md)). The PDF-controlled ledger contains 25 recipes.
+Completed household re-review includes 24 in the strict Markdown bootstrap and explicitly
+excludes Chicken and Dumplings.
 
 ## Start here
 
@@ -67,10 +68,10 @@ Start local PostgreSQL with `task db-up`. Pass command flags after `--`, for exa
 `go run ./cmd/grocery-router --help` for command-specific help.
 
 GitHub Actions runs `task ci` for pull requests and pushes to `main`. Local Go integration tests
-use PostgreSQL; run `task db-up` first or set `GROCERY_ROUTER_TEST_DATABASE_URL`. Run `task dev` from a fresh
-clone to install missing frontend dependencies, ingest the corpus into the local database, and
-start both servers. Open `http://localhost:5173`; another device on the same network can use the
-Network URL printed by Vite.
+use PostgreSQL; run `task db-up` first or set `GROCERY_ROUTER_TEST_DATABASE_URL`. Run
+`task dev` from a fresh clone to install missing frontend dependencies, ingest the corpus into
+the local database, and start both servers. The API server requires the authentication
+environment described in [`web/README.md`](web/README.md). Open `http://localhost:5173`.
 
 
 Shopping browser acceptance tests run against a local Vite server with deterministic API fixtures

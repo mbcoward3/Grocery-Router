@@ -68,4 +68,5 @@ must match `internal/store/queries/` and `sqlc.yaml`. Open PostgreSQL connection
 ## Working rule
 
 When a desirable capability is outside the documents in the Authority list, record or refine it
-in `UP_NEXT.md`; do not add speculative schema, controls, dependencies, or placeholder architecture to v1.
+in `UP_NEXT.md`; do not add speculative schema, controls, dependencies, or placeholder
+architecture to v1.
