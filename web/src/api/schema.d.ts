@@ -86,7 +86,7 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** Return the explicitly generated current week. */
+        /** Return the current plan. */
         get: operations["getCurrentWeek"];
         put?: never;
         post?: never;
@@ -105,7 +105,7 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** List earlier generated weeks, newest first. */
+        /** List past plans, newest first. */
         get: operations["listWeekHistory"];
         put?: never;
         post?: never;
@@ -125,10 +125,30 @@ export interface paths {
             };
             cookie?: never;
         };
-        /** Return an earlier week's final meals and retained grocery checklist. */
+        /** Return a past plan's meals and retained grocery checklist. */
         get: operations["getHistoricalWeek"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/households/{householdID}/weeks/history/{weekID}/reopen": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+                weekID: number;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Make a past plan the current plan again; the current plan, if any, moves to History. */
+        post: operations["reopenHistoricalWeek"];
         delete?: never;
         options?: never;
         head?: never;
@@ -146,7 +166,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Create or fully regenerate the current week. */
+        /** Fill the current plan with new meals, or start a new plan today when there is none. */
         post: operations["generateCurrentWeek"];
         delete?: never;
         options?: never;
@@ -165,7 +185,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Close the current week now and move it to History. The next week is not generated. */
+        /** Close the current plan now and move it to History. The next plan is not generated. */
         post: operations["closeCurrentWeek"];
         delete?: never;
         options?: never;
@@ -267,10 +287,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /**
-         * Change one or more household preferences; any household member may.
-         * @description Changing the time zone, rollover day, time, or mode moves the open week's automatic close time to the next rollover under the new settings (none in manual mode). Saving never closes a week.
-         */
+        /** Change one or more household preferences; any household member may. */
         patch: operations["updateHouseholdSettings"];
         trace?: never;
     };
@@ -479,7 +496,7 @@ export interface components {
             startsOn: string;
             /**
              * Format: date
-             * @description The week's last household-local date: the date one second before it closed, or before it closes itself while open. Null for an open week in manual mode.
+             * @description The household-local date the plan was closed, or null while it is the current plan. A plan has no fixed length; it stays current until a new one is started or a past one is reopened.
              */
             endsOn: string | null;
             recipes: components["schemas"]["RecipeOccurrence"][];
@@ -490,7 +507,7 @@ export interface components {
             startsOn: string;
             /**
              * Format: date
-             * @description The household-local date one second before the week closed.
+             * @description The household-local date the plan was closed.
              */
             endsOn: string;
             recipeCount: number;
@@ -502,23 +519,11 @@ export interface components {
             groceries: components["schemas"]["Groceries"];
         };
         HouseholdSettings: {
-            /** @description IANA time zone that decides when the household's week begins. */
+            /** @description IANA time zone used to date the household's plans. */
             timezone: string;
-            /** @description Recipes offered when generating a week. */
+            /** @description Recipes offered when generating a plan. */
             defaultRecipeCount: number;
-            weekStartDay: components["schemas"]["WeekStartDay"];
-            rolloverTime: components["schemas"]["RolloverTime"];
-            rolloverMode: components["schemas"]["RolloverMode"];
         };
-        /** @description The local day the week rolls over on: 0 is Sunday, 6 is Saturday. */
-        WeekStartDay: number;
-        /** @description The local time of day the week rolls over, HH:MM on a 24-hour clock. */
-        RolloverTime: string;
-        /**
-         * @description automatic: the week closes itself at the rollover day and time. manual: the week stays open until someone starts the next one.
-         * @enum {string}
-         */
-        RolloverMode: "automatic" | "manual";
         APIError: {
             error: {
                 code: string;
@@ -545,7 +550,7 @@ export interface components {
                 "application/json": components["schemas"]["APIError"];
             };
         };
-        /** @description Canonical current week after the operation. */
+        /** @description Canonical current plan after the operation. */
         Week: {
             headers: {
                 [name: string]: unknown;
@@ -563,7 +568,7 @@ export interface components {
                 "application/json": components["schemas"]["APIError"];
             };
         };
-        /** @description The current week has not been explicitly generated. */
+        /** @description There is no current plan. */
         NoCurrentWeek: {
             headers: {
                 [name: string]: unknown;
@@ -773,7 +778,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Read-only past-week summaries. */
+            /** @description Past-plan summaries. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -800,7 +805,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Read-only historical week detail. */
+            /** @description Past plan detail. */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -809,6 +814,24 @@ export interface operations {
                     "application/json": components["schemas"]["HistoricalWeek"];
                 };
             };
+            400: components["responses"]["InvalidRequest"];
+            404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    reopenHistoricalWeek: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+                weekID: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["Week"];
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
@@ -1023,9 +1046,6 @@ export interface operations {
                     /** @description IANA time zone name, for example America/Chicago. */
                     timezone?: string;
                     defaultRecipeCount?: number;
-                    weekStartDay?: components["schemas"]["WeekStartDay"];
-                    rolloverTime?: components["schemas"]["RolloverTime"];
-                    rolloverMode?: components["schemas"]["RolloverMode"];
                 };
             };
         };

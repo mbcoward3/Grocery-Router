@@ -6,20 +6,19 @@ import (
 	"errors"
 	"sort"
 	"strings"
-	"time"
 
 	"github.com/mbcoward3/grocery-router/internal/store"
 )
 
 // AddManualLine adds a week-only item, resolving known names deterministically.
-func (service *Household) AddManualLine(ctx context.Context, now time.Time, name string, choices ...ManualLineOptions) (store.ShoppingLine, error) {
+func (service *Household) AddManualLine(ctx context.Context, name string, choices ...ManualLineOptions) (store.ShoppingLine, error) {
 	name = strings.TrimSpace(name)
 	if name == "" {
 		return store.ShoppingLine{}, invalid("manual line name is required")
 	}
 	var result store.ShoppingLine
 	err := service.transact(ctx, func(queries *store.Queries) error {
-		weekRow, err := service.lockOpenWeek(ctx, queries, now)
+		weekRow, err := service.lockOpenWeek(ctx, queries)
 		if err != nil {
 			return err
 		}
@@ -105,13 +104,13 @@ func normalizeItem(value string) string {
 }
 
 // SetLineSection changes only a manual line in the current week.
-func (service *Household) SetLineSection(ctx context.Context, now time.Time, lineID, sectionID int64) error {
+func (service *Household) SetLineSection(ctx context.Context, lineID, sectionID int64) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
 		if err := requireSection(ctx, queries, service.householdID, sectionID); err != nil {
 			return err
 		}
 		// Without an open week the update below finds no line.
-		if _, err := service.lockOpenWeek(ctx, queries, now); err != nil && !errors.Is(err, ErrNoCurrentWeek) {
+		if _, err := service.lockOpenWeek(ctx, queries); err != nil && !errors.Is(err, ErrNoCurrentWeek) {
 			return err
 		}
 		line, err := queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{

@@ -73,7 +73,7 @@ func TestCompatibilityFixture(t *testing.T) {
 	if _, err := service.Generate(ctx, now, 1); err != nil {
 		t.Fatal(err)
 	}
-	checklist, err := service.Checklist(ctx, now)
+	checklist, err := service.Checklist(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -110,7 +110,7 @@ func TestCompatibilityFixture(t *testing.T) {
 			}
 			row.Quantities = append(row.Quantities, quantity)
 		}
-		contributions, err := service.Contributions(ctx, now, line.ID)
+		contributions, err := service.Contributions(ctx, line.ID)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -10,7 +10,6 @@ import (
 
 	"github.com/pressly/goose/v3"
 
-	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/tenant"
 )
 
@@ -56,7 +55,8 @@ func TestOpenAndClosedWeeksMigrationBackfillsInHouseholdZone(t *testing.T) {
 	otherCurrentID := insertWeek(other, otherCurrent.Format(dateOnly))
 	otherNextID := insertWeek(other, otherCurrent.AddDate(0, 0, 7).Format(dateOnly))
 
-	if err := database.Migrate(ctx, db); err != nil {
+	// Stop before 00013 drops auto_close_at, which this test checks.
+	if _, err := provider.UpTo(ctx, 11); err != nil {
 		t.Fatalf("reapply open and closed weeks: %v", err)
 	}
 
@@ -113,7 +113,7 @@ func TestOpenAndClosedWeeksMigrationBackfillsInHouseholdZone(t *testing.T) {
 	if _, err := provider.DownTo(ctx, 10); err != nil {
 		t.Fatalf("roll back open and closed weeks with data: %v", err)
 	}
-	if err := database.Migrate(ctx, db); err != nil {
+	if _, err := provider.UpTo(ctx, 11); err != nil {
 		t.Fatalf("reapply open and closed weeks with data: %v", err)
 	}
 	if err := db.QueryRow("SELECT count(*) FROM weeks WHERE household_id = $1 AND closed_at IS NULL", tenant.CowardHouseholdID).Scan(&open); err != nil || open != 1 {

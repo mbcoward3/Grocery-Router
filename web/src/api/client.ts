@@ -103,9 +103,14 @@ export function generateWeek(recipeCount: number): Promise<Week> {
   })
 }
 
-// closeCurrentWeek ends the open week now. It never generates the next one.
+// closeCurrentWeek ends the current plan now. It never generates the next one.
 export async function closeCurrentWeek(): Promise<void> {
   await request(householdPath('/week/current/close'), { method: 'POST' })
+}
+
+// reopenWeek makes a past plan current again; the current plan, if any, moves to History.
+export function reopenWeek(weekId: number): Promise<Week> {
+  return request(householdPath(`/weeks/history/${weekId}/reopen`), { method: 'POST' })
 }
 
 export function addRecipe(recipeId: number): Promise<Week> {

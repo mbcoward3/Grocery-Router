@@ -1,47 +1,20 @@
 -- name: CreateWeek :one
-INSERT INTO weeks (household_id, starts_on, opened_at, auto_close_at)
-VALUES (sqlc.arg(household_id), sqlc.arg(starts_on), sqlc.arg(opened_at), sqlc.narg(auto_close_at))
+INSERT INTO weeks (household_id, starts_on, opened_at)
+VALUES (sqlc.arg(household_id), sqlc.arg(starts_on), sqlc.arg(opened_at))
 RETURNING *;
 
--- name: CloseExpiredWeek :exec
--- Closes the household's open week once its automatic close time has passed, recording that
--- time rather than when the close was noticed, and fixing its last local date in the
--- household's zone now (week.endsOn computes the same date for an open week). A week that
--- closes before its start date, one started early, ends on its start date. Dates are ISO text,
--- so GREATEST compares them as dates.
-UPDATE weeks AS w SET
-    closed_at = w.auto_close_at,
-    ends_on = greatest(
-        to_char((w.auto_close_at - INTERVAL '1 second') AT TIME ZONE h.timezone, 'YYYY-MM-DD'),
-        w.starts_on
-    )
-FROM households AS h
-WHERE
-    h.id = w.household_id
-    AND w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
-    AND w.auto_close_at <= CAST(sqlc.arg(now) AS TIMESTAMPTZ);
-
 -- name: CloseOpenWeek :execrows
--- Closes the household's open week by hand at now with its last local date (week.lastDay), but
--- never before its start date: a week started early and closed again before its period began
--- ends on its start date. The automatic close time stays as it was: while that rollover is still
--- ahead, the next week opened takes over the upcoming period (week.skippedRollover).
+-- Closes the household's open plan at now with its last local date, never before its start
+-- date. Dates are ISO text, so GREATEST compares them as dates.
 UPDATE weeks SET
     closed_at = CAST(sqlc.arg(closed_at) AS TIMESTAMPTZ),
     ends_on = greatest(CAST(sqlc.arg(ends_on) AS TEXT), starts_on)
 WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
 
--- name: GetLastClosedWeek :one
-SELECT * FROM weeks
-WHERE household_id = sqlc.arg(household_id) AND closed_at IS NOT NULL
-ORDER BY closed_at DESC, id DESC
-LIMIT 1;
-
--- name: SetOpenWeekAutoClose :exec
--- Moves the open week's automatic close time after a settings change; NULL leaves it open until
--- closed by hand. It never closes a week.
-UPDATE weeks SET auto_close_at = sqlc.narg(auto_close_at)
-WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
+-- name: ReopenWeek :execrows
+-- Makes a past plan the open one again. The caller closes the open plan first.
+UPDATE weeks SET closed_at = NULL, ends_on = NULL
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NOT NULL;
 
 -- name: GetOpenWeek :one
 SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;

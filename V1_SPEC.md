@@ -255,8 +255,8 @@ Shopping mode is reviewed corpus data, not inferred at list-generation time.
 
 ### Week
 
-A manually generated, unordered pool associated with the current period, which begins at the
-household's configured week start (D050).
+A manually generated, unordered pool for the time until the household's next shopping trip, shown
+as a *plan* in the app (D051). It has no fixed length.
 
 ### Week recipe
 
@@ -277,16 +277,14 @@ The trace from a generated grocery line to a particular week-recipe occurrence a
 ### 6.1 Creating the week
 
 - A week is created only through an explicit user action.
-- Creation automatically assigns the start date of the current week under the household's
-  configured week start: the local date of the most recent rollover day and time in automatic
-  mode, or today's local date in manual mode (D050). In automatic mode, a week created after the
-  previous week was closed by hand, while that week's rollover is still ahead, takes over the
-  upcoming period: it starts on the date of the next rollover and ends at the one after it.
-- Any household member can close the current week early with "Start next week", in either mode.
-  It moves to History; closing never creates the next week.
+- Creation assigns today's household-local date as the start date (D051).
+- The week stays current until a household member closes it with "Start new plan" or reopens a
+  past week from History. Closing moves it to History and never creates the next week.
+  Reopening makes the past week current again, as it was, and moves the current week, if any,
+  to History.
 - The user supplies the number of dinners/recipes.
 - No guest count or serving count is requested.
-- No week is created automatically at the rollover; rolling over only closes the week.
+- Nothing creates or closes a week by the calendar.
 - Future weeks cannot be selected in v1.
 
 ### 6.2 Random generation

@@ -68,7 +68,7 @@ paths:
       - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: getCurrentWeek
-      summary: Return the explicitly generated current week.
+      summary: Return the current plan.
       responses:
         "200": { $ref: "#/components/responses/Week" }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
@@ -78,10 +78,10 @@ paths:
       - $ref: "#/components/parameters/HouseholdID"
     get:
       operationId: listWeekHistory
-      summary: List earlier generated weeks, newest first.
+      summary: List past plans, newest first.
       responses:
         "200":
-          description: Read-only past-week summaries.
+          description: Past-plan summaries.
           content:
             application/json:
               schema:
@@ -102,13 +102,28 @@ paths:
         schema: { type: integer, minimum: 1 }
     get:
       operationId: getHistoricalWeek
-      summary: Return an earlier week's final meals and retained grocery checklist.
+      summary: Return a past plan's meals and retained grocery checklist.
       responses:
         "200":
-          description: Read-only historical week detail.
+          description: Past plan detail.
           content:
             application/json:
               schema: { $ref: "#/components/schemas/HistoricalWeek" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "500": { $ref: "#/components/responses/InternalError" }
+  /households/{householdID}/weeks/history/{weekID}/reopen:
+    parameters:
+      - $ref: "#/components/parameters/HouseholdID"
+      - name: weekID
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+    post:
+      operationId: reopenHistoricalWeek
+      summary: Make a past plan the current plan again; the current plan, if any, moves to History.
+      responses:
+        "200": { $ref: "#/components/responses/Week" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
@@ -117,7 +132,7 @@ paths:
       - $ref: "#/components/parameters/HouseholdID"
     post:
       operationId: generateCurrentWeek
-      summary: Create or fully regenerate the current week.
+      summary: Fill the current plan with new meals, or start a new plan today when there is none.
       requestBody:
         required: true
         content:
@@ -141,7 +156,7 @@ paths:
       - $ref: "#/components/parameters/HouseholdID"
     post:
       operationId: closeCurrentWeek
-      summary: Close the current week now and move it to History. The next week is not generated.
+      summary: Close the current plan now and move it to History. The next plan is not generated.
       responses:
         "204": { description: The week was closed. }
         "404": { $ref: "#/components/responses/NoCurrentWeek" }
@@ -244,10 +259,6 @@ paths:
     patch:
       operationId: updateHouseholdSettings
       summary: Change one or more household preferences; any household member may.
-      description: >-
-        Changing the time zone, rollover day, time, or mode moves the open week's automatic close
-        time to the next rollover under the new settings (none in manual mode). Saving never
-        closes a week.
       requestBody:
         required: true
         content:
@@ -259,9 +270,6 @@ paths:
               properties:
                 timezone: { type: string, description: "IANA time zone name, for example America/Chicago." }
                 defaultRecipeCount: { type: integer, minimum: 1, maximum: 21 }
-                weekStartDay: { $ref: "#/components/schemas/WeekStartDay" }
-                rolloverTime: { $ref: "#/components/schemas/RolloverTime" }
-                rolloverMode: { $ref: "#/components/schemas/RolloverMode" }
       responses:
         "200": { $ref: "#/components/responses/HouseholdSettings" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
@@ -596,8 +604,9 @@ components:
           type: [string, "null"]
           format: date
           description: >-
-            The week's last household-local date: the date one second before it closed, or
-            before it closes itself while open. Null for an open week in manual mode.
+            The household-local date the plan was closed, or null while it is the current plan.
+            A plan has no fixed length; it stays current until a new one is started or a past
+            one is reopened.
         recipes:
           type: array
           items: { $ref: "#/components/schemas/RecipeOccurrence" }
@@ -607,7 +616,7 @@ components:
       properties:
         id: { type: integer }
         startsOn: { type: string, format: date }
-        endsOn: { type: string, format: date, description: "The household-local date one second before the week closed." }
+        endsOn: { type: string, format: date, description: "The household-local date the plan was closed." }
         recipeCount: { type: integer, minimum: 0 }
         groceryCount: { type: integer, minimum: 0 }
         completedCount: { type: integer, minimum: 0 }
@@ -619,28 +628,10 @@ components:
         groceries: { $ref: "#/components/schemas/Groceries" }
     HouseholdSettings:
       type: object
-      required: [timezone, defaultRecipeCount, weekStartDay, rolloverTime, rolloverMode]
+      required: [timezone, defaultRecipeCount]
       properties:
-        timezone: { type: string, description: "IANA time zone that decides when the household's week begins." }
-        defaultRecipeCount: { type: integer, minimum: 1, maximum: 21, description: "Recipes offered when generating a week." }
-        weekStartDay: { $ref: "#/components/schemas/WeekStartDay" }
-        rolloverTime: { $ref: "#/components/schemas/RolloverTime" }
-        rolloverMode: { $ref: "#/components/schemas/RolloverMode" }
-    WeekStartDay:
-      type: integer
-      minimum: 0
-      maximum: 6
-      description: "The local day the week rolls over on: 0 is Sunday, 6 is Saturday."
-    RolloverTime:
-      type: string
-      pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
-      description: "The local time of day the week rolls over, HH:MM on a 24-hour clock."
-    RolloverMode:
-      type: string
-      enum: [automatic, manual]
-      description: >-
-        automatic: the week closes itself at the rollover day and time. manual: the week stays
-        open until someone starts the next one.
+        timezone: { type: string, description: "IANA time zone used to date the household's plans." }
+        defaultRecipeCount: { type: integer, minimum: 1, maximum: 21, description: "Recipes offered when generating a plan." }
     APIError:
       type: object
       required: [error]
@@ -663,7 +654,7 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }
     Week:
-      description: Canonical current week after the operation.
+      description: Canonical current plan after the operation.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/Week" }
@@ -673,7 +664,7 @@ components:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }
     NoCurrentWeek:
-      description: The current week has not been explicitly generated.
+      description: There is no current plan.
       content:
         application/json:
           schema: { $ref: "#/components/schemas/APIError" }

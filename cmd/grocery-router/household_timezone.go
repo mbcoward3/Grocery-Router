@@ -6,18 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"time"
 
 	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/settings"
 	"github.com/mbcoward3/grocery-router/internal/store"
 	"github.com/mbcoward3/grocery-router/internal/tenant"
-	"github.com/mbcoward3/grocery-router/internal/week"
 )
 
 // householdTimezoneCommands is embedded into cli so the household-timezone command lives here.
 type householdTimezoneCommands struct {
-	HouseholdTimezone householdTimezoneCommand `cmd:"" name:"household-timezone" help:"Set the IANA time zone that decides when a household's week begins."`
+	HouseholdTimezone householdTimezoneCommand `cmd:"" name:"household-timezone" help:"Set the IANA time zone that dates a household's plans."`
 }
 
 type householdTimezoneCommand struct {
@@ -43,10 +41,8 @@ func (command *householdTimezoneCommand) Run() error {
 	}
 	defer db.Close()
 	ctx := context.Background()
-	// The same change as the Settings screen: an open automatic week's close time moves to the
-	// next rollover in the new zone, in the same transaction.
-	_, err = week.NewService(db, nil).ForHousehold(command.Household).SaveSettings(ctx, time.Now(),
-		settings.Change{Timezone: &command.Zone})
+	// The same change as the Settings screen.
+	_, err = settings.Update(ctx, store.New(db), command.Household, settings.Change{Timezone: &command.Zone})
 	if errors.Is(err, sql.ErrNoRows) {
 		return fmt.Errorf("household %s not found", command.Household)
 	}

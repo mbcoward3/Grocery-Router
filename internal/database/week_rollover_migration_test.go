@@ -15,6 +15,14 @@ import (
 func TestWeekRolloverSettingsMigration(t *testing.T) {
 	ctx := context.Background()
 	db := migratedDB(t)
+	provider, err := goose.NewProvider(goose.DialectPostgres, db, os.DirFS("migrations"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 00013 drops the rollover settings again; this checks 00012 on its own.
+	if _, err := provider.DownTo(ctx, 12); err != nil {
+		t.Fatal(err)
+	}
 
 	var day, minutes int
 	var mode string
@@ -49,13 +57,9 @@ func TestWeekRolloverSettingsMigration(t *testing.T) {
 		_, err := db.Exec(statement, tenant.CowardHouseholdID)
 		assertErrorContains(t, err, "weeks_ends_on_when_closed")
 	}
-	_, err := db.Exec(`UPDATE weeks SET ends_on = '2026-8-27' WHERE household_id = $1 AND closed_at IS NOT NULL`, tenant.CowardHouseholdID)
+	_, err = db.Exec(`UPDATE weeks SET ends_on = '2026-8-27' WHERE household_id = $1 AND closed_at IS NOT NULL`, tenant.CowardHouseholdID)
 	assertErrorContains(t, err, "violates check constraint")
 
-	provider, err := goose.NewProvider(goose.DialectPostgres, db, os.DirFS("migrations"))
-	if err != nil {
-		t.Fatal(err)
-	}
 	// Rolling back refuses to drop weeks the earlier schema cannot hold.
 	if _, err := provider.DownTo(ctx, 11); err == nil {
 		t.Fatal("rolled back with weeks that share a Friday start date")
@@ -82,7 +86,7 @@ func TestWeekRolloverSettingsMigration(t *testing.T) {
 		t.Fatalf("rollover columns after rollback = %d, %v", columns, err)
 	}
 
-	if err := database.Migrate(ctx, db); err != nil {
+	if _, err := provider.UpTo(ctx, 12); err != nil {
 		t.Fatalf("reapply week rollover settings: %v", err)
 	}
 	// The backfill uses the household's zone: the week's last local day is Saturday.
@@ -96,4 +100,52 @@ func TestWeekRolloverSettingsMigration(t *testing.T) {
 	}
 	mustExec(t, db, `INSERT INTO weeks (household_id, starts_on, opened_at, closed_at, ends_on)
 		VALUES ($1, '2026-08-16', now(), now(), '2026-08-22')`, tenant.CowardHouseholdID)
+}
+
+// Plans are open-ended (00013): the rollover settings and automatic close time go, an open plan
+// stays open, and the migration rolls back and reapplies.
+func TestOpenEndedPlansMigration(t *testing.T) {
+	ctx := context.Background()
+	db := migratedDB(t)
+	provider, err := goose.NewProvider(goose.DialectPostgres, db, os.DirFS("migrations"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := provider.DownTo(ctx, 12); err != nil {
+		t.Fatal(err)
+	}
+	// An open week whose automatic close time had passed but was not yet noticed.
+	openID := mustInsertID(t, db, `INSERT INTO weeks (household_id, starts_on, opened_at, auto_close_at)
+		VALUES ($1, '2026-08-16', now() - interval '10 days', now() - interval '3 days')`, tenant.CowardHouseholdID)
+	if err := database.Migrate(ctx, db); err != nil {
+		t.Fatal(err)
+	}
+	removed := func() int {
+		t.Helper()
+		var columns int
+		if err := db.QueryRow(`SELECT count(*) FROM information_schema.columns
+			WHERE table_schema = current_schema() AND (
+				(table_name = 'households' AND column_name IN ('week_start_day', 'rollover_minutes', 'rollover_mode'))
+				OR (table_name = 'weeks' AND column_name = 'auto_close_at'))`).Scan(&columns); err != nil {
+			t.Fatal(err)
+		}
+		return columns
+	}
+	if got := removed(); got != 0 {
+		t.Fatalf("rollover columns after 00013 = %d, want 0", got)
+	}
+	var open bool
+	if err := db.QueryRow("SELECT closed_at IS NULL FROM weeks WHERE id = $1", openID).Scan(&open); err != nil || !open {
+		t.Fatalf("open week after 00013: open %t, %v", open, err)
+	}
+
+	if _, err := provider.DownTo(ctx, 12); err != nil {
+		t.Fatalf("roll back open-ended plans: %v", err)
+	}
+	if got := removed(); got != 4 {
+		t.Fatalf("rollover columns after rollback = %d, want 4", got)
+	}
+	if err := database.Migrate(ctx, db); err != nil {
+		t.Fatalf("reapply open-ended plans: %v", err)
+	}
 }

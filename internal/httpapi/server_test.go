@@ -37,12 +37,12 @@ func TestWeekAPIEmptyGenerateAndMutate(t *testing.T) {
 		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
 	}
 	weekBody := decodeObject(t, generated)
-	if weekBody["startsOn"] != "2026-08-16" {
+	// A plan starts on the day it is made and has no end while it is current.
+	if weekBody["startsOn"] != "2026-08-19" {
 		t.Fatalf("startsOn = %#v", weekBody["startsOn"])
 	}
-	// The default rollover, Sunday 12:00 AM, ends the week on Saturday.
-	if weekBody["endsOn"] != "2026-08-22" {
-		t.Fatalf("endsOn = %#v", weekBody["endsOn"])
+	if endsOn, ok := weekBody["endsOn"]; !ok || endsOn != nil {
+		t.Fatalf("endsOn = %#v, want null", endsOn)
 	}
 	recipes := weekBody["recipes"].([]any)
 	if len(recipes) != 3 {
@@ -163,23 +163,26 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	checklist, err := service.Checklist(context.Background(), past)
+	checklist, err := service.Checklist(context.Background())
 	if err != nil || len(checklist.Lines) == 0 {
 		t.Fatalf("past checklist: %v, lines = %d", err, len(checklist.Lines))
 	}
 	if len(checklist.Lines) < 3 {
 		t.Fatalf("past checklist needs representative lines, got %d", len(checklist.Lines))
 	}
-	if err := service.SetLineCompleted(context.Background(), past, checklist.Lines[0].ID, true); err != nil {
+	if err := service.SetLineCompleted(context.Background(), checklist.Lines[0].ID, true); err != nil {
 		t.Fatal(err)
 	}
-	if err := service.SetLineOverride(context.Background(), past, checklist.Lines[1].ID, "2 bags"); err != nil {
+	if err := service.SetLineOverride(context.Background(), checklist.Lines[1].ID, "2 bags"); err != nil {
 		t.Fatal(err)
 	}
-	if err := service.SetLineRemoved(context.Background(), past, checklist.Lines[2].ID, true); err != nil {
+	if err := service.SetLineRemoved(context.Background(), checklist.Lines[2].ID, true); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := service.AddManualLine(context.Background(), past, "Paper towels"); err != nil {
+	if _, err := service.AddManualLine(context.Background(), "Paper towels"); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.Close(context.Background(), past.Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 
@@ -193,7 +196,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 		t.Fatalf("history weeks = %d", len(weeks))
 	}
 	summary := weeks[0].(map[string]any)
-	if summary["startsOn"] != "2026-08-09" || summary["endsOn"] != "2026-08-15" || summary["recipeCount"] != float64(2) || summary["completedCount"] != float64(1) {
+	if summary["startsOn"] != "2026-08-12" || summary["endsOn"] != "2026-08-12" || summary["recipeCount"] != float64(2) || summary["completedCount"] != float64(1) {
 		t.Fatalf("history summary = %#v", summary)
 	}
 
@@ -202,7 +205,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 		t.Fatalf("history detail status = %d, body %s", detail.Code, detail.Body.String())
 	}
 	body := decodeObject(t, detail)
-	if pastWeek := body["week"].(map[string]any); len(pastWeek["recipes"].([]any)) != 2 || pastWeek["endsOn"] != "2026-08-15" {
+	if pastWeek := body["week"].(map[string]any); len(pastWeek["recipes"].([]any)) != 2 || pastWeek["endsOn"] != "2026-08-12" {
 		t.Fatalf("history detail week = %#v", body["week"])
 	}
 	lines := body["groceries"].(map[string]any)["lines"].([]any)
@@ -266,6 +269,36 @@ func TestCloseCurrentWeekAPI(t *testing.T) {
 		t.Fatalf("second close status = %d, body %s", again.Code, again.Body.String())
 	}
 	assertErrorCode(t, again, "no_current_week")
+
+	// Reopening makes the closed plan current again, with its checklist as it was, and moves
+	// the plan that was current to History.
+	next := request(t, handler, http.MethodPost, root+"/week/current/generate", `{"recipeCount":1}`)
+	if next.Code != http.StatusOK {
+		t.Fatalf("generate next status = %d, body %s", next.Code, next.Body.String())
+	}
+	nextID := decodeObject(t, next)["id"]
+	reopened := request(t, handler, http.MethodPost, fmt.Sprintf("%s/weeks/history/%d/reopen", root, weekID), "")
+	reopenedBody := decodeObject(t, reopened)
+	if reopened.Code != http.StatusOK || reopenedBody["id"] != float64(weekID) || reopenedBody["endsOn"] != nil {
+		t.Fatalf("reopen status = %d, body %s", reopened.Code, reopened.Body.String())
+	}
+	if current := request(t, handler, http.MethodGet, root+"/week/current", ""); decodeObject(t, current)["id"] != float64(weekID) {
+		t.Fatalf("current after reopen = %s", current.Body.String())
+	}
+	if groceries := request(t, handler, http.MethodGet, root+"/week/current/groceries", ""); !strings.Contains(groceries.Body.String(), `"completed":true`) {
+		t.Fatalf("reopened groceries lost their state: %s", groceries.Body.String())
+	}
+	history = request(t, handler, http.MethodGet, root+"/weeks/history", "")
+	weeks = decodeObject(t, history)["weeks"].([]any)
+	if len(weeks) != 1 || weeks[0].(map[string]any)["id"] != nextID {
+		t.Fatalf("history after reopen = %s", history.Body.String())
+	}
+	// The current plan is not in History, so it cannot be reopened.
+	notPast := request(t, handler, http.MethodPost, fmt.Sprintf("%s/weeks/history/%d/reopen", root, weekID), "")
+	if notPast.Code != http.StatusNotFound {
+		t.Fatalf("reopen current plan status = %d, body %s", notPast.Code, notPast.Body.String())
+	}
+	assertErrorCode(t, notPast, "past_week_not_found")
 }
 
 func lineCompleted(t *testing.T, response *httptest.ResponseRecorder, lineID int64) bool {
@@ -603,79 +636,31 @@ func TestGroceriesWithoutCurrentWeek(t *testing.T) {
 	}
 }
 
-func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
+// A plan is dated in the household's zone: Sunday 01:00 UTC is still Saturday in Chicago.
+func TestPlanDatesFollowHouseholdTimezone(t *testing.T) {
 	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
 	db := testDB(t)
-	service := week.NewService(db, zeroPicker{})
-	// This test used to switch the zone under an open week and expect it to become History. That
-	// contradicts #45 design choice 4: a week's closing time is fixed in the household's zone when
-	// it is generated, and a zone change never closes it. So each zone below plans the week afresh.
-	generate := func() {
-		t.Helper()
-		if _, err := db.Exec("DELETE FROM weeks WHERE household_id = $1", household); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := service.ForHousehold(household).Generate(context.Background(), time.Date(2026, time.August, 12, 12, 0, 0, 0, time.UTC), 2); err != nil {
-			t.Fatal(err)
-		}
-	}
-	// Sunday 01:00 in UTC is Saturday evening in Chicago.
-	handler := contractHandler(t, httpapi.New(db, service, func() time.Time {
+	handler := contractHandler(t, httpapi.New(db, week.NewService(db, zeroPicker{}), func() time.Time {
 		return time.Date(2026, time.August, 16, 1, 0, 0, 0, time.UTC)
 	}, func(_ context.Context, id string) bool { return id == household }).Handler())
 	path := func(suffix string) string { return "/api/v2/households/" + household + suffix }
-	setZone := func(zone string) {
-		t.Helper()
-		if _, err := db.Exec("UPDATE households SET timezone = $1 WHERE id = $2", zone, household); err != nil {
+
+	for _, zone := range []struct{ name, date string }{{"America/Chicago", "2026-08-15"}, {"UTC", "2026-08-16"}} {
+		if _, err := db.Exec("UPDATE households SET timezone = $1 WHERE id = $2", zone.name, household); err != nil {
 			t.Fatal(err)
 		}
-	}
-	historyStarts := func() []any {
-		t.Helper()
-		response := request(t, handler, http.MethodGet, path("/weeks/history"), "")
-		if response.Code != http.StatusOK {
-			t.Fatalf("history status = %d, body %s", response.Code, response.Body.String())
+		generated := request(t, handler, http.MethodPost, path("/week/current/generate"), `{"recipeCount":1}`)
+		if generated.Code != http.StatusOK || decodeObject(t, generated)["startsOn"] != zone.date {
+			t.Fatalf("%s generate status = %d, body %s", zone.name, generated.Code, generated.Body.String())
 		}
-		starts := make([]any, 0)
-		for _, value := range decodeObject(t, response)["weeks"].([]any) {
-			starts = append(starts, value.(map[string]any)["startsOn"])
+		if closed := request(t, handler, http.MethodPost, path("/week/current/close"), ""); closed.Code != http.StatusNoContent {
+			t.Fatalf("%s close status = %d", zone.name, closed.Code)
 		}
-		return starts
-	}
-
-	setZone("America/Chicago")
-	generate()
-	current := request(t, handler, http.MethodGet, path("/week/current"), "")
-	if current.Code != http.StatusOK || decodeObject(t, current)["startsOn"] != "2026-08-09" {
-		t.Fatalf("Chicago current week status = %d, body %s", current.Code, current.Body.String())
-	}
-	groceries := request(t, handler, http.MethodGet, path("/week/current/groceries"), "")
-	if groceries.Code != http.StatusOK || decodeObject(t, groceries)["startsOn"] != "2026-08-09" {
-		t.Fatalf("Chicago groceries status = %d, body %s", groceries.Code, groceries.Body.String())
-	}
-	if starts := historyStarts(); len(starts) != 0 {
-		t.Fatalf("Chicago history = %#v, want no past weeks", starts)
-	}
-	added := request(t, handler, http.MethodPost, path("/week/current/groceries"), `{"name":"Paper towels"}`)
-	if added.Code != http.StatusOK || decodeObject(t, added)["startsOn"] != "2026-08-09" {
-		t.Fatalf("Chicago manual line status = %d, body %s", added.Code, added.Body.String())
-	}
-
-	setZone("UTC")
-	generate()
-	for _, call := range []struct{ method, suffix, body string }{
-		{http.MethodGet, "/week/current", ""},
-		{http.MethodGet, "/week/current/groceries", ""},
-		{http.MethodPost, "/week/current/groceries", `{"name":"Paper towels"}`},
-	} {
-		response := request(t, handler, call.method, path(call.suffix), call.body)
-		if response.Code != http.StatusNotFound {
-			t.Fatalf("UTC %s %s status = %d, body %s", call.method, call.suffix, response.Code, response.Body.String())
+		history := request(t, handler, http.MethodGet, path("/weeks/history"), "")
+		latest := decodeObject(t, history)["weeks"].([]any)[0].(map[string]any)
+		if latest["startsOn"] != zone.date || latest["endsOn"] != zone.date {
+			t.Fatalf("%s history = %s", zone.name, history.Body.String())
 		}
-		assertErrorCode(t, response, "no_current_week")
-	}
-	if starts := historyStarts(); len(starts) != 1 || starts[0] != "2026-08-09" {
-		t.Fatalf("UTC history = %#v, want [2026-08-09]", starts)
 	}
 }
 

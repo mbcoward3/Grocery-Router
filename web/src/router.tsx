@@ -21,7 +21,7 @@ const rootRoute = createRootRouteWithContext<RouterContext>()({
   component: AppShell,
   notFoundComponent: () => (
     <StatePage eyebrow="Not found" title="That page does not exist.">
-      <Link className="button" to="/">Return to this week</Link>
+      <Link className="button" to="/">Return to your plan</Link>
     </StatePage>
   ),
 })

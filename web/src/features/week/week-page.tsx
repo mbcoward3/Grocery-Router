@@ -16,7 +16,7 @@ import {
 import { ArrowIcon, CloseIcon, PlusIcon, SwapIcon, TrashIcon } from '../../ui/icons'
 import { historyQueryKey, historyQueryOptions } from '../history/queries'
 import { settingsQueryOptions } from '../settings/queries'
-import { deviceToday, formatWeekRange, formatWeekday, formatShortDate } from './dates'
+import { deviceToday, formatWeekRange, formatShortDate } from './dates'
 import { currentWeekQueryOptions, recipesQueryOptions, weekQueryKey } from './queries'
 
 const groceriesQueryKey = ['week', 'groceries'] as const
@@ -35,19 +35,19 @@ export function WeekPage() {
   const weekQuery = useQuery(currentWeekQueryOptions)
   const recipesQuery = useQuery(recipesQueryOptions)
   const settingsQuery = useQuery(settingsQueryOptions)
-  // The week closed from this page. Until a new week is generated it is the week the "Plan next
-  // week" step links to, so that step never waits on, or is hidden by, a failed reload.
+  // The plan closed from this page. Until a new plan is generated it is the plan the "Start a new
+  // plan" step links to, so that step never waits on, or is hidden by, a failed reload.
   const [closedWeek, setClosedWeek] = useState<WeekHistorySummary | null>(null)
-  // A week closed here is never shown again, even before a reload confirms that it closed.
+  // A plan closed here is never shown again, even before a reload confirms that it closed.
   const week = weekQuery.data && weekQuery.data.id === closedWeek?.id ? null : weekQuery.data
-  // With no open week, the week that most recently ended decides between a first-time start and
-  // "Plan next week". It is only needed then.
+  // With no current plan, the plan that most recently ended decides between a first-time start
+  // and "Start a new plan". It is only needed then.
   const historyQuery = useQuery({ ...historyQueryOptions, enabled: week === null })
   // null until someone picks a count here; until then the household's default applies.
   const [recipeCount, setRecipeCount] = useState<number | null>(null)
   const [picker, setPicker] = useState<PickerState | null>(null)
   const [confirmingClose, setConfirmingClose] = useState(false)
-  // Set when the user starts the next week, so the count control takes focus once it appears.
+  // Set when the user starts a new plan, so the count control takes focus once it appears.
   const [focusCount, setFocusCount] = useState(false)
   const startNextButton = useRef<HTMLButtonElement>(null)
   const countSelect = useRef<HTMLSelectElement>(null)
@@ -67,7 +67,7 @@ export function WeekPage() {
     mutationFn: closeWeek,
     onSuccess: async (_, closing) => {
       void queryClient.invalidateQueries({ queryKey: groceriesQueryKey })
-      // The History entry for the week just closed, if History can be reloaded now.
+      // The History entry for the plan just closed, if History can be reloaded now.
       let ended: WeekHistorySummary | undefined
       try {
         // Planning never waits long on History: after a short wait the fallback below is shown,
@@ -94,9 +94,9 @@ export function WeekPage() {
   const settingsPending = recipeCount === null && settingsQuery.isPending
   const selectedCount = Math.min(recipeCount ?? settingsQuery.data?.defaultRecipeCount ?? 5, maxCount)
   // History never blocks planning: if it fails to load, the first-time start is shown. After a
-  // close here the week that ended is already known.
+  // close here the plan that ended is already known.
   const isLoading = weekQuery.isLoading || recipesQuery.isLoading || (week === null && closedWeek === null && historyQuery.isLoading)
-  // Right after a close, a failed reload of the current week must not hide the next step.
+  // Right after a close, a failed reload of the current plan must not hide the next step.
   const readError = (week === null && closedWeek !== null ? null : weekQuery.error) ?? recipesQuery.error
 
   // The user asked for this transition, so the recipe count takes focus once it can.
@@ -135,14 +135,14 @@ export function WeekPage() {
         selectRef={countSelect}
       />
     )
-    // History, once it holds the week closed here, is the better record of it than the fallback.
+    // History, once it holds the plan closed here, is the better record of it than the fallback.
     const latest = historyQuery.data?.weeks?.[0]
-    const lastWeek = closedWeek && latest?.id !== closedWeek.id ? closedWeek : latest
-    if (lastWeek) {
+    const lastPlan = closedWeek && latest?.id !== closedWeek.id ? closedWeek : latest
+    if (lastPlan) {
       return (
         <section aria-labelledby="week-heading">
           <PageHeading count={0} week={null} />
-          <PlanNextWeek lastWeek={lastWeek}>{generate}</PlanNextWeek>
+          <StartNewPlan lastPlan={lastPlan}>{generate}</StartNewPlan>
         </section>
       )
     }
@@ -151,8 +151,8 @@ export function WeekPage() {
         <PageHeading count={0} week={null} />
         <div className="empty-week">
           <div className="empty-mark" aria-hidden="true">✦</div>
-          <h2 id="week-heading">Build this week’s recipe pool</h2>
-          <p>Choose a starting size. You can add, remove, or swap any recipe afterward.</p>
+          <h2 id="week-heading">Build your first plan</h2>
+          <p>Pick meals for as long as you like, until your next shopping trip. You can add, remove, or swap any recipe afterward.</p>
           {generate}
         </div>
       </section>
@@ -204,19 +204,19 @@ export function WeekPage() {
       </div>
 
       <div className="week-footer">
-        <span>Week of {formatShortDate(week.startsOn)}</span>
+        <span>Started {formatShortDate(week.startsOn)}</span>
         <span>{week.recipes.length} {week.recipes.length === 1 ? 'recipe' : 'recipes'}</span>
       </div>
       <MutationError error={mutation.error} />
       {!confirmingClose && <MutationError error={closeMutation.error} />}
       <div className="week-close">
         <button ref={startNextButton} className="button" type="button" onClick={() => { closeMutation.reset(); setConfirmingClose(true) }} disabled={mutation.isPending}>
-          Start next week
+          Start new plan
         </button>
       </div>
 
       {confirmingClose && (
-        <ConfirmStartNextWeek
+        <ConfirmStartNewPlan
           pending={closeMutation.isPending}
           error={closeMutation.error}
           onCancel={() => setConfirmingClose(false)}
@@ -245,9 +245,9 @@ function PageHeading({ count, week, children }: { count: number; week: Week | nu
   return (
     <header className="page-heading">
       <div>
-        <div className="eyebrow">Current week</div>
+        <div className="eyebrow">Until your next trip</div>
         <div className="week-title-line">
-          <h1 id="week-heading">This week</h1>
+          <h1 id="week-heading">Current plan</h1>
           <span className={`planning-status ${week ? 'planned' : 'unplanned'}`}>{week ? `Planned · ${count} ${count === 1 ? 'meal' : 'meals'}` : 'Not planned'}</span>
         </div>
         <p>{week ? formatWeekRange(week.startsOn, week.endsOn) : 'Choose your meals when you’re ready.'}</p>
@@ -258,7 +258,7 @@ function PageHeading({ count, week, children }: { count: number; week: Week | nu
   )
 }
 
-// GenerateControls is the recipe-count control and the Generate button that start a week.
+// GenerateControls is the recipe-count control and the Generate button that start a plan.
 function GenerateControls({
   count,
   maxCount,
@@ -291,32 +291,33 @@ function GenerateControls({
         </select>
       </label>
       <button className="button primary" type="button" disabled={pending || countPending || !canGenerate} onClick={onGenerate}>
-        {pending ? 'Generating…' : 'Generate week'}
+        {pending ? 'Generating…' : 'Generate plan'}
       </button>
       <MutationError error={error} />
     </>
   )
 }
 
-// PlanNextWeek follows a rollover: the week has ended and the next one starts only when someone
-// presses Generate. It links to the week that ended and offers the generate control directly.
-function PlanNextWeek({ lastWeek, children }: { lastWeek: WeekHistorySummary; children: React.ReactNode }) {
+// StartNewPlan follows a closed plan: the next one starts only when someone presses Generate. It
+// links to the plan that ended, which can be reopened from History, and offers the generate
+// control directly.
+function StartNewPlan({ lastPlan, children }: { lastPlan: WeekHistorySummary; children: React.ReactNode }) {
   return (
     <div className="empty-week plan-next-week">
       <div className="empty-mark" aria-hidden="true">✦</div>
-      <h2>Plan next week</h2>
+      <h2>Start a new plan</h2>
       <p>
-        Your week of {formatWeekRange(lastWeek.startsOn, lastWeek.endsOn)} ended {formatWeekday(lastWeek.endsOn)}.{' '}
-        <Link to="/history/$weekId" params={{ weekId: String(lastWeek.id) }}>See it in History</Link>
+        Your plan for {formatWeekRange(lastPlan.startsOn, lastPlan.endsOn)} is in History.{' '}
+        <Link to="/history/$weekId" params={{ weekId: String(lastPlan.id) }}>View or reopen it</Link>
       </p>
       {children}
     </div>
   )
 }
 
-// ConfirmStartNextWeek asks before the week is closed by hand. Closing only ends this week; the
-// next one exists once someone presses Generate.
-function ConfirmStartNextWeek({ pending, error, onCancel, onConfirm }: {
+// ConfirmStartNewPlan asks before the plan is closed. Closing only ends this plan; the next one
+// exists once someone presses Generate.
+function ConfirmStartNewPlan({ pending, error, onCancel, onConfirm }: {
   pending: boolean
   error: Error | null
   onCancel: () => void
@@ -332,14 +333,14 @@ function ConfirmStartNextWeek({ pending, error, onCancel, onConfirm }: {
       // undone by reopening (as React's development double mount does) is ignored.
       onClose={(event) => { if (!event.currentTarget.open) onCancel() }}>
       <header>
-        <div><div className="eyebrow">Current week</div><h2 id="start-next-title">Start next week</h2></div>
+        <div><div className="eyebrow">Current plan</div><h2 id="start-next-title">Start a new plan</h2></div>
       </header>
-      <p className="dialog-note" id="start-next-description">This week’s meals and grocery list move to History. Unchecked items stay unchecked.</p>
+      <p className="dialog-note" id="start-next-description">This plan’s meals and grocery list move to History, where you can reopen it later. Unchecked items stay unchecked.</p>
       {error && <p className="inline-error dialog-error" role="alert">{error.message}</p>}
       <footer>
         <button className="button" type="button" onClick={onCancel} disabled={pending}>Cancel</button>
         <button className="button primary" type="button" onClick={onConfirm} disabled={pending}>
-          {pending ? 'Closing…' : 'Close week and plan the next'}
+          {pending ? 'Closing…' : 'Close plan and start a new one'}
         </button>
       </footer>
     </dialog>
@@ -389,7 +390,7 @@ function RecipePicker({
 
 function WeekSkeleton() {
   return (
-    <section aria-label="Loading this week" aria-busy="true">
+    <section aria-label="Loading your plan" aria-busy="true">
       <PageHeading count={0} week={null} />
       <div className="recipe-list skeleton-list">
         {Array.from({ length: 4 }, (_, index) => <div className="skeleton-row" key={index} />)}
@@ -401,7 +402,7 @@ function WeekSkeleton() {
 function ErrorPanel({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="error-panel" role="alert">
-      <div><strong>Couldn’t load this week.</strong><p>{message}</p></div>
+      <div><strong>Couldn’t load your plan.</strong><p>{message}</p></div>
       <button className="button" type="button" onClick={onRetry}>Try again</button>
     </div>
   )
@@ -432,8 +433,8 @@ function max(first: string, second: string): string {
   return first > second ? first : second
 }
 
-// closeWeek closes the week shown. If it had already closed, by its rollover or by another member,
-// the outcome is the same: there is no open week and the next one can be planned.
+// closeWeek closes the plan shown. If another member had already closed it, the outcome is the
+// same: there is no current plan and the next one can be generated.
 async function closeWeek(_closing: Week): Promise<void> {
   try {
     await closeCurrentWeek()

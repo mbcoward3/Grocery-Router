@@ -16,7 +16,7 @@ export function AppShell() {
     window.location.assign('/sign-in?signedOut=1')
   }
   const crumb = pathname === '/'
-    ? 'Week'
+    ? 'Plan'
     : pathname === '/groceries'
       ? 'Groceries'
       : pathname === '/recipes'
@@ -38,7 +38,7 @@ export function AppShell() {
         <nav className="navigation" aria-label="Primary navigation">
           <Link to="/" activeOptions={{ exact: true }} activeProps={{ className: 'active' }}>
             <CalendarIcon />
-            <span>Week</span>
+            <span>Plan</span>
             <span className="navigation-count">{week.data?.recipes.length ?? 0}</span>
           </Link>
           <Link to="/groceries" activeProps={{ className: 'active' }}>

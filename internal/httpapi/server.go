@@ -50,6 +50,7 @@ func New(db *sql.DB, weeks *week.Service, clock Clock, authorize AuthorizeHouseh
 	mux.Handle("GET /api/v2/households/{householdID}/weeks/history/{weekID}", server.guard(http.HandlerFunc(server.historicalWeek)))
 	mux.Handle("POST /api/v2/households/{householdID}/week/current/generate", server.guard(http.HandlerFunc(server.generateWeek)))
 	mux.Handle("POST /api/v2/households/{householdID}/week/current/close", server.guard(http.HandlerFunc(server.closeWeek)))
+	mux.Handle("POST /api/v2/households/{householdID}/weeks/history/{weekID}/reopen", server.guard(http.HandlerFunc(server.reopenWeek)))
 	mux.Handle("POST /api/v2/households/{householdID}/week/current/recipes", server.guard(http.HandlerFunc(server.addRecipe)))
 	mux.Handle("DELETE /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.guard(http.HandlerFunc(server.removeRecipe)))
 	mux.Handle("PUT /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.guard(http.HandlerFunc(server.swapRecipe)))
@@ -302,12 +303,12 @@ func (server *Server) getRecipe(response http.ResponseWriter, request *http.Requ
 }
 
 func (server *Server) currentWeek(response http.ResponseWriter, request *http.Request) {
-	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Current(request.Context(), server.now())
+	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Current(request.Context())
 	server.writeWeekResult(response, request, view, err)
 }
 
 func (server *Server) weekHistory(response http.ResponseWriter, request *http.Request) {
-	rows, err := server.weeks.ForHousehold(request.PathValue("householdID")).PastWeeks(request.Context(), server.now())
+	rows, err := server.weeks.ForHousehold(request.PathValue("householdID")).PastWeeks(request.Context())
 	if err != nil {
 		writeInternalError(response, request, err)
 		return
@@ -327,9 +328,9 @@ func (server *Server) historicalWeek(response http.ResponseWriter, request *http
 	if !ok {
 		return
 	}
-	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).PastWeek(request.Context(), server.now(), weekID)
+	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).PastWeek(request.Context(), weekID)
 	if errors.Is(err, week.ErrPastWeek) {
-		writeError(response, http.StatusNotFound, "past_week_not_found", "The past week was not found.")
+		writeError(response, http.StatusNotFound, "past_week_not_found", "The past plan was not found.")
 		return
 	}
 	if err != nil {
@@ -351,17 +352,31 @@ func (server *Server) generateWeek(response http.ResponseWriter, request *http.R
 	server.writeWeekResult(response, request, view, err)
 }
 
-// closeWeek ends the current week now. It never generates the next one.
+// closeWeek ends the current plan now. It never starts the next one.
 func (server *Server) closeWeek(response http.ResponseWriter, request *http.Request) {
 	err := server.weeks.ForHousehold(request.PathValue("householdID")).Close(request.Context(), server.now())
 	switch {
 	case errors.Is(err, week.ErrNoCurrentWeek):
-		writeError(response, http.StatusNotFound, "no_current_week", "The current week has not been generated.")
+		writeError(response, http.StatusNotFound, "no_current_week", "There is no current plan.")
 	case err != nil:
 		writeInternalError(response, request, err)
 	default:
 		response.WriteHeader(http.StatusNoContent)
 	}
+}
+
+// reopenWeek makes a plan in History the current plan again; the plan that was current closes.
+func (server *Server) reopenWeek(response http.ResponseWriter, request *http.Request) {
+	weekID, ok := pathID(response, request, "weekID")
+	if !ok {
+		return
+	}
+	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Reopen(request.Context(), server.now(), weekID)
+	if errors.Is(err, week.ErrPastWeek) {
+		writeError(response, http.StatusNotFound, "past_week_not_found", "The past plan was not found.")
+		return
+	}
+	server.writeWeekResult(response, request, view, err)
 }
 
 func (server *Server) addRecipe(response http.ResponseWriter, request *http.Request) {
@@ -373,7 +388,7 @@ func (server *Server) addRecipe(response http.ResponseWriter, request *http.Requ
 		writeError(response, http.StatusBadRequest, "invalid_request", "recipeId must be positive")
 		return
 	}
-	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Add(request.Context(), server.now(), input.RecipeID)
+	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Add(request.Context(), input.RecipeID)
 	server.writeWeekResult(response, request, view, err)
 }
 
@@ -382,7 +397,7 @@ func (server *Server) removeRecipe(response http.ResponseWriter, request *http.R
 	if !ok {
 		return
 	}
-	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Remove(request.Context(), server.now(), occurrenceID)
+	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Remove(request.Context(), occurrenceID)
 	server.writeWeekResult(response, request, view, err)
 }
 
@@ -399,7 +414,7 @@ func (server *Server) swapRecipe(response http.ResponseWriter, request *http.Req
 		writeError(response, http.StatusBadRequest, "invalid_request", "recipeId must be positive")
 		return
 	}
-	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Swap(request.Context(), server.now(), occurrenceID, input.RecipeID)
+	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Swap(request.Context(), occurrenceID, input.RecipeID)
 	server.writeWeekResult(response, request, view, err)
 }
 
@@ -408,7 +423,7 @@ func (server *Server) randomSwapRecipe(response http.ResponseWriter, request *ht
 	if !ok {
 		return
 	}
-	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).RandomSwap(request.Context(), server.now(), occurrenceID)
+	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).RandomSwap(request.Context(), occurrenceID)
 	server.writeWeekResult(response, request, view, err)
 }
 
@@ -421,7 +436,7 @@ func (server *Server) addGroceryLine(response http.ResponseWriter, request *http
 	if !decodeJSON(response, request, &input) {
 		return
 	}
-	if _, err := server.weeks.ForHousehold(request.PathValue("householdID")).AddManualLine(request.Context(), server.now(), input.Name, week.ManualLineOptions{GroceryItemID: input.GroceryItemID, StoreSectionID: input.StoreSectionID}); err != nil {
+	if _, err := server.weeks.ForHousehold(request.PathValue("householdID")).AddManualLine(request.Context(), input.Name, week.ManualLineOptions{GroceryItemID: input.GroceryItemID, StoreSectionID: input.StoreSectionID}); err != nil {
 		server.writeGroceryError(response, request, err)
 		return
 	}
@@ -456,13 +471,13 @@ func (server *Server) updateGroceryLine(response http.ResponseWriter, request *h
 	}
 	var err error
 	if input.Completed != nil {
-		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineCompleted(request.Context(), server.now(), lineID, *input.Completed)
+		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineCompleted(request.Context(), lineID, *input.Completed)
 	} else if input.Removed != nil {
-		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineRemoved(request.Context(), server.now(), lineID, false)
+		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineRemoved(request.Context(), lineID, false)
 	} else if input.StoreSectionID != nil {
-		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineSection(request.Context(), server.now(), lineID, *input.StoreSectionID)
+		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineSection(request.Context(), lineID, *input.StoreSectionID)
 	} else {
-		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineOverride(request.Context(), server.now(), lineID, *input.OverrideText)
+		err = server.weeks.ForHousehold(request.PathValue("householdID")).SetLineOverride(request.Context(), lineID, *input.OverrideText)
 	}
 	if err != nil {
 		server.writeGroceryError(response, request, err)
@@ -476,7 +491,7 @@ func (server *Server) removeGroceryLine(response http.ResponseWriter, request *h
 	if !ok {
 		return
 	}
-	if err := server.weeks.ForHousehold(request.PathValue("householdID")).SetLineRemoved(request.Context(), server.now(), lineID, true); err != nil {
+	if err := server.weeks.ForHousehold(request.PathValue("householdID")).SetLineRemoved(request.Context(), lineID, true); err != nil {
 		server.writeGroceryError(response, request, err)
 		return
 	}
@@ -488,7 +503,7 @@ func (server *Server) getGroceryContributions(response http.ResponseWriter, requ
 	if !ok {
 		return
 	}
-	rows, err := server.weeks.ForHousehold(request.PathValue("householdID")).Contributions(request.Context(), server.now(), lineID)
+	rows, err := server.weeks.ForHousehold(request.PathValue("householdID")).Contributions(request.Context(), lineID)
 	if err != nil {
 		server.writeGroceryError(response, request, err)
 		return
@@ -507,7 +522,7 @@ func (server *Server) getGroceryContributions(response http.ResponseWriter, requ
 }
 
 func (server *Server) writeGroceries(response http.ResponseWriter, request *http.Request) {
-	checklist, err := server.weeks.ForHousehold(request.PathValue("householdID")).Checklist(request.Context(), server.now())
+	checklist, err := server.weeks.ForHousehold(request.PathValue("householdID")).Checklist(request.Context())
 	if err != nil {
 		server.writeGroceryError(response, request, err)
 		return
@@ -541,7 +556,7 @@ func (server *Server) writeGroceryError(response http.ResponseWriter, request *h
 	var validation week.ValidationError
 	switch {
 	case errors.Is(err, week.ErrNoCurrentWeek):
-		writeError(response, http.StatusNotFound, "no_current_week", "The current week has not been generated.")
+		writeError(response, http.StatusNotFound, "no_current_week", "There is no current plan.")
 	case errors.As(err, &validation):
 		writeError(response, http.StatusUnprocessableEntity, "grocery_operation_failed", validation.Message)
 	default:
@@ -553,9 +568,9 @@ func (server *Server) writeWeekResult(response http.ResponseWriter, request *htt
 	var validation week.ValidationError
 	switch {
 	case errors.Is(err, week.ErrNoCurrentWeek):
-		writeError(response, http.StatusNotFound, "no_current_week", "The current week has not been generated.")
+		writeError(response, http.StatusNotFound, "no_current_week", "There is no current plan.")
 	case errors.Is(err, week.ErrOccurrence):
-		writeError(response, http.StatusNotFound, "occurrence_not_found", "The recipe occurrence was not found in the current week.")
+		writeError(response, http.StatusNotFound, "occurrence_not_found", "The recipe occurrence was not found in the current plan.")
 	case errors.As(err, &validation):
 		writeError(response, http.StatusUnprocessableEntity, "week_operation_failed", validation.Message)
 	case err != nil:
@@ -567,7 +582,7 @@ func (server *Server) writeWeekResult(response http.ResponseWriter, request *htt
 
 func responseFromView(view week.View) weekResponse {
 	result := weekResponse{
-		ID: view.Week.ID, StartsOn: view.Week.StartsOn, EndsOn: nullableString(view.EndsOn),
+		ID: view.Week.ID, StartsOn: view.Week.StartsOn, EndsOn: nullableString(view.Week.EndsOn),
 		Recipes: make([]recipeOccurrence, 0, len(view.Recipes)),
 	}
 	for _, occurrence := range view.Recipes {

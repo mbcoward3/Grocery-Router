@@ -14,16 +14,8 @@ type Querier interface {
 	// GetIngestHostRateLimit to learn how long. Safe across concurrent processes.
 	AcquireIngestHostSlot(ctx context.Context, arg AcquireIngestHostSlotParams) (AcquireIngestHostSlotRow, error)
 	ApproveReviewFlag(ctx context.Context, id int64) (RecipeReviewFlag, error)
-	// Closes the household's open week once its automatic close time has passed, recording that
-	// time rather than when the close was noticed, and fixing its last local date in the
-	// household's zone now (week.endsOn computes the same date for an open week). A week that
-	// closes before its start date, one started early, ends on its start date. Dates are ISO text,
-	// so GREATEST compares them as dates.
-	CloseExpiredWeek(ctx context.Context, arg CloseExpiredWeekParams) error
-	// Closes the household's open week by hand at now with its last local date (week.lastDay), but
-	// never before its start date: a week started early and closed again before its period began
-	// ends on its start date. The automatic close time stays as it was: while that rollover is still
-	// ahead, the next week opened takes over the upcoming period (week.skippedRollover).
+	// Closes the household's open plan at now with its last local date, never before its start
+	// date. Dates are ISO text, so GREATEST compares them as dates.
 	CloseOpenWeek(ctx context.Context, arg CloseOpenWeekParams) (int64, error)
 	// Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
 	CountIngestNoRecipePagesBySite(ctx context.Context) ([]CountIngestNoRecipePagesBySiteRow, error)
@@ -67,7 +59,6 @@ type Querier interface {
 	GetIngestSite(ctx context.Context, id string) (IngestSite, error)
 	GetIngestSiteByHost(ctx context.Context, host string) (IngestSite, error)
 	GetIngestSourcePage(ctx context.Context, id int64) (IngestSourcePage, error)
-	GetLastClosedWeek(ctx context.Context, householdID string) (Week, error)
 	GetOpenIngestSitePause(ctx context.Context, siteID string) (IngestSitePause, error)
 	GetOpenWeek(ctx context.Context, householdID string) (Week, error)
 	GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error)
@@ -80,9 +71,6 @@ type Querier interface {
 	GetUnitByKey(ctx context.Context, key string) (Unit, error)
 	GetVerifiedRecipe(ctx context.Context, arg GetVerifiedRecipeParams) (Recipe, error)
 	GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (WeekRecipe, error)
-	// Read when a week is opened. FOR SHARE waits for a settings change in progress, and holds off a
-	// new one until the week exists, so that change then moves the new week's close time.
-	GetWeekRules(ctx context.Context, householdID string) (GetWeekRulesRow, error)
 	InsertIngestEvidence(ctx context.Context, arg InsertIngestEvidenceParams) (int64, error)
 	InsertIngestFetchAttempt(ctx context.Context, arg InsertIngestFetchAttemptParams) (int64, error)
 	InsertIngestJSONLDBlock(ctx context.Context, arg InsertIngestJSONLDBlockParams) (int64, error)
@@ -123,9 +111,10 @@ type Querier interface {
 	ListWeekIngredientRequirements(ctx context.Context, arg ListWeekIngredientRequirementsParams) ([]ListWeekIngredientRequirementsRow, error)
 	ListWeekRecipeIDs(ctx context.Context, arg ListWeekRecipeIDsParams) ([]int64, error)
 	ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams) ([]ListWeekRecipesRow, error)
-	// Read before a change in the same transaction, so the change is compared with the values it
-	// replaces even when another member saves at the same moment.
-	LockHouseholdSettings(ctx context.Context, householdID string) (LockHouseholdSettingsRow, error)
+	// Taken before a plan is opened, closed, or reopened, so those changes run one at a time per
+	// household and a household never has two open plans. Changes inside the open plan lock only
+	// the plan row (LockOpenWeek), so they never wait for this.
+	LockHouseholdPlans(ctx context.Context, householdID string) (string, error)
 	// Taken before a change to the open week or its list. A concurrent close waits for the change,
 	// or, if it closed the week first, this finds no open week once it commits.
 	LockOpenWeek(ctx context.Context, householdID string) (Week, error)
@@ -145,6 +134,8 @@ type Querier interface {
 	ReleaseIngestHostSlot(ctx context.Context, arg ReleaseIngestHostSlotParams) (int64, error)
 	ReleaseIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
 	RememberItemSection(ctx context.Context, arg RememberItemSectionParams) error
+	// Makes a past plan the open one again. The caller closes the open plan first.
+	ReopenWeek(ctx context.Context, arg ReopenWeekParams) (int64, error)
 	// Explicitly queues a page again; a re-fetch creates new evidence and never edits the old.
 	RequeueIngestSourcePage(ctx context.Context, id int64) error
 	ResetSectionPositions(ctx context.Context, householdID string) error
@@ -153,9 +144,6 @@ type Querier interface {
 	RetireIngestSite(ctx context.Context, id string) (int64, error)
 	ReturnRecipeToDraft(ctx context.Context, arg ReturnRecipeToDraftParams) (Recipe, error)
 	SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (SetManualLineSectionRow, error)
-	// Moves the open week's automatic close time after a settings change; NULL leaves it open until
-	// closed by hand. It never closes a week.
-	SetOpenWeekAutoClose(ctx context.Context, arg SetOpenWeekAutoCloseParams) error
 	SetSectionPosition(ctx context.Context, arg SetSectionPositionParams) error
 	SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error)
 	SetShoppingLineOverride(ctx context.Context, arg SetShoppingLineOverrideParams) (int64, error)

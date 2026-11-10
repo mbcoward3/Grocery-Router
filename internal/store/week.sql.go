@@ -11,35 +11,6 @@ import (
 	"time"
 )
 
-const closeExpiredWeek = `-- name: CloseExpiredWeek :exec
-UPDATE weeks AS w SET
-    closed_at = w.auto_close_at,
-    ends_on = greatest(
-        to_char((w.auto_close_at - INTERVAL '1 second') AT TIME ZONE h.timezone, 'YYYY-MM-DD'),
-        w.starts_on
-    )
-FROM households AS h
-WHERE
-    h.id = w.household_id
-    AND w.household_id = $1 AND w.closed_at IS NULL
-    AND w.auto_close_at <= CAST($2 AS TIMESTAMPTZ)
-`
-
-type CloseExpiredWeekParams struct {
-	HouseholdID string    `db:"household_id" json:"household_id"`
-	Now         time.Time `db:"now" json:"now"`
-}
-
-// Closes the household's open week once its automatic close time has passed, recording that
-// time rather than when the close was noticed, and fixing its last local date in the
-// household's zone now (week.endsOn computes the same date for an open week). A week that
-// closes before its start date, one started early, ends on its start date. Dates are ISO text,
-// so GREATEST compares them as dates.
-func (q *Queries) CloseExpiredWeek(ctx context.Context, arg CloseExpiredWeekParams) error {
-	_, err := q.db.ExecContext(ctx, closeExpiredWeek, arg.HouseholdID, arg.Now)
-	return err
-}
-
 const closeOpenWeek = `-- name: CloseOpenWeek :execrows
 UPDATE weeks SET
     closed_at = CAST($1 AS TIMESTAMPTZ),
@@ -53,10 +24,8 @@ type CloseOpenWeekParams struct {
 	HouseholdID string    `db:"household_id" json:"household_id"`
 }
 
-// Closes the household's open week by hand at now with its last local date (week.lastDay), but
-// never before its start date: a week started early and closed again before its period began
-// ends on its start date. The automatic close time stays as it was: while that rollover is still
-// ahead, the next week opened takes over the upcoming period (week.skippedRollover).
+// Closes the household's open plan at now with its last local date, never before its start
+// date. Dates are ISO text, so GREATEST compares them as dates.
 func (q *Queries) CloseOpenWeek(ctx context.Context, arg CloseOpenWeekParams) (int64, error) {
 	result, err := q.db.ExecContext(ctx, closeOpenWeek, arg.ClosedAt, arg.EndsOn, arg.HouseholdID)
 	if err != nil {
@@ -90,25 +59,19 @@ func (q *Queries) CreateShoppingList(ctx context.Context, arg CreateShoppingList
 }
 
 const createWeek = `-- name: CreateWeek :one
-INSERT INTO weeks (household_id, starts_on, opened_at, auto_close_at)
-VALUES ($1, $2, $3, $4)
-RETURNING id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at, ends_on
+INSERT INTO weeks (household_id, starts_on, opened_at)
+VALUES ($1, $2, $3)
+RETURNING id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on
 `
 
 type CreateWeekParams struct {
-	HouseholdID string       `db:"household_id" json:"household_id"`
-	StartsOn    string       `db:"starts_on" json:"starts_on"`
-	OpenedAt    time.Time    `db:"opened_at" json:"opened_at"`
-	AutoCloseAt sql.NullTime `db:"auto_close_at" json:"auto_close_at"`
+	HouseholdID string    `db:"household_id" json:"household_id"`
+	StartsOn    string    `db:"starts_on" json:"starts_on"`
+	OpenedAt    time.Time `db:"opened_at" json:"opened_at"`
 }
 
 func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, createWeek,
-		arg.HouseholdID,
-		arg.StartsOn,
-		arg.OpenedAt,
-		arg.AutoCloseAt,
-	)
+	row := q.db.QueryRowContext(ctx, createWeek, arg.HouseholdID, arg.StartsOn, arg.OpenedAt)
 	var i Week
 	err := row.Scan(
 		&i.ID,
@@ -117,7 +80,6 @@ func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, e
 		&i.UpdatedAt,
 		&i.HouseholdID,
 		&i.OpenedAt,
-		&i.AutoCloseAt,
 		&i.ClosedAt,
 		&i.EndsOn,
 	)
@@ -188,32 +150,8 @@ func (q *Queries) DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesPa
 	return err
 }
 
-const getLastClosedWeek = `-- name: GetLastClosedWeek :one
-SELECT id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at, ends_on FROM weeks
-WHERE household_id = $1 AND closed_at IS NOT NULL
-ORDER BY closed_at DESC, id DESC
-LIMIT 1
-`
-
-func (q *Queries) GetLastClosedWeek(ctx context.Context, householdID string) (Week, error) {
-	row := q.db.QueryRowContext(ctx, getLastClosedWeek, householdID)
-	var i Week
-	err := row.Scan(
-		&i.ID,
-		&i.StartsOn,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.HouseholdID,
-		&i.OpenedAt,
-		&i.AutoCloseAt,
-		&i.ClosedAt,
-		&i.EndsOn,
-	)
-	return i, err
-}
-
 const getOpenWeek = `-- name: GetOpenWeek :one
-SELECT id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at, ends_on FROM weeks WHERE household_id = $1 AND closed_at IS NULL
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on FROM weeks WHERE household_id = $1 AND closed_at IS NULL
 `
 
 func (q *Queries) GetOpenWeek(ctx context.Context, householdID string) (Week, error) {
@@ -226,7 +164,6 @@ func (q *Queries) GetOpenWeek(ctx context.Context, householdID string) (Week, er
 		&i.UpdatedAt,
 		&i.HouseholdID,
 		&i.OpenedAt,
-		&i.AutoCloseAt,
 		&i.ClosedAt,
 		&i.EndsOn,
 	)
@@ -234,7 +171,7 @@ func (q *Queries) GetOpenWeek(ctx context.Context, householdID string) (Week, er
 }
 
 const getPastWeek = `-- name: GetPastWeek :one
-SELECT id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at, ends_on FROM weeks
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on FROM weeks
 WHERE household_id = $1 AND id = $2 AND closed_at IS NOT NULL
 `
 
@@ -253,7 +190,6 @@ func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week,
 		&i.UpdatedAt,
 		&i.HouseholdID,
 		&i.OpenedAt,
-		&i.AutoCloseAt,
 		&i.ClosedAt,
 		&i.EndsOn,
 	)
@@ -309,7 +245,7 @@ func (q *Queries) GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (W
 
 const listPastWeeks = `-- name: ListPastWeeks :many
 SELECT
-    w.id, w.starts_on, w.created_at, w.updated_at, w.household_id, w.opened_at, w.auto_close_at, w.closed_at, w.ends_on,
+    w.id, w.starts_on, w.created_at, w.updated_at, w.household_id, w.opened_at, w.closed_at, w.ends_on,
     CAST((SELECT count(*) FROM week_recipes wr WHERE wr.week_id = w.id) AS BIGINT) AS recipe_count,
     CAST((SELECT count(*) FROM shopping_lines sl
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
@@ -329,7 +265,6 @@ type ListPastWeeksRow struct {
 	UpdatedAt      string         `db:"updated_at" json:"updated_at"`
 	HouseholdID    string         `db:"household_id" json:"household_id"`
 	OpenedAt       time.Time      `db:"opened_at" json:"opened_at"`
-	AutoCloseAt    sql.NullTime   `db:"auto_close_at" json:"auto_close_at"`
 	ClosedAt       sql.NullTime   `db:"closed_at" json:"closed_at"`
 	EndsOn         sql.NullString `db:"ends_on" json:"ends_on"`
 	RecipeCount    int64          `db:"recipe_count" json:"recipe_count"`
@@ -353,7 +288,6 @@ func (q *Queries) ListPastWeeks(ctx context.Context, householdID string) ([]List
 			&i.UpdatedAt,
 			&i.HouseholdID,
 			&i.OpenedAt,
-			&i.AutoCloseAt,
 			&i.ClosedAt,
 			&i.EndsOn,
 			&i.RecipeCount,
@@ -618,7 +552,7 @@ func (q *Queries) ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams
 }
 
 const lockOpenWeek = `-- name: LockOpenWeek :one
-SELECT id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at, ends_on FROM weeks WHERE household_id = $1 AND closed_at IS NULL
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, closed_at, ends_on FROM weeks WHERE household_id = $1 AND closed_at IS NULL
 FOR NO KEY UPDATE
 `
 
@@ -634,7 +568,6 @@ func (q *Queries) LockOpenWeek(ctx context.Context, householdID string) (Week, e
 		&i.UpdatedAt,
 		&i.HouseholdID,
 		&i.OpenedAt,
-		&i.AutoCloseAt,
 		&i.ClosedAt,
 		&i.EndsOn,
 	)
@@ -658,21 +591,23 @@ func (q *Queries) NextWeekRecipePosition(ctx context.Context, arg NextWeekRecipe
 	return column_1, err
 }
 
-const setOpenWeekAutoClose = `-- name: SetOpenWeekAutoClose :exec
-UPDATE weeks SET auto_close_at = $1
-WHERE household_id = $2 AND closed_at IS NULL
+const reopenWeek = `-- name: ReopenWeek :execrows
+UPDATE weeks SET closed_at = NULL, ends_on = NULL
+WHERE household_id = $1 AND id = $2 AND closed_at IS NOT NULL
 `
 
-type SetOpenWeekAutoCloseParams struct {
-	AutoCloseAt sql.NullTime `db:"auto_close_at" json:"auto_close_at"`
-	HouseholdID string       `db:"household_id" json:"household_id"`
+type ReopenWeekParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
 }
 
-// Moves the open week's automatic close time after a settings change; NULL leaves it open until
-// closed by hand. It never closes a week.
-func (q *Queries) SetOpenWeekAutoClose(ctx context.Context, arg SetOpenWeekAutoCloseParams) error {
-	_, err := q.db.ExecContext(ctx, setOpenWeekAutoClose, arg.AutoCloseAt, arg.HouseholdID)
-	return err
+// Makes a past plan the open one again. The caller closes the open plan first.
+func (q *Queries) ReopenWeek(ctx context.Context, arg ReopenWeekParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, reopenWeek, arg.HouseholdID, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }
 
 const touchWeek = `-- name: TouchWeek :exec

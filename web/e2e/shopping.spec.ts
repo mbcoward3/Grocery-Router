@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 async function setup(page: Page, options: { saveDelayMs?: number } = {}) {
-  let settings = { timezone: 'UTC', defaultRecipeCount: 5, weekStartDay: 0, rolloverTime: '00:00', rolloverMode: 'automatic' }
+  let settings = { timezone: 'UTC', defaultRecipeCount: 5 }
   let sections = [{ id: 1, name: 'Produce', key: 'produce' }, { id: 2, name: 'Dairy', key: 'dairy' }, { id: 3, name: 'Baking', key: 'baking' }, { id: 4, name: 'Other', key: 'other' }]
   const base = { quantity: null as string | null, generatedQuantity: null as string | null, origin: 'manual', optional: false, removed: false, completed: false, hasContributions: false, recipeNames: [] as string[] }
   const lines = [
@@ -14,7 +14,7 @@ async function setup(page: Page, options: { saveDelayMs?: number } = {}) {
     const request = route.request(); const path = new URL(request.url()).pathname
     let body: unknown
     if (path.endsWith('/session')) body = { user: { displayName: 'Shopper' }, households: [{ householdID: 'test', householdName: 'Coward', role: 'owner' }] }
-    else if (path.endsWith('/week/current')) body = { id: 1, startsOn: '2026-11-08', endsOn: '2026-11-14', recipes: [] }
+    else if (path.endsWith('/week/current')) body = { id: 1, startsOn: '2026-11-08', endsOn: null, recipes: [] }
     else if (path.endsWith('/settings')) {
       if (request.method() === 'PATCH') settings = { ...settings, ...request.postDataJSON() }
       body = settings
@@ -93,7 +93,7 @@ test('details sheet adjusts quantity, shows recipes, and remove can be undone', 
   const sheet = page.getByRole('dialog', { name: 'Butter' })
   await expect(sheet).toContainText('Pancakes')
   await expect(sheet).toContainText('2 tbsp butter, melted')
-  await sheet.getByLabel('Quantity this week').fill('1 stick')
+  await sheet.getByLabel('Quantity for this plan').fill('1 stick')
   await sheet.getByRole('button', { name: 'Save' }).click()
   await expect(sheet).toHaveCount(0)
   await expect(section(page, 'Dairy').locator('.grocery-quantity.adjusted')).toHaveText('1 stick')

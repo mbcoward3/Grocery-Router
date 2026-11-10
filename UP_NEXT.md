@@ -74,14 +74,12 @@ scope requires a new phase with its own acceptance criteria.
 
 ## 5. Week and list lifecycle
 
-- **Future-week planning.** Select and manage a week other than the current one, starting at
-  the household's configured week start.
-- **Reuse a past week.** Copy an earlier meal pool into the current week only after replacement,
-  grocery recomputation, and confirmation behavior are deliberately specified.
+- **Planning ahead.** Build the next plan while the current one is still in use (D051 keeps one
+  current plan at a time).
+- **Start from a past plan.** Start a new plan from an earlier plan's meals without reopening it
+  (reopening exists, D051), only after grocery recomputation and confirmation behavior are
+  deliberately specified.
 - **History comparison.** Compare meals or grocery outcomes across retained weeks.
-- **Automatic weekly rollover.** Create a new week at the household's configured week start
-  rather than waiting for an explicit generation action (rolling over today only closes the
-  week; D050).
 - **Sophisticated edit reconciliation.** Warn and resolve when recipe changes collide with
   grocery quantity overrides, removals, or completed lines.
 - **Explicit lock/finalize state.** Reconsider only if real use shows that the natural

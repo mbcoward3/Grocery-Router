@@ -44,7 +44,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D023 | Keep list provenance compact but available | Active |
 | D024 | Weekly list edits do not alter recipes | Active |
 | D025 | No explicit week lock | Active |
-| D026 | Current week is manually created | Partly superseded by D038 (past weeks are now shown in History) and D050 (the household chooses when the week rolls over) |
+| D026 | Current week is manually created | Partly superseded by D038 (past weeks are now shown in History) and D051 (a plan lasts until the household starts a new one) |
 | D027 | Responsive Linear-inspired UI | Active |
 | D028 | Go, SQLite, Goose, and sqlc | Partly superseded by D036 and D042 (SQLite, deferred hosting; ADK rationale) |
 | D029 | No authentication or offline mode locally | Partly superseded by AUTH_HOUSEHOLDS_SPEC.md and D036 (no auth, local-only) |
@@ -68,7 +68,8 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D047 | One checklist row per grocery item; look-alike items need a decision | Active |
 | D048 | Substitution is a household choice over frozen groups (proposed) | Direction only (not implemented) |
 | D049 | Household preferences live per household and are edited in the app | Active |
-| D050 | The household chooses its rollover day, time, and mode | Active |
+| D050 | The household chooses its rollover day, time, and mode | Superseded by D051 |
+| D051 | A plan lasts from one shopping trip to the next and can be reopened | Active |
 
 ---
 
@@ -449,8 +450,8 @@ best effort. Sophisticated reconciliation is deferred.
 
 ## D026 — Current week is manually created
 
-**Status:** Partly superseded by D038 (past weeks are now shown in History) and D050 (the
-household chooses when the week rolls over)
+**Status:** Partly superseded by D038 (past weeks are now shown in History) and D051 (a plan
+lasts until the household starts a new one)
 
 **Decision:** The user explicitly generates a week; the application assigns the current
 Sunday. It does not auto-roll over or expose future/past week interfaces.
@@ -911,7 +912,7 @@ needs to be restricted to some members.
 
 ## D050 — The household chooses its rollover day, time, and mode
 
-**Status:** Active
+**Status:** Superseded by D051. Kept for history; migration 00013 removes its settings.
 
 **Decision:** Each household chooses, on the Settings screen, the local day its week starts
 (default Sunday), the local time it rolls over (default 12:00 AM), and whether it rolls over
@@ -964,3 +965,32 @@ its period began) ends on its start date.
 **Revisit when:** A household needs more than one rollover a week, wants the next week
 generated automatically at the rollover or when the week is closed by hand, or wants to plan a
 future week while the current one stays open.
+
+## D051 — A plan lasts from one shopping trip to the next and can be reopened
+
+**Status:** Active
+
+**Decision:** The current week becomes a *plan*: the meals and groceries between two shopping
+trips, of no fixed length. Generate starts a plan on today's household-local date when none is
+current. A plan stays current until a household member presses "Start new plan" (which closes it
+and moves it to History) or reopens a past plan from History. Reopening makes that plan current
+again with its meals and checklist as they were, and closes the plan that was current, if any.
+There is still one current plan at a time, and nothing closes a plan by the calendar. The app
+says "Plan" on screen; the code, API paths, and tables keep the name "week".
+
+**Why:** D050 still assumed a seven-day cadence, which does not fit shopping for ten days, or for
+a few, and it had no way back into a plan that was closed too early or is wanted again. Letting
+the trip, not the calendar, end a plan covers every cadence with fewer settings and less code
+than configuring when a week rolls over.
+
+**Consequence:** Migration 00013 drops `households.week_start_day`, `rollover_minutes`,
+`rollover_mode`, and `weeks.auto_close_at`; an open week stays open. Settings are again only the
+time zone, which dates plans, and the default recipe count, which stays a fixed default and does
+not scale with a plan's length. `POST /households/{householdID}/weeks/history/{weekID}/reopen`
+reopens a plan; `endsOn` is null while a plan is current and is the local date it closed once it
+is in History. Opening, closing, and reopening a plan lock the household row, so they run one at
+a time per household. This supersedes D050 and the parts of D026 about when a week begins.
+
+**Revisit when:** A household wants to plan the next trip while the current plan is still in
+use, or to start a new plan from a past plan's meals without reopening it.
+

@@ -22,28 +22,19 @@ func (q *Queries) GetHouseholdName(ctx context.Context, householdID string) (str
 }
 
 const getHouseholdSettings = `-- name: GetHouseholdSettings :one
-SELECT timezone, default_recipe_count, week_start_day, rollover_minutes, rollover_mode
+SELECT timezone, default_recipe_count
 FROM households WHERE id = $1
 `
 
 type GetHouseholdSettingsRow struct {
 	Timezone           string `db:"timezone" json:"timezone"`
 	DefaultRecipeCount int32  `db:"default_recipe_count" json:"default_recipe_count"`
-	WeekStartDay       int16  `db:"week_start_day" json:"week_start_day"`
-	RolloverMinutes    int16  `db:"rollover_minutes" json:"rollover_minutes"`
-	RolloverMode       string `db:"rollover_mode" json:"rollover_mode"`
 }
 
 func (q *Queries) GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error) {
 	row := q.db.QueryRowContext(ctx, getHouseholdSettings, householdID)
 	var i GetHouseholdSettingsRow
-	err := row.Scan(
-		&i.Timezone,
-		&i.DefaultRecipeCount,
-		&i.WeekStartDay,
-		&i.RolloverMinutes,
-		&i.RolloverMode,
-	)
+	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount)
 	return i, err
 }
 
@@ -58,109 +49,46 @@ func (q *Queries) GetHouseholdTimezone(ctx context.Context, householdID string) 
 	return timezone, err
 }
 
-const getWeekRules = `-- name: GetWeekRules :one
-SELECT timezone, week_start_day, rollover_minutes, rollover_mode
-FROM households WHERE id = $1
-FOR SHARE
-`
-
-type GetWeekRulesRow struct {
-	Timezone        string `db:"timezone" json:"timezone"`
-	WeekStartDay    int16  `db:"week_start_day" json:"week_start_day"`
-	RolloverMinutes int16  `db:"rollover_minutes" json:"rollover_minutes"`
-	RolloverMode    string `db:"rollover_mode" json:"rollover_mode"`
-}
-
-// Read when a week is opened. FOR SHARE waits for a settings change in progress, and holds off a
-// new one until the week exists, so that change then moves the new week's close time.
-func (q *Queries) GetWeekRules(ctx context.Context, householdID string) (GetWeekRulesRow, error) {
-	row := q.db.QueryRowContext(ctx, getWeekRules, householdID)
-	var i GetWeekRulesRow
-	err := row.Scan(
-		&i.Timezone,
-		&i.WeekStartDay,
-		&i.RolloverMinutes,
-		&i.RolloverMode,
-	)
-	return i, err
-}
-
-const lockHouseholdSettings = `-- name: LockHouseholdSettings :one
-SELECT timezone, default_recipe_count, week_start_day, rollover_minutes, rollover_mode
-FROM households WHERE id = $1
+const lockHouseholdPlans = `-- name: LockHouseholdPlans :one
+SELECT timezone FROM households WHERE id = $1
 FOR NO KEY UPDATE
 `
 
-type LockHouseholdSettingsRow struct {
-	Timezone           string `db:"timezone" json:"timezone"`
-	DefaultRecipeCount int32  `db:"default_recipe_count" json:"default_recipe_count"`
-	WeekStartDay       int16  `db:"week_start_day" json:"week_start_day"`
-	RolloverMinutes    int16  `db:"rollover_minutes" json:"rollover_minutes"`
-	RolloverMode       string `db:"rollover_mode" json:"rollover_mode"`
-}
-
-// Read before a change in the same transaction, so the change is compared with the values it
-// replaces even when another member saves at the same moment.
-func (q *Queries) LockHouseholdSettings(ctx context.Context, householdID string) (LockHouseholdSettingsRow, error) {
-	row := q.db.QueryRowContext(ctx, lockHouseholdSettings, householdID)
-	var i LockHouseholdSettingsRow
-	err := row.Scan(
-		&i.Timezone,
-		&i.DefaultRecipeCount,
-		&i.WeekStartDay,
-		&i.RolloverMinutes,
-		&i.RolloverMode,
-	)
-	return i, err
+// Taken before a plan is opened, closed, or reopened, so those changes run one at a time per
+// household and a household never has two open plans. Changes inside the open plan lock only
+// the plan row (LockOpenWeek), so they never wait for this.
+func (q *Queries) LockHouseholdPlans(ctx context.Context, householdID string) (string, error) {
+	row := q.db.QueryRowContext(ctx, lockHouseholdPlans, householdID)
+	var timezone string
+	err := row.Scan(&timezone)
+	return timezone, err
 }
 
 const updateHouseholdSettings = `-- name: UpdateHouseholdSettings :one
 UPDATE households SET
     timezone = coalesce($1, timezone),
     default_recipe_count = coalesce($2, default_recipe_count),
-    week_start_day = coalesce($3, week_start_day),
-    rollover_minutes = coalesce($4, rollover_minutes),
-    rollover_mode = coalesce($5, rollover_mode),
     updated_at = clock_timestamp()
-WHERE id = $6
-RETURNING timezone, default_recipe_count, week_start_day, rollover_minutes, rollover_mode
+WHERE id = $3
+RETURNING timezone, default_recipe_count
 `
 
 type UpdateHouseholdSettingsParams struct {
 	Timezone           sql.NullString `db:"timezone" json:"timezone"`
 	DefaultRecipeCount sql.NullInt32  `db:"default_recipe_count" json:"default_recipe_count"`
-	WeekStartDay       sql.NullInt16  `db:"week_start_day" json:"week_start_day"`
-	RolloverMinutes    sql.NullInt16  `db:"rollover_minutes" json:"rollover_minutes"`
-	RolloverMode       sql.NullString `db:"rollover_mode" json:"rollover_mode"`
 	HouseholdID        string         `db:"household_id" json:"household_id"`
 }
 
 type UpdateHouseholdSettingsRow struct {
 	Timezone           string `db:"timezone" json:"timezone"`
 	DefaultRecipeCount int32  `db:"default_recipe_count" json:"default_recipe_count"`
-	WeekStartDay       int16  `db:"week_start_day" json:"week_start_day"`
-	RolloverMinutes    int16  `db:"rollover_minutes" json:"rollover_minutes"`
-	RolloverMode       string `db:"rollover_mode" json:"rollover_mode"`
 }
 
 // A NULL argument keeps the stored value, so a change to one setting cannot overwrite a
 // concurrent change to another.
 func (q *Queries) UpdateHouseholdSettings(ctx context.Context, arg UpdateHouseholdSettingsParams) (UpdateHouseholdSettingsRow, error) {
-	row := q.db.QueryRowContext(ctx, updateHouseholdSettings,
-		arg.Timezone,
-		arg.DefaultRecipeCount,
-		arg.WeekStartDay,
-		arg.RolloverMinutes,
-		arg.RolloverMode,
-		arg.HouseholdID,
-	)
+	row := q.db.QueryRowContext(ctx, updateHouseholdSettings, arg.Timezone, arg.DefaultRecipeCount, arg.HouseholdID)
 	var i UpdateHouseholdSettingsRow
-	err := row.Scan(
-		&i.Timezone,
-		&i.DefaultRecipeCount,
-		&i.WeekStartDay,
-		&i.RolloverMinutes,
-		&i.RolloverMode,
-	)
+	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount)
 	return i, err
 }
