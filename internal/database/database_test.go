@@ -98,7 +98,7 @@ func TestRecipeMustPassReviewBeforeVerification(t *testing.T) {
 func TestWeekDateAndVerifiedRecipeConstraints(t *testing.T) {
 	db := migratedDB(t)
 
-	_, err := db.Exec("INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-08-17', now())")
+	_, err := db.Exec("INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-8-16', now())")
 	assertErrorContains(t, err, "violates check constraint")
 	_, err = db.Exec("INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-99-99', now())")
 	assertErrorContains(t, err, "date/time field value out of range")

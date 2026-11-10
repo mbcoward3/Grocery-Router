@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/mbcoward3/grocery-router/internal/database"
 	"github.com/mbcoward3/grocery-router/internal/settings"
 	"github.com/mbcoward3/grocery-router/internal/store"
 	"github.com/mbcoward3/grocery-router/internal/tenant"
+	"github.com/mbcoward3/grocery-router/internal/week"
 )
 
 // householdTimezoneCommands is embedded into cli so the household-timezone command lives here.
@@ -39,27 +43,19 @@ func (command *householdTimezoneCommand) Run() error {
 	}
 	defer db.Close()
 	ctx := context.Background()
-	tx, err := db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
+	// The same change as the Settings screen: an open automatic week's close time moves to the
+	// next rollover in the new zone, in the same transaction.
+	_, err = week.NewService(db, nil).ForHousehold(command.Household).SaveSettings(ctx, time.Now(),
+		settings.Change{Timezone: &command.Zone})
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("household %s not found", command.Household)
 	}
-	defer func() { _ = tx.Rollback() }()
-	queries := store.New(tx)
-	rows, err := queries.SetHouseholdTimezone(ctx, store.SetHouseholdTimezoneParams{
-		HouseholdID: command.Household, Timezone: command.Zone,
-	})
 	if err != nil {
 		return fmt.Errorf("set household time zone: %w", err)
 	}
-	if rows != 1 {
-		return fmt.Errorf("household %s not found", command.Household)
-	}
-	name, err := queries.GetHouseholdName(ctx, command.Household)
+	name, err := store.New(db).GetHouseholdName(ctx, command.Household)
 	if err != nil {
 		return fmt.Errorf("read household name: %w", err)
-	}
-	if err := tx.Commit(); err != nil {
-		return err
 	}
 	fmt.Printf("household %s time zone set to %s\n", name, command.Zone)
 	return nil

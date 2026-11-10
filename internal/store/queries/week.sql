@@ -10,6 +10,12 @@ UPDATE weeks SET closed_at = auto_close_at
 WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL
     AND auto_close_at <= CAST(sqlc.arg(now) AS TIMESTAMPTZ);
 
+-- name: SetOpenWeekAutoClose :exec
+-- Moves the open week's automatic close time after a settings change; NULL leaves it open until
+-- closed by hand. It never closes a week.
+UPDATE weeks SET auto_close_at = sqlc.narg(auto_close_at)
+WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
+
 -- name: GetOpenWeek :one
 SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
 

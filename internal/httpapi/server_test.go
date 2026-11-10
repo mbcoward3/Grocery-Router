@@ -40,6 +40,10 @@ func TestWeekAPIEmptyGenerateAndMutate(t *testing.T) {
 	if weekBody["startsOn"] != "2026-08-16" {
 		t.Fatalf("startsOn = %#v", weekBody["startsOn"])
 	}
+	// The default rollover, Sunday 12:00 AM, ends the week on Saturday.
+	if weekBody["endsOn"] != "2026-08-22" {
+		t.Fatalf("endsOn = %#v", weekBody["endsOn"])
+	}
 	recipes := weekBody["recipes"].([]any)
 	if len(recipes) != 3 {
 		t.Fatalf("generated recipes = %d", len(recipes))
@@ -189,7 +193,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 		t.Fatalf("history weeks = %d", len(weeks))
 	}
 	summary := weeks[0].(map[string]any)
-	if summary["startsOn"] != "2026-08-09" || summary["recipeCount"] != float64(2) || summary["completedCount"] != float64(1) {
+	if summary["startsOn"] != "2026-08-09" || summary["endsOn"] != "2026-08-15" || summary["recipeCount"] != float64(2) || summary["completedCount"] != float64(1) {
 		t.Fatalf("history summary = %#v", summary)
 	}
 
@@ -198,7 +202,7 @@ func TestWeekHistoryListsAndReturnsRetainedState(t *testing.T) {
 		t.Fatalf("history detail status = %d, body %s", detail.Code, detail.Body.String())
 	}
 	body := decodeObject(t, detail)
-	if len(body["week"].(map[string]any)["recipes"].([]any)) != 2 {
+	if pastWeek := body["week"].(map[string]any); len(pastWeek["recipes"].([]any)) != 2 || pastWeek["endsOn"] != "2026-08-15" {
 		t.Fatalf("history detail week = %#v", body["week"])
 	}
 	lines := body["groceries"].(map[string]any)["lines"].([]any)

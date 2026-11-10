@@ -569,6 +569,23 @@ func (q *Queries) NextWeekRecipePosition(ctx context.Context, arg NextWeekRecipe
 	return column_1, err
 }
 
+const setOpenWeekAutoClose = `-- name: SetOpenWeekAutoClose :exec
+UPDATE weeks SET auto_close_at = $1
+WHERE household_id = $2 AND closed_at IS NULL
+`
+
+type SetOpenWeekAutoCloseParams struct {
+	AutoCloseAt sql.NullTime `db:"auto_close_at" json:"auto_close_at"`
+	HouseholdID string       `db:"household_id" json:"household_id"`
+}
+
+// Moves the open week's automatic close time after a settings change; NULL leaves it open until
+// closed by hand. It never closes a week.
+func (q *Queries) SetOpenWeekAutoClose(ctx context.Context, arg SetOpenWeekAutoCloseParams) error {
+	_, err := q.db.ExecContext(ctx, setOpenWeekAutoClose, arg.AutoCloseAt, arg.HouseholdID)
+	return err
+}
+
 const touchWeek = `-- name: TouchWeek :exec
 UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 WHERE household_id = $1 AND id = $2

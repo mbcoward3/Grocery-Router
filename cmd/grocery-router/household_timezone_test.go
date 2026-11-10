@@ -22,11 +22,33 @@ func TestHouseholdTimezoneCommand(t *testing.T) {
 	if got := zone(); got != "UTC" {
 		t.Fatalf("default zone = %q, want UTC", got)
 	}
+	// An open automatic week whose close time is not a Chicago Sunday midnight.
+	var weekID int64
+	if err := db.QueryRow(`INSERT INTO weeks (household_id, starts_on, opened_at, auto_close_at)
+		VALUES ($1, '2026-08-16', now() - interval '1 day', now() + interval '1 hour') RETURNING id`,
+		tenant.CowardHouseholdID).Scan(&weekID); err != nil {
+		t.Fatal(err)
+	}
 	if err := run([]string{"household-timezone", "America/Chicago", "--database-url", databaseURL}, io.Discard, io.Discard); err != nil {
 		t.Fatalf("household-timezone: %v", err)
 	}
 	if got := zone(); got != "America/Chicago" {
 		t.Fatalf("zone = %q, want America/Chicago", got)
+	}
+	// Like the Settings screen, the command keeps the week open and moves its close time to the
+	// next Sunday 12:00 AM in the new zone.
+	var open, future, withinWeek bool
+	var weekday int
+	var clock string
+	if err := db.QueryRow(`SELECT closed_at IS NULL, auto_close_at > now(), auto_close_at <= now() + interval '7 days',
+		CAST(EXTRACT(DOW FROM auto_close_at AT TIME ZONE 'America/Chicago') AS INTEGER),
+		to_char(auto_close_at AT TIME ZONE 'America/Chicago', 'HH24:MI')
+		FROM weeks WHERE id = $1`, weekID).Scan(&open, &future, &withinWeek, &weekday, &clock); err != nil {
+		t.Fatal(err)
+	}
+	if !open || !future || !withinWeek || weekday != 0 || clock != "00:00" {
+		t.Fatalf("open week after zone change: open %t, future %t, within a week %t, weekday %d, clock %s",
+			open, future, withinWeek, weekday, clock)
 	}
 	for _, args := range [][]string{
 		{"household-timezone", "Not/AZone", "--database-url", databaseURL},

@@ -51,6 +51,9 @@ type Household struct {
 	UpdatedAt          time.Time `db:"updated_at" json:"updated_at"`
 	Timezone           string    `db:"timezone" json:"timezone"`
 	DefaultRecipeCount int32     `db:"default_recipe_count" json:"default_recipe_count"`
+	WeekStartDay       int16     `db:"week_start_day" json:"week_start_day"`
+	RolloverMinutes    int16     `db:"rollover_minutes" json:"rollover_minutes"`
+	RolloverMode       string    `db:"rollover_mode" json:"rollover_mode"`
 }
 
 type HouseholdMembership struct {
