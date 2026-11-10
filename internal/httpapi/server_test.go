@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/mbcoward3/grocery-router/internal/httpapi"
 	"github.com/mbcoward3/grocery-router/internal/ingest"
@@ -463,5 +464,62 @@ func TestAddMissingRecipeIsValidationError(t *testing.T) {
 	message := decodeObject(t, response)["error"].(map[string]any)["message"]
 	if message != "recipe not found" {
 		t.Fatalf("missing recipe message = %#v", message)
+	}
+}
+
+func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
+	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	db := testDB(t)
+	service := week.NewService(db, zeroPicker{})
+	if _, err := service.ForHousehold(household).Generate(context.Background(), time.Date(2026, time.August, 12, 12, 0, 0, 0, time.UTC), 2); err != nil {
+		t.Fatal(err)
+	}
+	// Sunday 01:00 in UTC is Saturday evening in Chicago.
+	handler := httpapi.New(db, service, func() time.Time {
+		return time.Date(2026, time.August, 16, 1, 0, 0, 0, time.UTC)
+	}, func(_ context.Context, id string) bool { return id == household }).Handler()
+	path := func(suffix string) string { return "/api/v2/households/" + household + suffix }
+	setZone := func(zone string) {
+		t.Helper()
+		if _, err := db.Exec("UPDATE households SET timezone = $1 WHERE id = $2", zone, household); err != nil {
+			t.Fatal(err)
+		}
+	}
+	historyStarts := func() []any {
+		t.Helper()
+		response := request(t, handler, http.MethodGet, path("/weeks/history"), "")
+		if response.Code != http.StatusOK {
+			t.Fatalf("history status = %d, body %s", response.Code, response.Body.String())
+		}
+		starts := make([]any, 0)
+		for _, value := range decodeObject(t, response)["weeks"].([]any) {
+			starts = append(starts, value.(map[string]any)["startsOn"])
+		}
+		return starts
+	}
+
+	setZone("America/Chicago")
+	current := request(t, handler, http.MethodGet, path("/week/current"), "")
+	if current.Code != http.StatusOK || decodeObject(t, current)["startsOn"] != "2026-08-09" {
+		t.Fatalf("Chicago current week status = %d, body %s", current.Code, current.Body.String())
+	}
+	groceries := request(t, handler, http.MethodGet, path("/week/current/groceries"), "")
+	if groceries.Code != http.StatusOK || decodeObject(t, groceries)["startsOn"] != "2026-08-09" {
+		t.Fatalf("Chicago groceries status = %d, body %s", groceries.Code, groceries.Body.String())
+	}
+	if starts := historyStarts(); len(starts) != 0 {
+		t.Fatalf("Chicago history = %#v, want no past weeks", starts)
+	}
+
+	setZone("UTC")
+	for _, suffix := range []string{"/week/current", "/week/current/groceries"} {
+		response := request(t, handler, http.MethodGet, path(suffix), "")
+		if response.Code != http.StatusNotFound {
+			t.Fatalf("UTC %s status = %d, body %s", suffix, response.Code, response.Body.String())
+		}
+		assertErrorCode(t, response, "no_current_week")
+	}
+	if starts := historyStarts(); len(starts) != 1 || starts[0] != "2026-08-09" {
+		t.Fatalf("UTC history = %#v, want [2026-08-09]", starts)
 	}
 }

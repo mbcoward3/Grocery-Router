@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	_ "time/tzdata" // household time zones load without operating-system zone data
 
 	"github.com/alecthomas/kong"
 	"github.com/mbcoward3/grocery-router/internal/auth"
@@ -113,6 +114,7 @@ type cli struct {
 	catalogSitesCommands
 	catalogQualifyCommands
 	catalogFetchCommands
+	householdTimezoneCommands
 
 	Bootstrap       bootstrapCommand       `cmd:"" help:"Migrate and load the approved corpus when the database is empty."`
 	CorpusAudit     corpusAuditCommand     `cmd:"" help:"Validate the approved corpus against the PDF inventory."`
@@ -138,6 +140,7 @@ func run(args []string, stdout, stderr io.Writer) error {
 		kong.Description("Build and validate the Grocery Router corpus and database."),
 		kong.UsageOnError(),
 		kong.Writers(stdout, stderr),
+		kong.Vars(cliVars),
 	)
 	if err != nil {
 		return fmt.Errorf("configure CLI: %w", err)
