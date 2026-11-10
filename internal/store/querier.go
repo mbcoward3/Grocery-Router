@@ -14,6 +14,9 @@ type Querier interface {
 	// GetIngestHostRateLimit to learn how long. Safe across concurrent processes.
 	AcquireIngestHostSlot(ctx context.Context, arg AcquireIngestHostSlotParams) (AcquireIngestHostSlotRow, error)
 	ApproveReviewFlag(ctx context.Context, id int64) (RecipeReviewFlag, error)
+	// Closes the household's open week once its automatic close time has passed, recording that
+	// time rather than when the close was noticed.
+	CloseExpiredWeek(ctx context.Context, arg CloseExpiredWeekParams) error
 	// Fetched pages whose latest evidence holds no Recipe source node (the no_recipe outcome).
 	CountIngestNoRecipePagesBySite(ctx context.Context) ([]CountIngestNoRecipePagesBySiteRow, error)
 	CountIngestSourceNodesBySite(ctx context.Context) ([]CountIngestSourceNodesBySiteRow, error)
@@ -57,6 +60,7 @@ type Querier interface {
 	GetIngestSiteByHost(ctx context.Context, host string) (IngestSite, error)
 	GetIngestSourcePage(ctx context.Context, id int64) (IngestSourcePage, error)
 	GetOpenIngestSitePause(ctx context.Context, siteID string) (IngestSitePause, error)
+	GetOpenWeek(ctx context.Context, householdID string) (Week, error)
 	GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error)
 	GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error)
 	GetRecipe(ctx context.Context, arg GetRecipeParams) (Recipe, error)
@@ -66,7 +70,6 @@ type Querier interface {
 	GetStoreSectionByKey(ctx context.Context, arg GetStoreSectionByKeyParams) (StoreSection, error)
 	GetUnitByKey(ctx context.Context, key string) (Unit, error)
 	GetVerifiedRecipe(ctx context.Context, arg GetVerifiedRecipeParams) (Recipe, error)
-	GetWeekByStart(ctx context.Context, arg GetWeekByStartParams) (Week, error)
 	GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (WeekRecipe, error)
 	InsertIngestEvidence(ctx context.Context, arg InsertIngestEvidenceParams) (int64, error)
 	InsertIngestFetchAttempt(ctx context.Context, arg InsertIngestFetchAttemptParams) (int64, error)
@@ -90,7 +93,7 @@ type Querier interface {
 	ListIngredientSections(ctx context.Context, arg ListIngredientSectionsParams) ([]RecipeIngredientSection, error)
 	ListInstructionSections(ctx context.Context, arg ListInstructionSectionsParams) ([]RecipeInstructionSection, error)
 	ListOpenIngestSitePauses(ctx context.Context) ([]IngestSitePause, error)
-	ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([]ListPastWeeksRow, error)
+	ListPastWeeks(ctx context.Context, householdID string) ([]ListPastWeeksRow, error)
 	ListRecipeIngredients(ctx context.Context, arg ListRecipeIngredientsParams) ([]ListRecipeIngredientsRow, error)
 	ListRecipeReviewFlags(ctx context.Context, arg ListRecipeReviewFlagsParams) ([]RecipeReviewFlag, error)
 	ListRecipeSources(ctx context.Context, arg ListRecipeSourcesParams) ([]RecipeSource, error)

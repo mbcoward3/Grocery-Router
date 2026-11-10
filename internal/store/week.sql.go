@@ -8,7 +8,26 @@ package store
 import (
 	"context"
 	"database/sql"
+	"time"
 )
+
+const closeExpiredWeek = `-- name: CloseExpiredWeek :exec
+UPDATE weeks SET closed_at = auto_close_at
+WHERE household_id = $1 AND closed_at IS NULL
+    AND auto_close_at <= CAST($2 AS TIMESTAMPTZ)
+`
+
+type CloseExpiredWeekParams struct {
+	HouseholdID string    `db:"household_id" json:"household_id"`
+	Now         time.Time `db:"now" json:"now"`
+}
+
+// Closes the household's open week once its automatic close time has passed, recording that
+// time rather than when the close was noticed.
+func (q *Queries) CloseExpiredWeek(ctx context.Context, arg CloseExpiredWeekParams) error {
+	_, err := q.db.ExecContext(ctx, closeExpiredWeek, arg.HouseholdID, arg.Now)
+	return err
+}
 
 const createShoppingList = `-- name: CreateShoppingList :one
 INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)
@@ -35,17 +54,25 @@ func (q *Queries) CreateShoppingList(ctx context.Context, arg CreateShoppingList
 }
 
 const createWeek = `-- name: CreateWeek :one
-INSERT INTO weeks (household_id, starts_on) VALUES ($1, $2)
-RETURNING id, starts_on, created_at, updated_at, household_id
+INSERT INTO weeks (household_id, starts_on, opened_at, auto_close_at)
+VALUES ($1, $2, $3, $4)
+RETURNING id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at
 `
 
 type CreateWeekParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
+	HouseholdID string       `db:"household_id" json:"household_id"`
+	StartsOn    string       `db:"starts_on" json:"starts_on"`
+	OpenedAt    time.Time    `db:"opened_at" json:"opened_at"`
+	AutoCloseAt sql.NullTime `db:"auto_close_at" json:"auto_close_at"`
 }
 
 func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, createWeek, arg.HouseholdID, arg.StartsOn)
+	row := q.db.QueryRowContext(ctx, createWeek,
+		arg.HouseholdID,
+		arg.StartsOn,
+		arg.OpenedAt,
+		arg.AutoCloseAt,
+	)
 	var i Week
 	err := row.Scan(
 		&i.ID,
@@ -53,6 +80,9 @@ func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, e
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.AutoCloseAt,
+		&i.ClosedAt,
 	)
 	return i, err
 }
@@ -121,19 +151,12 @@ func (q *Queries) DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesPa
 	return err
 }
 
-const getPastWeek = `-- name: GetPastWeek :one
-SELECT id, starts_on, created_at, updated_at, household_id FROM weeks
-WHERE household_id = $1 AND id = $2 AND starts_on < $3
+const getOpenWeek = `-- name: GetOpenWeek :one
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at FROM weeks WHERE household_id = $1 AND closed_at IS NULL
 `
 
-type GetPastWeekParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	ID          int64  `db:"id" json:"id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-}
-
-func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, getPastWeek, arg.HouseholdID, arg.ID, arg.StartsOn)
+func (q *Queries) GetOpenWeek(ctx context.Context, householdID string) (Week, error) {
+	row := q.db.QueryRowContext(ctx, getOpenWeek, householdID)
 	var i Week
 	err := row.Scan(
 		&i.ID,
@@ -141,6 +164,35 @@ func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.AutoCloseAt,
+		&i.ClosedAt,
+	)
+	return i, err
+}
+
+const getPastWeek = `-- name: GetPastWeek :one
+SELECT id, starts_on, created_at, updated_at, household_id, opened_at, auto_close_at, closed_at FROM weeks
+WHERE household_id = $1 AND id = $2 AND closed_at IS NOT NULL
+`
+
+type GetPastWeekParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error) {
+	row := q.db.QueryRowContext(ctx, getPastWeek, arg.HouseholdID, arg.ID)
+	var i Week
+	err := row.Scan(
+		&i.ID,
+		&i.StartsOn,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.HouseholdID,
+		&i.OpenedAt,
+		&i.AutoCloseAt,
+		&i.ClosedAt,
 	)
 	return i, err
 }
@@ -165,28 +217,6 @@ func (q *Queries) GetShoppingListByWeek(ctx context.Context, arg GetShoppingList
 		&i.UpdatedAt,
 		&i.HouseholdID,
 		&i.AggregationVersion,
-	)
-	return i, err
-}
-
-const getWeekByStart = `-- name: GetWeekByStart :one
-SELECT id, starts_on, created_at, updated_at, household_id FROM weeks WHERE household_id = $1 AND starts_on = $2
-`
-
-type GetWeekByStartParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-}
-
-func (q *Queries) GetWeekByStart(ctx context.Context, arg GetWeekByStartParams) (Week, error) {
-	row := q.db.QueryRowContext(ctx, getWeekByStart, arg.HouseholdID, arg.StartsOn)
-	var i Week
-	err := row.Scan(
-		&i.ID,
-		&i.StartsOn,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.HouseholdID,
 	)
 	return i, err
 }
@@ -216,7 +246,7 @@ func (q *Queries) GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (W
 
 const listPastWeeks = `-- name: ListPastWeeks :many
 SELECT
-    w.id, w.starts_on, w.created_at, w.updated_at, w.household_id,
+    w.id, w.starts_on, w.created_at, w.updated_at, w.household_id, w.opened_at, w.auto_close_at, w.closed_at,
     CAST((SELECT count(*) FROM week_recipes wr WHERE wr.week_id = w.id) AS BIGINT) AS recipe_count,
     CAST((SELECT count(*) FROM shopping_lines sl
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
@@ -225,28 +255,26 @@ SELECT
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
         WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
 FROM weeks w
-WHERE w.household_id = $1 AND w.starts_on < $2
-ORDER BY w.starts_on DESC
+WHERE w.household_id = $1 AND w.closed_at IS NOT NULL
+ORDER BY w.starts_on DESC, w.id DESC
 `
 
-type ListPastWeeksParams struct {
-	HouseholdID string `db:"household_id" json:"household_id"`
-	StartsOn    string `db:"starts_on" json:"starts_on"`
-}
-
 type ListPastWeeksRow struct {
-	ID             int64  `db:"id" json:"id"`
-	StartsOn       string `db:"starts_on" json:"starts_on"`
-	CreatedAt      string `db:"created_at" json:"created_at"`
-	UpdatedAt      string `db:"updated_at" json:"updated_at"`
-	HouseholdID    string `db:"household_id" json:"household_id"`
-	RecipeCount    int64  `db:"recipe_count" json:"recipe_count"`
-	GroceryCount   int64  `db:"grocery_count" json:"grocery_count"`
-	CompletedCount int64  `db:"completed_count" json:"completed_count"`
+	ID             int64        `db:"id" json:"id"`
+	StartsOn       string       `db:"starts_on" json:"starts_on"`
+	CreatedAt      string       `db:"created_at" json:"created_at"`
+	UpdatedAt      string       `db:"updated_at" json:"updated_at"`
+	HouseholdID    string       `db:"household_id" json:"household_id"`
+	OpenedAt       time.Time    `db:"opened_at" json:"opened_at"`
+	AutoCloseAt    sql.NullTime `db:"auto_close_at" json:"auto_close_at"`
+	ClosedAt       sql.NullTime `db:"closed_at" json:"closed_at"`
+	RecipeCount    int64        `db:"recipe_count" json:"recipe_count"`
+	GroceryCount   int64        `db:"grocery_count" json:"grocery_count"`
+	CompletedCount int64        `db:"completed_count" json:"completed_count"`
 }
 
-func (q *Queries) ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([]ListPastWeeksRow, error) {
-	rows, err := q.db.QueryContext(ctx, listPastWeeks, arg.HouseholdID, arg.StartsOn)
+func (q *Queries) ListPastWeeks(ctx context.Context, householdID string) ([]ListPastWeeksRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPastWeeks, householdID)
 	if err != nil {
 		return nil, err
 	}
@@ -260,6 +288,9 @@ func (q *Queries) ListPastWeeks(ctx context.Context, arg ListPastWeeksParams) ([
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.HouseholdID,
+			&i.OpenedAt,
+			&i.AutoCloseAt,
+			&i.ClosedAt,
 			&i.RecipeCount,
 			&i.GroceryCount,
 			&i.CompletedCount,

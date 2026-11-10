@@ -3,7 +3,6 @@ package week
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"strings"
 	"time"
 
@@ -26,14 +25,7 @@ type Checklist struct {
 // Checklist returns the current week's compact grocery lines in store-section order.
 func (service *Household) Checklist(ctx context.Context, now time.Time) (Checklist, error) {
 	queries := store.New(service.db)
-	sunday, err := service.currentSunday(ctx, queries, now)
-	if err != nil {
-		return Checklist{}, err
-	}
-	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
-	if errors.Is(err, sql.ErrNoRows) {
-		return Checklist{}, ErrNoCurrentWeek
-	}
+	weekRow, err := service.openWeek(ctx, queries, now)
 	if err != nil {
 		return Checklist{}, err
 	}
@@ -108,18 +100,18 @@ func (service *Household) Contributions(
 
 // SetLineRemoved removes or restores one current-week line without deleting its provenance.
 func (service *Household) SetLineRemoved(ctx context.Context, now time.Time, lineID int64, removed bool) error {
-	return service.updateLine(ctx, now, func(queries *store.Queries, sunday string) (int64, error) {
+	return service.updateLine(ctx, now, func(queries *store.Queries) (int64, error) {
 		return queries.SetShoppingLineRemoved(ctx, store.SetShoppingLineRemovedParams{
-			HouseholdID: service.householdID, Removed: boolInt(removed), LineID: lineID, StartsOn: sunday,
+			HouseholdID: service.householdID, Removed: boolInt(removed), LineID: lineID,
 		})
 	})
 }
 
 // SetLineCompleted updates one current-week checklist item's completion state.
 func (service *Household) SetLineCompleted(ctx context.Context, now time.Time, lineID int64, completed bool) error {
-	return service.updateLine(ctx, now, func(queries *store.Queries, sunday string) (int64, error) {
+	return service.updateLine(ctx, now, func(queries *store.Queries) (int64, error) {
 		return queries.SetShoppingLineCompleted(ctx, store.SetShoppingLineCompletedParams{
-			HouseholdID: service.householdID, Completed: boolInt(completed), LineID: lineID, StartsOn: sunday,
+			HouseholdID: service.householdID, Completed: boolInt(completed), LineID: lineID,
 		})
 	})
 }
@@ -127,21 +119,20 @@ func (service *Household) SetLineCompleted(ctx context.Context, now time.Time, l
 // SetLineOverride stores a week-only display override on a generated line.
 func (service *Household) SetLineOverride(ctx context.Context, now time.Time, lineID int64, text string) error {
 	text = strings.TrimSpace(text)
-	return service.updateLine(ctx, now, func(queries *store.Queries, sunday string) (int64, error) {
+	return service.updateLine(ctx, now, func(queries *store.Queries) (int64, error) {
 		return queries.SetShoppingLineOverride(ctx, store.SetShoppingLineOverrideParams{
 			HouseholdID: service.householdID, OverrideText: sql.NullString{String: text, Valid: text != ""},
-			LineID: lineID, StartsOn: sunday,
+			LineID: lineID,
 		})
 	})
 }
 
-func (service *Household) updateLine(ctx context.Context, now time.Time, update func(*store.Queries, string) (int64, error)) error {
+func (service *Household) updateLine(ctx context.Context, now time.Time, update func(*store.Queries) (int64, error)) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
-		sunday, err := service.currentSunday(ctx, queries, now)
-		if err != nil {
+		if err := service.closeExpired(ctx, queries, now); err != nil {
 			return err
 		}
-		rows, err := update(queries, sunday)
+		rows, err := update(queries)
 		if err != nil {
 			return err
 		}

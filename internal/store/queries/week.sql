@@ -1,9 +1,17 @@
 -- name: CreateWeek :one
-INSERT INTO weeks (household_id, starts_on) VALUES (sqlc.arg(household_id), sqlc.arg(starts_on))
+INSERT INTO weeks (household_id, starts_on, opened_at, auto_close_at)
+VALUES (sqlc.arg(household_id), sqlc.arg(starts_on), sqlc.arg(opened_at), sqlc.narg(auto_close_at))
 RETURNING *;
 
--- name: GetWeekByStart :one
-SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND starts_on = sqlc.arg(starts_on);
+-- name: CloseExpiredWeek :exec
+-- Closes the household's open week once its automatic close time has passed, recording that
+-- time rather than when the close was noticed.
+UPDATE weeks SET closed_at = auto_close_at
+WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL
+    AND auto_close_at <= CAST(sqlc.arg(now) AS TIMESTAMPTZ);
+
+-- name: GetOpenWeek :one
+SELECT * FROM weeks WHERE household_id = sqlc.arg(household_id) AND closed_at IS NULL;
 
 -- name: ListPastWeeks :many
 SELECT
@@ -16,12 +24,12 @@ SELECT
         JOIN shopping_lists list ON list.id = sl.shopping_list_id
         WHERE list.week_id = w.id AND sl.is_removed = 0 AND sl.is_completed = 1) AS BIGINT) AS completed_count
 FROM weeks w
-WHERE w.household_id = sqlc.arg(household_id) AND w.starts_on < sqlc.arg(starts_on)
-ORDER BY w.starts_on DESC;
+WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NOT NULL
+ORDER BY w.starts_on DESC, w.id DESC;
 
 -- name: GetPastWeek :one
 SELECT * FROM weeks
-WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND starts_on < sqlc.arg(starts_on);
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NOT NULL;
 
 -- name: TouchWeek :exec
 UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')

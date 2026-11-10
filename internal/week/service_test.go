@@ -480,3 +480,89 @@ func TestChecklistHasOneRowPerItemAndUpgradesOldLists(t *testing.T) {
 	}
 	assertAllShoppingContributionsPresent(t, db, view.Week.ID)
 }
+
+func TestWeekClosesAtNextLocalSundayMidnight(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	if _, err := db.Exec(`UPDATE households SET timezone = 'America/Chicago' WHERE id = $1`, household); err != nil {
+		t.Fatal(err)
+	}
+	chicago, err := time.LoadLocation("America/Chicago")
+	if err != nil {
+		t.Fatal(err)
+	}
+	wednesday := time.Date(2026, time.August, 19, 12, 0, 0, 0, chicago)
+	saturdayNight := time.Date(2026, time.August, 22, 23, 59, 0, 0, chicago)
+	sundayMidnight := time.Date(2026, time.August, 23, 0, 0, 0, 0, chicago)
+
+	generated, err := service.Generate(ctx, wednesday, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if generated.Week.StartsOn != "2026-08-16" || !generated.Week.OpenedAt.Equal(wednesday) ||
+		!generated.Week.AutoCloseAt.Valid || !generated.Week.AutoCloseAt.Time.Equal(sundayMidnight) {
+		t.Fatalf("generated week = %#v", generated.Week)
+	}
+	checklist, err := service.Checklist(ctx, wednesday)
+	if err != nil || len(checklist.Lines) == 0 {
+		t.Fatalf("checklist = %#v, %v", checklist, err)
+	}
+	generatedLine := checklist.Lines[0].ID
+	manual, err := service.AddManualLine(ctx, wednesday, "Birthday candles")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var baking int64
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 AND key = 'baking'`, household).Scan(&baking); err != nil {
+		t.Fatal(err)
+	}
+
+	current, err := service.Current(ctx, saturdayNight)
+	if err != nil || current.Week.ID != generated.Week.ID {
+		t.Fatalf("Saturday 23:59 current = %#v, %v", current.Week, err)
+	}
+	if past, err := service.PastWeeks(ctx, saturdayNight); err != nil || len(past) != 0 {
+		t.Fatalf("Saturday 23:59 history = %#v, %v", past, err)
+	}
+
+	if _, err := service.Current(ctx, sundayMidnight); !errors.Is(err, week.ErrNoCurrentWeek) {
+		t.Fatalf("Sunday 00:00 Current error = %v, want ErrNoCurrentWeek", err)
+	}
+	if _, err := service.Checklist(ctx, sundayMidnight); !errors.Is(err, week.ErrNoCurrentWeek) {
+		t.Fatalf("Sunday 00:00 Checklist error = %v, want ErrNoCurrentWeek", err)
+	}
+	var closedAt time.Time
+	if err := db.QueryRow(`SELECT closed_at FROM weeks WHERE id = $1`, generated.Week.ID).Scan(&closedAt); err != nil || !closedAt.Equal(sundayMidnight) {
+		t.Fatalf("closed_at = %s, %v; want %s", closedAt, err, sundayMidnight)
+	}
+	past, err := service.PastWeeks(ctx, sundayMidnight)
+	if err != nil || len(past) != 1 || past[0].ID != generated.Week.ID || past[0].StartsOn != "2026-08-16" {
+		t.Fatalf("Sunday 00:00 history = %#v, %v", past, err)
+	}
+	if _, err := service.PastWeek(ctx, sundayMidnight, generated.Week.ID); err != nil {
+		t.Fatalf("closed week detail: %v", err)
+	}
+
+	// The closed week's lines can no longer be changed.
+	assertLineNotFound := func(name string, err error) {
+		t.Helper()
+		var validation week.ValidationError
+		if !errors.As(err, &validation) || validation.Message != "shopping line not found or operation is not supported" {
+			t.Fatalf("%s on a closed week: %v", name, err)
+		}
+	}
+	assertLineNotFound("SetLineCompleted", service.SetLineCompleted(ctx, sundayMidnight, generatedLine, true))
+	assertLineNotFound("SetLineRemoved", service.SetLineRemoved(ctx, sundayMidnight, generatedLine, true))
+	assertLineNotFound("SetLineOverride", service.SetLineOverride(ctx, sundayMidnight, generatedLine, "two"))
+	assertLineNotFound("SetLineSection", service.SetLineSection(ctx, sundayMidnight, manual.ID, baking))
+
+	// Generating again opens the next week; the closed one stays in History.
+	next, err := service.Generate(ctx, sundayMidnight, 2)
+	if err != nil || next.Week.ID == generated.Week.ID || next.Week.StartsOn != "2026-08-23" {
+		t.Fatalf("next week = %#v, %v", next.Week, err)
+	}
+	if past, err := service.PastWeeks(ctx, sundayMidnight); err != nil || len(past) != 1 || past[0].ID != generated.Week.ID {
+		t.Fatalf("history after next week = %#v, %v", past, err)
+	}
+}

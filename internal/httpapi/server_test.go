@@ -543,8 +543,16 @@ func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
 	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
 	db := testDB(t)
 	service := week.NewService(db, zeroPicker{})
-	if _, err := service.ForHousehold(household).Generate(context.Background(), time.Date(2026, time.August, 12, 12, 0, 0, 0, time.UTC), 2); err != nil {
-		t.Fatal(err)
+	// A week's closing time is fixed in the household's zone when it is generated, so each zone
+	// below plans the week afresh.
+	generate := func() {
+		t.Helper()
+		if _, err := db.Exec("DELETE FROM weeks WHERE household_id = $1", household); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := service.ForHousehold(household).Generate(context.Background(), time.Date(2026, time.August, 12, 12, 0, 0, 0, time.UTC), 2); err != nil {
+			t.Fatal(err)
+		}
 	}
 	// Sunday 01:00 in UTC is Saturday evening in Chicago.
 	handler := contractHandler(t, httpapi.New(db, service, func() time.Time {
@@ -571,6 +579,7 @@ func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
 	}
 
 	setZone("America/Chicago")
+	generate()
 	current := request(t, handler, http.MethodGet, path("/week/current"), "")
 	if current.Code != http.StatusOK || decodeObject(t, current)["startsOn"] != "2026-08-09" {
 		t.Fatalf("Chicago current week status = %d, body %s", current.Code, current.Body.String())
@@ -588,6 +597,7 @@ func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
 	}
 
 	setZone("UTC")
+	generate()
 	for _, call := range []struct{ method, suffix, body string }{
 		{http.MethodGet, "/week/current", ""},
 		{http.MethodGet, "/week/current/groceries", ""},

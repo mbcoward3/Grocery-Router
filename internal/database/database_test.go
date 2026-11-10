@@ -98,11 +98,11 @@ func TestRecipeMustPassReviewBeforeVerification(t *testing.T) {
 func TestWeekDateAndVerifiedRecipeConstraints(t *testing.T) {
 	db := migratedDB(t)
 
-	_, err := db.Exec("INSERT INTO weeks (household_id, starts_on) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-08-17')")
+	_, err := db.Exec("INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-08-17', now())")
 	assertErrorContains(t, err, "violates check constraint")
-	_, err = db.Exec("INSERT INTO weeks (household_id, starts_on) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-99-99')")
+	_, err = db.Exec("INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-99-99', now())")
 	assertErrorContains(t, err, "date/time field value out of range")
-	weekID := mustInsertID(t, db, "INSERT INTO weeks (household_id, starts_on) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-08-16')")
+	weekID := mustInsertID(t, db, "INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', '2026-08-16', now())")
 	recipeID := mustInsertID(t, db, "INSERT INTO recipes (household_id, key, name) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', 'draft', 'Draft')")
 
 	_, err = db.Exec("INSERT INTO week_recipes (household_id, week_id, recipe_id, position) VALUES ('c0a7a2d8-669b-4e47-91c1-4d9a32f339d5', $1, $2, 0)", weekID, recipeID)
@@ -150,7 +150,7 @@ func TestHouseholdConstraintsRejectCrossTenantRelationships(t *testing.T) {
 		VALUES ($1, 'apple', 'Apple', $2, 'counted')`, other, sectionID)
 	assertErrorContains(t, err, "grocery_items_household_section_fkey")
 
-	otherWeekID := mustInsertID(t, db, "INSERT INTO weeks (household_id, starts_on) VALUES ($1, '2026-08-16')", other)
+	otherWeekID := mustInsertID(t, db, "INSERT INTO weeks (household_id, starts_on, opened_at) VALUES ($1, '2026-08-16', now())", other)
 	_, err = db.Exec("INSERT INTO shopping_lists (household_id, week_id) VALUES ($1, $2)", coward, otherWeekID)
 	assertErrorContains(t, err, "shopping_lists_household_week_fkey")
 }
