@@ -653,6 +653,7 @@ export interface operations {
                     "application/json": components["schemas"]["RecipeDetail"];
                 };
             };
+            400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
@@ -720,6 +721,7 @@ export interface operations {
                     "application/json": components["schemas"]["HistoricalWeek"];
                 };
             };
+            400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             500: components["responses"]["InternalError"];
         };
@@ -946,6 +948,7 @@ export interface operations {
             200: components["responses"]["Groceries"];
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NoCurrentWeek"];
+            422: components["responses"]["WeekOperationFailed"];
             500: components["responses"]["InternalError"];
         };
     };
@@ -962,6 +965,7 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: components["responses"]["Groceries"];
+            400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
             500: components["responses"]["InternalError"];
@@ -1022,6 +1026,7 @@ export interface operations {
                     };
                 };
             };
+            400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
             422: components["responses"]["WeekOperationFailed"];
             500: components["responses"]["InternalError"];

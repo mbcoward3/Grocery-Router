@@ -359,7 +359,7 @@ func request(t *testing.T, handler http.Handler, method, path, body string) *htt
 	return requestExpecting(t, handler, conformingRequest, method, path, body)
 }
 
-// requestExpecting sends a request that a test deliberately marks as violating the contract.
+// requestExpecting sends a request with an explicit contract expectation.
 func requestExpecting(t *testing.T, handler http.Handler, expectation contractExpectation, method, path, body string) *httptest.ResponseRecorder {
 	t.Helper()
 	recorder := httptest.NewRecorder()
@@ -505,8 +505,16 @@ func TestSwapAndRandomSwapAPI(t *testing.T) {
 	if random.Code != http.StatusOK {
 		t.Fatalf("random swap status = %d, body %s", random.Code, random.Body.String())
 	}
-	if recipes := decodeObject(t, random)["recipes"].([]any); len(recipes) != 2 {
-		t.Fatalf("recipes after random swap = %d", len(recipes))
+	randomRecipes := decodeObject(t, random)["recipes"].([]any)
+	if len(randomRecipes) != 2 {
+		t.Fatalf("recipes after random swap = %d", len(randomRecipes))
+	}
+	randomFirst := randomRecipes[0].(map[string]any)
+	if int64(randomFirst["id"].(float64)) != swappedID {
+		t.Fatalf("random swap moved the occurrence: %#v", randomFirst)
+	}
+	if int64(randomFirst["recipe"].(map[string]any)["id"].(float64)) == secondRecipeID {
+		t.Fatalf("random swap kept recipe %d: %#v", secondRecipeID, randomFirst)
 	}
 
 	missing := request(t, handler, http.MethodPost, root+"/week/current/recipes/999999/random-swap", "")
@@ -594,4 +602,30 @@ func TestCurrentWeekFollowsHouseholdTimezone(t *testing.T) {
 	if starts := historyStarts(); len(starts) != 1 || starts[0] != "2026-08-09" {
 		t.Fatalf("UTC history = %#v, want [2026-08-09]", starts)
 	}
+}
+
+func TestInvalidPathIDsAndBlankManualLine(t *testing.T) {
+	handler := testHandler(t)
+	const root = "/api/v2/households/c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	for _, call := range []struct{ method, path string }{
+		{http.MethodGet, root + "/recipes/abc"},
+		{http.MethodGet, root + "/weeks/history/abc"},
+		{http.MethodDelete, root + "/week/current/groceries/abc"},
+		{http.MethodGet, root + "/week/current/groceries/abc/contributions"},
+	} {
+		response := requestExpecting(t, handler, nonconformingRequest, call.method, call.path, "")
+		if response.Code != http.StatusBadRequest {
+			t.Fatalf("%s %s status = %d, body %s", call.method, call.path, response.Code, response.Body.String())
+		}
+		assertErrorCode(t, response, "invalid_request")
+	}
+
+	if generated := request(t, handler, http.MethodPost, root+"/week/current/generate", `{"recipeCount":1}`); generated.Code != http.StatusOK {
+		t.Fatalf("generate status = %d, body %s", generated.Code, generated.Body.String())
+	}
+	blank := request(t, handler, http.MethodPost, root+"/week/current/groceries", `{"name":" "}`)
+	if blank.Code != http.StatusUnprocessableEntity {
+		t.Fatalf("blank manual line status = %d, body %s", blank.Code, blank.Body.String())
+	}
+	assertErrorCode(t, blank, "grocery_operation_failed")
 }

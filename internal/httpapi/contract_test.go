@@ -108,6 +108,9 @@ func serveAgainstContract(router routers.Router, next http.Handler, recorder *ht
 		if findErr == nil {
 			return fmt.Errorf("operation %s is in the contract but the test marked it undocumented", route.Operation.OperationID)
 		}
+		if recorder.Code != http.StatusNotFound && recorder.Code != http.StatusMethodNotAllowed {
+			return fmt.Errorf("undocumented operation answered %d, want 404 or 405", recorder.Code)
+		}
 		return nil
 	}
 	if findErr != nil {
@@ -203,6 +206,8 @@ func TestContractHelperRejectsDrift(t *testing.T) {
 			canned(http.StatusOK, jsonType, `{"startsOn":"2026-08-16","lines":[]}`), true},
 		{"undocumented method", http.MethodDelete, groceries, "", undocumentedOperation,
 			canned(http.StatusMethodNotAllowed, "text/plain", "Method Not Allowed\n"), false},
+		{"undocumented operation answered with success", http.MethodDelete, groceries, "", undocumentedOperation,
+			canned(http.StatusOK, jsonType, `{}`), true},
 		{"documented operation marked undocumented", http.MethodGet, groceries, "", undocumentedOperation,
 			canned(http.StatusOK, jsonType, `{"startsOn":"2026-08-16","lines":[]}`), true},
 	}
