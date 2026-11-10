@@ -37,6 +37,9 @@ export const TrashIcon = (props: IconProps) => <Icon {...props}><path d="M5 7h14
 export const ArrowIcon = (props: IconProps) => <Icon {...props}><path d="m9 18 6-6-6-6" /></Icon>
 export const CloseIcon = (props: IconProps) => <Icon {...props}><path d="m6 6 12 12M18 6 6 18" /></Icon>
 export const RecipeIcon = (props: IconProps) => <Icon {...props}><path d="M6 3h12v18H6zM9 8h6m-6 4h6m-6 4h4" /></Icon>
+export const SettingsIcon = (props: IconProps) => (
+  <Icon {...props}><path d="M4 7h9m4 0h3M4 17h3m4 0h9" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="17" r="2" /></Icon>
+)
 export const CheckIcon = (props: IconProps) => <Icon {...props}><path d="m5 12 4 4L19 6" /></Icon>
 export const ChevronIcon = (props: IconProps) => <Icon {...props}><path d="m8 10 4 4 4-4" /></Icon>
 export const EditIcon = (props: IconProps) => <Icon {...props}><path d="m4 20 4.5-1 10-10-3.5-3.5-10 10L4 20Zm9-12 3.5 3.5" /></Icon>

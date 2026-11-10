@@ -199,8 +199,8 @@ h1 { margin: 0; font-size: 23px; font-weight: 620; line-height: 1.2; letter-spac
 .button svg { width: 14px; height: 14px; }
 .button:hover:not(:disabled), .icon-button:hover:not(:disabled) { background: #202329; border-color: #3b3f47; }
 .button.primary { color: var(--accent-ink); background: var(--accent); border-color: #69d0b8; }
-.button.primary:hover:not(:disabled) { background: var(--accent-hover); }
-button:disabled { cursor: not-allowed; opacity: 0.48; }
+.button.primary:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--accent-hover); }
+button:disabled, button[aria-disabled="true"] { cursor: not-allowed; opacity: 0.48; }
 .icon-button { width: 32px; height: 32px; padding: 0; color: #a5aab3; }
 .icon-button svg { width: 14px; height: 14px; stroke-width: 1.5; }
 .icon-button.danger:hover:not(:disabled) { color: var(--danger); border-color: #58363a; background: #241719; }
@@ -394,6 +394,19 @@ select {
 .recipe-end-link { margin: 8px 0 0 48px; }
 .recipe-detail-skeleton { min-height: 600px; border-radius: 10px; background: linear-gradient(100deg, #101215 30%, #181b1f 50%, #101215 70%); background-size: 200% 100%; animation: skeleton 1.4s ease infinite; }
 
+/* Settings */
+.settings-panel { overflow: hidden; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+.settings-skeleton { min-height: 260px; background: linear-gradient(100deg, #101215 30%, #181b1f 50%, #101215 70%); background-size: 200% 100%; animation: skeleton 1.4s ease infinite; }
+.settings-field { padding: 18px; display: grid; grid-template-columns: minmax(180px, 1fr) minmax(0, 1.4fr); gap: 4px 24px; align-items: center; border-bottom: 1px solid var(--line); }
+.settings-field label { color: var(--text); font-weight: 590; }
+.settings-help { grid-row: 2; margin: 0; color: var(--muted); font-size: 12px; }
+.settings-control { grid-column: 2; grid-row: 1 / span 2; display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.settings-control select { min-width: 0; flex: 1 1 220px; }
+.settings-control input { width: 96px; min-height: 34px; padding: 0 10px; color: var(--text); background: #111316; border: 1px solid #343840; border-radius: 6px; }
+.settings-panel .inline-error { margin: 14px 18px 0; }
+.settings-footer { padding: 12px 18px; display: flex; align-items: center; justify-content: flex-end; gap: 12px; background: #0f1114; }
+.settings-saved { color: var(--accent-text); font-size: 12px; }
+
 /* Grocery checklist */
 .picker-dialog input { width: 100%; min-height: 38px; padding: 0 10px; color: var(--text); background: #0e1013; border: 1px solid var(--line-strong); border-radius: 6px; }
 .dialog-note { margin: -7px 18px 18px; color: var(--faint); font-size: 11px; }
@@ -404,7 +417,7 @@ select {
   .app-shell { grid-template-columns: 1fr; padding-bottom: 59px; }
   .sidebar { inset: auto 0 0; width: auto; height: 59px; padding: 6px; background: #0f1114; border: 0; border-top: 1px solid var(--line); }
   .brand, .workspace-label, .sidebar-footer { display: none; }
-  .navigation { height: 100%; grid-template-columns: repeat(4, 1fr); }
+  .navigation { height: 100%; grid-template-columns: repeat(5, 1fr); }
   .navigation a { height: 46px; justify-content: center; flex-direction: column; gap: 1px; font-size: 10px; }
   .navigation a.active { background: #1b1d22; }
   .navigation svg { width: 16px; height: 16px; }
@@ -434,6 +447,10 @@ select {
   .history-stat span { white-space: normal; }
   .history-arrow { position: absolute; top: 18px; right: 10px; }
   .history-meals { grid-template-columns: 1fr; }
+  .settings-field { grid-template-columns: 1fr; }
+  .settings-help { grid-row: auto; }
+  .settings-control { grid-column: 1; grid-row: auto; margin-top: 8px; }
+  .settings-control .button { flex: 1 1 100%; }
   .history-meals a, .history-meals a:nth-child(odd), .history-meals a:nth-last-child(-n+2) { border-right: 0; border-bottom: 1px solid var(--line); }
   .history-meals a:last-child { border-bottom: 0; }
   .historical-grocery-row { min-height: 67px; grid-template-columns: 28px minmax(0, 1fr) auto; }

@@ -3,7 +3,7 @@ import { Link, Outlet, useRouterState } from '@tanstack/react-router'
 import { getSession, logout } from '../api/client'
 import { sessionQueryKey } from '../features/auth/auth-gate'
 import { currentWeekQueryOptions } from '../features/week/queries'
-import { BagIcon, BrandMark, CalendarIcon, HistoryIcon, RecipeIcon } from './icons'
+import { BagIcon, BrandMark, CalendarIcon, HistoryIcon, RecipeIcon, SettingsIcon } from './icons'
 
 export function AppShell() {
   const pathname = useRouterState({ select: (state) => state.location.pathname })
@@ -23,7 +23,9 @@ export function AppShell() {
         ? 'Recipes'
         : pathname.startsWith('/history')
           ? 'History'
-          : 'Recipe detail'
+          : pathname === '/settings'
+            ? 'Settings'
+            : 'Recipe detail'
 
   return (
     <div className="app-shell">
@@ -50,6 +52,10 @@ export function AppShell() {
           <Link to="/history" activeOptions={{ exact: false }} activeProps={{ className: 'active' }}>
             <HistoryIcon />
             <span>History</span>
+          </Link>
+          <Link to="/settings" activeProps={{ className: 'active' }}>
+            <SettingsIcon />
+            <span>Settings</span>
           </Link>
         </nav>
         <div className="sidebar-footer">
