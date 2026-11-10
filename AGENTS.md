@@ -58,6 +58,7 @@ go run ./cmd/grocery-router corpus-render
 go run ./cmd/grocery-router corpus-audit
 go run ./cmd/grocery-router corpus-ingest
 go run ./cmd/grocery-router migrate
+go run ./cmd/grocery-router household-timezone <zone>
 task dev
 ```
 

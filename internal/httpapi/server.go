@@ -494,7 +494,7 @@ func (server *Server) writeGroceries(response http.ResponseWriter, request *http
 		server.writeGroceryError(response, request, err)
 		return
 	}
-	writeJSON(response, http.StatusOK, groceryResponseFromChecklist(checklist, week.CurrentSunday(server.now())))
+	writeJSON(response, http.StatusOK, groceryResponseFromChecklist(checklist, checklist.StartsOn))
 }
 
 func groceryResponseFromChecklist(checklist week.Checklist, startsOn string) groceryResponse {

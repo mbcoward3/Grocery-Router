@@ -55,6 +55,7 @@ task corpus-render        # refresh checked human-readable recipe sections
 task corpus-audit         # validate approved Markdown recipes
 task corpus-ingest        # migrate and load an empty PostgreSQL database
 task migrate              # migrate without loading the corpus
+task household-timezone   # set a household's time zone, e.g. -- America/Chicago
 task serve                # start the local JSON API
 task web-install          # install locked frontend dependencies
 task web-dev              # start Vite with an API development proxy

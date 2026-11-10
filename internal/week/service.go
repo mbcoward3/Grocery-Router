@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/mbcoward3/grocery-router/internal/grocery"
+	"github.com/mbcoward3/grocery-router/internal/settings"
 	"github.com/mbcoward3/grocery-router/internal/store"
 )
 
@@ -93,16 +94,43 @@ type View struct {
 	Recipes []store.ListWeekRecipesRow
 }
 
-// CurrentSunday returns the local calendar date for the Sunday beginning now's week.
+// CurrentSunday returns the calendar date, in now's own zone, of the Sunday beginning now's week.
+// It works on the calendar date alone so a DST change at midnight cannot move it a day.
 func CurrentSunday(now time.Time) string {
-	start := now.AddDate(0, 0, -int(now.Weekday()))
-	return start.Format("2006-01-02")
+	year, month, day := now.Date()
+	return time.Date(year, month, day-int(now.Weekday()), 0, 0, 0, 0, time.UTC).Format("2006-01-02")
+}
+
+// SundayIn returns the Sunday beginning the week that contains now in location.
+func SundayIn(now time.Time, location *time.Location) string {
+	return CurrentSunday(now.In(location))
+}
+
+// currentSunday loads the household's time zone once and returns its current week's Sunday.
+func (service *Household) currentSunday(ctx context.Context, queries *store.Queries, now time.Time) (string, error) {
+	zone, err := queries.GetHouseholdTimezone(ctx, service.householdID)
+	if errors.Is(err, sql.ErrNoRows) {
+		// A household without a row has no weeks. UTC, the zone used before households had one,
+		// keeps every caller's previous outcome (no current week, empty history).
+		zone = "UTC"
+	} else if err != nil {
+		return "", fmt.Errorf("load household time zone: %w", err)
+	}
+	location, err := settings.ValidateTimezone(zone)
+	if err != nil {
+		return "", fmt.Errorf("household time zone: %w", err)
+	}
+	return SundayIn(now, location), nil
 }
 
 // Current returns the explicitly generated current week.
 func (service *Household) Current(ctx context.Context, now time.Time) (View, error) {
 	queries := store.New(service.db)
-	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
+	sunday, err := service.currentSunday(ctx, queries, now)
+	if err != nil {
+		return View{}, err
+	}
+	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
 	if errors.Is(err, sql.ErrNoRows) {
 		return View{}, ErrNoCurrentWeek
 	}
@@ -114,7 +142,12 @@ func (service *Household) Current(ctx context.Context, now time.Time) (View, err
 
 // PastWeeks returns earlier generated weeks, newest first.
 func (service *Household) PastWeeks(ctx context.Context, now time.Time) ([]store.ListPastWeeksRow, error) {
-	return store.New(service.db).ListPastWeeks(ctx, store.ListPastWeeksParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
+	queries := store.New(service.db)
+	sunday, err := service.currentSunday(ctx, queries, now)
+	if err != nil {
+		return nil, err
+	}
+	return queries.ListPastWeeks(ctx, store.ListPastWeeksParams{HouseholdID: service.householdID, StartsOn: sunday})
 }
 
 // HistoricalView is the final recipe pool and grocery checklist retained for an earlier week.
@@ -126,7 +159,11 @@ type HistoricalView struct {
 // PastWeek returns a read-only earlier week with its retained checklist state.
 func (service *Household) PastWeek(ctx context.Context, now time.Time, weekID int64) (HistoricalView, error) {
 	queries := store.New(service.db)
-	weekRow, err := queries.GetPastWeek(ctx, store.GetPastWeekParams{HouseholdID: service.householdID, ID: weekID, StartsOn: CurrentSunday(now)})
+	sunday, err := service.currentSunday(ctx, queries, now)
+	if err != nil {
+		return HistoricalView{}, err
+	}
+	weekRow, err := queries.GetPastWeek(ctx, store.GetPastWeekParams{HouseholdID: service.householdID, ID: weekID, StartsOn: sunday})
 	if errors.Is(err, sql.ErrNoRows) {
 		return HistoricalView{}, ErrPastWeek
 	}
@@ -137,7 +174,7 @@ func (service *Household) PastWeek(ctx context.Context, now time.Time, weekID in
 	if err != nil {
 		return HistoricalView{}, err
 	}
-	checklist, err := loadChecklist(ctx, queries, service.householdID, weekRow.ID)
+	checklist, err := loadChecklist(ctx, queries, service.householdID, weekRow)
 	if err != nil {
 		return HistoricalView{}, err
 	}
@@ -161,7 +198,11 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 		if err := shuffle(service.picker, verified); err != nil {
 			return err
 		}
-		weekRow, err := getOrCreateWeek(ctx, queries, service.householdID, CurrentSunday(now))
+		sunday, err := service.currentSunday(ctx, queries, now)
+		if err != nil {
+			return err
+		}
+		weekRow, err := getOrCreateWeek(ctx, queries, service.householdID, sunday)
 		if err != nil {
 			return err
 		}
@@ -311,7 +352,11 @@ func (service *Household) mutateCurrent(
 ) (View, error) {
 	var result View
 	err := service.transact(ctx, func(queries *store.Queries) error {
-		weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
+		sunday, err := service.currentSunday(ctx, queries, now)
+		if err != nil {
+			return err
+		}
+		weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNoCurrentWeek
 		}
@@ -610,7 +655,11 @@ func (service *Household) AddManualLine(ctx context.Context, now time.Time, name
 	}
 	var result store.ShoppingLine
 	err := service.transact(ctx, func(queries *store.Queries) error {
-		weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
+		sunday, err := service.currentSunday(ctx, queries, now)
+		if err != nil {
+			return err
+		}
+		weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNoCurrentWeek
 		}
@@ -690,6 +739,8 @@ func (service *Household) AddManualLine(ctx context.Context, now time.Time, name
 
 // Checklist is the current week's store-section-ordered grocery list.
 type Checklist struct {
+	// StartsOn is the loaded week's Sunday.
+	StartsOn    string
 	List        store.ShoppingList
 	Lines       []store.ListShoppingLinesRow
 	RecipeNames map[int64][]string
@@ -702,7 +753,11 @@ type Checklist struct {
 // Checklist returns the current week's compact grocery lines in store-section order.
 func (service *Household) Checklist(ctx context.Context, now time.Time) (Checklist, error) {
 	queries := store.New(service.db)
-	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: CurrentSunday(now)})
+	sunday, err := service.currentSunday(ctx, queries, now)
+	if err != nil {
+		return Checklist{}, err
+	}
+	weekRow, err := queries.GetWeekByStart(ctx, store.GetWeekByStartParams{HouseholdID: service.householdID, StartsOn: sunday})
 	if errors.Is(err, sql.ErrNoRows) {
 		return Checklist{}, ErrNoCurrentWeek
 	}
@@ -712,7 +767,7 @@ func (service *Household) Checklist(ctx context.Context, now time.Time) (Checkli
 	if err := service.upgradeList(ctx, weekRow.ID); err != nil {
 		return Checklist{}, err
 	}
-	return loadChecklist(ctx, queries, service.householdID, weekRow.ID)
+	return loadChecklist(ctx, queries, service.householdID, weekRow)
 }
 
 // upgradeList rebuilds a current week whose list predates one row per item. Past weeks are never
@@ -733,8 +788,8 @@ func (service *Household) upgradeList(ctx context.Context, weekID int64) error {
 	})
 }
 
-func loadChecklist(ctx context.Context, queries *store.Queries, householdID string, weekID int64) (Checklist, error) {
-	list, err := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: householdID, WeekID: weekID})
+func loadChecklist(ctx context.Context, queries *store.Queries, householdID string, weekRow store.Week) (Checklist, error) {
+	list, err := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: householdID, WeekID: weekRow.ID})
 	if err != nil {
 		return Checklist{}, err
 	}
@@ -768,7 +823,9 @@ func loadChecklist(ctx context.Context, queries *store.Queries, householdID stri
 	for _, id := range unspecifiedIDs {
 		unspecified[id] = true
 	}
-	return Checklist{List: list, Lines: lines, RecipeNames: recipeNames, Quantities: quantities, Unspecified: unspecified}, nil
+	return Checklist{
+		StartsOn: weekRow.StartsOn, List: list, Lines: lines, RecipeNames: recipeNames, Quantities: quantities, Unspecified: unspecified,
+	}, nil
 }
 
 // Contributions returns the recipe traces behind a current generated line.
@@ -796,18 +853,18 @@ func (service *Household) Contributions(
 
 // SetLineRemoved removes or restores one current-week line without deleting its provenance.
 func (service *Household) SetLineRemoved(ctx context.Context, now time.Time, lineID int64, removed bool) error {
-	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
+	return service.updateLine(ctx, now, func(queries *store.Queries, sunday string) (int64, error) {
 		return queries.SetShoppingLineRemoved(ctx, store.SetShoppingLineRemovedParams{
-			HouseholdID: service.householdID, Removed: boolInt(removed), LineID: lineID, StartsOn: CurrentSunday(now),
+			HouseholdID: service.householdID, Removed: boolInt(removed), LineID: lineID, StartsOn: sunday,
 		})
 	})
 }
 
 // SetLineCompleted updates one current-week checklist item's completion state.
 func (service *Household) SetLineCompleted(ctx context.Context, now time.Time, lineID int64, completed bool) error {
-	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
+	return service.updateLine(ctx, now, func(queries *store.Queries, sunday string) (int64, error) {
 		return queries.SetShoppingLineCompleted(ctx, store.SetShoppingLineCompletedParams{
-			HouseholdID: service.householdID, Completed: boolInt(completed), LineID: lineID, StartsOn: CurrentSunday(now),
+			HouseholdID: service.householdID, Completed: boolInt(completed), LineID: lineID, StartsOn: sunday,
 		})
 	})
 }
@@ -815,17 +872,21 @@ func (service *Household) SetLineCompleted(ctx context.Context, now time.Time, l
 // SetLineOverride stores a week-only display override on a generated line.
 func (service *Household) SetLineOverride(ctx context.Context, now time.Time, lineID int64, text string) error {
 	text = strings.TrimSpace(text)
-	return service.updateLine(ctx, func(queries *store.Queries) (int64, error) {
+	return service.updateLine(ctx, now, func(queries *store.Queries, sunday string) (int64, error) {
 		return queries.SetShoppingLineOverride(ctx, store.SetShoppingLineOverrideParams{
 			HouseholdID: service.householdID, OverrideText: sql.NullString{String: text, Valid: text != ""},
-			LineID: lineID, StartsOn: CurrentSunday(now),
+			LineID: lineID, StartsOn: sunday,
 		})
 	})
 }
 
-func (service *Household) updateLine(ctx context.Context, update func(*store.Queries) (int64, error)) error {
+func (service *Household) updateLine(ctx context.Context, now time.Time, update func(*store.Queries, string) (int64, error)) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
-		rows, err := update(queries)
+		sunday, err := service.currentSunday(ctx, queries, now)
+		if err != nil {
+			return err
+		}
+		rows, err := update(queries, sunday)
 		if err != nil {
 			return err
 		}
@@ -852,8 +913,12 @@ func (service *Household) SetLineSection(ctx context.Context, now time.Time, lin
 		if err := requireSection(ctx, queries, service.householdID, sectionID); err != nil {
 			return err
 		}
+		sunday, err := service.currentSunday(ctx, queries, now)
+		if err != nil {
+			return err
+		}
 		line, err := queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{
-			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID, StartsOn: CurrentSunday(now),
+			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID, StartsOn: sunday,
 		})
 		if errors.Is(err, sql.ErrNoRows) {
 			return invalid("shopping line not found or operation is not supported")
