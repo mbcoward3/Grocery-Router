@@ -938,8 +938,29 @@ never closes a week, so a week is not cut short or ended by a settings change. T
 rollover ends on Saturday and a Friday 6:00 PM rollover ends on Friday. A closed week stores that
 date (`weeks.ends_on`) in the zone the household had when it closed, so a later time-zone change
 never re-cuts History; any code that closes a week must set it. This partly supersedes
-D026: the household, not the application, decides when its week rolls over. Until a "Start next
-week" action exists, a manual week can be ended only by switching back to automatic.
+D026: the household, not the application, decides when its week rolls over.
 
-**Revisit when:** A household needs more than one rollover a week, or wants the next week
-generated automatically at the rollover.
+Manual rollover exists in both modes: any household member can press "Start next week" on the
+Week screen (`POST .../week/current/close`), which closes the open week now and moves it to
+History. Closing never generates the next week; the Week screen goes straight to the "Plan next
+week" step, and the next week exists only once someone presses Generate. A week closed by hand
+keeps its `auto_close_at`. If the next week is generated in automatic mode while that rollover is
+still ahead, the new week takes over the upcoming period instead of the one just ended: it starts
+on the local date of that rollover and closes at the one after it, so a household that shops on
+Saturday for a week starting Sunday is not rolled over again on Sunday. This holds for a close in
+the middle of the week too: the next week still starts at the upcoming rollover, and the days
+between the close and that rollover belong to no week. Once that rollover has passed, the next
+week opens by the ordinary rule. If the settings changed after the close, the new week begins at
+whichever of two rollovers under the new settings is nearer the skipped rollover: the last one at
+or before now, or the next one after now; it closes at the rollover after its beginning. A
+settings change saved while such a week has not yet reached the rollover it skips moves its close
+to whichever of the next two rollovers under the new settings is nearer its old close, so it
+neither ends at the rollover it was opened to skip nor runs a week longer. Because that close is
+recomputed from now, a settings change after a mid-week close can shorten a week started early,
+but its date range never goes backwards. A week that closes,
+by hand or by its rollover, before its own start date (one started early and closed again before
+its period began) ends on its start date.
+
+**Revisit when:** A household needs more than one rollover a week, wants the next week
+generated automatically at the rollover or when the week is closed by hand, or wants to plan a
+future week while the current one stays open.

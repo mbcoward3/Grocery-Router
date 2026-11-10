@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatWeekday, formatWeekRange } from './dates'
+import { deviceToday, formatWeekday, formatWeekRange } from './dates'
 
 describe('week dates', () => {
   it('shows the range the server reports instead of assuming Sunday to Saturday', () => {
@@ -15,5 +15,10 @@ describe('week dates', () => {
   it('names the weekday of a calendar date in any viewer zone', () => {
     expect(formatWeekday('2026-11-07', 'en-US')).toBe('Saturday')
     expect(formatWeekday('2026-08-28', 'en-US')).toBe('Friday')
+  })
+
+  it('reads the calendar date on the viewer device', () => {
+    expect(deviceToday(new Date(2026, 10, 7, 23, 30))).toBe('2026-11-07')
+    expect(deviceToday(new Date(2027, 0, 2, 0, 5))).toBe('2027-01-02')
   })
 })

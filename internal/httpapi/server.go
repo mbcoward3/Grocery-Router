@@ -49,6 +49,7 @@ func New(db *sql.DB, weeks *week.Service, clock Clock, authorize AuthorizeHouseh
 	mux.Handle("GET /api/v2/households/{householdID}/weeks/history", server.guard(http.HandlerFunc(server.weekHistory)))
 	mux.Handle("GET /api/v2/households/{householdID}/weeks/history/{weekID}", server.guard(http.HandlerFunc(server.historicalWeek)))
 	mux.Handle("POST /api/v2/households/{householdID}/week/current/generate", server.guard(http.HandlerFunc(server.generateWeek)))
+	mux.Handle("POST /api/v2/households/{householdID}/week/current/close", server.guard(http.HandlerFunc(server.closeWeek)))
 	mux.Handle("POST /api/v2/households/{householdID}/week/current/recipes", server.guard(http.HandlerFunc(server.addRecipe)))
 	mux.Handle("DELETE /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.guard(http.HandlerFunc(server.removeRecipe)))
 	mux.Handle("PUT /api/v2/households/{householdID}/week/current/recipes/{occurrenceID}", server.guard(http.HandlerFunc(server.swapRecipe)))
@@ -348,6 +349,19 @@ func (server *Server) generateWeek(response http.ResponseWriter, request *http.R
 	}
 	view, err := server.weeks.ForHousehold(request.PathValue("householdID")).Generate(request.Context(), server.now(), input.RecipeCount)
 	server.writeWeekResult(response, request, view, err)
+}
+
+// closeWeek ends the current week now. It never generates the next one.
+func (server *Server) closeWeek(response http.ResponseWriter, request *http.Request) {
+	err := server.weeks.ForHousehold(request.PathValue("householdID")).Close(request.Context(), server.now())
+	switch {
+	case errors.Is(err, week.ErrNoCurrentWeek):
+		writeError(response, http.StatusNotFound, "no_current_week", "The current week has not been generated.")
+	case err != nil:
+		writeInternalError(response, request, err)
+	default:
+		response.WriteHeader(http.StatusNoContent)
+	}
 }
 
 func (server *Server) addRecipe(response http.ResponseWriter, request *http.Request) {

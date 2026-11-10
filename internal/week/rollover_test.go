@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 	_ "time/tzdata"
+
+	"github.com/mbcoward3/grocery-router/internal/store"
 )
 
 func loadZone(t *testing.T, name string) *time.Location {
@@ -63,7 +65,7 @@ func TestDefaultRolloverMatchesSundayIn(t *testing.T) {
 		{time.Date(2027, time.January, 2, 12, 0, 0, 0, time.UTC), time.UTC},
 	}
 	for _, testCase := range cases {
-		startsOn, autoClose := rules{location: testCase.location, startDay: time.Sunday}.opening(testCase.now)
+		startsOn, autoClose := rules{location: testCase.location, startDay: time.Sunday}.opening(testCase.now, sql.NullTime{})
 		if want := SundayIn(testCase.now, testCase.location); startsOn != want {
 			t.Errorf("opening(%s in %s) starts %s, want %s", testCase.now, testCase.location, startsOn, want)
 		}
@@ -77,16 +79,17 @@ func TestOpening(t *testing.T) {
 	chicago := loadZone(t, "America/Chicago")
 	friday := rules{location: chicago, startDay: time.Friday, minutes: 18 * 60}
 	monday := time.Date(2026, time.August, 24, 12, 0, 0, 0, chicago)
-	startsOn, autoClose := friday.opening(monday)
+	startsOn, autoClose := friday.opening(monday, sql.NullTime{})
 	if startsOn != "2026-08-21" || !autoClose.Valid || !autoClose.Time.Equal(time.Date(2026, time.August, 28, 18, 0, 0, 0, chicago)) {
 		t.Fatalf("automatic opening = %s, %v", startsOn, autoClose)
 	}
 
-	// A manual week starts on today's local date and has no close time.
+	// A manual week starts on today's local date and has no close time, even right after a week
+	// was closed early: only automatic weeks take over the upcoming period.
 	manual := friday
 	manual.manual = true
 	saturdayEvening := time.Date(2026, time.August, 16, 1, 0, 0, 0, time.UTC)
-	startsOn, autoClose = manual.opening(saturdayEvening)
+	startsOn, autoClose = manual.opening(saturdayEvening, sql.NullTime{Time: saturdayEvening.Add(time.Hour), Valid: true})
 	if startsOn != "2026-08-15" || autoClose.Valid {
 		t.Fatalf("manual opening = %s, %v", startsOn, autoClose)
 	}
@@ -124,16 +127,143 @@ func TestEndsOn(t *testing.T) {
 		name        string
 		stored      sql.NullString
 		autoCloseAt sql.NullTime
+		startsOn    string
 		want        sql.NullString
 	}{
-		{"an open automatic week ends the day before its rollover", sql.NullString{}, at(sundayMidnight), date("2026-08-22")},
+		{"an open automatic week ends the day before its rollover", sql.NullString{}, at(sundayMidnight), "2026-08-16", date("2026-08-22")},
 		// A closed week keeps the date fixed when it closed, whatever the zone is now.
-		{"a closed week keeps its stored date", date("2026-08-21"), at(sundayMidnight), date("2026-08-21")},
-		{"an open manual week has no end", sql.NullString{}, sql.NullTime{}, sql.NullString{}},
+		{"a closed week keeps its stored date", date("2026-08-21"), at(sundayMidnight), "2026-08-16", date("2026-08-21")},
+		{"an open manual week has no end", sql.NullString{}, sql.NullTime{}, "2026-08-16", sql.NullString{}},
+		// A week started early whose close was moved before its start date ends on that date.
+		{"a week never ends before it starts", sql.NullString{}, at(sundayMidnight), "2026-08-23", date("2026-08-23")},
 	}
 	for _, testCase := range cases {
-		if got := endsOn(testCase.stored, testCase.autoCloseAt, chicago); got != testCase.want {
+		if got := endsOn(testCase.stored, testCase.autoCloseAt, testCase.startsOn, chicago); got != testCase.want {
 			t.Errorf("%s: endsOn = %v, want %v", testCase.name, got, testCase.want)
+		}
+	}
+}
+
+func TestSkippedRollover(t *testing.T) {
+	chicago := loadZone(t, "America/Chicago")
+	at := func(instant time.Time) sql.NullTime { return sql.NullTime{Time: instant, Valid: true} }
+	sunday := time.Date(2026, time.August, 23, 0, 0, 0, 0, chicago)
+	saturday := time.Date(2026, time.August, 22, 10, 0, 0, 0, chicago)
+	closedEarly := store.Week{AutoCloseAt: at(sunday), ClosedAt: at(saturday)}
+	cases := []struct {
+		name     string
+		now      time.Time
+		previous store.Week
+		want     sql.NullTime
+	}{
+		{"no earlier week", saturday, store.Week{}, sql.NullTime{}},
+		{"closed by hand before a rollover still ahead", saturday.Add(5 * time.Minute), closedEarly, at(sunday)},
+		{"the skipped rollover has arrived", sunday, closedEarly, sql.NullTime{}},
+		{"the skipped rollover has passed", sunday.AddDate(0, 0, 1), closedEarly, sql.NullTime{}},
+		{"closed by its own rollover", sunday.Add(time.Minute), store.Week{AutoCloseAt: at(sunday), ClosedAt: at(sunday)}, sql.NullTime{}},
+		{"a manual week has no rollover to skip", saturday.Add(5 * time.Minute), store.Week{ClosedAt: at(saturday)}, sql.NullTime{}},
+	}
+	for _, testCase := range cases {
+		if got := skippedRollover(testCase.now, testCase.previous); got.Valid != testCase.want.Valid || !got.Time.Equal(testCase.want.Time) {
+			t.Errorf("%s: skippedRollover = %v, want %v", testCase.name, got, testCase.want)
+		}
+	}
+}
+
+func TestOpeningTakesOverTheUpcomingPeriod(t *testing.T) {
+	chicago := loadZone(t, "America/Chicago")
+	santiago := loadZone(t, "America/Santiago")
+	newYork := loadZone(t, "America/New_York")
+	sundayMidnight := time.Date(2026, time.August, 23, 0, 0, 0, 0, chicago)
+	cases := []struct {
+		name      string
+		rules     rules
+		now       time.Time
+		skipped   time.Time
+		startsOn  string
+		autoClose time.Time
+	}{
+		{"Saturday morning for a Sunday 12:00 AM rollover", rules{location: chicago, startDay: time.Sunday},
+			time.Date(2026, time.August, 22, 10, 5, 0, 0, chicago), sundayMidnight,
+			"2026-08-23", time.Date(2026, time.August, 30, 0, 0, 0, 0, chicago)},
+		{"earlier the same day as a Friday 6:00 PM rollover", rules{location: chicago, startDay: time.Friday, minutes: 18 * 60},
+			time.Date(2026, time.August, 21, 10, 0, 0, 0, chicago), time.Date(2026, time.August, 21, 18, 0, 0, 0, chicago),
+			"2026-08-21", time.Date(2026, time.August, 28, 18, 0, 0, 0, chicago)},
+		// Santiago skips 00:00-01:00 on 2026-09-06: the period still starts that Sunday.
+		{"rollover skipped by daylight saving", rules{location: santiago, startDay: time.Sunday},
+			time.Date(2026, time.September, 5, 12, 0, 0, 0, santiago), time.Date(2026, time.September, 6, 4, 0, 0, 0, time.UTC),
+			"2026-09-06", time.Date(2026, time.September, 13, 0, 0, 0, 0, santiago)},
+		// Settings changed between the close and Generate: the period nearest the skipped rollover.
+		{"rollover moved to Saturday 6:00 PM, already passed", rules{location: chicago, startDay: time.Saturday, minutes: 18 * 60},
+			time.Date(2026, time.August, 22, 19, 5, 0, 0, chicago), sundayMidnight,
+			"2026-08-23", time.Date(2026, time.August, 29, 18, 0, 0, 0, chicago)},
+		// A week started early and closed again before its period began skips its own close time;
+		// the next week takes over the same period, not the one after.
+		{"the week before was itself started early", rules{location: chicago, startDay: time.Sunday},
+			time.Date(2026, time.August, 22, 10, 15, 0, 0, chicago), time.Date(2026, time.August, 30, 0, 0, 0, 0, chicago),
+			"2026-08-23", time.Date(2026, time.August, 30, 0, 0, 0, 0, chicago)},
+		{"rollover moved to Monday", rules{location: chicago, startDay: time.Monday},
+			time.Date(2026, time.August, 22, 11, 0, 0, 0, chicago), sundayMidnight,
+			"2026-08-24", time.Date(2026, time.August, 31, 0, 0, 0, 0, chicago)},
+		{"zone moved east past the new zone's rollover", rules{location: newYork, startDay: time.Sunday},
+			time.Date(2026, time.August, 22, 23, 30, 0, 0, chicago), sundayMidnight,
+			"2026-08-23", time.Date(2026, time.August, 30, 0, 0, 0, 0, newYork)},
+	}
+	for _, testCase := range cases {
+		startsOn, autoClose := testCase.rules.opening(testCase.now, sql.NullTime{Time: testCase.skipped, Valid: true})
+		if startsOn != testCase.startsOn || !autoClose.Valid || !autoClose.Time.Equal(testCase.autoClose) {
+			t.Errorf("%s: opening = %s, %v; want %s, %s", testCase.name, startsOn, autoClose, testCase.startsOn, testCase.autoClose)
+		}
+	}
+}
+
+func TestRescheduled(t *testing.T) {
+	chicago := loadZone(t, "America/Chicago")
+	newYork := loadZone(t, "America/New_York")
+	at := func(instant time.Time) sql.NullTime { return sql.NullTime{Time: instant, Valid: true} }
+	local := func(month time.Month, day, hour int) time.Time {
+		return time.Date(2026, month, day, hour, 0, 0, 0, chicago)
+	}
+	sunday := rules{location: chicago, startDay: time.Sunday}
+	manual := sunday
+	manual.manual = true
+	// A week opened early on Saturday 2026-08-22 skips the Sunday 08-23 rollover and closes 08-30.
+	early := at(local(time.August, 30, 0))
+	saturdayLate := local(time.August, 22, 11)
+	cases := []struct {
+		name    string
+		now     time.Time
+		closeAt sql.NullTime
+		before  rules
+		after   rules
+		want    sql.NullTime
+	}{
+		{"an ordinary week moves to the next rollover", local(time.August, 19, 12), at(local(time.August, 23, 0)),
+			sunday, rules{location: chicago, startDay: time.Saturday, minutes: 8 * 60}, at(local(time.August, 22, 8))},
+		{"manual mode has no close time", saturdayLate, early, sunday, manual, sql.NullTime{}},
+		{"a manual week switched to automatic closes at the next rollover", saturdayLate, sql.NullTime{}, manual, sunday,
+			at(local(time.August, 23, 0))},
+		{"a week started early still skips a later rollover the same night", saturdayLate, early,
+			sunday, rules{location: chicago, startDay: time.Sunday, minutes: 6 * 60}, at(local(time.August, 30, 6))},
+		{"a week started early still skips a rollover moved earlier the same day", saturdayLate, early,
+			sunday, rules{location: chicago, startDay: time.Saturday, minutes: 18 * 60}, at(local(time.August, 29, 18))},
+		{"a week started early still skips a rollover moved a day later", saturdayLate, early,
+			sunday, rules{location: chicago, startDay: time.Monday}, at(local(time.August, 31, 0))},
+		{"a week started early still skips its rollover in a new zone", saturdayLate, early,
+			sunday, rules{location: newYork, startDay: time.Sunday}, at(time.Date(2026, time.August, 30, 0, 0, 0, 0, newYork))},
+		// After the new settings' first rollover has passed, the next one is the week's end.
+		{"a week started early is not stretched past a rollover moved earlier and passed", local(time.August, 22, 19), early,
+			sunday, rules{location: chicago, startDay: time.Saturday, minutes: 18 * 60}, at(local(time.August, 29, 18))},
+		{"a week started early is not stretched by a zone already past its rollover", local(time.August, 22, 23).Add(30 * time.Minute), early,
+			sunday, rules{location: newYork, startDay: time.Sunday}, at(time.Date(2026, time.August, 30, 0, 0, 0, 0, newYork))},
+		// Once the rollover it skipped has passed, the week is running its own period.
+		{"a week started early is ordinary once its period has begun", local(time.August, 23, 1), early,
+			sunday, rules{location: chicago, startDay: time.Sunday, minutes: 6 * 60}, at(local(time.August, 23, 6))},
+	}
+	for _, testCase := range cases {
+		got := rescheduled(testCase.now, testCase.closeAt, testCase.before, testCase.after)
+		if got.Valid != testCase.want.Valid || !got.Time.Equal(testCase.want.Time) {
+			t.Errorf("%s: rescheduled = %v, want %v", testCase.name, got, testCase.want)
 		}
 	}
 }

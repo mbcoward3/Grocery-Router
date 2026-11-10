@@ -19,7 +19,7 @@ func (service *Household) AddManualLine(ctx context.Context, now time.Time, name
 	}
 	var result store.ShoppingLine
 	err := service.transact(ctx, func(queries *store.Queries) error {
-		weekRow, err := service.openWeek(ctx, queries, now)
+		weekRow, err := service.lockOpenWeek(ctx, queries, now)
 		if err != nil {
 			return err
 		}
@@ -110,7 +110,8 @@ func (service *Household) SetLineSection(ctx context.Context, now time.Time, lin
 		if err := requireSection(ctx, queries, service.householdID, sectionID); err != nil {
 			return err
 		}
-		if err := service.closeExpired(ctx, queries, now); err != nil {
+		// Without an open week the update below finds no line.
+		if _, err := service.lockOpenWeek(ctx, queries, now); err != nil && !errors.Is(err, ErrNoCurrentWeek) {
 			return err
 		}
 		line, err := queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{

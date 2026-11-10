@@ -3,6 +3,7 @@ package week
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strings"
 	"time"
 
@@ -129,7 +130,8 @@ func (service *Household) SetLineOverride(ctx context.Context, now time.Time, li
 
 func (service *Household) updateLine(ctx context.Context, now time.Time, update func(*store.Queries) (int64, error)) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
-		if err := service.closeExpired(ctx, queries, now); err != nil {
+		// Without an open week the update finds no line.
+		if _, err := service.lockOpenWeek(ctx, queries, now); err != nil && !errors.Is(err, ErrNoCurrentWeek) {
 			return err
 		}
 		rows, err := update(queries)

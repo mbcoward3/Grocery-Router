@@ -3,6 +3,7 @@ package week
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"strings"
 
 	"github.com/mbcoward3/grocery-router/internal/grocery"
@@ -230,6 +231,14 @@ func (service *Household) upgradeList(ctx context.Context, weekID int64) error {
 		return err
 	}
 	return service.transact(ctx, func(queries *store.Queries) error {
+		// Past weeks are never rebuilt, including one closed since the list was read.
+		open, err := queries.LockOpenWeek(ctx, service.householdID)
+		if errors.Is(err, sql.ErrNoRows) || (err == nil && open.ID != weekID) {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
 		claimed, err := queries.SetShoppingListAggregationVersion(ctx, store.SetShoppingListAggregationVersionParams{
 			HouseholdID: service.householdID, ID: list.ID, Version: aggregationVersion,
 		})
