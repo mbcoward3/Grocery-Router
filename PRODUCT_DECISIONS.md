@@ -72,6 +72,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D051 | A plan lasts from one shopping trip to the next and can be reopened | Active |
 | D052 | A household can avoid recipes from its last few plans | Active |
 | D053 | A household can place a known item in its own store section | Active |
+| D054 | Amounts in different units are shown side by side, not converted | Active |
 
 ---
 
@@ -1037,4 +1038,25 @@ and `ListGroceryItems` use the placement in place of the reviewed section. Histo
 sections its lists had. This partly supersedes D045's "known items keep their reviewed section".
 
 **Revisit when:** A household wants to change shopping mode or leave an item off the list.
+
+## D054 — Amounts in different units are shown side by side, not converted
+
+**Status:** Active
+
+**Decision:** On the grocery list, amounts in the same unit still add exactly (1 tsp + 2 tsp shows
+3 tsp). Amounts in different units are no longer converted into one unit. They are listed on the
+item's one row, largest unit of a dimension first: 2 cups and 1 tsp show as "2 cups + 1 tsp",
+not "97 tsp". A row that more than one recipe needs is marked with "N recipes" and its amount is
+highlighted, so it is checked at the store.
+
+**Why:** Converting kept the first recipe's unit, so the display depended on recipe order and
+gave totals like 97 tsp or 40 oz (#51). Showing each needed amount is what a shopper can act on.
+The owner chose this over picking a tidy unit.
+
+**Consequence:** `grocery.Aggregate` groups mass and volume by unit instead of by dimension, and
+`grocery.Group` orders a row's amounts. Aggregation version 3 rebuilds open lists when they are
+next read; History keeps the amounts it had. The unit table's conversion ratios stay but are no
+longer used to combine amounts. This partly supersedes V1 §7.2 and §7.3.
+
+**Revisit when:** The household wants mixed amounts simplified, or metric and US display.
 

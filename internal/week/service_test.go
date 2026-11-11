@@ -572,7 +572,7 @@ func TestChecklistHasOneRowPerItemAndUpgradesOldLists(t *testing.T) {
 	if err := db.QueryRow(`SELECT aggregation_key FROM shopping_lines WHERE display_name = 'Black Pepper'`).Scan(&key); err != nil {
 		t.Fatal(err)
 	}
-	if version != 2 || strings.Count(key, ":") != 1 {
+	if version != 3 || strings.Count(key, ":") != 1 {
 		t.Fatalf("after upgrade version = %d, key = %q", version, key)
 	}
 	assertAllShoppingContributionsPresent(t, db, view.Week.ID)

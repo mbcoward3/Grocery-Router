@@ -67,12 +67,13 @@ v1 carries approved recipe requirements into the list. It does not round meat to
 
 ### 2.5 Exact conversions are allowed; assumptions are not
 
-Universally exact unit conversions may aggregate. Item-specific approximations may not.
+Amounts in the same unit add exactly. Amounts in different units are shown side by side on the
+item's one row instead of being converted (D054). Item-specific approximations are never used.
 
 Examples:
 
-- `1 tbsp + 3 tsp` may become `2 tbsp`.
-- `1 cup + 8 fl oz` may combine when the units represent the same exact volume dimension.
+- `1 tsp + 2 tsp` becomes `3 tsp`.
+- `2 cups` and `1 tsp` show as `2 cups + 1 tsp`, largest unit first.
 - `1 onion + 1 cup chopped onion` remains separate.
 - Different requested package sizes remain separate.
 
@@ -350,12 +351,13 @@ Exact values should be represented without floating-point loss. Human-readable f
 
 ### 7.3 Exact unit conversion
 
-The system may convert and aggregate only through a closed table of exact dimensional conversions.
+The unit table records exact dimensional conversions, but the list does not use them to combine
+amounts: since D054, only amounts in the same unit combine.
 
 Required behavior:
 
-- compatible exact units for the same grocery item combine;
-- incompatible units remain separate;
+- amounts in the same unit for the same grocery item combine exactly;
+- amounts in different units remain separate on the item's row, largest unit of a dimension first;
 - item-specific size or yield assumptions are prohibited;
 - source package sizes are not converted into supposedly equivalent purchase packages; and
 - conversions must never silently understate a requirement.

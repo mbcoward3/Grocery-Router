@@ -391,6 +391,9 @@ select {
 .ingredient-section ul, .instruction-section ol { margin: 0; padding: 0; list-style: none; }
 .ingredient-section li { padding: 9px 0; display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; color: #ced1d6; border-bottom: 1px solid #1c1f23; font-size: 13px; }
 .ingredient-section li small { width: 100%; color: var(--faint); }
+.shared-label { padding: 1px 6px; color: var(--accent-text); background: #10231e; border: 1px solid #22473d; border-radius: 999px; font-size: 9px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; }
+.grocery-row.shared .grocery-quantity { color: var(--accent-text); }
+.grocery-row.shared.completed .shared-label { color: #4e535b; background: transparent; border-color: #2a2e34; }
 .optional-label { padding: 1px 6px; color: #aaa0c7; background: #1b1822; border: 1px solid #332d40; border-radius: 999px; font-size: 9px; font-weight: 650; letter-spacing: .05em; text-transform: uppercase; }
 .instruction-section ol { counter-reset: recipe-step; }
 .instruction-section li { counter-increment: recipe-step; position: relative; min-height: 72px; padding: 2px 0 24px 48px; color: #ced1d6; font-size: 14px; line-height: 1.65; }

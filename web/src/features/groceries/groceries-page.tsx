@@ -306,12 +306,18 @@ function GroceryRow({ line, meta, enter, leave = false, onToggle, onOpen }: { li
     wasCompleted.current = line.completed
   }, [line.completed])
   const adjusted = line.quantity !== line.generatedQuantity
+  // An item several recipes need is worth a second look: its amounts may be in different units.
+  const shared = line.recipeNames.length > 1
   return (
-    <li ref={row} className={`grocery-row${line.completed ? ' completed' : ''}`}>
+    <li ref={row} className={`grocery-row${line.completed ? ' completed' : ''}${shared ? ' shared' : ''}`}>
       <button className="grocery-toggle" type="button" onClick={onToggle} aria-pressed={line.completed} aria-label={`${line.completed ? 'Mark incomplete' : 'Mark complete'}: ${line.name}`}>
         <span ref={check} className="grocery-check" aria-hidden="true">{line.completed && <CheckIcon />}</span>
         <span className="grocery-text">
-          <span className="grocery-name">{line.name}{line.optional && <span className="optional-label">Optional</span>}</span>
+          <span className="grocery-name">
+            {line.name}
+            {shared && <span className="shared-label">{line.recipeNames.length} recipes</span>}
+            {line.optional && <span className="optional-label">Optional</span>}
+          </span>
           {meta && <span className="grocery-meta">{meta}</span>}
         </span>
         {line.quantity && <span className={`grocery-quantity${adjusted ? ' adjusted' : ''}`} title={adjusted ? 'Adjusted for this plan' : undefined}>{line.quantity}</span>}
