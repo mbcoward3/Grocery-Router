@@ -10,8 +10,10 @@ Read in this order:
    authorized; later slices follow its §8 gates)
 4. `SUBSTITUTIONS_SPEC.md` for household substitution groups (approved direction,
    documentation only; implementation not authorized)
-5. `UP_NEXT.md`
-6. `PRODUCT_DECISIONS.md` for rationale
+5. `RECIPE_CHANGES_SPEC.md` for changing recipes after the first load (proposed; #56 and #57
+   wait for owner approval)
+6. `UP_NEXT.md`
+7. `PRODUCT_DECISIONS.md` for rationale
 
 The completed true-up ledger is archived at `archive/trueup/recipes.csv`; it is evidence, not
 an active planning authority. Reviews under `archive/reviews/` are history, not requirements.

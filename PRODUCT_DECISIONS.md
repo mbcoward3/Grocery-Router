@@ -74,6 +74,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D052 | A household can avoid recipes from its last few plans | Active |
 | D053 | A household can place a known item in its own store section | Active |
 | D054 | Amounts in different units are shown side by side, not converted | Active |
+| D055 | Recipes change through an explicit, previewed corpus sync (proposed) | Proposed (awaiting owner approval) |
 
 ---
 
@@ -1060,4 +1061,22 @@ next read; History keeps the amounts it had. The unit table's conversion ratios 
 longer used to combine amounts. This partly supersedes the archived V1 §2.5 and §7.3.
 
 **Revisit when:** The household wants mixed amounts simplified, or metric and US display.
+
+## D055 — Recipes change through an explicit, previewed corpus sync (proposed)
+
+**Status:** Proposed (awaiting owner approval in the pull request that adds
+[`RECIPE_CHANGES_SPEC.md`](RECIPE_CHANGES_SPEC.md))
+
+**Decision:** Recipes change after the first load only through `corpus-sync`, an operator
+command that previews by default, writes with `--apply`, and never runs at startup. History
+stops depending on live recipe rows through snapshots. Recipes are matched by key, unchanged ones
+are skipped by content digest, removed ones are kept, and the current plan's list is rebuilt in
+the same transaction. Item aliases and in-app editing are later phases.
+
+**Why:** A recipe fix in the corpus could never reach a database already in use (#55), and the
+catalog, substitutions, and any second household all need the same path.
+
+**Consequence:** See the spec; implementation is #56 then #57.
+
+**Revisit when:** In-app recipe editing is specified, or the household needs aliases merged.
 
