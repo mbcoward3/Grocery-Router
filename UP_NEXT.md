@@ -84,6 +84,8 @@ scope requires a new phase with its own acceptance criteria.
   grocery quantity overrides, removals, or completed lines.
 - **Explicit lock/finalize state.** Reconsider only if real use shows that the natural
   plan-then-shop workflow needs enforcement.
+- **Household-managed store sections.** Add and rename sections beyond those the corpus
+  creates (#69, deferred by the owner on 2026-11-11). Hiding a section is a separate decision.
 - **Within-section item ordering.** Section ordering was promoted by issues #36–#38 (D044);
   custom ordering of individual items stays deferred.
 - **List export and sharing.** Web Share/Apple Notes, text export, or copy workflows.
