@@ -11,7 +11,7 @@ import (
 
 // Checklist is the current week's store-section-ordered grocery list.
 type Checklist struct {
-	// StartsOn is the loaded week's Sunday.
+	// StartsOn is the plan's start date.
 	StartsOn    string
 	List        store.ShoppingList
 	Lines       []store.ListShoppingLinesRow

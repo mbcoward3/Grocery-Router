@@ -431,7 +431,9 @@ It must:
 - Unknown additions enter Other immediately and offer a section picker. Any manual line can be
   moved later. The household's placement of an unknown name is remembered (case/whitespace
   insensitive): adding that name again uses the remembered section, and it appears in suggestions.
-  Moving it back to Other forgets it. Known items keep their reviewed section and are not remembered. Manual lines remain separate, adjacent to matching generated items, with no recipe
+  Moving it back to Other forgets it. Moving any line of a known item, generated or manual,
+  saves the household's placement of that item for every later plan; choosing its reviewed
+  section again clears it (D053). Manual lines remain separate, adjacent to matching generated items, with no recipe
   contributions. Recipe changes retain manual identities and chosen sections.
 - No runtime AI, quantity parsing, or shared catalog aliases are introduced.
 

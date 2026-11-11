@@ -54,6 +54,13 @@ type Household struct {
 	AvoidRecentPlans   int16     `db:"avoid_recent_plans" json:"avoid_recent_plans"`
 }
 
+type HouseholdItemSection struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	GroceryItemID  int64  `db:"grocery_item_id" json:"grocery_item_id"`
+	StoreSectionID int64  `db:"store_section_id" json:"store_section_id"`
+	UpdatedAt      string `db:"updated_at" json:"updated_at"`
+}
+
 type HouseholdMembership struct {
 	HouseholdID string    `db:"household_id" json:"household_id"`
 	UserID      string    `db:"user_id" json:"user_id"`

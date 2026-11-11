@@ -618,9 +618,18 @@ func (q *Queries) GetVerifiedRecipe(ctx context.Context, arg GetVerifiedRecipePa
 }
 
 const listGroceryItems = `-- name: ListGroceryItems :many
-SELECT gi.id, gi.key, gi.name, gi.store_section_id, gi.shopping_mode, gi.created_at, gi.updated_at, gi.household_id, ss.name AS store_section_name
-FROM grocery_items gi
-JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+SELECT
+    gi.id,
+    gi.key,
+    gi.name,
+    gi.store_section_id AS corpus_section_id,
+    ss.id AS store_section_id,
+    ss.name AS store_section_name
+FROM grocery_items AS gi
+LEFT JOIN household_item_sections AS his
+    ON his.household_id = gi.household_id AND his.grocery_item_id = gi.id
+JOIN store_sections AS ss
+    ON ss.household_id = gi.household_id AND ss.id = coalesce(his.store_section_id, gi.store_section_id)
 WHERE gi.household_id = $1
 ORDER BY gi.name
 `
@@ -629,14 +638,13 @@ type ListGroceryItemsRow struct {
 	ID               int64  `db:"id" json:"id"`
 	Key              string `db:"key" json:"key"`
 	Name             string `db:"name" json:"name"`
+	CorpusSectionID  int64  `db:"corpus_section_id" json:"corpus_section_id"`
 	StoreSectionID   int64  `db:"store_section_id" json:"store_section_id"`
-	ShoppingMode     string `db:"shopping_mode" json:"shopping_mode"`
-	CreatedAt        string `db:"created_at" json:"created_at"`
-	UpdatedAt        string `db:"updated_at" json:"updated_at"`
-	HouseholdID      string `db:"household_id" json:"household_id"`
 	StoreSectionName string `db:"store_section_name" json:"store_section_name"`
 }
 
+// Each item's section is the household's own placement when it has one (D053), else the
+// reviewed corpus section.
 func (q *Queries) ListGroceryItems(ctx context.Context, householdID string) ([]ListGroceryItemsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listGroceryItems, householdID)
 	if err != nil {
@@ -650,11 +658,8 @@ func (q *Queries) ListGroceryItems(ctx context.Context, householdID string) ([]L
 			&i.ID,
 			&i.Key,
 			&i.Name,
+			&i.CorpusSectionID,
 			&i.StoreSectionID,
-			&i.ShoppingMode,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.HouseholdID,
 			&i.StoreSectionName,
 		); err != nil {
 			return nil, err

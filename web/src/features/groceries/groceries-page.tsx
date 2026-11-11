@@ -346,12 +346,12 @@ function LineSheet({ line, sections, pending, error, onClose, onChange, onRemove
         <div><div className="sheet-section">{line.section}</div><h2 id="line-sheet-title">{line.name}</h2></div>
         <button className="icon-button quiet" type="button" onClick={onClose} aria-label="Close"><CloseIcon /></button>
       </header>
-      {manual ? (
-        <div className="sheet-field">
-          <span className="sheet-label">Section</span>
-          <SectionPicker sections={sections} selected={line.sectionId} pending={pending} onPick={sectionId => onChange({ type: 'section', lineId: line.id, sectionId })} />
-        </div>
-      ) : (
+      <div className="sheet-field">
+        <span className="sheet-label">Section</span>
+        <SectionPicker sections={sections} selected={line.sectionId} pending={pending} onPick={sectionId => onChange({ type: 'section', lineId: line.id, sectionId })} />
+        {!manual && <p className="sheet-note">Applies to every plan, wherever this item comes up.</p>}
+      </div>
+      {!manual && (
         <form className="sheet-field" onSubmit={save}>
           <label className="sheet-label" htmlFor="line-quantity">Quantity for this plan</label>
           <div className="sheet-input">

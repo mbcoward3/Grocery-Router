@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/mbcoward3/grocery-router/internal/ingest"
+	"github.com/mbcoward3/grocery-router/internal/store"
 	"github.com/mbcoward3/grocery-router/internal/testdatabase"
 	"github.com/mbcoward3/grocery-router/internal/week"
 )
@@ -387,7 +388,8 @@ func TestUnknownManualItemRemembersChosenSection(t *testing.T) {
 		t.Fatalf("forgotten search = %#v, %v", matches, err)
 	}
 
-	// Known grocery items keep their corpus section and are not remembered.
+	// A known item is not remembered by name: moving it saves the household's placement of
+	// the item itself (D053), which suggestions then follow.
 	milk, err := service.AddManualLine(ctx, "milk")
 	if err != nil {
 		t.Fatal(err)
@@ -399,9 +401,107 @@ func TestUnknownManualItemRemembersChosenSection(t *testing.T) {
 	if err := db.QueryRow(`SELECT count(*) FROM remembered_item_sections WHERE household_id = $1`, household).Scan(&remembered); err != nil || remembered != 1 {
 		t.Fatalf("remembered rows = %d, %v", remembered, err)
 	}
-	if matches, err := service.SearchItems(ctx, "milk"); err != nil || len(matches) == 0 || matches[0].Name != "Milk" || matches[0].SectionID == other {
+	if matches, err := service.SearchItems(ctx, "milk"); err != nil || len(matches) == 0 || matches[0].Name != "Milk" || matches[0].SectionID != other {
 		t.Fatalf("known search = %#v, %v", matches, err)
 	}
+}
+
+// Moving a generated line saves where the household's store keeps that item: the item's lines
+// move now, later plans and manual adds use the placement, and choosing the reviewed section
+// again clears it (D053).
+func TestKnownItemSectionApplies(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	const household = "c0a7a2d8-669b-4e47-91c1-4d9a32f339d5"
+	if _, err := service.Generate(ctx, testNow(), 3); err != nil {
+		t.Fatal(err)
+	}
+	checklist, err := service.Checklist(ctx)
+	if err != nil || len(checklist.Lines) == 0 {
+		t.Fatalf("checklist = %#v, %v", checklist, err)
+	}
+	line := checklist.Lines[0]
+	reviewed := line.StoreSectionID
+	var other int64
+	if err := db.QueryRow(`SELECT id FROM store_sections WHERE household_id = $1 AND key = 'other'`, household).Scan(&other); err != nil {
+		t.Fatal(err)
+	}
+	if reviewed == other {
+		t.Fatal("test needs a line outside Other")
+	}
+	// The item's generated row, found by item because a rebuild replaces rows.
+	generatedRow := func() store.ListShoppingLinesRow {
+		t.Helper()
+		current, err := service.Checklist(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, candidate := range current.Lines {
+			if candidate.Origin == "generated" && candidate.GroceryItemID == line.GroceryItemID {
+				return candidate
+			}
+		}
+		t.Fatalf("generated row for item %v missing", line.GroceryItemID)
+		return store.ListShoppingLinesRow{}
+	}
+	sectionOf := func(lineID int64) int64 {
+		t.Helper()
+		current, err := service.Checklist(ctx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, candidate := range current.Lines {
+			if candidate.ID == lineID {
+				return candidate.StoreSectionID
+			}
+		}
+		t.Fatalf("line %d missing", lineID)
+		return 0
+	}
+	if err := service.SetLineCompleted(ctx, line.ID, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := service.SetLineSection(ctx, line.ID, other); err != nil {
+		t.Fatal(err)
+	}
+	if got := sectionOf(line.ID); got != other {
+		t.Fatalf("moved line section = %d, want %d", got, other)
+	}
+	// A rebuild of the list keeps the placement and the checked state.
+	if _, err := service.Add(ctx, firstRecipe(t, db)); err != nil {
+		t.Fatal(err)
+	}
+	if row := generatedRow(); row.StoreSectionID != other || row.IsCompleted != 1 {
+		t.Fatalf("row after rebuild = section %d, completed %d; want %d and checked", row.StoreSectionID, row.IsCompleted, other)
+	}
+	manual, err := service.AddManualLine(ctx, line.DisplayName)
+	if err != nil || manual.StoreSectionID != other {
+		t.Fatalf("manual add of a placed item = %#v, %v", manual, err)
+	}
+
+	// Choosing the reviewed section again clears the placement.
+	if err := service.SetLineSection(ctx, generatedRow().ID, reviewed); err != nil {
+		t.Fatal(err)
+	}
+	var overrides int
+	if err := db.QueryRow(`SELECT count(*) FROM household_item_sections WHERE household_id = $1`, household).Scan(&overrides); err != nil || overrides != 0 {
+		t.Fatalf("overrides after reset = %d, %v", overrides, err)
+	}
+	if got := generatedRow().StoreSectionID; got != reviewed {
+		t.Fatalf("reset line section = %d, want %d", got, reviewed)
+	}
+	if got := sectionOf(manual.ID); got != reviewed {
+		t.Fatalf("reset manual line section = %d, want %d", got, reviewed)
+	}
+}
+
+func firstRecipe(t *testing.T, db *sql.DB) int64 {
+	t.Helper()
+	var id int64
+	if err := db.QueryRow(`SELECT id FROM recipes WHERE status = 'verified' ORDER BY id DESC LIMIT 1`).Scan(&id); err != nil {
+		t.Fatal(err)
+	}
+	return id
 }
 
 func TestChecklistHasOneRowPerItemAndUpgradesOldLists(t *testing.T) {

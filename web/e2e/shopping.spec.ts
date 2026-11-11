@@ -176,3 +176,13 @@ test('desktop drag handle reorders a section', async ({ page }, info) => {
   await rows.nth(1).locator('.drag-handle').dragTo(rows.first())
   await expect(rows.first()).toContainText('Dairy')
 })
+
+test('a recipe item can be moved to the section where the store keeps it', async ({ page }) => {
+  await setup(page)
+  await page.getByRole('button', { name: 'Details for Butter' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Butter' })
+  await expect(sheet).toContainText('Applies to every plan, wherever this item comes up.')
+  await sheet.getByRole('group', { name: 'Store section' }).getByRole('button', { name: 'Baking' }).click()
+  await expect(section(page, 'Baking').getByRole('button', { name: 'Details for Butter' })).toBeVisible()
+  await expect(section(page, 'Dairy').getByRole('button', { name: 'Details for Butter' })).toHaveCount(0)
+})

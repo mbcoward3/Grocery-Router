@@ -49,8 +49,10 @@ type Querier interface {
 	DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesParams) error
 	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
 	ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error
+	ForgetItemSectionOverride(ctx context.Context, arg ForgetItemSectionOverrideParams) error
 	GetAvoidRecentPlans(ctx context.Context, householdID string) (int16, error)
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
+	GetGroceryItemSection(ctx context.Context, arg GetGroceryItemSectionParams) (int64, error)
 	GetHouseholdName(ctx context.Context, householdID string) (string, error)
 	GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error)
 	GetHouseholdTimezone(ctx context.Context, householdID string) (string, error)
@@ -61,6 +63,8 @@ type Querier interface {
 	GetIngestSiteByHost(ctx context.Context, host string) (IngestSite, error)
 	GetIngestSourcePage(ctx context.Context, id int64) (IngestSourcePage, error)
 	GetOpenIngestSitePause(ctx context.Context, siteID string) (IngestSitePause, error)
+	// A line on the household's current plan's list.
+	GetOpenShoppingLine(ctx context.Context, arg GetOpenShoppingLineParams) (GetOpenShoppingLineRow, error)
 	GetOpenWeek(ctx context.Context, householdID string) (Week, error)
 	GetOtherStoreSection(ctx context.Context, householdID string) (StoreSection, error)
 	GetPastWeek(ctx context.Context, arg GetPastWeekParams) (Week, error)
@@ -83,6 +87,8 @@ type Querier interface {
 	// Sites that may be fetched now: listed, active, eligible, and not paused.
 	ListFetchableIngestSites(ctx context.Context) ([]IngestSite, error)
 	ListGeneratedShoppingLineStates(ctx context.Context, arg ListGeneratedShoppingLineStatesParams) ([]ListGeneratedShoppingLineStatesRow, error)
+	// Each item's section is the household's own placement when it has one (D053), else the
+	// reviewed corpus section.
 	ListGroceryItems(ctx context.Context, householdID string) ([]ListGroceryItemsRow, error)
 	// Evidence in ID order for offline extraction replay; pages through with after_id.
 	ListIngestEvidenceForReplay(ctx context.Context, arg ListIngestEvidenceForReplayParams) ([]IngestEvidence, error)
@@ -146,6 +152,9 @@ type Querier interface {
 	// Deactivates a site the registry no longer lists. Its evidence, pages, and pauses stay.
 	RetireIngestSite(ctx context.Context, id string) (int64, error)
 	ReturnRecipeToDraft(ctx context.Context, arg ReturnRecipeToDraftParams) (Recipe, error)
+	// Moves every line of one known item on the current plan's list, generated or manual.
+	SetItemLinesSection(ctx context.Context, arg SetItemLinesSectionParams) error
+	SetItemSection(ctx context.Context, arg SetItemSectionParams) error
 	SetManualLineSection(ctx context.Context, arg SetManualLineSectionParams) (SetManualLineSectionRow, error)
 	SetSectionPosition(ctx context.Context, arg SetSectionPositionParams) error
 	SetShoppingLineCompleted(ctx context.Context, arg SetShoppingLineCompletedParams) (int64, error)

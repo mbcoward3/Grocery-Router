@@ -382,7 +382,8 @@ JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredient_sections ris ON ris.recipe_id = r.id
 JOIN recipe_ingredients ri ON ri.section_id = ris.id
 JOIN grocery_items gi ON gi.id = ri.grocery_item_id
-JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+LEFT JOIN household_item_sections his ON his.household_id = gi.household_id AND his.grocery_item_id = gi.id
+JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = coalesce(his.store_section_id, gi.store_section_id)
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
 WHERE wr.household_id = $1 AND wr.week_id = $2

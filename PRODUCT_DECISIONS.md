@@ -63,7 +63,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D042 | OpenAI through the official Go SDK | Active |
 | D043 | Suggested recipes enter the week marked, and join when kept | Direction only (not implemented) |
 | D044 | Shopping follows the household store walk | Partly superseded by D045 and D046 (completed-row sinking, section folding, Undo on check, Hide done and its default) |
-| D045 | Remember where unknown items go; Hide done owns folding | Partly superseded by D046 (Hide done control and section folding) |
+| D045 | Remember where unknown items go; Hide done owns folding | Partly superseded by D046 (Hide done control and section folding) and D053 (known items can be placed too) |
 | D046 | Plain rows, one Done group, undo only for removal | Active |
 | D047 | One checklist row per grocery item; look-alike items need a decision | Active |
 | D048 | Substitution is a household choice over frozen groups (proposed) | Direction only (not implemented) |
@@ -71,6 +71,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D050 | The household chooses its rollover day, time, and mode | Superseded by D051 |
 | D051 | A plan lasts from one shopping trip to the next and can be reopened | Active |
 | D052 | A household can avoid recipes from its last few plans | Active |
+| D053 | A household can place a known item in its own store section | Active |
 
 ---
 
@@ -1015,4 +1016,25 @@ partly supersedes V1 §6.2's "selection ignores previous weeks".
 
 **Revisit when:** The household wants weighting, favorites, or breadth rules rather than a plain
 exclusion.
+
+## D053 — A household can place a known item in its own store section
+
+**Status:** Active
+
+**Decision:** Any line of a known grocery item, generated or manual, can be moved to another
+section from its details sheet. That saves where the household's store keeps the item: all of
+the item's lines on the current list move, and later lists, manual adds, and add-item
+suggestions use the placement. Choosing the item's reviewed section again clears it. Only the
+section can be changed this way. An item's shopping mode and whether it appears on the list stay
+corpus decisions (#70: the owner approved only the section override).
+
+**Why:** Stores differ. If the household's store keeps tortillas in Bakery and the corpus says
+Pantry, the list was wrong every week (#70). This extends D045 from unknown names to known items.
+
+**Consequence:** Migration 00015 adds `household_item_sections (household_id, grocery_item_id,
+store_section_id)` with tenant-proving composite foreign keys. `ListWeekIngredientRequirements`
+and `ListGroceryItems` use the placement in place of the reviewed section. History keeps the
+sections its lists had. This partly supersedes D045's "known items keep their reviewed section".
+
+**Revisit when:** A household wants to change shopping mode or leave an item off the list.
 

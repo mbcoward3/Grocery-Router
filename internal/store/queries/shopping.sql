@@ -212,3 +212,38 @@ WHERE
     household_id = sqlc.arg(household_id)
     AND id = sqlc.arg(id)
     AND aggregation_version < sqlc.arg(version);
+
+-- name: GetOpenShoppingLine :one
+-- A line on the household's current plan's list.
+SELECT sl.id, sl.origin, sl.display_name, sl.grocery_item_id FROM shopping_lines AS sl
+WHERE sl.household_id = sqlc.arg(household_id) AND sl.id = sqlc.arg(line_id) AND sl.shopping_list_id = (
+    SELECT list.id FROM shopping_lists AS list
+    JOIN weeks AS w ON w.household_id = list.household_id AND w.id = list.week_id
+    WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
+);
+
+-- name: SetItemSection :exec
+INSERT INTO household_item_sections (household_id, grocery_item_id, store_section_id)
+VALUES (sqlc.arg(household_id), sqlc.arg(grocery_item_id), sqlc.arg(store_section_id))
+ON CONFLICT (household_id, grocery_item_id) DO UPDATE
+SET store_section_id = excluded.store_section_id,
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"');
+
+-- name: ForgetItemSectionOverride :exec
+DELETE FROM household_item_sections
+WHERE household_id = sqlc.arg(household_id) AND grocery_item_id = sqlc.arg(grocery_item_id);
+
+-- name: GetGroceryItemSection :one
+SELECT store_section_id FROM grocery_items
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
+
+-- name: SetItemLinesSection :exec
+-- Moves every line of one known item on the current plan's list, generated or manual.
+UPDATE shopping_lines SET store_section_id = sqlc.arg(store_section_id)
+WHERE shopping_lines.household_id = sqlc.arg(household_id)
+    AND shopping_lines.grocery_item_id = sqlc.arg(grocery_item_id)
+    AND shopping_lines.shopping_list_id = (
+        SELECT list.id FROM shopping_lists AS list
+        JOIN weeks AS w ON w.household_id = list.household_id AND w.id = list.week_id
+        WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NULL
+    );
