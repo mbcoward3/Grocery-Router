@@ -1,7 +1,7 @@
 # Grocery Router — Household Substitution Groups
 
 Status: **proposed 2026-11-09; not authorized.** Nothing here is built until the owner approves it.  
-Depends on: [`V1_SPEC.md`](V1_SPEC.md), [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md)  
+Depends on: [`PRODUCT.md`](PRODUCT.md), [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md)  
 Rationale: [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) D047, D048
 
 ## 1. Problem
@@ -63,7 +63,7 @@ Identity is shared and strict. Substitution is per household and explicit.
 
 - Requirements of combined members aggregate exactly as one item: compatible units add
   (`2 each + 1 each = 3 each`); incompatible ones stay separate quantities on the row, and an
-  unspecified requirement adds `+ more`, as in V1 §8.1.
+  unspecified requirement adds `+ more`, as in [`PRODUCT.md`](PRODUCT.md) §5.
 - The row shows the group's display name. Details list each recipe's original wording and the
   member item it named.
 - Checked, removed, and adjusted state carry across combining and splitting with the V1

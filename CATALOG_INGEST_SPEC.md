@@ -3,7 +3,7 @@
 Status: **revision 4, approved 2026-11-09 (adds the look-alike classification gate, §6.1). Slices 1–2 are
 authorized.** Slices 3–5 stay gated until
 the conditions in §8 are met. The §11 defaults are accepted.  
-Depends on: [`V1_SPEC.md`](V1_SPEC.md), [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md)  
+Depends on: [`PRODUCT.md`](PRODUCT.md), [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md)  
 Rationale: [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) D039–D043, D047  
 Review history: [`archive/reviews/catalog-ingest-astra-2026-11-08.md`](archive/reviews/catalog-ingest-astra-2026-11-08.md)
 (non-authoritative)  

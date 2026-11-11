@@ -3,7 +3,7 @@
 Status: **approved post-v1 phase; implementation authorized**  
 Production origin: `https://groceries.matthewcoward.com`  
 Development origin: `https://groceries-dev.matthewcoward.com`  
-Original v1 authority: [`V1_SPEC.md`](V1_SPEC.md)
+Original v1 authority: [`archive/specs/V1_SPEC.md`](archive/specs/V1_SPEC.md) (historical; current behavior is [`PRODUCT.md`](PRODUCT.md))
 
 ## 1. Product outcome
 

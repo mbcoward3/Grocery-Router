@@ -15,7 +15,7 @@ excludes Chicken and Dumplings.
 
 ## Start here
 
-1. [`V1_SPEC.md`](V1_SPEC.md) — product, behavior, data model, architecture, and acceptance
+1. [`PRODUCT.md`](PRODUCT.md) — the product as it is: screens, rules, plans, grocery list
 2. [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) — approved post-v1 Google sign-in and
    shared household
 3. [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md) — approved shared recipe catalog pipeline

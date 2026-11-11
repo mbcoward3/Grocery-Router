@@ -1,10 +1,14 @@
+> **Historical.** This is the original v1 contract, archived on 2026-11-11 (#61). Current
+> behavior is in [`PRODUCT.md`](../../PRODUCT.md); later changes are recorded in
+> [`PRODUCT_DECISIONS.md`](../../PRODUCT_DECISIONS.md).
+
 # Grocery Router v1 — Product and Implementation Specification
 
 Status: **approved direction, ready for implementation planning**  
 Scope settled by product interview.  
 Canonical for v1: **this document supersedes the existing `.scratch/spec/`, architecture documents, prototype behavior, and prior implementation decisions.**
 
-Sections 1.1, 1.2, 3.2, and 12.4 (no accounts, local-only operation, no Docker or deployment, and trusting the local network) were superseded by [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) and D036 in [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md).
+Sections 1.1, 1.2, 3.2, and 12.4 (no accounts, local-only operation, no Docker or deployment, and trusting the local network) were superseded by [`AUTH_HOUSEHOLDS_SPEC.md`](../../AUTH_HOUSEHOLDS_SPEC.md) and D036 in [`PRODUCT_DECISIONS.md`](../../PRODUCT_DECISIONS.md).
 
 ---
 
@@ -923,10 +927,10 @@ Before v1 is considered complete:
 The product and implementation contract ends here; deferred scope, rationale, and completed
 migration evidence live in focused companion records:
 
-- [`UP_NEXT.md`](UP_NEXT.md) — all interview “not yets,” explicitly outside v1.
+- [`UP_NEXT.md`](../../UP_NEXT.md) — all interview “not yets,” explicitly outside v1.
 - `archive/trueup/recipes.csv` — completed corpus membership and disposition evidence.
-- [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — durable rationale and revisit conditions.
-- [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md) —
+- [`PRODUCT_DECISIONS.md`](../../PRODUCT_DECISIONS.md) — durable rationale and revisit conditions.
+- [`archive/interviews/v1-scope-interview.md`](../../archive/interviews/v1-scope-interview.md) —
   non-authoritative raw interview transcript for nuance recovery only.
 
 The active documents do not expand the v1 product scope. The archived ledger and transcript are

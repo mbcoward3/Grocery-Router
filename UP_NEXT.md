@@ -1,7 +1,7 @@
 # Grocery Router — Up Next
 
 Status: **deferred backlog; none of this is v1 scope**  
-Current scope: [`V1_SPEC.md`](V1_SPEC.md)
+Current scope: [`PRODUCT.md`](PRODUCT.md)
 
 This document tracks the interview's “not yets”: useful capabilities deliberately excluded
 because they would muddy v1. Items move out only through a newly scoped phase; this is not an

@@ -1,16 +1,17 @@
 # Grocery Router — Product Decision Record
 
 Status: **durable rationale for the v1 direction and later approved phases**  
-Behavioral authority: [`V1_SPEC.md`](V1_SPEC.md)  
+Behavioral authority: [`PRODUCT.md`](PRODUCT.md)  
 Historical source: [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md)
 
 This document records why v1 has its current shape. It is not a second specification: when
-wording conflicts, `V1_SPEC.md` governs behavior. The interview archive is non-authoritative
+wording conflicts, `PRODUCT.md` governs behavior. The interview archive is non-authoritative
 and exists only to recover nuance. D036 supersedes earlier SQLite-specific decisions.
 
 ## Authority order
 
-1. `V1_SPEC.md` — product and implementation contract.
+1. `PRODUCT.md` — the product as it is (the original v1 contract is archived at
+   `archive/specs/V1_SPEC.md`).
 2. `UP_NEXT.md` — explicitly deferred scope.
 3. This record — rationale and revisit conditions.
 4. Completed true-up ledger and raw interview archives — historical evidence only.
@@ -1013,7 +1014,7 @@ already records them (#71).
 
 **Consequence:** Migration 00014 adds `households.avoid_recent_plans` (0-8). "Recent" means plans
 in History ordered by when they closed, so a reopened plan counts from its latest close. This
-partly supersedes V1 §6.2's "selection ignores previous weeks".
+partly supersedes the archived V1 §6.2's "selection ignores previous weeks".
 
 **Revisit when:** The household wants weighting, favorites, or breadth rules rather than a plain
 exclusion.
@@ -1056,7 +1057,7 @@ The owner chose this over picking a tidy unit.
 **Consequence:** `grocery.Aggregate` groups mass and volume by unit instead of by dimension, and
 `grocery.Group` orders a row's amounts. Aggregation version 3 rebuilds open lists when they are
 next read; History keeps the amounts it had. The unit table's conversion ratios stay but are no
-longer used to combine amounts. This partly supersedes V1 §7.2 and §7.3.
+longer used to combine amounts. This partly supersedes the archived V1 §2.5 and §7.3.
 
 **Revisit when:** The household wants mixed amounts simplified, or metric and US display.
 

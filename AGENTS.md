@@ -4,7 +4,7 @@
 
 Read in this order:
 
-1. `V1_SPEC.md` for the completed base product contract
+1. `PRODUCT.md` for the product as it is: the current behavior and the rules that must hold
 2. `AUTH_HOUSEHOLDS_SPEC.md` for the current approved post-v1 authentication phase
 3. `CATALOG_INGEST_SPEC.md` for the approved shared recipe catalog pipeline (slices 1–2
    authorized; later slices follow its §8 gates)
