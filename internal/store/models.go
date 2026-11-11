@@ -51,6 +51,7 @@ type Household struct {
 	UpdatedAt          time.Time `db:"updated_at" json:"updated_at"`
 	Timezone           string    `db:"timezone" json:"timezone"`
 	DefaultRecipeCount int32     `db:"default_recipe_count" json:"default_recipe_count"`
+	AvoidRecentPlans   int16     `db:"avoid_recent_plans" json:"avoid_recent_plans"`
 }
 
 type HouseholdMembership struct {

@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"slices"
 	"time"
 
 	"github.com/mbcoward3/grocery-router/internal/settings"
@@ -191,6 +192,15 @@ func (service *Household) Generate(ctx context.Context, now time.Time, count int
 		if err := shuffle(service.picker, verified); err != nil {
 			return err
 		}
+		recent, err := service.recentRecipes(ctx, queries)
+		if err != nil {
+			return err
+		}
+		// Recipes from recent plans go last, so they are picked only when too few others remain.
+		// The shuffle keeps each group in uniformly random order.
+		slices.SortStableFunc(verified, func(a, b store.Recipe) int {
+			return boolOrder(recent[a.ID]) - boolOrder(recent[b.ID])
+		})
 		weekRow, err := service.getOrOpenWeek(ctx, queries, now, location)
 		if err != nil {
 			return err
@@ -295,10 +305,23 @@ func (service *Household) RandomSwap(ctx context.Context, occurrenceID int64) (V
 		for _, id := range selected {
 			inPool[id] = true
 		}
+		recent, err := service.recentRecipes(ctx, queries)
+		if err != nil {
+			return err
+		}
+		// Prefer a recipe in neither the pool nor a recent plan, then one not in the pool, then any
+		// other recipe.
 		candidates := make([]int64, 0, len(verified))
 		for _, recipe := range verified {
-			if !inPool[recipe.ID] {
+			if !inPool[recipe.ID] && !recent[recipe.ID] {
 				candidates = append(candidates, recipe.ID)
+			}
+		}
+		if len(candidates) == 0 {
+			for _, recipe := range verified {
+				if !inPool[recipe.ID] {
+					candidates = append(candidates, recipe.ID)
+				}
 			}
 		}
 		if len(candidates) == 0 {
@@ -404,6 +427,31 @@ func (service *Household) loadView(ctx context.Context, queries *store.Queries, 
 		return View{}, err
 	}
 	return View{Week: weekRow, Recipes: recipes}, nil
+}
+
+// recentRecipes returns the recipes in the household's most recent past plans that selection
+// avoids (D052), or none when the household's setting is 0.
+func (service *Household) recentRecipes(ctx context.Context, queries *store.Queries) (map[int64]bool, error) {
+	plans, err := queries.GetAvoidRecentPlans(ctx, service.householdID)
+	if err != nil || plans == 0 {
+		return nil, err
+	}
+	ids, err := queries.ListRecentPlanRecipeIDs(ctx, store.ListRecentPlanRecipeIDsParams{HouseholdID: service.householdID, Plans: int32(plans)})
+	if err != nil {
+		return nil, err
+	}
+	recent := make(map[int64]bool, len(ids))
+	for _, id := range ids {
+		recent[id] = true
+	}
+	return recent, nil
+}
+
+func boolOrder(value bool) int {
+	if value {
+		return 1
+	}
+	return 0
 }
 
 func shuffle[T any](picker Picker, values []T) error {

@@ -523,6 +523,8 @@ export interface components {
             timezone: string;
             /** @description Recipes offered when generating a plan. */
             defaultRecipeCount: number;
+            /** @description How many of the most recent past plans Generate and random swap avoid repeating recipes from. 0 picks from every verified recipe. */
+            avoidRecentPlans: number;
         };
         APIError: {
             error: {
@@ -1046,6 +1048,7 @@ export interface operations {
                     /** @description IANA time zone name, for example America/Chicago. */
                     timezone?: string;
                     defaultRecipeCount?: number;
+                    avoidRecentPlans?: number;
                 };
             };
         };

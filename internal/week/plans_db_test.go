@@ -285,3 +285,75 @@ func TestChangeWaitingForACloseFindsNoWeek(t *testing.T) {
 		t.Fatalf("closed week recipes = %d, %v; want 2", recipes, err)
 	}
 }
+
+// With avoid_recent_plans set, Generate picks recipes from the last plans only when too few
+// others remain, and random swap prefers recipes outside them (D052).
+func TestGenerateAvoidsRecentPlans(t *testing.T) {
+	service, db := testService(t)
+	ctx := context.Background()
+	recipeIDs := func(view week.View) map[int64]bool {
+		ids := map[int64]bool{}
+		for _, occurrence := range view.Recipes {
+			ids[occurrence.RecipeID] = true
+		}
+		return ids
+	}
+	first, err := service.Generate(ctx, testNowUTC(), 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := service.Close(ctx, testNowUTC()); err != nil {
+		t.Fatal(err)
+	}
+	// Off by default: the deterministic picker chooses the same recipes again.
+	again, err := service.Generate(ctx, testNowUTC(), 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for id := range recipeIDs(first) {
+		if !recipeIDs(again)[id] {
+			t.Fatalf("with the setting off, the second plan = %v, want the first plan's recipes %v", recipeIDs(again), recipeIDs(first))
+		}
+	}
+
+	if _, err := db.Exec(`UPDATE households SET avoid_recent_plans = 1 WHERE id = $1`, testHousehold); err != nil {
+		t.Fatal(err)
+	}
+	// The open plan is not a past plan, so regenerating it avoids only the closed one.
+	avoided, err := service.Generate(ctx, testNowUTC(), 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for id := range recipeIDs(avoided) {
+		if recipeIDs(first)[id] {
+			t.Fatalf("plan repeats recipe %d from the last plan", id)
+		}
+	}
+	// Random swap does not bring a recent recipe back while others remain.
+	swapped, err := service.RandomSwap(ctx, avoided.Recipes[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if recipeIDs(first)[swapped.Recipes[0].RecipeID] {
+		t.Fatalf("random swap chose recipe %d from the last plan", swapped.Recipes[0].RecipeID)
+	}
+
+	// Asking for more than the other recipes allows fills the rest from the recent ones.
+	var verified int
+	if err := db.QueryRow(`SELECT count(*) FROM recipes WHERE household_id = $1 AND status = 'verified'`, testHousehold).Scan(&verified); err != nil {
+		t.Fatal(err)
+	}
+	full, err := service.Generate(ctx, testNowUTC(), verified-2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	repeats := 0
+	for id := range recipeIDs(full) {
+		if recipeIDs(first)[id] {
+			repeats++
+		}
+	}
+	if len(full.Recipes) != verified-2 || repeats != 3 {
+		t.Fatalf("full plan = %d recipes with %d repeats, want %d with 3", len(full.Recipes), repeats, verified-2)
+	}
+}

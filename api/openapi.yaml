@@ -270,6 +270,7 @@ paths:
               properties:
                 timezone: { type: string, description: "IANA time zone name, for example America/Chicago." }
                 defaultRecipeCount: { type: integer, minimum: 1, maximum: 21 }
+                avoidRecentPlans: { type: integer, minimum: 0, maximum: 8 }
       responses:
         "200": { $ref: "#/components/responses/HouseholdSettings" }
         "400": { $ref: "#/components/responses/InvalidRequest" }
@@ -628,10 +629,17 @@ components:
         groceries: { $ref: "#/components/schemas/Groceries" }
     HouseholdSettings:
       type: object
-      required: [timezone, defaultRecipeCount]
+      required: [timezone, defaultRecipeCount, avoidRecentPlans]
       properties:
         timezone: { type: string, description: "IANA time zone used to date the household's plans." }
         defaultRecipeCount: { type: integer, minimum: 1, maximum: 21, description: "Recipes offered when generating a plan." }
+        avoidRecentPlans:
+          type: integer
+          minimum: 0
+          maximum: 8
+          description: >-
+            How many of the most recent past plans Generate and random swap avoid repeating
+            recipes from. 0 picks from every verified recipe.
     APIError:
       type: object
       required: [error]

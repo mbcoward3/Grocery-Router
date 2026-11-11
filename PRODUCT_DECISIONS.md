@@ -70,6 +70,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D049 | Household preferences live per household and are edited in the app | Active |
 | D050 | The household chooses its rollover day, time, and mode | Superseded by D051 |
 | D051 | A plan lasts from one shopping trip to the next and can be reopened | Active |
+| D052 | A household can avoid recipes from its last few plans | Active |
 
 ---
 
@@ -993,4 +994,25 @@ a time per household. This supersedes D050 and the parts of D026 about when a we
 
 **Revisit when:** A household wants to plan the next trip while the current plan is still in
 use, or to start a new plan from a past plan's meals without reopening it.
+
+## D052 — A household can avoid recipes from its last few plans
+
+**Status:** Active
+
+**Decision:** Settings has "Avoid repeats": Off, or the last 1-8 plans (default Off). Generate
+puts recipes from that many of the most recently closed plans last, so it picks them only when
+too few other verified recipes remain; it never fails because of the setting. Random swap
+prefers a recipe in neither the current pool nor those plans, then one not in the pool, then any
+other recipe. Manual add and choosing a specific replacement are unaffected. Selection is still
+plain uniform randomness, with no model and no scoring.
+
+**Why:** With 24 recipes and about five per plan, recent dinners came back often, and History
+already records them (#71).
+
+**Consequence:** Migration 00014 adds `households.avoid_recent_plans` (0-8). "Recent" means plans
+in History ordered by when they closed, so a reopened plan counts from its latest close. This
+partly supersedes V1 §6.2's "selection ignores previous weeks".
+
+**Revisit when:** The household wants weighting, favorites, or breadth rules rather than a plain
+exclusion.
 

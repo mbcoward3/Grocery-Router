@@ -49,6 +49,7 @@ type Querier interface {
 	DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesParams) error
 	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
 	ForgetItemSection(ctx context.Context, arg ForgetItemSectionParams) error
+	GetAvoidRecentPlans(ctx context.Context, householdID string) (int16, error)
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
 	GetHouseholdName(ctx context.Context, householdID string) (string, error)
 	GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error)
@@ -94,6 +95,8 @@ type Querier interface {
 	ListInstructionSections(ctx context.Context, arg ListInstructionSectionsParams) ([]RecipeInstructionSection, error)
 	ListOpenIngestSitePauses(ctx context.Context) ([]IngestSitePause, error)
 	ListPastWeeks(ctx context.Context, householdID string) ([]ListPastWeeksRow, error)
+	// The recipes in the household's most recently closed plans, which selection avoids (D052).
+	ListRecentPlanRecipeIDs(ctx context.Context, arg ListRecentPlanRecipeIDsParams) ([]int64, error)
 	ListRecipeIngredients(ctx context.Context, arg ListRecipeIngredientsParams) ([]ListRecipeIngredientsRow, error)
 	ListRecipeReviewFlags(ctx context.Context, arg ListRecipeReviewFlagsParams) ([]RecipeReviewFlag, error)
 	ListRecipeSources(ctx context.Context, arg ListRecipeSourcesParams) ([]RecipeSource, error)

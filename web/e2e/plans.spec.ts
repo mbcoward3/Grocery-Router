@@ -12,7 +12,7 @@ type Summary = { id: number; startsOn: string; endsOn: string; recipeCount: numb
 // moves it to the top of History, ending on `closedEndsOn`. Reopening a past plan swaps it with
 // the current one.
 async function setup(page: Page, options: { pastWeeks?: boolean; current?: CurrentWeek; next?: NextWeek; closedEndsOn?: string } = {}) {
-  const settings = { timezone: 'America/Chicago', defaultRecipeCount: 4 }
+  const settings = { timezone: 'America/Chicago', defaultRecipeCount: 4, avoidRecentPlans: 0 }
   const generated: unknown[] = []
   const duration = { minimumMinutes: null, maximumMinutes: null }
   const recipes = Array.from({ length: 8 }, (_, index) => ({

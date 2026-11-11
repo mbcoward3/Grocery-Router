@@ -39,6 +39,16 @@ FROM weeks w
 WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NOT NULL
 ORDER BY w.starts_on DESC, w.id DESC;
 
+-- name: ListRecentPlanRecipeIDs :many
+-- The recipes in the household's most recently closed plans, which selection avoids (D052).
+SELECT DISTINCT wr.recipe_id FROM week_recipes AS wr
+WHERE wr.household_id = sqlc.arg(household_id) AND wr.week_id IN (
+    SELECT w.id FROM weeks AS w
+    WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NOT NULL
+    ORDER BY w.closed_at DESC, w.id DESC
+    LIMIT sqlc.arg(plans)
+);
+
 -- name: GetPastWeek :one
 SELECT * FROM weeks
 WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NOT NULL;

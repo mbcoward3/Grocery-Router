@@ -56,6 +56,24 @@ func TestHouseholdSettingsAPI(t *testing.T) {
 	assertSettings(t, request(t, handler, http.MethodGet, path, ""), "America/Chicago", 8)
 	assertSettings(t, request(t, handler, http.MethodPatch, path, `{"timezone":"UTC","defaultRecipeCount":21}`), "UTC", 21)
 
+	// Avoiding recent plans is off until set, accepts 0-8, and leaves the other settings alone.
+	avoid := func(response *httptest.ResponseRecorder) any {
+		t.Helper()
+		return decodeObject(t, response)["avoidRecentPlans"]
+	}
+	if got := avoid(request(t, handler, http.MethodGet, path, "")); got != float64(0) {
+		t.Fatalf("default avoidRecentPlans = %#v, want 0", got)
+	}
+	for _, body := range []string{`{"avoidRecentPlans":-1}`, `{"avoidRecentPlans":9}`} {
+		if response := requestExpecting(t, handler, nonconformingRequest, http.MethodPatch, path, body); response.Code != http.StatusUnprocessableEntity {
+			t.Fatalf("PATCH %s status = %d", body, response.Code)
+		}
+	}
+	if got := avoid(request(t, handler, http.MethodPatch, path, `{"avoidRecentPlans":2}`)); got != float64(2) {
+		t.Fatalf("avoidRecentPlans after PATCH = %#v, want 2", got)
+	}
+	assertSettings(t, request(t, handler, http.MethodGet, path, ""), "UTC", 21)
+
 	const other = "/api/v2/households/711e58fa-2c03-44cc-83aa-432eab3158fb/settings"
 	for _, call := range []struct{ method, body string }{{http.MethodGet, ""}, {http.MethodPatch, `{"defaultRecipeCount":3}`}} {
 		response := request(t, handler, call.method, other, call.body)

@@ -290,7 +290,8 @@ The trace from a generated grocery line to a particular week-recipe occurrence a
 ### 6.2 Random generation
 
 - Selection is uniform across all verified recipes.
-- Selection ignores cooking history and previous weeks.
+- Selection ignores cooking history, except that a household may choose to avoid recipes from
+  its last 0-8 plans (D052). Those recipes are picked only when too few others remain.
 - Initial results contain no duplicates.
 - If the requested count exceeds the number of verified recipes, generation must fail clearly rather than silently duplicate recipes.
 - Random selection invokes no model.

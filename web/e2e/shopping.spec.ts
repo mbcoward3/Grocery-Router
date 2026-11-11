@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 async function setup(page: Page, options: { saveDelayMs?: number } = {}) {
-  let settings = { timezone: 'UTC', defaultRecipeCount: 5 }
+  let settings = { timezone: 'UTC', defaultRecipeCount: 5, avoidRecentPlans: 0 }
   let sections = [{ id: 1, name: 'Produce', key: 'produce' }, { id: 2, name: 'Dairy', key: 'dairy' }, { id: 3, name: 'Baking', key: 'baking' }, { id: 4, name: 'Other', key: 'other' }]
   const base = { quantity: null as string | null, generatedQuantity: null as string | null, origin: 'manual', optional: false, removed: false, completed: false, hasContributions: false, recipeNames: [] as string[] }
   const lines = [

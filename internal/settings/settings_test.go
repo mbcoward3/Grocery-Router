@@ -104,6 +104,7 @@ func TestUpdateStoresOnlyValidNamedSettings(t *testing.T) {
 func TestValidationMessages(t *testing.T) {
 	zone := func(name string) settings.Change { return settings.Change{Timezone: &name} }
 	count := func(value int) settings.Change { return settings.Change{DefaultRecipeCount: &value} }
+	avoid := func(value int) settings.Change { return settings.Change{AvoidRecentPlans: &value} }
 	for _, tc := range []struct {
 		change settings.Change
 		want   string
@@ -113,6 +114,8 @@ func TestValidationMessages(t *testing.T) {
 		{zone("Not/AZone"), `unknown time zone "Not/AZone"`},
 		{count(0), "recipes per plan must be between 1 and 21, not 0"},
 		{count(22), "recipes per plan must be between 1 and 21, not 22"},
+		{avoid(-1), "recent plans to avoid must be between 0 and 8, not -1"},
+		{avoid(9), "recent plans to avoid must be between 0 and 8, not 9"},
 	} {
 		var validation settings.ValidationError
 		if err := tc.change.Validate(); !errors.As(err, &validation) || validation.Message != tc.want {

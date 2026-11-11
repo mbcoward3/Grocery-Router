@@ -20,7 +20,8 @@ scope requires a new phase with its own acceptance criteria.
   `openai-go` for offline work (D042), and marked suggestions that join when kept (D043).
 - **Planner constraints.** Guests, serving targets, busy nights, effort limits, desired
   leftovers, proteins, cuisines, and must-include constraints beyond direct manual editing.
-- **History-aware selection.** Recency, repetition avoidance, favorites, breadth, and other
+- **History-aware selection.** The deterministic part, avoiding recipes from the last few
+  plans, is built (D052). Recency weighting, favorites, breadth, and other
   cooking-history signals.
 - **Reasons and feedback.** Planner explanations, acceptance signals, outcomes, and quality
   measurement.

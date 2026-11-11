@@ -5,7 +5,7 @@ SELECT timezone FROM households WHERE id = sqlc.arg(household_id);
 SELECT name FROM households WHERE id = sqlc.arg(household_id);
 
 -- name: GetHouseholdSettings :one
-SELECT timezone, default_recipe_count
+SELECT timezone, default_recipe_count, avoid_recent_plans
 FROM households WHERE id = sqlc.arg(household_id);
 
 -- name: LockHouseholdPlans :one
@@ -21,6 +21,10 @@ FOR NO KEY UPDATE;
 UPDATE households SET
     timezone = coalesce(sqlc.narg(timezone), timezone),
     default_recipe_count = coalesce(sqlc.narg(default_recipe_count), default_recipe_count),
+    avoid_recent_plans = coalesce(sqlc.narg(avoid_recent_plans), avoid_recent_plans),
     updated_at = clock_timestamp()
 WHERE id = sqlc.arg(household_id)
-RETURNING timezone, default_recipe_count;
+RETURNING timezone, default_recipe_count, avoid_recent_plans;
+
+-- name: GetAvoidRecentPlans :one
+SELECT avoid_recent_plans FROM households WHERE id = sqlc.arg(household_id);
