@@ -161,7 +161,9 @@ recipe occurrence and ingredient. `internal/database/migrations/` is the schema 
   explicitly excluded. Evidence is archived under `archive/`.
 - Recipe lifecycle: draft → reviewable → verified. Verified recipes cannot be edited in place.
 - A household's recipes are loaded once, into an empty database (`corpus-ingest`, or `bootstrap`
-  at container start). Changing recipes afterwards is not yet possible; its design is #55.
+  at container start). Changing them afterwards is not yet possible. The proposed recipe library
+  ([`RECIPE_LIBRARY_SPEC.md`](RECIPE_LIBRARY_SPEC.md), #55) adds in-app editing and following
+  shared catalog recipes.
 
 ## 10. Stack and commands
 
@@ -177,4 +179,4 @@ tests check every response against it. Commands and setup: [`README.md`](README.
 - [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md): the shared recipe catalog pipeline (slices
   1-2 built; slices 3-5 continue per its gates, #62).
 - [`SUBSTITUTIONS_SPEC.md`](SUBSTITUTIONS_SPEC.md): household substitution groups (direction only).
-- Recipe changes after the first load (#55, then #56 and #57).
+- The recipe library: in-app editing and followed catalog recipes (#55, proposed).

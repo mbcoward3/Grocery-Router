@@ -74,7 +74,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D052 | A household can avoid recipes from its last few plans | Active |
 | D053 | A household can place a known item in its own store section | Active |
 | D054 | Amounts in different units are shown side by side, not converted | Active |
-| D055 | Recipes change through an explicit, previewed corpus sync (proposed) | Proposed (awaiting owner approval) |
+| D055 | A recipe library of followed catalog recipes and editable household recipes (proposed) | Proposed (awaiting owner approval) |
 
 ---
 
@@ -1062,21 +1062,26 @@ longer used to combine amounts. This partly supersedes the archived V1 §2.5 and
 
 **Revisit when:** The household wants mixed amounts simplified, or metric and US display.
 
-## D055 — Recipes change through an explicit, previewed corpus sync (proposed)
+## D055 — A recipe library of followed catalog recipes and editable household recipes (proposed)
 
 **Status:** Proposed (awaiting owner approval in the pull request that adds
-[`RECIPE_CHANGES_SPEC.md`](RECIPE_CHANGES_SPEC.md))
+[`RECIPE_LIBRARY_SPEC.md`](RECIPE_LIBRARY_SPEC.md))
 
-**Decision:** Recipes change after the first load only through `corpus-sync`, an operator
-command that previews by default, writes with `--apply`, and never runs at startup. History
-stops depending on live recipe rows through snapshots. Recipes are matched by key, unchanged ones
-are skipped by content digest, removed ones are kept, and the current plan's list is rebuilt in
-the same transaction. Item aliases and in-app editing are later phases.
+**Decision:** A household's library holds catalog recipes it follows, which change when the
+catalog publishes a fix, and its own recipes. Members edit any library recipe in the app and the
+edit applies at once; editing a followed recipe makes the household its own copy, which stops
+following the catalog. Catalog grocery items are the shared item identity, and household items map
+onto them. Past plans keep snapshots. Committed Markdown only seeds an empty database; there is no
+sync command.
 
-**Why:** A recipe fix in the corpus could never reach a database already in use (#55), and the
-catalog, substitutions, and any second household all need the same path.
+**Why:** The product is moving to many households and a large shared catalog that suggestion
+tooling uses. Copying every adopted recipe per household, or changing recipes through repository
+files and a command, does not scale (owner, 2026-11-12). This replaces the first draft of #55,
+which proposed a Markdown-driven `corpus-sync`.
 
-**Consequence:** See the spec; implementation is #56 then #57.
+**Consequence:** If approved, this partly supersedes D039 ("adopting gives an editable copy"):
+following is the default and a copy is made only on edit. Delivery order and acceptance are in the
+spec.
 
-**Revisit when:** In-app recipe editing is specified, or the household needs aliases merged.
-
+**Revisit when:** Households need to share their own recipes, or catalog fixes must be reviewed
+by a household before they apply.

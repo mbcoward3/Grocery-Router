@@ -10,8 +10,8 @@ Read in this order:
    authorized; later slices follow its §8 gates)
 4. `SUBSTITUTIONS_SPEC.md` for household substitution groups (approved direction,
    documentation only; implementation not authorized)
-5. `RECIPE_CHANGES_SPEC.md` for changing recipes after the first load (proposed; #56 and #57
-   wait for owner approval)
+5. `RECIPE_LIBRARY_SPEC.md` for the recipe library: following shared catalog recipes and
+   editing household recipes in the app (proposed; awaiting owner approval)
 6. `UP_NEXT.md`
 7. `PRODUCT_DECISIONS.md` for rationale
 
