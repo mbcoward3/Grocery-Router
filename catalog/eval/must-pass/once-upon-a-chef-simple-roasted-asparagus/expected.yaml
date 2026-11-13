@@ -1,0 +1,83 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Check: (1) "1 bunch of asparagus ((about 1 lb/454 g), ...)" is 1 bunch with the weight kept as
+  a note, not converted. (2) extra-virgin olive oil is drafted as its own item, not an alias of
+  olive-oil; decide which you want across the catalog. Salt and black pepper map to the
+  presence-only catalog items (spec §5.9, §11 default), so the list shows them with no amount
+  even though the requirement keeps it; the household corpus still has them as measured items.
+  New grocery items not in the household vocabulary (check name, section, and shopping mode):
+  asparagus, extra-virgin-olive-oil.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Simple Roasted Asparagus"
+  source:
+    relationship: source
+    attribution: "Once Upon a Chef"
+    url: https://www.onceuponachef.com/recipes/simple-roasted-asparagus.html
+    checked_on: 2026-11-08
+  image_url: https://www.onceuponachef.com/images/2022/04/roasted-asparagus-scaled.jpg
+  yield: "4"
+  hands_on: {min: 7, max: 7}
+  unattended: {min: 8, max: 8}
+  source_lines:
+    - "1 bunch of asparagus ((about 1 lb/454 g), tough ends trimmed)"
+    - "2 tablespoons extra-virgin olive oil"
+    - "¼ teaspoon salt"
+    - "¼ teaspoon freshly ground black pepper"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 61}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: asparagus, name: "Asparagus", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "bunch"}
+          preparation: "tough ends trimmed"
+          note: "about 1 lb/454 g"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 36}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: extra-virgin-olive-oil, name: "Extra-Virgin Olive Oil", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 15}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/4", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 38}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: black-pepper, name: "Black Pepper", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/4", unit: "tsp"}
+          preparation: "freshly ground"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Preheat the oven to 425°F (220°C) and set an oven rack in the middle position. Line a 13 x 18-in (33 x 46-cm) baking sheet with heavy-duty aluminum foil."
+        - "Spread the asparagus in a single layer on the prepared baking sheet. Drizzle with the oil and sprinkle with the salt and pepper. Shake the pan to coat the asparagus evenly."
+        - "Roast the asparagus until crisp-tender, about 6 to 8 minutes, depending on the thickness of the asparagus."
+grocery:
+  - item: asparagus
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: bunch
+    source_lines: [0]
+  - item: extra-virgin-olive-oil
+    section: pantry
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [1]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [2]
+  - item: black-pepper
+    section: spices
+    kind: presence
+    source_lines: [3]

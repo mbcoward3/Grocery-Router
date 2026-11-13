@@ -1,0 +1,104 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check: (1) line 4 "1/2
+  cup sweetened condensed milk Ice to serve" is two ingredients run together: drafted as a
+  compound line with 1/2 cup sweetened condensed milk and intentionally unspecified ice ("to
+  serve" read as "for serving"). Ice is a purchased form, so it stays a shopping item (§5.9). (2)
+  "7 cups cold water" is non-shopping. (3) The lime zest and lime juice lines keep their stated
+  amounts on lime-zest and fresh-lime-juice items, as in the lemon ice case. New grocery items
+  not in the household vocabulary (check name, section, and shopping mode): granulated-sugar,
+  fresh-lime-juice, lime-zest, sweetened-condensed-milk, ice. New store sections: frozen.
+outcome: publish
+categories: [compound]
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Brazilian Lemonade"
+  source:
+    relationship: source
+    attribution: "Natasha's Kitchen"
+    url: https://natashaskitchen.com/brazilian-lemonade-limeade/
+    checked_on: 2026-11-08
+  image_url: https://natashaskitchen.com/wp-content/uploads/2015/06/Brazilian-Lemonade-5.jpg
+  yield: "6"
+  hands_on: {min: 10, max: 10}
+  source_lines:
+    - "7 cups cold water"
+    - "3/4 cup granulated sugar"
+    - "1 cup fresh lime juice (from 5 limes)"
+    - "1 Tbsp lime zest (from 1 of the limes)"
+    - "1/2 cup sweetened condensed milk Ice to serve"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 17}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: water, name: "Water", store_section: {key: non-shopping, name: "Non-shopping"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "7", unit: "cup"}
+          preparation: "cold"
+          non_shopping: true
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 24}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: granulated-sugar, name: "Granulated Sugar", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "3/4", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 37}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: fresh-lime-juice, name: "Fresh Lime Juice", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+          note: "from 5 limes"
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 38}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: lime-zest, name: "Lime Zest", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+          note: "from 1 of the limes"
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 32}}
+          relationship: compound
+          state: resolved
+          grocery_item: {key: sweetened-condensed-milk, name: "Sweetened Condensed Milk", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 33, end: 45}}
+          relationship: compound
+          state: intentionally_unspecified
+          grocery_item: {key: ice, name: "Ice", store_section: {key: frozen, name: "Frozen"}, shopping_mode: measured}
+          quantity: {kind: unspecified}
+          note: "to serve"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Stir together 7 cups cold water with 3/4 cup sugar and set aside."
+        - "Add 1 Tbsp lime zest add juice from 5 limes into your blender jar (it's super fast to juice limes if you have a citrus squeezer like this one). Pour 3 cups of your sugar water into the blender (I only add 3 cups at this time so my blender doesn't splash all over the place)."
+        - "Add 1/2 cup sweetened condensed milk. Blend until smooth and frothy. Stir in remaining sugar water and serve over ice."
+grocery:
+  - item: granulated-sugar
+    section: baking
+    kind: exact
+    amount: 3/4
+    unit: cup
+    source_lines: [1]
+  - item: fresh-lime-juice
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: cup
+    source_lines: [2]
+  - item: lime-zest
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [3]
+  - item: sweetened-condensed-milk
+    section: baking
+    kind: exact
+    amount: 1/2
+    unit: cup
+    source_lines: [4]
+  - item: ice
+    section: frozen
+    kind: unspecified
+    source_lines: [4]

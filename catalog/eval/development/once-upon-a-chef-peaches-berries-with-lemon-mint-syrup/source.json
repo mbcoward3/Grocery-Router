@@ -1,0 +1,173 @@
+{
+  "format_version": 1,
+  "site": "once-upon-a-chef",
+  "url": "https://www.onceuponachef.com/recipes/peaches-berries-with-lemon-mint-syrup.html",
+  "note": "Copied from local ingest.source_nodes id 253 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Peaches & Berries with Lemon-Mint Syrup",
+    "author": {
+      "@id": "https:\/\/www.onceuponachef.com\/#\/schema\/person\/829261b7c0b9b6741e7b06018085d23f"
+    },
+    "description": "Juicy peaches, fresh berries, and a hint of mint make this summer fruit salad a refreshing change of pace from the ordinary!",
+    "datePublished": "2010-06-27T21:08:21+00:00",
+    "image": [
+      "https:\/\/www.onceuponachef.com\/images\/2010\/06\/Peaches-and-Berries.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2010\/06\/Peaches-and-Berries-500x500.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2010\/06\/Peaches-and-Berries-500x375.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2010\/06\/Peaches-and-Berries-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4",
+      "4 to 6"
+    ],
+    "totalTime": "PT15M",
+    "recipeIngredient": [
+      "4 ripe peaches, (pitted and sliced)",
+      "1 cup (½ pint) blueberries",
+      "¼ cup freshly squeezed lemon juice, (from 2 lemons)",
+      "¼ cup sugar",
+      "2 tablespoons chopped fresh mint",
+      "1 cup (½ pint) raspberries",
+      "1 cup (½ pint) pint blackberries"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Combine peaches, blueberries, lemon juice, sugar and mint in a serving bowl and toss. Cover with plastic wrap and refrigerate until ready to serve (up to 6 hours).",
+        "name": "Combine peaches, blueberries, lemon juice, sugar and mint in a serving bowl and toss. Cover with plastic wrap and refrigerate until ready to serve (up to 6 hours).",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/peaches-berries-with-lemon-mint-syrup.html#wprm-recipe-87411-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Right before serving, add raspberries and blackberries and toss gently. Taste and add a bit more sugar if necessary. Garnish with a sprig of fresh mint.",
+        "name": "Right before serving, add raspberries and blackberries and toss gently. Taste and add a bit more sugar if necessary. Garnish with a sprig of fresh mint.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/peaches-berries-with-lemon-mint-syrup.html#wprm-recipe-87411-step-0-1"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "12",
+      "reviewCount": "7"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Such a refreshing and light summer dessert, and so easy to make too! We were just given some freshly picked berries, so we made this with some whipped cream, the lemon &amp; mint syrup was delicious, thanks Jenn 🙂",
+        "author": {
+          "@type": "Person",
+          "name": "Mel"
+        },
+        "datePublished": "2023-01-10"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Excellent dish, we had leftovers the next days and put on your Dutch Baby recipe.\r\nThank you for letting us refresh our taste buds.",
+        "author": {
+          "@type": "Person",
+          "name": "Scott"
+        },
+        "datePublished": "2022-07-25"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is a brilliant way to upgrade a regular old fruit salad!  We ended up spooning (the little we had left) over Jenn's Olive Oil Cake that we served for dessert.",
+        "author": {
+          "@type": "Person",
+          "name": "Terri F"
+        },
+        "datePublished": "2021-08-04"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I have made this recipe several times and it is a wonderful dessert for a hot summer day.  I  substituted fresh Thai basil for the mint and the result was amazing served over coconut gelato.   Thanks again for all your recipes!",
+        "author": {
+          "@type": "Person",
+          "name": "Helen Hess"
+        },
+        "datePublished": "2021-07-10"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "My family loved this.  It was so refreshing and easy to make.  I have been asked to share the recipe and to make it again!",
+        "author": {
+          "@type": "Person",
+          "name": "Shana Gaug"
+        },
+        "datePublished": "2020-08-23"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was so delicious and refreshing. I served with pound cake and vanilla ice cream.  Perfect summer time dessert!",
+        "author": {
+          "@type": "Person",
+          "name": "Amy"
+        },
+        "datePublished": "2020-08-16"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "My family really enjoyed this recipe.  I didn't have raspberries, so just doubled the blueberries.  I don't believe I let it sit long enough in the refrigerator because the mint flavor was uneven - sometimes I tasted it, sometimes not.  Lovely, though and my daughter had to be persuaded to share it with the rest of us.  :)",
+        "author": {
+          "@type": "Person",
+          "name": "Anne Scott"
+        },
+        "datePublished": "2020-06-08"
+      }
+    ],
+    "recipeCategory": [
+      "Breakfast",
+      "Fruit",
+      "Salad"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "peaches and berries",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "109 kcal",
+      "fatContent": "1 g",
+      "carbohydrateContent": "27 g",
+      "proteinContent": "2 g",
+      "sugarContent": "21 g",
+      "fiberContent": "5 g",
+      "sodiumContent": "1 mg",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/www.onceuponachef.com\/recipes\/peaches-berries-with-lemon-mint-syrup.html#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.onceuponachef.com\/recipes\/peaches-berries-with-lemon-mint-syrup.html#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.onceuponachef.com\/recipes\/peaches-berries-with-lemon-mint-syrup.html"
+  }
+}

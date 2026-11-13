@@ -1,0 +1,189 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Check: (1) line 10 "freshly cracked black pepper to taste" is intentionally_unspecified (closed
+  phrase "to taste") on the presence-only black-pepper item. (2) "frozen chopped spinach" keeps
+  the protected descriptor frozen as its own item. (3) "1 28oz. can diced tomatoes" is one 28 oz
+  can (package), not 28 oz by weight. (4) "shaved Parmesan" keeps shaved as preparation on
+  parmesan-cheese. Salt and black pepper map to the presence-only catalog items (spec §5.9, §11
+  default), so the list shows them with no amount even though the requirement keeps it; the
+  household corpus still has them as measured items. New grocery items not in the household
+  vocabulary (check name, section, and shopping mode): vegetable-broth, fettuccine,
+  frozen-chopped-spinach, diced-tomatoes, parmesan-cheese. New store sections: frozen.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Tomato Spinach One Pot Pasta"
+  source:
+    relationship: source
+    attribution: "Budget Bytes"
+    url: https://www.budgetbytes.com/italian-wonderpot/
+    checked_on: 2026-11-08
+  image_url: https://www.budgetbytes.com/wp-content/uploads/2013/05/Italian-Wonderpot-close-1.jpg
+  yield: "6"
+  hands_on: {min: 10, max: 10}
+  unattended: {min: 15, max: 15}
+  source_lines:
+    - "4 cups vegetable broth ($0.52)"
+    - "2 Tbsp olive oil ($0.22)"
+    - "12 oz. fettuccine ($0.75)"
+    - "8 oz. frozen chopped spinach ($0.72)"
+    - "1 28oz. can diced tomatoes ($1.68)"
+    - "1 yellow onion, sliced ($0.42)"
+    - "4 cloves garlic, sliced ($0.32)"
+    - "1/2 Tbsp dried basil ($0.15)"
+    - "1/2 Tbsp dried oregano ($0.15)"
+    - "1/4 tsp crushed red pepper ($0.03)"
+    - "freshly cracked black pepper to taste ($0.05)"
+    - "2 oz. shaved Parmesan ($1.25)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 22}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: vegetable-broth, name: "Vegetable Broth", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "4", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 16}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: olive-oil, name: "Olive Oil", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 17}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: fettuccine, name: "Fettuccine", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "12", unit: "oz"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 28}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: frozen-chopped-spinach, name: "Frozen Chopped Spinach", store_section: {key: frozen, name: "Frozen"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "8", unit: "oz"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 26}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: diced-tomatoes, name: "Diced Tomatoes", store_section: {key: pantry, name: "Pantry"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", package: {type: can, size: "28", unit: oz}}
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 22}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: yellow-onion, name: "Yellow Onion", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "each"}
+          preparation: "sliced"
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 23}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: garlic, name: "Garlic", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "4", unit: "clove"}
+          preparation: "sliced"
+        - provenance: {type: ingredient_line, line: 7, span: {start: 0, end: 20}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: dried-basil, name: "Dried Basil", store_section: {key: spices, name: "Spices"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 8, span: {start: 0, end: 22}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: dried-oregano, name: "Dried Oregano", store_section: {key: spices, name: "Spices"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 9, span: {start: 0, end: 26}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: crushed-red-pepper, name: "Crushed Red Pepper", store_section: {key: spices, name: "Spices"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 10, span: {start: 0, end: 37}}
+          relationship: single
+          state: intentionally_unspecified
+          grocery_item: {key: black-pepper, name: "Black Pepper", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: unspecified}
+          preparation: "freshly cracked"
+          note: "to taste"
+        - provenance: {type: ingredient_line, line: 11, span: {start: 0, end: 21}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: parmesan-cheese, name: "Parmesan Cheese", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "oz"}
+          preparation: "shaved"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Add four cups of vegetable broth to a large pot. Break the fettuccine in half and add it to the pot along with the canned tomatoes (with juices), olive oil, frozen spinach, onion, garlic, basil, oregano, red pepper, and some freshly cracked black pepper."
+        - "Make sure the ingredients are submerged under the liquid, place a lid on top of the pot, and then turn the heat on to high. Allow the pot to come up to a full boil over high heat, then remove the lid and turn the heat down to medium."
+        - "Allow the pot to continue to boil over medium heat, without a lid, for 10-15 minutes, or until the pasta is cooked and most of the liquid has been absorbed. Stir the pot every few minutes as it cooks to prevent the pasta from sticking to the bottom, but avoid over stirring which can cause the pasta to become sticky."
+        - "Sprinkle with shaved Parmesan just before serving."
+grocery:
+  - item: vegetable-broth
+    section: pantry
+    kind: exact
+    amount: "4"
+    unit: cup
+    source_lines: [0]
+  - item: olive-oil
+    section: pantry
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [1]
+  - item: fettuccine
+    section: pantry
+    kind: exact
+    amount: "12"
+    unit: oz
+    source_lines: [2]
+  - item: frozen-chopped-spinach
+    section: frozen
+    kind: exact
+    amount: "8"
+    unit: oz
+    source_lines: [3]
+  - item: diced-tomatoes
+    section: pantry
+    kind: exact
+    amount: "1"
+    package:
+      type: can
+      size: "28"
+      unit: oz
+    source_lines: [4]
+  - item: yellow-onion
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: each
+    source_lines: [5]
+  - item: garlic
+    section: produce
+    kind: exact
+    amount: "4"
+    unit: clove
+    source_lines: [6]
+  - item: dried-basil
+    section: spices
+    kind: exact
+    amount: 1/2
+    unit: tbsp
+    source_lines: [7]
+  - item: dried-oregano
+    section: spices
+    kind: exact
+    amount: 1/2
+    unit: tbsp
+    source_lines: [8]
+  - item: crushed-red-pepper
+    section: spices
+    kind: exact
+    amount: 1/4
+    unit: tsp
+    source_lines: [9]
+  - item: black-pepper
+    section: spices
+    kind: presence
+    source_lines: [10]
+  - item: parmesan-cheese
+    section: dairy
+    kind: exact
+    amount: "2"
+    unit: oz
+    source_lines: [11]

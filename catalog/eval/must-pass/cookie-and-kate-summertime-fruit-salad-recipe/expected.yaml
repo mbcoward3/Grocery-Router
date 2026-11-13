@@ -1,0 +1,127 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Check: (1) "1 heaping tablespoon fresh, chopped basil or mint" takes basil, the first option;
+  the steps name basil only, so it is coherent; "heaping" is kept as a note, not as a changed
+  amount. (2) "maple syrup or honey" takes maple syrup; the steps name maple syrup. (3) "6 ounces
+  (1 cup) blueberries" is equivalent: 6 oz with 1 cup as a note. (4) "lemon juice (about 1 medium
+  lemon)" is 2 tbsp of lemon-juice; the lemon count stays a note (purchase-unit conversion is out
+  of scope). New grocery items not in the household vocabulary (check name, section, and shopping
+  mode): strawberries, peaches, blueberries, fresh-basil, lemon-juice, maple-syrup,
+  balsamic-vinegar.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Summertime Fruit Salad"
+  source:
+    relationship: source
+    attribution: "Cookie and Kate"
+    url: https://cookieandkate.com/summertime-fruit-salad-recipe/
+    checked_on: 2026-11-08
+  image_url: https://cookieandkate.com/images/2016/08/summertime-fruit-salad-1-225x225.jpg
+  yield: "6"
+  hands_on: {min: 15, max: 15}
+  source_lines:
+    - "1 pound strawberries, hulled and thinly sliced"
+    - "3 medium peaches, thinly sliced (I peeled mine, but if you don&#8217;t mind the skin, you can leave it on)"
+    - "6 ounces (1 cup) blueberries"
+    - "1 heaping tablespoon fresh, chopped basil or mint"
+    - "2 tablespoons lemon juice (about 1 medium lemon)"
+    - "1 tablespoon maple syrup or honey"
+    - "2 teaspoons balsamic vinegar"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 46}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: strawberries, name: "Strawberries", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "lb"}
+          preparation: "hulled and thinly sliced"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 106}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: peaches, name: "Peaches", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "3", unit: "each"}
+          preparation: "thinly sliced"
+          note: "medium"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 28}}
+          relationship: equivalent
+          state: resolved
+          grocery_item: {key: blueberries, name: "Blueberries", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "6", unit: "oz"}
+          note: "1 cup"
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 41}}
+          relationship: alternative
+          state: resolved
+          grocery_item: {key: fresh-basil, name: "Fresh Basil", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+          preparation: "chopped"
+          note: "heaping; or mint"
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 48}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: lemon-juice, name: "Lemon Juice", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+          note: "about 1 medium lemon"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 24}}
+          relationship: alternative
+          state: resolved
+          grocery_item: {key: maple-syrup, name: "Maple Syrup", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+          note: "or honey"
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 28}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: balsamic-vinegar, name: "Balsamic Vinegar", store_section: {key: condiments, name: "Condiments"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tsp"}
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "In a medium serving bowl, combine the strawberries, peaches, blueberries and basil. Drizzle the lemon juice, maple syrup and balsamic vinegar on top. Gently toss to combine."
+        - "Serve immediately, or chill for later. This salad is best enjoyed promptly, but will keep well for about 2 days in the refrigerator (pour off excess juices if necessary)."
+grocery:
+  - item: strawberries
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: lb
+    source_lines: [0]
+  - item: peaches
+    section: produce
+    kind: exact
+    amount: "3"
+    unit: each
+    source_lines: [1]
+  - item: blueberries
+    section: produce
+    kind: exact
+    amount: "6"
+    unit: oz
+    source_lines: [2]
+  - item: fresh-basil
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [3]
+  - item: lemon-juice
+    section: produce
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [4]
+  - item: maple-syrup
+    section: pantry
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [5]
+  - item: balsamic-vinegar
+    section: condiments
+    kind: exact
+    amount: "2"
+    unit: tsp
+    source_lines: [6]

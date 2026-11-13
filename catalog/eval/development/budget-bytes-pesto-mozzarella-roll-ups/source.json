@@ -1,0 +1,138 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/pesto-mozzarella-roll-ups/",
+  "note": "Copied from local ingest.source_nodes id 13 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Pesto Mozzarella Roll Ups",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Pesto mozzarella roll ups combine melty mozzarella cheese and flavorful basil pesto rolled up in a flour tortilla then baked to perfection!",
+    "datePublished": "2022-06-11T15:07:39+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Pesto-Mozzarella-Roll-Ups-stack.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Pesto-Mozzarella-Roll-Ups-stack-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Pesto-Mozzarella-Roll-Ups-stack-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/06\/Pesto-Mozzarella-Roll-Ups-stack-480x270.jpg"
+    ],
+    "recipeYield": [
+      "8",
+      "8 roll ups"
+    ],
+    "prepTime": "PT15M",
+    "cookTime": "PT15M",
+    "totalTime": "PT30M",
+    "recipeIngredient": [
+      "8 8-inch flour tortillas ($2.23)",
+      "4 Tbsp basil pesto ($1.00)",
+      "4 pieces mozzarella string cheese ($1.00)",
+      "1 Tbsp cooking oil ($0.04)",
+      "1\/4 cup mayonnaise ($0.29)",
+      "1 Tbsp tomato paste ($0.07)",
+      "1 clove garlic, minced ($0.08)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Preheat the oven to 400ºF. Stack the tortillas on a plate and cover with a damp paper towel. Microwave for 30 seconds to soften the tortillas.",
+        "name": "Preheat the oven to 400ºF. Stack the tortillas on a plate and cover with a damp paper towel. Microwave for 30 seconds to soften the tortillas.",
+        "url": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#wprm-recipe-66533-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Slice the string cheese in half length-wise. Spread ½ Tbsp pesto over the lower half of each tortilla, staying away from the edges. Place one piece of mozzarella on top of each.",
+        "name": "Slice the string cheese in half length-wise. Spread ½ Tbsp pesto over the lower half of each tortilla, staying away from the edges. Place one piece of mozzarella on top of each.",
+        "url": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#wprm-recipe-66533-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Fold the sides of the tortilla in on top of the cheese, then begin rolling up from the bottom until the cheese is completely rolled up in the tortilla.",
+        "name": "Fold the sides of the tortilla in on top of the cheese, then begin rolling up from the bottom until the cheese is completely rolled up in the tortilla.",
+        "url": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#wprm-recipe-66533-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Place the roll ups on a parchment-lined baking sheet, seam side down. Brush the roll ups with a light coating of cooking oil.",
+        "name": "Place the roll ups on a parchment-lined baking sheet, seam side down. Brush the roll ups with a light coating of cooking oil.",
+        "url": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#wprm-recipe-66533-step-0-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Bake the roll ups in the preheated oven for about 13 minutes, or until they&#39;re lightly golden brown on the edges and the cheese is melted.",
+        "name": "Bake the roll ups in the preheated oven for about 13 minutes, or until they&#39;re lightly golden brown on the edges and the cheese is melted.",
+        "url": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#wprm-recipe-66533-step-0-4"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "While the roll ups are in the oven, prepare the creamy tomato dip. Stir together the mayonnaise, tomato paste, and minced garlic.",
+        "name": "While the roll ups are in the oven, prepare the creamy tomato dip. Stir together the mayonnaise, tomato paste, and minced garlic.",
+        "url": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#wprm-recipe-66533-step-0-5"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Let the roll ups cool just enough to handle, then serve with the creamy tomato dip.",
+        "name": "Let the roll ups cool just enough to handle, then serve with the creamy tomato dip.",
+        "url": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#wprm-recipe-66533-step-0-6"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "2",
+      "reviewCount": "2"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "you could try reheating in a pan with a little oil!",
+        "author": {
+          "@type": "Person",
+          "name": "Gib"
+        },
+        "datePublished": "2022-12-15"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Pignoli ARE expensive - I've used toasted sunflower seeds and no one notices the difference. Great recipe - simple but classic &amp; delicious. Next time I'll add thin pepperoni!",
+        "author": {
+          "@type": "Person",
+          "name": "mich"
+        },
+        "datePublished": "2022-07-13"
+      }
+    ],
+    "recipeCategory": [
+      "Appetizer",
+      "Snack"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Cheese Stick, Mozzarella Stick",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1 roll up",
+      "calories": "226 kcal",
+      "carbohydrateContent": "16 g",
+      "proteinContent": "6 g",
+      "fatContent": "15 g",
+      "sodiumContent": "461 mg",
+      "fiberContent": "1 g"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/pesto-mozzarella-roll-ups\/"
+  }
+}

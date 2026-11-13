@@ -1,0 +1,178 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/bacon-caramelized-pineapple-pizza/",
+  "note": "Copied from local ingest.source_nodes id 180 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Bacon Pizza with Caramelized Pineapple",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Bacon and Caramelized Pineapple Pizza is everything your sweet and salty dreams are made of.",
+    "datePublished": "2016-05-23T18:35:10+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2016\/05\/Bacon-and-Caramelized-Bacon-Pizza-cooked-1.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2016\/05\/Bacon-and-Caramelized-Bacon-Pizza-cooked-1-500x480.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2016\/05\/Bacon-and-Caramelized-Bacon-Pizza-cooked-1-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2016\/05\/Bacon-and-Caramelized-Bacon-Pizza-cooked-1-480x270.jpg"
+    ],
+    "recipeYield": [
+      "8",
+      "8 slices"
+    ],
+    "prepTime": "PT10M",
+    "cookTime": "PT25M",
+    "totalTime": "PT35M",
+    "recipeIngredient": [
+      "3 oz. bacon* ($0.88)",
+      "8 oz. can pineapple chunks in juice ($1.09)",
+      "1 Tbsp brown sugar ($0.04)",
+      "1 large pizza dough** ($0.59)",
+      "1\/2 cup pizza sauce ($0.43)",
+      "4 oz. shredded Monterrey Jack cheese ($1.25)",
+      "2 green onions ($0.17)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Slice the bacon into one-inch pieces. Cook in a large skillet over medium heat until crisp and brown on the edges, but still slightly soft in the center (about 5 minutes). The bacon will finish cooking on the pizza. Transfer the bacon to a paper towel lined plate and pour off most of the bacon grease from the skillet.",
+        "name": "Slice the bacon into one-inch pieces. Cook in a large skillet over medium heat until crisp and brown on the edges, but still slightly soft in the center (about 5 minutes). The bacon will finish cooking on the pizza. Transfer the bacon to a paper towel lined plate and pour off most of the bacon grease from the skillet.",
+        "url": "https:\/\/www.budgetbytes.com\/bacon-caramelized-pineapple-pizza\/#wprm-recipe-30759-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Drain the canned pineapple well. Cut the chunks in half to make smaller pieces. Add the pineapple chunks to the skillet along with the brown sugar. Sauté over medium heat until the pineapple gets brown and sticky on the edges (about 5 minutes). Remove from the heat.",
+        "name": "Drain the canned pineapple well. Cut the chunks in half to make smaller pieces. Add the pineapple chunks to the skillet along with the brown sugar. Sauté over medium heat until the pineapple gets brown and sticky on the edges (about 5 minutes). Remove from the heat.",
+        "url": "https:\/\/www.budgetbytes.com\/bacon-caramelized-pineapple-pizza\/#wprm-recipe-30759-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Preheat the oven to 450ºF. Stretch the pizza dough to fit a 14 inch pizza pan. Spread the sauce over the surface of the dough. Sprinkle the shredded Monterrey Jack cheese over the sauce. Finally, top the pizza with the cooked bacon and caramelized pineapple pieces.",
+        "name": "Preheat the oven to 450ºF. Stretch the pizza dough to fit a 14 inch pizza pan. Spread the sauce over the surface of the dough. Sprinkle the shredded Monterrey Jack cheese over the sauce. Finally, top the pizza with the cooked bacon and caramelized pineapple pieces.",
+        "url": "https:\/\/www.budgetbytes.com\/bacon-caramelized-pineapple-pizza\/#wprm-recipe-30759-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Bake the pizza for about 15 minutes, or until the crust is golden brown and the cheese is bubbly on top. After removing the pizza from the oven, top with sliced green onions, cut into eight pieces, then serve.",
+        "name": "Bake the pizza for about 15 minutes, or until the crust is golden brown and the cheese is bubbly on top. After removing the pizza from the oven, top with sliced green onions, cut into eight pieces, then serve.",
+        "url": "https:\/\/www.budgetbytes.com\/bacon-caramelized-pineapple-pizza\/#wprm-recipe-30759-step-0-3"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.67",
+      "ratingCount": "9",
+      "reviewCount": "7"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Tried it again! Still a family pleaser! Even my 5 year old who swears she doesn't like toppings. She tried to pick off the pineapple and I asked her please to just try it as is. She did and she loved it!",
+        "author": {
+          "@type": "Person",
+          "name": "Nicole S"
+        },
+        "datePublished": "2021-12-31"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Would this work on English muffins? Those English muffin pizzas are great. ",
+        "author": {
+          "@type": "Person",
+          "name": "Julie"
+        },
+        "datePublished": "2020-10-20"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Tried this again today with my new pizza pan. It is only 12 inches and not perforated but it's dimpled and I got perfectly crisp crust edge to edge. This pizza is amazing.",
+        "author": {
+          "@type": "Person",
+          "name": "Nicole S"
+        },
+        "datePublished": "2020-08-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Once again, Beth, you knocked it out of the park. I used your suggestion on the crust. I did roll it because I didn't want to take the time to hand stretch it. But it still came out delicious. I am going to buy a perforated round pan in hopes of getting a crisper center but the edges were perfect and the flavors were delicious. I did make my own sauce using a different recipe. I also used mozzarella because I needed it gone and didn't have Monterey Jack. Thank you so much. This is fantastic and I feel so proud of myself for making such a pretty and delicious meal from scratch!!",
+        "author": {
+          "@type": "Person",
+          "name": "Nicole S"
+        },
+        "datePublished": "2020-05-29"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Made this with my boyfriend and it was super fun, and went over great with my family!",
+        "author": {
+          "@type": "Person",
+          "name": "Lily"
+        },
+        "datePublished": "2019-05-04"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "What size approximately is your pizza? When I split the dough into 2 balls as you suggest it looks a lot thinner than the crust in your picture. Did you still split the dough for this recipe?\r\n\r\nThis is a great pizza though, the dough is easy to make and the pizza has been a hit with the family.",
+        "author": {
+          "@type": "Person",
+          "name": "Jesse"
+        },
+        "datePublished": "2016-06-18"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I made this and it was freaking amazing! I tried the jalepenos on top and it was a huge hit with my spicy food loving boyfriend (and me). I did mine in a rectangular pan because I once again forgot to buy a pizza pan, still delicious :)",
+        "author": {
+          "@type": "Person",
+          "name": "LIsa"
+        },
+        "datePublished": "2016-06-08"
+      }
+    ],
+    "keywords": "Bacon Pizza Recipe, Homemade Pizza, Pineapple Pizza Recipe",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1 Serving",
+      "calories": "263.76 kcal",
+      "carbohydrateContent": "32.86 g",
+      "proteinContent": "10.39 g",
+      "fatContent": "10.6 g",
+      "fiberContent": "1.56 g",
+      "sodiumContent": "513.41 mg"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/bacon-caramelized-pineapple-pizza\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/bacon-caramelized-pineapple-pizza\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/bacon-caramelized-pineapple-pizza\/"
+  }
+}

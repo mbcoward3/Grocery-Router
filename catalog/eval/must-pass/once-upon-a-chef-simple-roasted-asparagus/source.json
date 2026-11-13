@@ -1,0 +1,216 @@
+{
+  "format_version": 1,
+  "site": "once-upon-a-chef",
+  "url": "https://www.onceuponachef.com/recipes/simple-roasted-asparagus.html",
+  "note": "Copied from local ingest.source_nodes id 217 (page fetched 2026-11-08, JSON-LD location /@graph/10); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Simple Roasted Asparagus",
+    "author": {
+      "@id": "https:\/\/www.onceuponachef.com\/#\/schema\/person\/d09ca52c9e790675f71c46404845af62"
+    },
+    "description": "Whip up roasted asparagus in minutes—this simple recipe for tender, crisp spears with golden, caramelized tips is perfect every time.",
+    "datePublished": "2024-03-21T12:11:02+00:00",
+    "image": [
+      "https:\/\/www.onceuponachef.com\/images\/2022\/04\/roasted-asparagus-scaled.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2022\/04\/roasted-asparagus-scaled-500x500.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2022\/04\/roasted-asparagus-scaled-500x375.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2022\/04\/roasted-asparagus-scaled-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4"
+    ],
+    "prepTime": "PT7M",
+    "cookTime": "PT8M",
+    "totalTime": "PT15M",
+    "recipeIngredient": [
+      "1 bunch of asparagus ((about 1 lb\/454 g), tough ends trimmed)",
+      "2 tablespoons extra-virgin olive oil",
+      "¼ teaspoon salt",
+      "¼ teaspoon freshly ground black pepper"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Preheat the oven to 425°F (220°C) and set an oven rack in the middle position. Line a 13 x 18-in (33 x 46-cm) baking sheet with heavy-duty aluminum foil.",
+        "name": "Preheat the oven to 425°F (220°C) and set an oven rack in the middle position. Line a 13 x 18-in (33 x 46-cm) baking sheet with heavy-duty aluminum foil.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/simple-roasted-asparagus.html#wprm-recipe-88626-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Spread the asparagus in a single layer on the prepared baking sheet. Drizzle with the oil and sprinkle with the salt and pepper. Shake the pan to coat the asparagus evenly.",
+        "name": "Spread the asparagus in a single layer on the prepared baking sheet. Drizzle with the oil and sprinkle with the salt and pepper. Shake the pan to coat the asparagus evenly.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/simple-roasted-asparagus.html#wprm-recipe-88626-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Roast the asparagus until crisp-tender, about 6 to 8 minutes, depending on the thickness of the asparagus.",
+        "name": "Roast the asparagus until crisp-tender, about 6 to 8 minutes, depending on the thickness of the asparagus.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/simple-roasted-asparagus.html#wprm-recipe-88626-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "10",
+      "reviewCount": "10"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Easy and delish! I served it for hubby's birthday dinner along with your Restaurant-Style Pan Seared Salmon, and Fettuccini Alfredo. He was very happy :)",
+        "author": {
+          "@type": "Person",
+          "name": "Gretha"
+        },
+        "datePublished": "2026-04-23"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This recipe was great!! Will never cook asparagus any different than this.",
+        "author": {
+          "@type": "Person",
+          "name": "Kim C."
+        },
+        "datePublished": "2025-03-28"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Easy and delicious! Made this as a side to Jenn’s Salmon with honey mustard and pecan panko crust.",
+        "author": {
+          "@type": "Person",
+          "name": "Sandra H"
+        },
+        "datePublished": "2025-01-26"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I like to grate a little Parmesan over the asparagus when it is done in the oven, but really, this recipe is perfect as-is!",
+        "author": {
+          "@type": "Person",
+          "name": "Rebecca"
+        },
+        "datePublished": "2024-05-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This recipe is a huge favorite of my family.  Roasted asparagus is a whole new level of delicious flavor.  And so simple to make.  Serve with your meal and I guarantee every bite will be gone!!\r\nDiane",
+        "author": {
+          "@type": "Person",
+          "name": "Diane"
+        },
+        "datePublished": "2024-04-18"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Asparagus walk a fine line between over and under cooked.  This recipe fixed that problem for me.   Delicious!",
+        "author": {
+          "@type": "Person",
+          "name": "Elizabeth"
+        },
+        "datePublished": "2022-12-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "We made this roasted asparagus tonight and it was yum delicious and super easy to make.  Our kids, who are usually just OK about asparagus, finished all, even though I cooked two bunches for leftovers.  No leftovers tonight -- definitely a keeper.  Thank you, Jen!",
+        "author": {
+          "@type": "Person",
+          "name": "Nataliya"
+        },
+        "datePublished": "2022-09-14"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Great recipe, chef clearly understands the ingredient extremely well. Simple recipe, but I appreciate all the additional information.",
+        "author": {
+          "@type": "Person",
+          "name": "Corrine"
+        },
+        "datePublished": "2022-07-26"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Perfect side dish with your roast beef  tenderloin recipe and make ahead mashed potatoes.  My guests loved it all and I always give your site full credit for recipes!     I do have a request.  I am trying to find a recipe for breaded fried asparagus and a dip to go with it.   I’ve had before in restaurant and thought they were perfect appetizer.",
+        "author": {
+          "@type": "Person",
+          "name": "Jennie"
+        },
+        "datePublished": "2022-05-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "perfect temperature and timing for asparagus with a little crunch...just the way I like them;\r\nmakes a good snack cold",
+        "author": {
+          "@type": "Person",
+          "name": "Carol J Winkelman"
+        },
+        "datePublished": "2022-04-23"
+      }
+    ],
+    "recipeCategory": [
+      "Side Dish",
+      "Vegetables and Sides"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "roasted asparagus",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "72 kcal",
+      "fatContent": "7 g",
+      "carbohydrateContent": "2 g",
+      "proteinContent": "1 g",
+      "saturatedFatContent": "1 g",
+      "sugarContent": "1 g",
+      "fiberContent": "1 g",
+      "sodiumContent": "147 mg",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/www.onceuponachef.com\/recipes\/simple-roasted-asparagus.html#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.onceuponachef.com\/recipes\/simple-roasted-asparagus.html#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.onceuponachef.com\/recipes\/simple-roasted-asparagus.html"
+  }
+}

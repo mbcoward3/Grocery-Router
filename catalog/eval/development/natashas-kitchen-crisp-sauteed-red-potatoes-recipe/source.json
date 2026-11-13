@@ -1,0 +1,140 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/crisp-sauteed-red-potatoes-recipe/",
+  "note": "Copied from local ingest.source_nodes id 359 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Crisp Sautéed Red Potatoes Recipe",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "I love new baby red potatoes. They're simple to prepare and you don't need much to make them delicious. You don't even need to bother with peeling the skin. Actually the thin skins are delicious; crisp with a sprinkling of course salt. Mmmm.",
+    "datePublished": "2014-05-01T09:45:02+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/05\/Crisp-SautC3A9ed-Red-Potatoes-4.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/05\/Crisp-SautC3A9ed-Red-Potatoes-4-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/05\/Crisp-SautC3A9ed-Red-Potatoes-4-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/05\/Crisp-SautC3A9ed-Red-Potatoes-4-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4"
+    ],
+    "prepTime": "PT5M",
+    "cookTime": "PT20M",
+    "totalTime": "PT25M",
+    "recipeIngredient": [
+      "1 1\/2 lbs small red potatoes (cut in half or quartered to make 3\/4-inch thick pieces)",
+      "1 Tbsp unsalted butter",
+      "2 Tbsp olive oil",
+      "Salt (preferably kosher or sea salt, to taste)",
+      "Black pepper (freshly ground, to taste)",
+      "2 Tbsp chives or green onion (chopped, plus more to garnish)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Heat a large skillet over medium heat and add 1 Tbsp butter and 2 Tbsp olive oil. Once butter is melted and hot, arrange potatoes in the skillet, cut-side-down in one layer. Cook uncovered and undisturbed 8-10 minutes or until golden brown crust forms on the bottoms.",
+        "name": "Heat a large skillet over medium heat and add 1 Tbsp butter and 2 Tbsp olive oil. Once butter is melted and hot, arrange potatoes in the skillet, cut-side-down in one layer. Cook uncovered and undisturbed 8-10 minutes or until golden brown crust forms on the bottoms.",
+        "url": "https:\/\/natashaskitchen.com\/crisp-sauteed-red-potatoes-recipe\/#wprm-recipe-54775-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Turn potatoes then cover and cook another 5 minutes or until golden brown on the second side, you'll hear it spit and splatter under the lid; just be careful when you first lift of the lid as juices from the lid can dribble into the pan and splatter. Keep the wee ones away from the stove. In hind sight, a dutch oven with taller walls might have been a better choice to cook these.",
+        "name": "Turn potatoes then cover and cook another 5 minutes or until golden brown on the second side, you'll hear it spit and splatter under the lid; just be careful when you first lift of the lid as juices from the lid can dribble into the pan and splatter. Keep the wee ones away from the stove. In hind sight, a dutch oven with taller walls might have been a better choice to cook these.",
+        "url": "https:\/\/natashaskitchen.com\/crisp-sauteed-red-potatoes-recipe\/#wprm-recipe-54775-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Turn the potatoes again, cover and cook another 5 minutes or until you can easily pierce potatoes with a knife. Remove from heat and sprinkle with salt &amp; pepper (I used about 3\/4 tsp salt and 1\/8 tsp pepper), toss with 2 Tbsp chives. Sprinkle with more fresh chives just before serving and enjoy.",
+        "name": "Turn the potatoes again, cover and cook another 5 minutes or until you can easily pierce potatoes with a knife. Remove from heat and sprinkle with salt &amp; pepper (I used about 3\/4 tsp salt and 1\/8 tsp pepper), toss with 2 Tbsp chives. Sprinkle with more fresh chives just before serving and enjoy.",
+        "url": "https:\/\/natashaskitchen.com\/crisp-sauteed-red-potatoes-recipe\/#wprm-recipe-54775-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.78",
+      "ratingCount": "22",
+      "reviewCount": "5"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I followed the cooking directions exactly but at the end, I made a change. I cut the heat added another tablespoon of butter,  some minced garlic and shallot along with fresh rosemary, salt &amp; pepper &amp; gave a toss. It wad perfection!",
+        "author": {
+          "@type": "Person",
+          "name": "Rosena"
+        },
+        "datePublished": "2025-01-16"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "I would say this is a great recipe I didn’t have any onion or chives, so I just use like a garlic an herb seasoning and I would say about four minutes for the second and third round would be a preferred time as five tends to be too long and they get a little overdone .",
+        "author": {
+          "@type": "Person",
+          "name": "Sadie"
+        },
+        "datePublished": "2024-03-17"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "These are excellent!  I didn’t have any onions or chives, but I did have Penzy’s  “Justice” seasoning which is similar in taste and I sprinkled it liberally on the potatoes and they were delicious.  The potatoes were perfectly cooked and this side was a hit!",
+        "author": {
+          "@type": "Person",
+          "name": "Kristine S"
+        },
+        "datePublished": "2022-06-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Fantastic recipe!\r\n\r\nInstead of butter, I used a generous spoon of high-quality ghee and it took the flavor to a whole new level. \r\n\r\nThanks, Natasha!",
+        "author": {
+          "@type": "Person",
+          "name": "Natalia Stefanova"
+        },
+        "datePublished": "2019-07-23"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Delicious! Cooked exactly like you said! After it was done I sprinkled it with vegan Parmesan cheese (homemade - cashews, nutritional yeast, garlic salt) and it then made it out-of-this-world delicious!! Yum!",
+        "author": {
+          "@type": "Person",
+          "name": "Nina Swanson"
+        },
+        "datePublished": "2018-07-30"
+      }
+    ],
+    "recipeCategory": [
+      "Side Dish"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Sautéed Red Potatoes",
+    "@id": "https:\/\/natashaskitchen.com\/crisp-sauteed-red-potatoes-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/crisp-sauteed-red-potatoes-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/crisp-sauteed-red-potatoes-recipe\/"
+  }
+}

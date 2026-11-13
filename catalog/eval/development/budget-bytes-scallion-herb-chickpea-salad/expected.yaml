@@ -1,0 +1,134 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. The last step suggests
+  serving "over a bed of greens, between two slices of bread, in a pita, or wrapped in a
+  tortilla". Those are serving suggestions, not ingredients, so this is drafted to publish; a
+  detector that rejects it here is a false rejection worth measuring (§5.6). Decide whether you
+  agree. New grocery items not in the household vocabulary (check name, section, and shopping
+  mode): avocados, greek-yogurt, lemon-juice, fresh-cilantro, green-onions, chickpeas.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Scallion Herb Chickpea Salad"
+  source:
+    relationship: source
+    attribution: "Budget Bytes"
+    url: https://www.budgetbytes.com/scallion-herb-chickpea-salad/
+    checked_on: 2026-11-08
+  image_url: https://www.budgetbytes.com/wp-content/uploads/2019/03/Scallion-Herb-Chickpea-Salad-Sandwich-hand.jpg
+  yield: "2"
+  hands_on: {min: 10, max: 10}
+  source_lines:
+    - "1 avocado ($0.79)"
+    - "1/2 cup Greek yogurt ($0.44)"
+    - "1 tsp lemon juice ($0.04)"
+    - "1/4 tsp salt ($0.02)"
+    - "1/4 cup chopped fresh parsley ($0.25)"
+    - "1/4 cup chopped fresh cilantro ($0.20)"
+    - "1/4 cup sliced scallions (about two) ($0.23)"
+    - "1 15oz. can chickpeas ($0.49)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 9}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: avocados, name: "Avocados", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "each"}
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 20}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: greek-yogurt, name: "Greek Yogurt", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 17}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: lemon-juice, name: "Lemon Juice", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 12}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/4", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 29}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: fresh-parsley, name: "Fresh Parsley", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+          preparation: "chopped"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 30}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: fresh-cilantro, name: "Fresh Cilantro", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+          preparation: "chopped"
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 36}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: green-onions, name: "Green Onions", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+          preparation: "sliced"
+          note: "about two"
+        - provenance: {type: ingredient_line, line: 7, span: {start: 0, end: 21}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: chickpeas, name: "Chickpeas", store_section: {key: pantry, name: "Pantry"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", package: {type: can, size: "15", unit: oz}}
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Place the avocado, yogurt, lemon juice, salt, parsley, cilantro, and scallions in a bowl. Mash the ingredients together until combined. It's okay if the avocado is a bit chunky still."
+        - "Drain the can of chickpeas, then add them to the bowl with the avocado dressing. Stir and mash the chickpeas into the dressing. Taste the salad and add salt if needed."
+        - "Serve the salad over a bed of greens, between two slices of bread, in a pita, or wrapped in a tortilla."
+grocery:
+  - item: avocados
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: each
+    source_lines: [0]
+  - item: greek-yogurt
+    section: dairy
+    kind: exact
+    amount: 1/2
+    unit: cup
+    source_lines: [1]
+  - item: lemon-juice
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: tsp
+    source_lines: [2]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [3]
+  - item: fresh-parsley
+    section: produce
+    kind: exact
+    amount: 1/4
+    unit: cup
+    source_lines: [4]
+  - item: fresh-cilantro
+    section: produce
+    kind: exact
+    amount: 1/4
+    unit: cup
+    source_lines: [5]
+  - item: green-onions
+    section: produce
+    kind: exact
+    amount: 1/4
+    unit: cup
+    source_lines: [6]
+  - item: chickpeas
+    section: pantry
+    kind: exact
+    amount: "1"
+    package:
+      type: can
+      size: "15"
+      unit: oz
+    source_lines: [7]

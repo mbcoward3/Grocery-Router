@@ -1,0 +1,13 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject: "2
+  cups cooked rice*" points at a missing footnote. Without the asterisk it would still need a
+  decision: cooked rice is a component, and cooked is a protected descriptor.
+outcome: reject
+categories: [non_shopping]
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [missing_note_dependency]

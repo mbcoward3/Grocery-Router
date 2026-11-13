@@ -1,0 +1,16 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Expected to reject with instruction_ingredient_discrepancy: step 2 says "swirl in 4 Tbsp
+  cooking oil (I used extra light olive oil ...)" and no source line names oil. This is the
+  quantified mention fixture. Also check line 1 "2 cups 1/2 lb peeled and thick sliced or baby
+  carrots" (an equivalent and an alternative together) and line 4 "1/2 head of garlic (6 cloves,
+  pressed)".
+outcome: reject
+categories: [alternative]
+instructions_complete: true
+instructions_note: >-
+  Complete apart from the unlisted oil.
+reject:
+  codes: [instruction_ingredient_discrepancy]

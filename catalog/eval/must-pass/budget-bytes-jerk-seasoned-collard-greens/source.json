@@ -1,0 +1,155 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/jerk-seasoned-collard-greens/",
+  "note": "Copied from local ingest.source_nodes id 109 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Jerk Seasoned Collard Greens",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Sweet, spicy, and savory, these Jerk Seasoned Collard Greens are a hearty and flavorful side dish that also makes great leftovers!",
+    "datePublished": "2020-07-07T21:17:47+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/07\/Jerk-Seasoned-Collard-Greens-plate.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/07\/Jerk-Seasoned-Collard-Greens-plate-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/07\/Jerk-Seasoned-Collard-Greens-plate-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/07\/Jerk-Seasoned-Collard-Greens-plate-480x270.jpg"
+    ],
+    "recipeYield": [
+      "8",
+      "8 ¾ cup each"
+    ],
+    "prepTime": "PT5M",
+    "cookTime": "PT35M",
+    "totalTime": "PT40M",
+    "recipeIngredient": [
+      "1 yellow onion ($0.32)",
+      "1 clove garlic ($0.16)",
+      "1 Tbsp cooking oil ($0.04)",
+      "2 tsp jerk seasoning ($0.20)",
+      "1\/2 cup orange juice ($0.52)",
+      "3 cups chicken broth ($0.36)",
+      "1 lb. chopped collard greens ($2.50)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Slice the onion and mince the garlic. Add the onion, garlic, and cooking oil to a large pot. Sauté the onion and garlic over medium heat until the onions are soft and translucent (about 5 minutes).",
+        "name": "Slice the onion and mince the garlic. Add the onion, garlic, and cooking oil to a large pot. Sauté the onion and garlic over medium heat until the onions are soft and translucent (about 5 minutes).",
+        "url": "https:\/\/www.budgetbytes.com\/jerk-seasoned-collard-greens\/#wprm-recipe-50538-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the jerk seasoning, orange juice, chicken broth, and collard greens to the pot. Stir to combine. Place a lid on the pot, turn the heat up to medium-high, and allow the broth to come up to a boil.",
+        "name": "Add the jerk seasoning, orange juice, chicken broth, and collard greens to the pot. Stir to combine. Place a lid on the pot, turn the heat up to medium-high, and allow the broth to come up to a boil.",
+        "url": "https:\/\/www.budgetbytes.com\/jerk-seasoned-collard-greens\/#wprm-recipe-50538-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Once boiling, turn the heat down to medium-low and let the collard greens simmer, stirring occasionally, until they are tender (about 30 minutes, or to your liking). Keep the lid in place when not stirring. Serve hot.",
+        "name": "Once boiling, turn the heat down to medium-low and let the collard greens simmer, stirring occasionally, until they are tender (about 30 minutes, or to your liking). Keep the lid in place when not stirring. Serve hot.",
+        "url": "https:\/\/www.budgetbytes.com\/jerk-seasoned-collard-greens\/#wprm-recipe-50538-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.2",
+      "ratingCount": "5",
+      "reviewCount": "5"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I make this all the time and generally eat it for breakfast. Spoon the broth over some rice, and pair with chorizo (or soyrizo) and fried egg. \r\n\r\nThe dish is flexible. I sub kale when collard greens aren’t available. Other times I throw a chopped tomato in there and it reminds me of Filipino sinigang over rice. And to appease my on and off veganism, I make it with vegetable broth and it still tastes great.",
+        "author": {
+          "@type": "Person",
+          "name": "Ari"
+        },
+        "datePublished": "2022-08-16"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "1"
+        },
+        "reviewBody": "Ruined two pounds of good greens . Mixing collards and jerk seasoning is an insult to a good southern dish . Not good by any definition of the word .",
+        "author": {
+          "@type": "Person",
+          "name": "Robert Delacroix"
+        },
+        "datePublished": "2021-09-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I am looking for other ways to cook veggies which can be great to my taste, I'm glad I found this one, it looks so delicious",
+        "author": {
+          "@type": "Person",
+          "name": "Macros"
+        },
+        "datePublished": "2020-07-23"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Super delicious! Made yesterday to bring to a friend’s for dinner.",
+        "author": {
+          "@type": "Person",
+          "name": "Caryln"
+        },
+        "datePublished": "2020-07-10"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I will look forward to making this dish!!",
+        "author": {
+          "@type": "Person",
+          "name": "Tanya"
+        },
+        "datePublished": "2020-07-09"
+      }
+    ],
+    "recipeCategory": [
+      "Dinner",
+      "Side Dish"
+    ],
+    "recipeCuisine": [
+      "American",
+      "Caribbean",
+      "Southern"
+    ],
+    "keywords": "Collard Greens, Jerk Seasoning, Side Dish",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "0.75 cup",
+      "calories": "51.94 kcal",
+      "carbohydrateContent": "7.43 g",
+      "proteinContent": "2.46 g",
+      "fatContent": "2.15 g",
+      "sodiumContent": "385.44 mg",
+      "fiberContent": "2.65 g"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/jerk-seasoned-collard-greens\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/jerk-seasoned-collard-greens\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/jerk-seasoned-collard-greens\/"
+  }
+}

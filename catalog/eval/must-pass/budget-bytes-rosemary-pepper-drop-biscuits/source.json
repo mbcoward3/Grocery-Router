@@ -1,0 +1,217 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/rosemary-pepper-drop-biscuits/",
+  "note": "Copied from local ingest.source_nodes id 96 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Rosemary Pepper Drop Biscuits",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Rosemary Pepper Drop Biscuits are an easy to make side for soups and stews. No kneading or cutting biscuits, just mix, drop, and bake!&nbsp;",
+    "datePublished": "2019-01-04T00:26:00+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2012\/05\/Baked-Rosemary-Pepper-Drop-Biscuits-front.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2012\/05\/Baked-Rosemary-Pepper-Drop-Biscuits-front-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2012\/05\/Baked-Rosemary-Pepper-Drop-Biscuits-front-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2012\/05\/Baked-Rosemary-Pepper-Drop-Biscuits-front-480x270.jpg"
+    ],
+    "recipeYield": [
+      "8"
+    ],
+    "prepTime": "PT15M",
+    "cookTime": "PT20M",
+    "totalTime": "PT35M",
+    "recipeIngredient": [
+      "2 cups all-purpose flour ($0.21)",
+      "2 tsp baking powder ($0.08)",
+      "3\/4 tsp salt ($0.03)",
+      "1 tsp dried rosemary ($0.10)",
+      "1\/2 tsp freshly cracked pepper ($0.03)",
+      "1 tsp sugar ($0.02)",
+      "8 Tbsp cold butter (salted) ($0.88)",
+      "1 cup milk ($0.33)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Preheat the oven to 400ºF. Roughly chop or crush the rosemary to prevent large, sharp pieces. In a large bowl, combine the dry ingredients (flour, baking powder, salt, rosemary, pepper, sugar) until well combined.",
+        "name": "Preheat the oven to 400ºF. Roughly chop or crush the rosemary to prevent large, sharp pieces. In a large bowl, combine the dry ingredients (flour, baking powder, salt, rosemary, pepper, sugar) until well combined.",
+        "url": "https:\/\/www.budgetbytes.com\/rosemary-pepper-drop-biscuits\/#wprm-recipe-32767-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Take the butter out of the refrigerator just prior to using it. Slice the butter into pieces, then add them to the dry ingredients. Work the butter into the flour mixture until no large pieces remain and&nbsp;it looks a little like damp sand. I use my hands for this, but you can also use a pastry cutter.",
+        "name": "Take the butter out of the refrigerator just prior to using it. Slice the butter into pieces, then add them to the dry ingredients. Work the butter into the flour mixture until no large pieces remain and&nbsp;it looks a little like damp sand. I use my hands for this, but you can also use a pastry cutter.",
+        "url": "https:\/\/www.budgetbytes.com\/rosemary-pepper-drop-biscuits\/#wprm-recipe-32767-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Starting with 3\/4 cup, add just enough milk to moisten the mixture into a thick, slightly sticky dough (see photos below). There should be no dry flour left on the bottom of the bowl, but the dough should not be so wet that it appears glossy. Line a baking sheet with parchment paper and scoop 8 dollops of the biscuit dough onto the paper (about 1\/3 to 1\/2 cup each).",
+        "name": "Starting with 3\/4 cup, add just enough milk to moisten the mixture into a thick, slightly sticky dough (see photos below). There should be no dry flour left on the bottom of the bowl, but the dough should not be so wet that it appears glossy. Line a baking sheet with parchment paper and scoop 8 dollops of the biscuit dough onto the paper (about 1\/3 to 1\/2 cup each).",
+        "url": "https:\/\/www.budgetbytes.com\/rosemary-pepper-drop-biscuits\/#wprm-recipe-32767-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Bake the biscuits in the fully preheated 400ºF oven for 18-22 minutes or until they are golden brown on the edges. Serve warm.",
+        "name": "Bake the biscuits in the fully preheated 400ºF oven for 18-22 minutes or until they are golden brown on the edges. Serve warm.",
+        "url": "https:\/\/www.budgetbytes.com\/rosemary-pepper-drop-biscuits\/#wprm-recipe-32767-step-0-3"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "20",
+      "reviewCount": "19"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Hi, I made the biscuits three times already, and my host kid loved them, ate 3 in a row. But, some people told me these are little dry inside, so is the biscuit should be a bit dry or it’s actually pretty moist? How can I improve it?\r\nThanks!!",
+        "author": {
+          "@type": "Person",
+          "name": "Lexi luo"
+        },
+        "datePublished": "2026-03-14"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "My Family loves these quick and easy biscuits! A must make for the slow cooker chicken noodle soup!",
+        "author": {
+          "@type": "Person",
+          "name": "Harry Shipp"
+        },
+        "datePublished": "2026-02-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "These are fantastic. Sometimes, instead of baking them, I drop the batter by the spoonful into a pot of simmering chicken soup (similar to the Chicken and Dumplings recipe on this site). It’s still delicious even with the butter halved (or substituting canola oil if needed).",
+        "author": {
+          "@type": "Person",
+          "name": "Lee"
+        },
+        "datePublished": "2026-01-30"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Hello Mrs Beth,l am Arabella and l am 13 years old and l am homeschooled .Mummy's made this recipe often and l and my four siblings love them,so today I made them!!",
+        "author": {
+          "@type": "Person",
+          "name": "Tania C Diogo"
+        },
+        "datePublished": "2024-10-24"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Yum!!  My 12 year old son was able to make these independently for our dinner tonight to go along with your Vegetables &amp; Gravy recipe and he was so proud.  We devoured them and I look forward to making them time and time again possibly even trying variations on herbs as well (although the rosemary\/black pepper combo is delicious)!  What a great and simple recipe.",
+        "author": {
+          "@type": "Person",
+          "name": "Jenny"
+        },
+        "datePublished": "2022-04-16"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I took them out of the oven just now an they look amazing 🤩 ",
+        "author": {
+          "@type": "Person",
+          "name": "Julie W"
+        },
+        "datePublished": "2022-01-13"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I just made these with heavy cream since all the other biscuits recipes had said heavy cream. I took a gamble an I just peaked in the oven a they look pretty good. Thank you for getting back to me. ",
+        "author": {
+          "@type": "Person",
+          "name": "Julie w"
+        },
+        "datePublished": "2022-01-13"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Beth: it says milk not heavy cream. What should it really say? ",
+        "author": {
+          "@type": "Person",
+          "name": "Julie w"
+        },
+        "datePublished": "2022-01-12"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "We love these!! I add a 1\/2 tsp garlic powder and some shredded cheese (usually whatever kind I have to needs to be used up.) So good!",
+        "author": {
+          "@type": "Person",
+          "name": "Danie"
+        },
+        "datePublished": "2020-10-06"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I'm a sloppy baker and I still managed not to mess these up. My dough did turn out glossy and wet before I used all the milk and I feared I had ruined them, but nope! Came out delicious.",
+        "author": {
+          "@type": "Person",
+          "name": "Mimi"
+        },
+        "datePublished": "2020-04-27"
+      }
+    ],
+    "keywords": "Bread, Rolls, Side Dish, Vegetarian",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1 Serving",
+      "calories": "229.75 kcal",
+      "carbohydrateContent": "24.76 g",
+      "proteinContent": "4.01 g",
+      "fatContent": "12.03 g",
+      "fiberContent": "1.05 g",
+      "sodiumContent": "546.33 mg"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/rosemary-pepper-drop-biscuits\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/rosemary-pepper-drop-biscuits\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/rosemary-pepper-drop-biscuits\/"
+  }
+}

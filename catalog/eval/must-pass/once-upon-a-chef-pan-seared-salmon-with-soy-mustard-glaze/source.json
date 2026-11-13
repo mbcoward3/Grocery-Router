@@ -1,0 +1,260 @@
+{
+  "format_version": 1,
+  "site": "once-upon-a-chef",
+  "url": "https://www.onceuponachef.com/recipes/pan-seared-salmon-with-soy-mustard-glaze.html",
+  "note": "Copied from local ingest.source_nodes id 212 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Pan-Seared Salmon with Soy Mustard Glaze",
+    "author": {
+      "@id": "https:\/\/www.onceuponachef.com\/#\/schema\/person\/d09ca52c9e790675f71c46404845af62"
+    },
+    "description": "Whip up this quick and elegant salmon with a soy-mustard glaze—full of flavor and ready in just 15 minutes!",
+    "datePublished": "2024-04-12T13:17:39+00:00",
+    "image": [
+      "https:\/\/www.onceuponachef.com\/images\/2013\/10\/soy-and-mustard-glazed-salmon.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2013\/10\/soy-and-mustard-glazed-salmon-500x500.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2013\/10\/soy-and-mustard-glazed-salmon-500x375.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2013\/10\/soy-and-mustard-glazed-salmon-480x270.jpg"
+    ],
+    "recipeYield": [
+      "6"
+    ],
+    "totalTime": "PT15M",
+    "recipeIngredient": [
+      "¼ cup + 2 tablespoons (packed) dark brown sugar",
+      "¼ cup soy sauce",
+      "¼ cup mirin ((Japanese sweet rice wine))",
+      "2 tablespoons sherry vinegar",
+      "2 tablespoons whole grain mustard, (best quality such as Maille)",
+      "2 tablespoons water",
+      "2 teaspoons cornstarch",
+      "¼ teaspoon crushed red pepper flakes",
+      "6 (6 oz) fillets center-cut salmon, skin removed",
+      "½ teaspoon kosher salt",
+      "2 tablespoons vegetable oil, (for cooking)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Whisk together all of the ingredients for the glaze in a small saucepan. (Be sure to do this off the heat, as cornstarch won't dissolve in hot liquid.) Bring to a boil over high heat, then reduce to low and simmer until thickened, about 1 minute. Cover to keep warm and set aside.",
+        "name": "Whisk together all of the ingredients for the glaze in a small saucepan. (Be sure to do this off the heat, as cornstarch won't dissolve in hot liquid.) Bring to a boil over high heat, then reduce to low and simmer until thickened, about 1 minute. Cover to keep warm and set aside.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/pan-seared-salmon-with-soy-mustard-glaze.html#wprm-recipe-85523-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Heat the oil in a large nonstick skillet over medium-high heat. Season the salmon fillets with kosher salt. When the oil starts to shimmer, place the salmon, presentation side-down, in the pan. Cook until golden brown on the first side, about 4 minutes. Turn the fish over with a spatula, then reduce the heat to medium and cook until the fillets feel firm to the touch, 3 to 4 minutes more. (If all of the fillets won't fit in the pan, cook the fish in two batches.)",
+        "name": "Heat the oil in a large nonstick skillet over medium-high heat. Season the salmon fillets with kosher salt. When the oil starts to shimmer, place the salmon, presentation side-down, in the pan. Cook until golden brown on the first side, about 4 minutes. Turn the fish over with a spatula, then reduce the heat to medium and cook until the fillets feel firm to the touch, 3 to 4 minutes more. (If all of the fillets won't fit in the pan, cook the fish in two batches.)",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/pan-seared-salmon-with-soy-mustard-glaze.html#wprm-recipe-85523-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Transfer the salmon fillets to plates or a platter and spoon the glaze generously over top. Serve immediately.",
+        "name": "Transfer the salmon fillets to plates or a platter and spoon the glaze generously over top. Serve immediately.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/pan-seared-salmon-with-soy-mustard-glaze.html#wprm-recipe-85523-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.98",
+      "ratingCount": "38",
+      "reviewCount": "13"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Really nice salmon dish...not too sweet, not too spicy.  I made the entire sauce recipe, but only cooked fish for 2. Decided to save the rest of the glaze for chicken. The whole grain mustard was different than what I expected.  It had less of the tart mustardy flavor of dijon or yellow mustard; and was milder and slightly sweet.",
+        "author": {
+          "@type": "Person",
+          "name": "PaulainVA"
+        },
+        "datePublished": "2024-11-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Absolutely delicious. I made a salmon bowl out of this, serving over rice with avocado and topping with your sauce and sesame seeds. So good.\r\n\r\nQuestion - can I freeze the leftover sauce?",
+        "author": {
+          "@type": "Person",
+          "name": "Kristina"
+        },
+        "datePublished": "2024-05-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is definitely a keeper! I generally find salmon boring when I prepare it at home. I am trying to incorporate it into our diet more because it's so healthy. I halved the recipe and it came out perfectly. I made this for three adults and thought that two fillets would suffice--it didn't! We could each have happily eaten one entire fillet because it's just do delicious!!\r\nI *removed* the skin (recipe is a bit confusing on this since it says to cook skin side down first although it calls for skinned fillets). I liked this skinless method because I was able to do a light sear on both sides. I did not have sherry vinegar so I used unseasoned Mirin\/rice vinegar as a substitute; I also used light brown sugar instead of dark. I served it with steamed broccoli and white rice sprinkled with JFC-Nori Komi Furikake.",
+        "author": {
+          "@type": "Person",
+          "name": "Julia C"
+        },
+        "datePublished": "2024-04-17"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Substitutes work, so don't hesitate to try it. Half of the recipe for two people also works well.  I had mirin, but used a raspberry balsamic which added an amazing flavor. Upped the red pepper a bit, kept everything else the same. Whole grain mustard is more fun and adds texture to the glaze. We had roasted cauliflower with it and the glaze was excellent with that too.",
+        "author": {
+          "@type": "Person",
+          "name": "Jeanne F"
+        },
+        "datePublished": "2023-10-20"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I wanted this salmon!  Ok up front, I made substitutions!  I substituted white wine for mirin and just increased the brown sugar a tad.  I substituted sherry vinegar with balsamic vinegar and Dijon mustard for whole grain.  It was still the best salmon I have ever eaten.  And I am talking restaurant quality.  The technique to cook the salmon was spot on!  I will never air fry it again!  Jenn thank you for such amazing recipes!!!!!  Jump in guys, don’t be afraid to substitute because the basics are amazing!!!!!!",
+        "author": {
+          "@type": "Person",
+          "name": "kathleen roe"
+        },
+        "datePublished": "2023-06-07"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Jenn!\r\nThis busy attorney has rediscovered her love of cooking through your cookbook and website! \r\nThank you!\r\n\r\nTrying this salmon tonite: sauce is excellent!",
+        "author": {
+          "@type": "Person",
+          "name": "Exercise addict who LOVES food"
+        },
+        "datePublished": "2023-05-17"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I was looking for a different take on salmon for a quick dinner, and ran across this delicious version.  Luckily I had everything in the pantry for the amazing glaze.  So easy to prepare, and I served with some mixed asian-style vegetables.  With the complex flavors and crispy skin, this is like a restaurant dish.  I can think of several ways to use the glaze for other meals.  Thanks!",
+        "author": {
+          "@type": "Person",
+          "name": "PaulainVA"
+        },
+        "datePublished": "2022-09-25"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This dish is so delish. Love the sauce.  Can I use this sauce on chicken wings also.",
+        "author": {
+          "@type": "Person",
+          "name": "Bev"
+        },
+        "datePublished": "2022-08-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "So glad that I tried this tonight. Delicious!",
+        "author": {
+          "@type": "Person",
+          "name": "Cyndy"
+        },
+        "datePublished": "2022-04-04"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Made this in cast iron and it was superb. I seared both sides until *considerably* crispy and the inside was still so juicy. I didn’t have sherry, but an equal part of rice vinegar worked great. Thank you Jenn for the winner!",
+        "author": {
+          "@type": "Person",
+          "name": "Panda"
+        },
+        "datePublished": "2022-02-07"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "New favorite Salmon Dish!  Everyone loved it!  I was having a problem finding the Japanese Mirin, but didn't give up.  It was so delicious, everyone finished every last piece of salmon thanks to the sauce.  So good and so easy.   Definitely staying on my dinner rotation!",
+        "author": {
+          "@type": "Person",
+          "name": "Donna"
+        },
+        "datePublished": "2021-11-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Hi Jenn! I'm working my way through your salmon recipes and this one was so yummy and super easy. I struggled with my salmon sticking to the pan but am looking forward to making this one again (I'll use another pan haha). I absolutely loved the sauce and it was delicious on broccoli too-- I'd even consider just making the sauce for broccoli in the future!",
+        "author": {
+          "@type": "Person",
+          "name": "Erin"
+        },
+        "datePublished": "2021-04-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I made this tonight and it was wonderful!  I'm so glad I found your site.  After cooking for my family for nearly 30 years, I'm actually excited to cook again.  Thank you!",
+        "author": {
+          "@type": "Person",
+          "name": "Kathy"
+        },
+        "datePublished": "2021-03-30"
+      }
+    ],
+    "recipeCategory": [
+      "Fish &amp; Seafood",
+      "Main Course"
+    ],
+    "recipeCuisine": [
+      "Asian"
+    ],
+    "keywords": "seared salmon",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "426 kcal",
+      "fatContent": "26 g",
+      "carbohydrateContent": "11 g",
+      "proteinContent": "33 g",
+      "saturatedFatContent": "5 g",
+      "sugarContent": "9 g",
+      "sodiumContent": "734 mg",
+      "cholesterolContent": "86 mg",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/www.onceuponachef.com\/recipes\/pan-seared-salmon-with-soy-mustard-glaze.html#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.onceuponachef.com\/recipes\/pan-seared-salmon-with-soy-mustard-glaze.html#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.onceuponachef.com\/recipes\/pan-seared-salmon-with-soy-mustard-glaze.html"
+  }
+}

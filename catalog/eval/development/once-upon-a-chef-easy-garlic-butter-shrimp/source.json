@@ -1,0 +1,199 @@
+{
+  "format_version": 1,
+  "site": "once-upon-a-chef",
+  "url": "https://www.onceuponachef.com/recipes/easy-garlic-butter-shrimp.html",
+  "note": "Copied from local ingest.source_nodes id 208 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Sheet Pan Garlic Butter Shrimp",
+    "author": {
+      "@id": "https:\/\/www.onceuponachef.com\/#\/schema\/person\/d09ca52c9e790675f71c46404845af62"
+    },
+    "description": "Dig into the ultimate weeknight feast: my sheet-pan garlic butter shrimp—ready in 20 minutes with minimal cleanup, and oh-so-delicious with a crusty baguette or tossed with pasta!",
+    "datePublished": "2024-04-10T08:58:31+00:00",
+    "image": [
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/garlic-butter-shrimp03794-2.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/garlic-butter-shrimp03794-2-500x500.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/garlic-butter-shrimp03794-2-500x375.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2024\/04\/garlic-butter-shrimp03794-2-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4",
+      "4 to 6"
+    ],
+    "totalTime": "PT20M",
+    "recipeIngredient": [
+      "2 lb extra large or jumbo shrimp, (peeled and deveined, thawed if frozen)",
+      "2 tablespoons olive oil",
+      "1 teaspoon salt",
+      "1 teaspoon freshly black pepper",
+      "2 large cloves garlic, (minced)",
+      "4 tablespoons unsalted butter, (softened)",
+      "Pinch freshly chopped parsley, (for garnish (optional))",
+      "Lemon wedges, (for serving (optional))"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Preheat the oven to 350°F (175°C) and set an oven rack in the middle position.",
+        "name": "Preheat the oven to 350°F (175°C) and set an oven rack in the middle position.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/easy-garlic-butter-shrimp.html#wprm-recipe-89274-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Place the shrimp on a baking sheet and toss with the olive oil, salt, pepper and garlic. Roast for about 8 minutes, or until the shrimp are pink and just cooked through. Immediately add the butter directly on the hot baking sheet and stir until melted. Transfer the shrimp and butter sauce to a serving dish and sprinkle with a bit of fresh parsley, if desired. Serve with lemon wedges.",
+        "name": "Place the shrimp on a baking sheet and toss with the olive oil, salt, pepper and garlic. Roast for about 8 minutes, or until the shrimp are pink and just cooked through. Immediately add the butter directly on the hot baking sheet and stir until melted. Transfer the shrimp and butter sauce to a serving dish and sprinkle with a bit of fresh parsley, if desired. Serve with lemon wedges.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/easy-garlic-butter-shrimp.html#wprm-recipe-89274-step-0-1"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "109",
+      "reviewCount": "9"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "We did cook them a little bit longer; they were so delicious!",
+        "author": {
+          "@type": "Person",
+          "name": "Lisa"
+        },
+        "datePublished": "2026-07-07"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Delicious! I loved how easy it was to prepare",
+        "author": {
+          "@type": "Person",
+          "name": "Ellen"
+        },
+        "datePublished": "2026-04-25"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Great recipe! And super easy and delicious. Thanks for a great recipe.",
+        "author": {
+          "@type": "Person",
+          "name": "Theresa"
+        },
+        "datePublished": "2026-04-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Yum yum yum!  Was able to put this together for a quick work from home lunch.   Shrimp defrosted in cold water for a few minutes and in and out of the oven under 10.   I used less butter than recipe calls for and was still delicious.",
+        "author": {
+          "@type": "Person",
+          "name": "Elizabeth"
+        },
+        "datePublished": "2026-02-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "OMG!! This was fantastic!! And so easy. Made it for supper tonight. Was told \"Don't lose that recipe!\" Will definitely make again. Thank you for the recipe!",
+        "author": {
+          "@type": "Person",
+          "name": "Nancy J Rogers"
+        },
+        "datePublished": "2025-07-20"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Delicious! I made this for an appetizer yesterday and everyone loved it! I needed to roast my shrimp for two more minutes (I had tested one after 8 minutes) and they were perfect after roasting 10 minutes. I can’t wait to make this again and so easy!",
+        "author": {
+          "@type": "Person",
+          "name": "Sandra Holmberg"
+        },
+        "datePublished": "2025-06-23"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Made this garlic butter shrimp recipe tonight. It was absolutely delicious and so easy all on the one sheet pan. Used the shrimp and sauce left on the pan as the only topping to the angel hair pasta I served it over. Thank you for this great recipe.",
+        "author": {
+          "@type": "Person",
+          "name": "TK Garrett"
+        },
+        "datePublished": "2024-09-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Had for supper tonight.  My husband said several times how good it was.  Definitely a keeper and so easy.",
+        "author": {
+          "@type": "Person",
+          "name": "Lynn Fox"
+        },
+        "datePublished": "2024-04-17"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Yes! TY! Made it tonight and my family loved it! So easy and quick, thank you for the gift of this recipe for us non-seafood eaters who have to make something other than chicken for our loved ones :-)",
+        "author": {
+          "@type": "Person",
+          "name": "Kate"
+        },
+        "datePublished": "2024-04-15"
+      }
+    ],
+    "recipeCategory": [
+      "Fish &amp; Seafood",
+      "Main Course"
+    ],
+    "recipeCuisine": [
+      "Italian"
+    ],
+    "keywords": "garlic butter shrimp",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "218 kcal",
+      "fatContent": "14 g",
+      "carbohydrateContent": "2 g",
+      "proteinContent": "21 g",
+      "saturatedFatContent": "6 g",
+      "sodiumContent": "857 mg",
+      "cholesterolContent": "211 mg",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/www.onceuponachef.com\/recipes\/easy-garlic-butter-shrimp.html#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.onceuponachef.com\/recipes\/easy-garlic-butter-shrimp.html#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.onceuponachef.com\/recipes\/easy-garlic-butter-shrimp.html"
+  }
+}
