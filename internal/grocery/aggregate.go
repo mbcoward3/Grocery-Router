@@ -4,6 +4,7 @@ package grocery
 import (
 	"fmt"
 	"math/big"
+	"slices"
 )
 
 // Rational is an exact 64-bit database fraction.
@@ -76,8 +77,9 @@ type Line struct {
 	Contributions    []Contribution
 }
 
-// Aggregate combines only universally compatible requirements. Input order controls the
-// selected display unit and stable output order; arithmetic itself is exact.
+// Aggregate combines only requirements in the same unit (or the same package), exactly. Amounts
+// in different units are never converted into each other: 1 tsp and 2 cups stay two amounts,
+// shown side by side on one row (D054). Input order controls stable output order.
 func Aggregate(requirements []Requirement) ([]Line, error) {
 	lines := make([]Line, 0, len(requirements))
 	byKey := make(map[string]int, len(requirements))
@@ -186,9 +188,6 @@ func aggregationKey(requirement Requirement) string {
 				requirement.Package.Size.Denominator, requirement.Package.SizeUnit.Key)
 		}
 		return fmt.Sprintf("%spackage:%s:%s", prefix, requirement.Package.Type, size)
-	}
-	if requirement.Unit.Dimension == "mass" || requirement.Unit.Dimension == "volume" {
-		return prefix + "dimension:" + requirement.Unit.Dimension
 	}
 	return prefix + "unit:" + requirement.Unit.Key
 }
@@ -299,5 +298,48 @@ func Group(lines []Line) []ItemLine {
 			})
 		}
 	}
+	for index := range rows {
+		orderQuantities(rows[index].Quantities)
+	}
 	return rows
+}
+
+// orderQuantities lists a row's amounts in the same dimension largest unit first ("2 cups +
+// 1 tsp"), keeping each dimension, count unit, and package where it first appeared.
+func orderQuantities(quantities []Quantity) {
+	group := make(map[string]int, len(quantities))
+	rank := make([]int, len(quantities))
+	for index, quantity := range quantities {
+		key := fmt.Sprintf("other:%d", index)
+		if quantity.Package == nil && quantity.Unit != nil {
+			key = "dimension:" + quantity.Unit.Dimension
+		}
+		if _, ok := group[key]; !ok {
+			group[key] = len(group)
+		}
+		rank[index] = group[key]
+	}
+	order := make([]int, len(quantities))
+	for index := range order {
+		order[index] = index
+	}
+	slices.SortStableFunc(order, func(a, b int) int {
+		if rank[a] != rank[b] {
+			return rank[a] - rank[b]
+		}
+		return unitSize(quantities[b]).Cmp(unitSize(quantities[a]))
+	})
+	sorted := make([]Quantity, len(quantities))
+	for position, index := range order {
+		sorted[position] = quantities[index]
+	}
+	copy(quantities, sorted)
+}
+
+// unitSize is a unit's exact size in its dimension's base unit; packages and counts compare equal.
+func unitSize(quantity Quantity) *big.Rat {
+	if quantity.Package != nil || quantity.Unit == nil || quantity.Unit.ToBaseDenominator == 0 {
+		return new(big.Rat)
+	}
+	return big.NewRat(quantity.Unit.ToBaseNumerator, quantity.Unit.ToBaseDenominator)
 }

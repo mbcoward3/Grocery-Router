@@ -61,8 +61,9 @@ func recompute(ctx context.Context, queries *store.Queries, householdID string, 
 	return err
 }
 
-// aggregationVersion 2 builds one checklist row per grocery item.
-const aggregationVersion = 2
+// aggregationVersion 2 builds one checklist row per grocery item; 3 keeps amounts in different
+// units apart instead of converting them (D054). An open list below it is rebuilt when read.
+const aggregationVersion = 3
 
 // carryStates keeps checked, removed, and adjusted state across rebuilds by row key. A row from
 // before one-row-per-item (keys "item:<id>:...") passes its state to its item's new row: checked

@@ -29,17 +29,48 @@ func TestAggregateExactQuantitiesAndTraces(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(lines) != 1 {
-		t.Fatalf("lines = %d, want 1", len(lines))
+	// Amounts in the same unit add exactly; another unit stays its own amount (D054).
+	if len(lines) != 2 {
+		t.Fatalf("lines = %d, want 2", len(lines))
 	}
 	line := lines[0]
-	assertRational(t, line.Minimum, 3, 1)
-	assertRational(t, line.Maximum, 4, 1)
+	assertRational(t, line.Minimum, 2, 1)
+	assertRational(t, line.Maximum, 3, 1)
 	if line.QuantityKind != "range" || line.Unit.Key != "tbsp" {
 		t.Fatalf("line quantity = %s %s, want range tbsp", line.QuantityKind, line.Unit.Key)
 	}
-	if len(line.Contributions) != 3 || line.Contributions[1].WeekRecipeID != 11 || line.Contributions[1].Unit.Key != "tsp" {
-		t.Fatalf("contributions did not preserve occurrence trace and source unit: %#v", line.Contributions)
+	if len(line.Contributions) != 2 || line.Contributions[1].WeekRecipeID != 12 {
+		t.Fatalf("tbsp contributions = %#v", line.Contributions)
+	}
+	teaspoons := lines[1]
+	assertRational(t, teaspoons.Minimum, 3, 1)
+	if teaspoons.Unit.Key != "tsp" || len(teaspoons.Contributions) != 1 || teaspoons.Contributions[0].WeekRecipeID != 11 {
+		t.Fatalf("tsp line = %#v", teaspoons)
+	}
+}
+
+// One row shows each unit's amount, largest unit of a dimension first, whatever the recipe order.
+func TestGroupListsUnitsLargestFirst(t *testing.T) {
+	lines, err := grocery.Aggregate([]grocery.Requirement{
+		requirement(1, 1, 1, "milk", "Milk", "measured", "exact", rational(1, 1), nil, tsp),
+		requirement(2, 2, 1, "milk", "Milk", "measured", "exact", rational(2, 1), nil, cup),
+		requirement(3, 3, 1, "milk", "Milk", "measured", "exact", rational(1, 1), nil, tsp),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rows := grocery.Group(lines)
+	if len(rows) != 1 || len(rows[0].Quantities) != 2 {
+		t.Fatalf("rows = %#v, want one row with two amounts", rows)
+	}
+	first, second := rows[0].Quantities[0], rows[0].Quantities[1]
+	if first.Unit.Key != "cup" || second.Unit.Key != "tsp" {
+		t.Fatalf("amount order = %s, %s; want cup, tsp", first.Unit.Key, second.Unit.Key)
+	}
+	assertRational(t, first.Minimum, 2, 1)
+	assertRational(t, second.Minimum, 2, 1)
+	if len(rows[0].Contributions) != 3 {
+		t.Fatalf("contributions = %d, want 3", len(rows[0].Contributions))
 	}
 }
 

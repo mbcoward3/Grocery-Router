@@ -1,16 +1,17 @@
 # Grocery Router — Product Decision Record
 
 Status: **durable rationale for the v1 direction and later approved phases**  
-Behavioral authority: [`V1_SPEC.md`](V1_SPEC.md)  
+Behavioral authority: [`PRODUCT.md`](PRODUCT.md)  
 Historical source: [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md)
 
 This document records why v1 has its current shape. It is not a second specification: when
-wording conflicts, `V1_SPEC.md` governs behavior. The interview archive is non-authoritative
+wording conflicts, `PRODUCT.md` governs behavior. The interview archive is non-authoritative
 and exists only to recover nuance. D036 supersedes earlier SQLite-specific decisions.
 
 ## Authority order
 
-1. `V1_SPEC.md` — product and implementation contract.
+1. `PRODUCT.md` — the product as it is (the original v1 contract is archived at
+   `archive/specs/V1_SPEC.md`).
 2. `UP_NEXT.md` — explicitly deferred scope.
 3. This record — rationale and revisit conditions.
 4. Completed true-up ledger and raw interview archives — historical evidence only.
@@ -63,13 +64,17 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D042 | OpenAI through the official Go SDK | Active |
 | D043 | Suggested recipes enter the week marked, and join when kept | Direction only (not implemented) |
 | D044 | Shopping follows the household store walk | Partly superseded by D045 and D046 (completed-row sinking, section folding, Undo on check, Hide done and its default) |
-| D045 | Remember where unknown items go; Hide done owns folding | Partly superseded by D046 (Hide done control and section folding) |
+| D045 | Remember where unknown items go; Hide done owns folding | Partly superseded by D046 (Hide done control and section folding) and D053 (known items can be placed too) |
 | D046 | Plain rows, one Done group, undo only for removal | Active |
 | D047 | One checklist row per grocery item; look-alike items need a decision | Active |
 | D048 | Substitution is a household choice over frozen groups (proposed) | Direction only (not implemented) |
 | D049 | Household preferences live per household and are edited in the app | Active |
 | D050 | The household chooses its rollover day, time, and mode | Superseded by D051 |
 | D051 | A plan lasts from one shopping trip to the next and can be reopened | Active |
+| D052 | A household can avoid recipes from its last few plans | Active |
+| D053 | A household can place a known item in its own store section | Active |
+| D054 | Amounts in different units are shown side by side, not converted | Active |
+| D055 | A recipe library of followed catalog recipes and editable household recipes (proposed) | Proposed (awaiting owner approval) |
 
 ---
 
@@ -994,3 +999,89 @@ a time per household. This supersedes D050 and the parts of D026 about when a we
 **Revisit when:** A household wants to plan the next trip while the current plan is still in
 use, or to start a new plan from a past plan's meals without reopening it.
 
+## D052 — A household can avoid recipes from its last few plans
+
+**Status:** Active
+
+**Decision:** Settings has "Avoid repeats": Off, or the last 1-8 plans (default Off). Generate
+puts recipes from that many of the most recently closed plans last, so it picks them only when
+too few other verified recipes remain; it never fails because of the setting. Random swap
+prefers a recipe in neither the current pool nor those plans, then one not in the pool, then any
+other recipe. Manual add and choosing a specific replacement are unaffected. Selection is still
+plain uniform randomness, with no model and no scoring.
+
+**Why:** With 24 recipes and about five per plan, recent dinners came back often, and History
+already records them (#71).
+
+**Consequence:** Migration 00014 adds `households.avoid_recent_plans` (0-8). "Recent" means plans
+in History ordered by when they closed, so a reopened plan counts from its latest close. This
+partly supersedes the archived V1 §6.2's "selection ignores previous weeks".
+
+**Revisit when:** The household wants weighting, favorites, or breadth rules rather than a plain
+exclusion.
+
+## D053 — A household can place a known item in its own store section
+
+**Status:** Active
+
+**Decision:** Any line of a known grocery item, generated or manual, can be moved to another
+section from its details sheet. That saves where the household's store keeps the item: all of
+the item's lines on the current list move, and later lists, manual adds, and add-item
+suggestions use the placement. Choosing the item's reviewed section again clears it. Only the
+section can be changed this way. An item's shopping mode and whether it appears on the list stay
+corpus decisions (#70: the owner approved only the section override).
+
+**Why:** Stores differ. If the household's store keeps tortillas in Bakery and the corpus says
+Pantry, the list was wrong every week (#70). This extends D045 from unknown names to known items.
+
+**Consequence:** Migration 00015 adds `household_item_sections (household_id, grocery_item_id,
+store_section_id)` with tenant-proving composite foreign keys. `ListWeekIngredientRequirements`
+and `ListGroceryItems` use the placement in place of the reviewed section. History keeps the
+sections its lists had. This partly supersedes D045's "known items keep their reviewed section".
+
+**Revisit when:** A household wants to change shopping mode or leave an item off the list.
+
+## D054 — Amounts in different units are shown side by side, not converted
+
+**Status:** Active
+
+**Decision:** On the grocery list, amounts in the same unit still add exactly (1 tsp + 2 tsp shows
+3 tsp). Amounts in different units are no longer converted into one unit. They are listed on the
+item's one row, largest unit of a dimension first: 2 cups and 1 tsp show as "2 cups + 1 tsp",
+not "97 tsp". A row that more than one recipe needs is marked with "N recipes" and its amount is
+highlighted, so it is checked at the store.
+
+**Why:** Converting kept the first recipe's unit, so the display depended on recipe order and
+gave totals like 97 tsp or 40 oz (#51). Showing each needed amount is what a shopper can act on.
+The owner chose this over picking a tidy unit.
+
+**Consequence:** `grocery.Aggregate` groups mass and volume by unit instead of by dimension, and
+`grocery.Group` orders a row's amounts. Aggregation version 3 rebuilds open lists when they are
+next read; History keeps the amounts it had. The unit table's conversion ratios stay but are no
+longer used to combine amounts. This partly supersedes the archived V1 §2.5 and §7.3.
+
+**Revisit when:** The household wants mixed amounts simplified, or metric and US display.
+
+## D055 — A recipe library of followed catalog recipes and editable household recipes (proposed)
+
+**Status:** Proposed (awaiting owner approval in the pull request that adds
+[`RECIPE_LIBRARY_SPEC.md`](RECIPE_LIBRARY_SPEC.md))
+
+**Decision:** A household's library holds catalog recipes it follows, which change when the
+catalog publishes a fix, and its own recipes. Members edit any library recipe in the app and the
+edit applies at once; editing a followed recipe makes the household its own copy, which stops
+following the catalog. Catalog grocery items are the shared item identity, and household items map
+onto them. Past plans keep snapshots. Committed Markdown only seeds an empty database; there is no
+sync command.
+
+**Why:** The product is moving to many households and a large shared catalog that suggestion
+tooling uses. Copying every adopted recipe per household, or changing recipes through repository
+files and a command, does not scale (owner, 2026-11-12). This replaces the first draft of #55,
+which proposed a Markdown-driven `corpus-sync`.
+
+**Consequence:** If approved, this partly supersedes D039 ("adopting gives an editable copy"):
+following is the default and a copy is made only on edit. Delivery order and acceptance are in the
+spec.
+
+**Revisit when:** Households need to share their own recipes, or catalog fixes must be reviewed
+by a household before they apply.

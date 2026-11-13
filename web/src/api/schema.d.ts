@@ -348,7 +348,10 @@ export interface paths {
         delete: operations["removeCurrentGroceryLine"];
         options?: never;
         head?: never;
-        /** Toggle completion, set a week-only quantity override, move a manual line, or restore a removed line. */
+        /**
+         * Toggle completion, set a plan-only quantity override, move a line to another section, or restore a removed line.
+         * @description Moving a line of a known grocery item saves where the household's store keeps that item, for this and every later plan; choosing its reviewed section again clears that. Moving an unknown manual item remembers the section for that name.
+         */
         patch: operations["updateCurrentGroceryLine"];
         trace?: never;
     };
@@ -523,6 +526,8 @@ export interface components {
             timezone: string;
             /** @description Recipes offered when generating a plan. */
             defaultRecipeCount: number;
+            /** @description How many of the most recent past plans Generate and random swap avoid repeating recipes from. 0 picks from every verified recipe. */
+            avoidRecentPlans: number;
         };
         APIError: {
             error: {
@@ -1046,6 +1051,7 @@ export interface operations {
                     /** @description IANA time zone name, for example America/Chicago. */
                     timezone?: string;
                     defaultRecipeCount?: number;
+                    avoidRecentPlans?: number;
                 };
             };
         };

@@ -39,6 +39,16 @@ FROM weeks w
 WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NOT NULL
 ORDER BY w.starts_on DESC, w.id DESC;
 
+-- name: ListRecentPlanRecipeIDs :many
+-- The recipes in the household's most recently closed plans, which selection avoids (D052).
+SELECT DISTINCT wr.recipe_id FROM week_recipes AS wr
+WHERE wr.household_id = sqlc.arg(household_id) AND wr.week_id IN (
+    SELECT w.id FROM weeks AS w
+    WHERE w.household_id = sqlc.arg(household_id) AND w.closed_at IS NOT NULL
+    ORDER BY w.closed_at DESC, w.id DESC
+    LIMIT sqlc.arg(plans)
+);
+
 -- name: GetPastWeek :one
 SELECT * FROM weeks
 WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NOT NULL;
@@ -135,7 +145,8 @@ JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredient_sections ris ON ris.recipe_id = r.id
 JOIN recipe_ingredients ri ON ri.section_id = ris.id
 JOIN grocery_items gi ON gi.id = ri.grocery_item_id
-JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+LEFT JOIN household_item_sections his ON his.household_id = gi.household_id AND his.grocery_item_id = gi.id
+JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = coalesce(his.store_section_id, gi.store_section_id)
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
 WHERE wr.household_id = sqlc.arg(household_id) AND wr.week_id = sqlc.arg(week_id)

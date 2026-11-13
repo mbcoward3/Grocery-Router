@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test'
 
 async function setup(page: Page, options: { saveDelayMs?: number } = {}) {
-  let settings = { timezone: 'UTC', defaultRecipeCount: 5 }
+  let settings = { timezone: 'UTC', defaultRecipeCount: 5, avoidRecentPlans: 0 }
   let sections = [{ id: 1, name: 'Produce', key: 'produce' }, { id: 2, name: 'Dairy', key: 'dairy' }, { id: 3, name: 'Baking', key: 'baking' }, { id: 4, name: 'Other', key: 'other' }]
   const base = { quantity: null as string | null, generatedQuantity: null as string | null, origin: 'manual', optional: false, removed: false, completed: false, hasContributions: false, recipeNames: [] as string[] }
   const lines = [
@@ -9,6 +9,7 @@ async function setup(page: Page, options: { saveDelayMs?: number } = {}) {
     { ...base, id: 2, name: 'Bananas', section: 'Produce', sectionId: 1 },
     { ...base, id: 3, name: 'Cheese', section: 'Dairy', sectionId: 2 },
     { ...base, id: 4, name: 'Butter', section: 'Dairy', sectionId: 2, origin: 'recipe', quantity: '2 tbsp', generatedQuantity: '2 tbsp', hasContributions: true, recipeNames: ['Pancakes'] },
+    { ...base, id: 5, name: 'Milk', section: 'Dairy', sectionId: 2, origin: 'recipe', quantity: '2 cups + 1 tsp', generatedQuantity: '2 cups + 1 tsp', hasContributions: true, recipeNames: ['Pancakes', 'Soup'] },
   ]
   await page.route('**/api/v2/**', async route => {
     const request = route.request(); const path = new URL(request.url()).pathname
@@ -84,7 +85,7 @@ test('quick taps are never blocked by saves in flight', async ({ page }) => {
   for (const name of ['Apples', 'Bananas', 'Cheese']) await expect(page.getByRole('button', { name: `Mark incomplete: ${name}`, exact: true })).toBeVisible()
   await expect(section(page, 'Produce')).toHaveCount(0, { timeout: 6000 })
   await expect(page.getByRole('button', { name: /Done/ })).toContainText('3')
-  await expect(page.locator('.grocery-progress')).toContainText('1 left')
+  await expect(page.locator('.grocery-progress')).toContainText('2 left')
 })
 
 test('details sheet adjusts quantity, shows recipes, and remove can be undone', async ({ page }) => {
@@ -175,4 +176,23 @@ test('desktop drag handle reorders a section', async ({ page }, info) => {
   const rows = page.locator('.section-order-list li')
   await rows.nth(1).locator('.drag-handle').dragTo(rows.first())
   await expect(rows.first()).toContainText('Dairy')
+})
+
+test('a recipe item can be moved to the section where the store keeps it', async ({ page }) => {
+  await setup(page)
+  await page.getByRole('button', { name: 'Details for Butter' }).click()
+  const sheet = page.getByRole('dialog', { name: 'Butter' })
+  await expect(sheet).toContainText('Applies to every plan, wherever this item comes up.')
+  await sheet.getByRole('group', { name: 'Store section' }).getByRole('button', { name: 'Baking' }).click()
+  await expect(section(page, 'Baking').getByRole('button', { name: 'Details for Butter' })).toBeVisible()
+  await expect(section(page, 'Dairy').getByRole('button', { name: 'Details for Butter' })).toHaveCount(0)
+})
+
+test('an item from more than one recipe is marked and shows each unit', async ({ page }) => {
+  await setup(page)
+  const milk = section(page, 'Dairy').locator('.grocery-row', { hasText: 'Milk' })
+  await expect(milk).toHaveClass(/shared/)
+  await expect(milk.locator('.shared-label')).toHaveText('2 recipes')
+  await expect(milk.locator('.grocery-quantity')).toHaveText('2 cups + 1 tsp')
+  await expect(section(page, 'Dairy').locator('.grocery-row', { hasText: 'Butter' }).locator('.shared-label')).toHaveCount(0)
 })

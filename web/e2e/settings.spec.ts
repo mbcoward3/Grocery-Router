@@ -4,7 +4,7 @@ import { expect, test, type Page } from '@playwright/test'
 test.use({ timezoneId: 'America/Chicago' })
 
 async function setup(page: Page) {
-  let settings = { timezone: 'UTC', defaultRecipeCount: 5 }
+  let settings = { timezone: 'UTC', defaultRecipeCount: 5, avoidRecentPlans: 0 }
   const patches: unknown[] = []
   const generated: unknown[] = []
   const duration = { minimumMinutes: null, maximumMinutes: null }
@@ -72,4 +72,16 @@ test('an out-of-range recipe count is explained and not saved', async ({ page })
   await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('from 1 to 21')
   expect(api.patches).toEqual([])
+})
+
+test('avoiding repeats is off until chosen and saves the number of plans', async ({ page }) => {
+  const api = await setup(page)
+  await page.goto('/settings')
+  const avoid = page.getByLabel('Avoid repeats')
+  await expect(avoid).toHaveValue('0')
+  await expect(avoid.locator('option:checked')).toHaveText('Off')
+  await avoid.selectOption({ label: 'Last 2 plans' })
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await expect(page.getByRole('status')).toHaveText('Settings saved.')
+  expect(api.patches).toEqual([{ avoidRecentPlans: 2 }])
 })

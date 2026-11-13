@@ -5,6 +5,7 @@ import { settingsQueryKey, settingsQueryOptions } from './queries'
 
 const minRecipeCount = 1
 const maxRecipeCount = 21
+const maxAvoidRecentPlans = 8
 
 export function SettingsPage() {
   const query = useQuery(settingsQueryOptions)
@@ -34,6 +35,7 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   const queryClient = useQueryClient()
   const [timezone, setTimezone] = useState(saved.timezone)
   const [recipeCount, setRecipeCount] = useState(String(saved.defaultRecipeCount))
+  const [avoidRecentPlans, setAvoidRecentPlans] = useState(saved.avoidRecentPlans)
   const [countError, setCountError] = useState<string | null>(null)
   const [status, setStatus] = useState('')
   const timezoneRef = useRef<HTMLSelectElement>(null)
@@ -56,6 +58,7 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   if (timezone !== saved.timezone) change.timezone = timezone
   const parsedCount = recipeCount.trim() === '' ? Number.NaN : Number(recipeCount)
   if (parsedCount !== saved.defaultRecipeCount) change.defaultRecipeCount = parsedCount
+  if (avoidRecentPlans !== saved.avoidRecentPlans) change.avoidRecentPlans = avoidRecentPlans
   const changed = Object.keys(change).length > 0
 
   // When a stored setting changes (another member saved, or this form did), its field follows it,
@@ -64,10 +67,12 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
   const { reset } = mutation
   useEffect(() => {
     const before = previous.current
-    if (before.timezone === saved.timezone && before.defaultRecipeCount === saved.defaultRecipeCount) return
+    if (before.timezone === saved.timezone && before.defaultRecipeCount === saved.defaultRecipeCount &&
+      before.avoidRecentPlans === saved.avoidRecentPlans) return
     previous.current = saved
     if (before.timezone !== saved.timezone) setTimezone(saved.timezone)
     if (before.defaultRecipeCount !== saved.defaultRecipeCount) setRecipeCount(String(saved.defaultRecipeCount))
+    if (before.avoidRecentPlans !== saved.avoidRecentPlans) setAvoidRecentPlans(saved.avoidRecentPlans)
     setCountError(null)
     reset()
   }, [saved, reset])
@@ -154,6 +159,23 @@ function SettingsForm({ saved }: { saved: HouseholdSettings }) {
             onChange={(event) => { if (!mutation.isPending) { setRecipeCount(event.target.value); edited() } }}
             readOnly={mutation.isPending}
           />
+        </div>
+      </div>
+      <div className="settings-field">
+        <label htmlFor="settings-avoid-recent">Avoid repeats</label>
+        <p className="settings-help" id="settings-avoid-recent-help">New plans skip recipes from your most recent plans, unless there aren’t enough others.</p>
+        <div className="settings-control">
+          <select
+            id="settings-avoid-recent"
+            aria-describedby="settings-avoid-recent-help"
+            value={avoidRecentPlans}
+            onChange={(event) => { if (!mutation.isPending) { setAvoidRecentPlans(Number(event.target.value)); edited() } }}
+            aria-readonly={mutation.isPending || undefined}
+          >
+            {Array.from({ length: maxAvoidRecentPlans + 1 }, (_, plans) => (
+              <option key={plans} value={plans}>{plans === 0 ? 'Off' : plans === 1 ? 'Last plan' : `Last ${plans} plans`}</option>
+            ))}
+          </select>
         </div>
       </div>
       {error && <p className="inline-error" id="settings-error" role="alert">{error}</p>}

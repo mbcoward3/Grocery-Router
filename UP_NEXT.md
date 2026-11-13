@@ -1,7 +1,7 @@
 # Grocery Router — Up Next
 
 Status: **deferred backlog; none of this is v1 scope**  
-Current scope: [`V1_SPEC.md`](V1_SPEC.md)
+Current scope: [`PRODUCT.md`](PRODUCT.md)
 
 This document tracks the interview's “not yets”: useful capabilities deliberately excluded
 because they would muddy v1. Items move out only through a newly scoped phase; this is not an
@@ -20,7 +20,8 @@ scope requires a new phase with its own acceptance criteria.
   `openai-go` for offline work (D042), and marked suggestions that join when kept (D043).
 - **Planner constraints.** Guests, serving targets, busy nights, effort limits, desired
   leftovers, proteins, cuisines, and must-include constraints beyond direct manual editing.
-- **History-aware selection.** Recency, repetition avoidance, favorites, breadth, and other
+- **History-aware selection.** The deterministic part, avoiding recipes from the last few
+  plans, is built (D052). Recency weighting, favorites, breadth, and other
   cooking-history signals.
 - **Reasons and feedback.** Planner explanations, acceptance signals, outcomes, and quality
   measurement.
@@ -84,6 +85,8 @@ scope requires a new phase with its own acceptance criteria.
   grocery quantity overrides, removals, or completed lines.
 - **Explicit lock/finalize state.** Reconsider only if real use shows that the natural
   plan-then-shop workflow needs enforcement.
+- **Household-managed store sections.** Add and rename sections beyond those the corpus
+  creates (#69, deferred by the owner on 2026-11-11). Hiding a section is a separate decision.
 - **Within-section item ordering.** Section ordering was promoted by issues #36–#38 (D044);
   custom ordering of individual items stays deferred.
 - **List export and sharing.** Web Share/Apple Notes, text export, or copy workflows.

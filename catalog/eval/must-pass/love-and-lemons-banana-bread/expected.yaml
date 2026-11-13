@@ -196,6 +196,12 @@ grocery:
   - item: walnuts
     section: baking
     kind: exact
-    amount: "5/8"
+    amount: "1/2"
     unit: cup
-    source_lines: [10, 10]
+    source_lines: [10]
+  - item: walnuts
+    section: baking
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [10]

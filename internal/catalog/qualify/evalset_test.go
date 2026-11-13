@@ -54,7 +54,7 @@ func TestParserRejectsMalformedCases(t *testing.T) {
 			text := string(content)
 			f.write(filepath.Join(dir, expected), []byte(text[:strings.Index(text, "grocery:")]))
 		}, "expected grocery output"},
-		{"hand-edited grocery output", qualify.PartMustPass, replace(expected, `amount: 5/8`, `amount: 3/4`), "does not match the aggregation"},
+		{"hand-edited grocery output", qualify.PartMustPass, replace(expected, `amount: 1/2`, `amount: 3/4`), "does not match the aggregation"},
 		{"unpublishable expected document", qualify.PartMustPass, replace(expected, "state: intentionally_unspecified", "state: resolved"), "not publishable"},
 		{"source lines differ from node", qualify.PartMustPass, replace(source, `"2 large eggs"`, `"3 large eggs"`), "source_lines must equal"},
 		{"unknown source field", qualify.PartMustPass, replace(source, `"format_version": 1`, `"format_version": 1, "extra": true`), "unknown field"},

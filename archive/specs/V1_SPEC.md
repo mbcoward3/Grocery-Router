@@ -1,10 +1,14 @@
+> **Historical.** This is the original v1 contract, archived on 2026-11-11 (#61). Current
+> behavior is in [`PRODUCT.md`](../../PRODUCT.md); later changes are recorded in
+> [`PRODUCT_DECISIONS.md`](../../PRODUCT_DECISIONS.md).
+
 # Grocery Router v1 — Product and Implementation Specification
 
 Status: **approved direction, ready for implementation planning**  
 Scope settled by product interview.  
 Canonical for v1: **this document supersedes the existing `.scratch/spec/`, architecture documents, prototype behavior, and prior implementation decisions.**
 
-Sections 1.1, 1.2, 3.2, and 12.4 (no accounts, local-only operation, no Docker or deployment, and trusting the local network) were superseded by [`AUTH_HOUSEHOLDS_SPEC.md`](AUTH_HOUSEHOLDS_SPEC.md) and D036 in [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md).
+Sections 1.1, 1.2, 3.2, and 12.4 (no accounts, local-only operation, no Docker or deployment, and trusting the local network) were superseded by [`AUTH_HOUSEHOLDS_SPEC.md`](../../AUTH_HOUSEHOLDS_SPEC.md) and D036 in [`PRODUCT_DECISIONS.md`](../../PRODUCT_DECISIONS.md).
 
 ---
 
@@ -67,12 +71,13 @@ v1 carries approved recipe requirements into the list. It does not round meat to
 
 ### 2.5 Exact conversions are allowed; assumptions are not
 
-Universally exact unit conversions may aggregate. Item-specific approximations may not.
+Amounts in the same unit add exactly. Amounts in different units are shown side by side on the
+item's one row instead of being converted (D054). Item-specific approximations are never used.
 
 Examples:
 
-- `1 tbsp + 3 tsp` may become `2 tbsp`.
-- `1 cup + 8 fl oz` may combine when the units represent the same exact volume dimension.
+- `1 tsp + 2 tsp` becomes `3 tsp`.
+- `2 cups` and `1 tsp` show as `2 cups + 1 tsp`, largest unit first.
 - `1 onion + 1 cup chopped onion` remains separate.
 - Different requested package sizes remain separate.
 
@@ -290,7 +295,8 @@ The trace from a generated grocery line to a particular week-recipe occurrence a
 ### 6.2 Random generation
 
 - Selection is uniform across all verified recipes.
-- Selection ignores cooking history and previous weeks.
+- Selection ignores cooking history, except that a household may choose to avoid recipes from
+  its last 0-8 plans (D052). Those recipes are picked only when too few others remain.
 - Initial results contain no duplicates.
 - If the requested count exceeds the number of verified recipes, generation must fail clearly rather than silently duplicate recipes.
 - Random selection invokes no model.
@@ -349,12 +355,13 @@ Exact values should be represented without floating-point loss. Human-readable f
 
 ### 7.3 Exact unit conversion
 
-The system may convert and aggregate only through a closed table of exact dimensional conversions.
+The unit table records exact dimensional conversions, but the list does not use them to combine
+amounts: since D054, only amounts in the same unit combine.
 
 Required behavior:
 
-- compatible exact units for the same grocery item combine;
-- incompatible units remain separate;
+- amounts in the same unit for the same grocery item combine exactly;
+- amounts in different units remain separate on the item's row, largest unit of a dimension first;
 - item-specific size or yield assumptions are prohibited;
 - source package sizes are not converted into supposedly equivalent purchase packages; and
 - conversions must never silently understate a requirement.
@@ -430,7 +437,9 @@ It must:
 - Unknown additions enter Other immediately and offer a section picker. Any manual line can be
   moved later. The household's placement of an unknown name is remembered (case/whitespace
   insensitive): adding that name again uses the remembered section, and it appears in suggestions.
-  Moving it back to Other forgets it. Known items keep their reviewed section and are not remembered. Manual lines remain separate, adjacent to matching generated items, with no recipe
+  Moving it back to Other forgets it. Moving any line of a known item, generated or manual,
+  saves the household's placement of that item for every later plan; choosing its reviewed
+  section again clears it (D053). Manual lines remain separate, adjacent to matching generated items, with no recipe
   contributions. Recipe changes retain manual identities and chosen sections.
 - No runtime AI, quantity parsing, or shared catalog aliases are introduced.
 
@@ -918,10 +927,10 @@ Before v1 is considered complete:
 The product and implementation contract ends here; deferred scope, rationale, and completed
 migration evidence live in focused companion records:
 
-- [`UP_NEXT.md`](UP_NEXT.md) — all interview “not yets,” explicitly outside v1.
+- [`UP_NEXT.md`](../../UP_NEXT.md) — all interview “not yets,” explicitly outside v1.
 - `archive/trueup/recipes.csv` — completed corpus membership and disposition evidence.
-- [`PRODUCT_DECISIONS.md`](PRODUCT_DECISIONS.md) — durable rationale and revisit conditions.
-- [`archive/interviews/v1-scope-interview.md`](archive/interviews/v1-scope-interview.md) —
+- [`PRODUCT_DECISIONS.md`](../../PRODUCT_DECISIONS.md) — durable rationale and revisit conditions.
+- [`archive/interviews/v1-scope-interview.md`](../../archive/interviews/v1-scope-interview.md) —
   non-authoritative raw interview transcript for nuance recovery only.
 
 The active documents do not expand the v1 product scope. The archived ledger and transcript are

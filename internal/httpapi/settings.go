@@ -11,11 +11,13 @@ import (
 type settingsResponse struct {
 	Timezone           string `json:"timezone"`
 	DefaultRecipeCount int    `json:"defaultRecipeCount"`
+	AvoidRecentPlans   int    `json:"avoidRecentPlans"`
 }
 
 type settingsUpdate struct {
 	Timezone           *string `json:"timezone"`
 	DefaultRecipeCount *int    `json:"defaultRecipeCount"`
+	AvoidRecentPlans   *int    `json:"avoidRecentPlans"`
 }
 
 func (server *Server) getSettings(response http.ResponseWriter, request *http.Request) {
@@ -30,12 +32,12 @@ func (server *Server) updateSettings(response http.ResponseWriter, request *http
 	}
 	// An empty change is a malformed request (400, minProperties in the contract), rejected here
 	// before settings.Change.Validate, whose own empty-change check serves other callers.
-	if input.Timezone == nil && input.DefaultRecipeCount == nil {
-		writeError(response, http.StatusBadRequest, "invalid_request", "Provide timezone, defaultRecipeCount, or both.")
+	if input.Timezone == nil && input.DefaultRecipeCount == nil && input.AvoidRecentPlans == nil {
+		writeError(response, http.StatusBadRequest, "invalid_request", "Provide at least one setting.")
 		return
 	}
 	updated, err := settings.Update(request.Context(), server.queries, request.PathValue("householdID"),
-		settings.Change{Timezone: input.Timezone, DefaultRecipeCount: input.DefaultRecipeCount})
+		settings.Change{Timezone: input.Timezone, DefaultRecipeCount: input.DefaultRecipeCount, AvoidRecentPlans: input.AvoidRecentPlans})
 	server.writeSettingsResult(response, request, updated, err)
 }
 
@@ -49,6 +51,8 @@ func (server *Server) writeSettingsResult(response http.ResponseWriter, request 
 	case err != nil:
 		writeInternalError(response, request, err)
 	default:
-		writeJSON(response, http.StatusOK, settingsResponse{Timezone: current.Timezone, DefaultRecipeCount: current.DefaultRecipeCount})
+		writeJSON(response, http.StatusOK, settingsResponse{
+			Timezone: current.Timezone, DefaultRecipeCount: current.DefaultRecipeCount, AvoidRecentPlans: current.AvoidRecentPlans,
+		})
 	}
 }

@@ -10,6 +10,17 @@ import (
 	"database/sql"
 )
 
+const getAvoidRecentPlans = `-- name: GetAvoidRecentPlans :one
+SELECT avoid_recent_plans FROM households WHERE id = $1
+`
+
+func (q *Queries) GetAvoidRecentPlans(ctx context.Context, householdID string) (int16, error) {
+	row := q.db.QueryRowContext(ctx, getAvoidRecentPlans, householdID)
+	var avoid_recent_plans int16
+	err := row.Scan(&avoid_recent_plans)
+	return avoid_recent_plans, err
+}
+
 const getHouseholdName = `-- name: GetHouseholdName :one
 SELECT name FROM households WHERE id = $1
 `
@@ -22,19 +33,20 @@ func (q *Queries) GetHouseholdName(ctx context.Context, householdID string) (str
 }
 
 const getHouseholdSettings = `-- name: GetHouseholdSettings :one
-SELECT timezone, default_recipe_count
+SELECT timezone, default_recipe_count, avoid_recent_plans
 FROM households WHERE id = $1
 `
 
 type GetHouseholdSettingsRow struct {
 	Timezone           string `db:"timezone" json:"timezone"`
 	DefaultRecipeCount int32  `db:"default_recipe_count" json:"default_recipe_count"`
+	AvoidRecentPlans   int16  `db:"avoid_recent_plans" json:"avoid_recent_plans"`
 }
 
 func (q *Queries) GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error) {
 	row := q.db.QueryRowContext(ctx, getHouseholdSettings, householdID)
 	var i GetHouseholdSettingsRow
-	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount)
+	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount, &i.AvoidRecentPlans)
 	return i, err
 }
 
@@ -68,27 +80,35 @@ const updateHouseholdSettings = `-- name: UpdateHouseholdSettings :one
 UPDATE households SET
     timezone = coalesce($1, timezone),
     default_recipe_count = coalesce($2, default_recipe_count),
+    avoid_recent_plans = coalesce($3, avoid_recent_plans),
     updated_at = clock_timestamp()
-WHERE id = $3
-RETURNING timezone, default_recipe_count
+WHERE id = $4
+RETURNING timezone, default_recipe_count, avoid_recent_plans
 `
 
 type UpdateHouseholdSettingsParams struct {
 	Timezone           sql.NullString `db:"timezone" json:"timezone"`
 	DefaultRecipeCount sql.NullInt32  `db:"default_recipe_count" json:"default_recipe_count"`
+	AvoidRecentPlans   sql.NullInt16  `db:"avoid_recent_plans" json:"avoid_recent_plans"`
 	HouseholdID        string         `db:"household_id" json:"household_id"`
 }
 
 type UpdateHouseholdSettingsRow struct {
 	Timezone           string `db:"timezone" json:"timezone"`
 	DefaultRecipeCount int32  `db:"default_recipe_count" json:"default_recipe_count"`
+	AvoidRecentPlans   int16  `db:"avoid_recent_plans" json:"avoid_recent_plans"`
 }
 
 // A NULL argument keeps the stored value, so a change to one setting cannot overwrite a
 // concurrent change to another.
 func (q *Queries) UpdateHouseholdSettings(ctx context.Context, arg UpdateHouseholdSettingsParams) (UpdateHouseholdSettingsRow, error) {
-	row := q.db.QueryRowContext(ctx, updateHouseholdSettings, arg.Timezone, arg.DefaultRecipeCount, arg.HouseholdID)
+	row := q.db.QueryRowContext(ctx, updateHouseholdSettings,
+		arg.Timezone,
+		arg.DefaultRecipeCount,
+		arg.AvoidRecentPlans,
+		arg.HouseholdID,
+	)
 	var i UpdateHouseholdSettingsRow
-	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount)
+	err := row.Scan(&i.Timezone, &i.DefaultRecipeCount, &i.AvoidRecentPlans)
 	return i, err
 }

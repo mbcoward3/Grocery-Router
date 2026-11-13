@@ -87,9 +87,20 @@ RETURNING *;
 SELECT * FROM grocery_items WHERE household_id = sqlc.arg(household_id) AND key = sqlc.arg(key);
 
 -- name: ListGroceryItems :many
-SELECT gi.*, ss.name AS store_section_name
-FROM grocery_items gi
-JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+-- Each item's section is the household's own placement when it has one (D053), else the
+-- reviewed corpus section.
+SELECT
+    gi.id,
+    gi.key,
+    gi.name,
+    gi.store_section_id AS corpus_section_id,
+    ss.id AS store_section_id,
+    ss.name AS store_section_name
+FROM grocery_items AS gi
+LEFT JOIN household_item_sections AS his
+    ON his.household_id = gi.household_id AND his.grocery_item_id = gi.id
+JOIN store_sections AS ss
+    ON ss.household_id = gi.household_id AND ss.id = coalesce(his.store_section_id, gi.store_section_id)
 WHERE gi.household_id = $1
 ORDER BY gi.name;
 

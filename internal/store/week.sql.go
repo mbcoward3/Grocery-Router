@@ -307,6 +307,45 @@ func (q *Queries) ListPastWeeks(ctx context.Context, householdID string) ([]List
 	return items, nil
 }
 
+const listRecentPlanRecipeIDs = `-- name: ListRecentPlanRecipeIDs :many
+SELECT DISTINCT wr.recipe_id FROM week_recipes AS wr
+WHERE wr.household_id = $1 AND wr.week_id IN (
+    SELECT w.id FROM weeks AS w
+    WHERE w.household_id = $1 AND w.closed_at IS NOT NULL
+    ORDER BY w.closed_at DESC, w.id DESC
+    LIMIT $2
+)
+`
+
+type ListRecentPlanRecipeIDsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	Plans       int32  `db:"plans" json:"plans"`
+}
+
+// The recipes in the household's most recently closed plans, which selection avoids (D052).
+func (q *Queries) ListRecentPlanRecipeIDs(ctx context.Context, arg ListRecentPlanRecipeIDsParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, listRecentPlanRecipeIDs, arg.HouseholdID, arg.Plans)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int64{}
+	for rows.Next() {
+		var recipe_id int64
+		if err := rows.Scan(&recipe_id); err != nil {
+			return nil, err
+		}
+		items = append(items, recipe_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listWeekIngredientRequirements = `-- name: ListWeekIngredientRequirements :many
 SELECT
     wr.id AS week_recipe_id,
@@ -343,7 +382,8 @@ JOIN recipes r ON r.id = wr.recipe_id
 JOIN recipe_ingredient_sections ris ON ris.recipe_id = r.id
 JOIN recipe_ingredients ri ON ri.section_id = ris.id
 JOIN grocery_items gi ON gi.id = ri.grocery_item_id
-JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+LEFT JOIN household_item_sections his ON his.household_id = gi.household_id AND his.grocery_item_id = gi.id
+JOIN store_sections ss ON ss.household_id = gi.household_id AND ss.id = coalesce(his.store_section_id, gi.store_section_id)
 LEFT JOIN units u ON u.id = ri.unit_id
 LEFT JOIN units psu ON psu.id = ri.package_size_unit_id
 WHERE wr.household_id = $1 AND wr.week_id = $2

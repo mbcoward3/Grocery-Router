@@ -301,6 +301,72 @@ func (q *Queries) ForgetItemSection(ctx context.Context, arg ForgetItemSectionPa
 	return err
 }
 
+const forgetItemSectionOverride = `-- name: ForgetItemSectionOverride :exec
+DELETE FROM household_item_sections
+WHERE household_id = $1 AND grocery_item_id = $2
+`
+
+type ForgetItemSectionOverrideParams struct {
+	HouseholdID   string `db:"household_id" json:"household_id"`
+	GroceryItemID int64  `db:"grocery_item_id" json:"grocery_item_id"`
+}
+
+func (q *Queries) ForgetItemSectionOverride(ctx context.Context, arg ForgetItemSectionOverrideParams) error {
+	_, err := q.db.ExecContext(ctx, forgetItemSectionOverride, arg.HouseholdID, arg.GroceryItemID)
+	return err
+}
+
+const getGroceryItemSection = `-- name: GetGroceryItemSection :one
+SELECT store_section_id FROM grocery_items
+WHERE household_id = $1 AND id = $2
+`
+
+type GetGroceryItemSectionParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	ID          int64  `db:"id" json:"id"`
+}
+
+func (q *Queries) GetGroceryItemSection(ctx context.Context, arg GetGroceryItemSectionParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getGroceryItemSection, arg.HouseholdID, arg.ID)
+	var store_section_id int64
+	err := row.Scan(&store_section_id)
+	return store_section_id, err
+}
+
+const getOpenShoppingLine = `-- name: GetOpenShoppingLine :one
+SELECT sl.id, sl.origin, sl.display_name, sl.grocery_item_id FROM shopping_lines AS sl
+WHERE sl.household_id = $1 AND sl.id = $2 AND sl.shopping_list_id = (
+    SELECT list.id FROM shopping_lists AS list
+    JOIN weeks AS w ON w.household_id = list.household_id AND w.id = list.week_id
+    WHERE w.household_id = $1 AND w.closed_at IS NULL
+)
+`
+
+type GetOpenShoppingLineParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	LineID      int64  `db:"line_id" json:"line_id"`
+}
+
+type GetOpenShoppingLineRow struct {
+	ID            int64         `db:"id" json:"id"`
+	Origin        string        `db:"origin" json:"origin"`
+	DisplayName   string        `db:"display_name" json:"display_name"`
+	GroceryItemID sql.NullInt64 `db:"grocery_item_id" json:"grocery_item_id"`
+}
+
+// A line on the household's current plan's list.
+func (q *Queries) GetOpenShoppingLine(ctx context.Context, arg GetOpenShoppingLineParams) (GetOpenShoppingLineRow, error) {
+	row := q.db.QueryRowContext(ctx, getOpenShoppingLine, arg.HouseholdID, arg.LineID)
+	var i GetOpenShoppingLineRow
+	err := row.Scan(
+		&i.ID,
+		&i.Origin,
+		&i.DisplayName,
+		&i.GroceryItemID,
+	)
+	return i, err
+}
+
 const getOtherStoreSection = `-- name: GetOtherStoreSection :one
 SELECT id, key, name, household_id, display_position FROM store_sections WHERE household_id = $1 AND key = 'other'
 `
@@ -862,6 +928,48 @@ UPDATE store_sections SET display_position = default_section_position(key) WHERE
 
 func (q *Queries) ResetSectionPositions(ctx context.Context, householdID string) error {
 	_, err := q.db.ExecContext(ctx, resetSectionPositions, householdID)
+	return err
+}
+
+const setItemLinesSection = `-- name: SetItemLinesSection :exec
+UPDATE shopping_lines SET store_section_id = $1
+WHERE shopping_lines.household_id = $2
+    AND shopping_lines.grocery_item_id = $3
+    AND shopping_lines.shopping_list_id = (
+        SELECT list.id FROM shopping_lists AS list
+        JOIN weeks AS w ON w.household_id = list.household_id AND w.id = list.week_id
+        WHERE w.household_id = $2 AND w.closed_at IS NULL
+    )
+`
+
+type SetItemLinesSectionParams struct {
+	StoreSectionID int64         `db:"store_section_id" json:"store_section_id"`
+	HouseholdID    string        `db:"household_id" json:"household_id"`
+	GroceryItemID  sql.NullInt64 `db:"grocery_item_id" json:"grocery_item_id"`
+}
+
+// Moves every line of one known item on the current plan's list, generated or manual.
+func (q *Queries) SetItemLinesSection(ctx context.Context, arg SetItemLinesSectionParams) error {
+	_, err := q.db.ExecContext(ctx, setItemLinesSection, arg.StoreSectionID, arg.HouseholdID, arg.GroceryItemID)
+	return err
+}
+
+const setItemSection = `-- name: SetItemSection :exec
+INSERT INTO household_item_sections (household_id, grocery_item_id, store_section_id)
+VALUES ($1, $2, $3)
+ON CONFLICT (household_id, grocery_item_id) DO UPDATE
+SET store_section_id = excluded.store_section_id,
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+`
+
+type SetItemSectionParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	GroceryItemID  int64  `db:"grocery_item_id" json:"grocery_item_id"`
+	StoreSectionID int64  `db:"store_section_id" json:"store_section_id"`
+}
+
+func (q *Queries) SetItemSection(ctx context.Context, arg SetItemSectionParams) error {
+	_, err := q.db.ExecContext(ctx, setItemSection, arg.HouseholdID, arg.GroceryItemID, arg.StoreSectionID)
 	return err
 }
 

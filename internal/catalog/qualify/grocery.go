@@ -10,7 +10,7 @@ import (
 
 // GroceryLine is one generated grocery line in the evaluation format: what the existing
 // aggregation (internal/grocery) produces for one recipe in an otherwise empty week.
-// Amounts are canonical reduced rationals ("5/8", "3/2", "2").
+// Amounts are canonical reduced rationals ("1/2", "3/2", "2").
 type GroceryLine struct {
 	// Item is the grocery item key.
 	Item string `yaml:"item"`

@@ -103,34 +103,61 @@ func normalizeItem(value string) string {
 	return strings.ToLower(strings.Join(strings.Fields(value), " "))
 }
 
-// SetLineSection changes only a manual line in the current week.
+// SetLineSection moves a line on the current plan's list to another section. For a known grocery
+// item, generated or manual, it saves the household's placement of that item (D053), so every
+// later list uses it, and moves all of the item's lines now. Choosing the reviewed section again
+// clears the placement. For an unknown manual name it remembers the section for that name (D045).
 func (service *Household) SetLineSection(ctx context.Context, lineID, sectionID int64) error {
 	return service.transact(ctx, func(queries *store.Queries) error {
 		if err := requireSection(ctx, queries, service.householdID, sectionID); err != nil {
 			return err
 		}
-		// Without an open week the update below finds no line.
+		// Without an open plan the line below is not found.
 		if _, err := service.lockOpenWeek(ctx, queries); err != nil && !errors.Is(err, ErrNoCurrentWeek) {
 			return err
 		}
-		line, err := queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{
-			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID,
-		})
+		line, err := queries.GetOpenShoppingLine(ctx, store.GetOpenShoppingLineParams{HouseholdID: service.householdID, LineID: lineID})
 		if errors.Is(err, sql.ErrNoRows) {
 			return invalid("shopping line not found or operation is not supported")
 		}
 		if err != nil {
 			return err
 		}
-		// Known grocery items keep their reviewed corpus section; only unknown names are remembered.
 		if line.GroceryItemID.Valid {
-			return nil
+			return service.placeItem(ctx, queries, line.GroceryItemID.Int64, sectionID)
+		}
+		if line.Origin != "manual" {
+			return invalid("shopping line not found or operation is not supported")
+		}
+		if _, err := queries.SetManualLineSection(ctx, store.SetManualLineSectionParams{
+			HouseholdID: service.householdID, LineID: lineID, StoreSectionID: sectionID,
+		}); err != nil {
+			return err
 		}
 		other, err := queries.GetOtherStoreSection(ctx, service.householdID)
 		if err != nil {
 			return err
 		}
 		return rememberSection(ctx, queries, service.householdID, line.DisplayName, sectionID, other.ID)
+	})
+}
+
+// placeItem saves where the household's store keeps a known item and moves its current lines.
+func (service *Household) placeItem(ctx context.Context, queries *store.Queries, itemID, sectionID int64) error {
+	reviewed, err := queries.GetGroceryItemSection(ctx, store.GetGroceryItemSectionParams{HouseholdID: service.householdID, ID: itemID})
+	if err != nil {
+		return err
+	}
+	if sectionID == reviewed {
+		err = queries.ForgetItemSectionOverride(ctx, store.ForgetItemSectionOverrideParams{HouseholdID: service.householdID, GroceryItemID: itemID})
+	} else {
+		err = queries.SetItemSection(ctx, store.SetItemSectionParams{HouseholdID: service.householdID, GroceryItemID: itemID, StoreSectionID: sectionID})
+	}
+	if err != nil {
+		return err
+	}
+	return queries.SetItemLinesSection(ctx, store.SetItemLinesSectionParams{
+		HouseholdID: service.householdID, GroceryItemID: sql.NullInt64{Int64: itemID, Valid: true}, StoreSectionID: sectionID,
 	})
 }
 
