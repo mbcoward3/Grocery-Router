@@ -74,7 +74,7 @@ and exists only to recover nuance. D036 supersedes earlier SQLite-specific decis
 | D052 | A household can avoid recipes from its last few plans | Active |
 | D053 | A household can place a known item in its own store section | Active |
 | D054 | Amounts in different units are shown side by side, not converted | Active |
-| D055 | A recipe library of followed catalog recipes and editable household recipes (proposed) | Proposed (awaiting owner approval) |
+| D055 | A recipe library of followed catalog recipes and editable household recipes | Approved (not yet implemented) |
 
 ---
 
@@ -1062,10 +1062,10 @@ longer used to combine amounts. This partly supersedes the archived V1 §2.5 and
 
 **Revisit when:** The household wants mixed amounts simplified, or metric and US display.
 
-## D055 — A recipe library of followed catalog recipes and editable household recipes (proposed)
+## D055 — A recipe library of followed catalog recipes and editable household recipes
 
-**Status:** Proposed (awaiting owner approval in the pull request that adds
-[`RECIPE_LIBRARY_SPEC.md`](RECIPE_LIBRARY_SPEC.md))
+**Status:** Approved by the owner on 2026-11-14; not yet implemented
+([`RECIPE_LIBRARY_SPEC.md`](RECIPE_LIBRARY_SPEC.md), delivery starts with #56 and #57)
 
 **Decision:** A household's library holds catalog recipes it follows, which change when the
 catalog publishes a fix, and its own recipes. Members edit any library recipe in the app and the
@@ -1077,9 +1077,11 @@ sync command.
 **Why:** The product is moving to many households and a large shared catalog that suggestion
 tooling uses. Copying every adopted recipe per household, or changing recipes through repository
 files and a command, does not scale (owner, 2026-11-12). This replaces the first draft of #55,
-which proposed a Markdown-driven `corpus-sync`.
+which proposed a Markdown-driven `corpus-sync`. On 2026-11-14 the owner reconfirmed the model:
+catalog recipes are templates only the pipeline changes, household edits stay within the
+household, past plans are never updated, and a plan started from a past one uses today's recipes.
 
-**Consequence:** If approved, this partly supersedes D039 ("adopting gives an editable copy"):
+**Consequence:** This partly supersedes D039 ("adopting gives an editable copy"):
 following is the default and a copy is made only on edit. Delivery order and acceptance are in the
 spec.
 

@@ -11,7 +11,8 @@ Read in this order:
 4. `SUBSTITUTIONS_SPEC.md` for household substitution groups (approved direction,
    documentation only; implementation not authorized)
 5. `RECIPE_LIBRARY_SPEC.md` for the recipe library: following shared catalog recipes and
-   editing household recipes in the app (proposed; awaiting owner approval)
+   editing household recipes in the app (approved; delivery steps 1–2 authorized, steps 3–4
+   follow its §4 gates)
 6. `UP_NEXT.md`
 7. `PRODUCT_DECISIONS.md` for rationale
 
@@ -43,7 +44,8 @@ deferred.
 - Linked websites control linked recipe content at true-up time.
 - `archive/trueup-evidence/inputs/` is archived supporting evidence only.
 - A source may be incomplete; a selectable recipe may not be.
-- Every recipe is reviewed individually before verification.
+- Every recipe is reviewed individually before verification. Once in-app editing exists, a
+  household member's save is that review (`RECIPE_LIBRARY_SPEC.md` §3.3).
 - Approved recipes remain as strict Markdown bootstrap files and are ingested one-way.
 - PostgreSQL is runtime truth; application code never reads or synchronizes recipe Markdown.
 - Ingredient-to-grocery mapping happens during ingestion, never week generation.
