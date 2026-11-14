@@ -151,9 +151,14 @@ func (service *Household) PastWeek(ctx context.Context, weekID int64) (Historica
 	if err != nil {
 		return HistoricalView{}, pastWeekError(err)
 	}
-	view, err := service.loadView(ctx, queries, weekRow)
+	// History reads only the occurrences' snapshots, so later recipe edits never change it.
+	pastRecipes, err := queries.ListPastWeekRecipes(ctx, store.ListPastWeekRecipesParams{HouseholdID: service.householdID, WeekID: weekRow.ID})
 	if err != nil {
 		return HistoricalView{}, err
+	}
+	view := View{Week: weekRow, Recipes: make([]store.ListWeekRecipesRow, 0, len(pastRecipes))}
+	for _, recipe := range pastRecipes {
+		view.Recipes = append(view.Recipes, store.ListWeekRecipesRow(recipe))
 	}
 	checklist, err := loadChecklist(ctx, queries, service.householdID, weekRow)
 	if err != nil {

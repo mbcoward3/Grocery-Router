@@ -87,24 +87,34 @@ func (q *Queries) CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, e
 }
 
 const createWeekRecipe = `-- name: CreateWeekRecipe :one
-INSERT INTO week_recipes (household_id, week_id, recipe_id, position)
-VALUES ($4, $1, $2, $3)
-RETURNING id, week_id, recipe_id, position, created_at, household_id
+INSERT INTO week_recipes (
+    household_id, week_id, recipe_id, position,
+    recipe_name, recipe_key, image_url, yield_text,
+    hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes
+)
+SELECT
+    r.household_id, $1, r.id, $2,
+    r.name, r.key, r.image_url, r.yield_text,
+    r.hands_on_min_minutes, r.hands_on_max_minutes, r.unattended_min_minutes, r.unattended_max_minutes
+FROM recipes AS r
+WHERE r.household_id = $3 AND r.id = $4
+RETURNING id, week_id, recipe_id, position, created_at, household_id, recipe_name, recipe_key, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes
 `
 
 type CreateWeekRecipeParams struct {
 	WeekID      int64  `db:"week_id" json:"week_id"`
-	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
 	Position    int64  `db:"position" json:"position"`
 	HouseholdID string `db:"household_id" json:"household_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
 }
 
+// Snapshots the recipe fields History shows, so later recipe edits never change a past plan.
 func (q *Queries) CreateWeekRecipe(ctx context.Context, arg CreateWeekRecipeParams) (WeekRecipe, error) {
 	row := q.db.QueryRowContext(ctx, createWeekRecipe,
 		arg.WeekID,
-		arg.RecipeID,
 		arg.Position,
 		arg.HouseholdID,
+		arg.RecipeID,
 	)
 	var i WeekRecipe
 	err := row.Scan(
@@ -114,6 +124,14 @@ func (q *Queries) CreateWeekRecipe(ctx context.Context, arg CreateWeekRecipePara
 		&i.Position,
 		&i.CreatedAt,
 		&i.HouseholdID,
+		&i.RecipeName,
+		&i.RecipeKey,
+		&i.ImageUrl,
+		&i.YieldText,
+		&i.HandsOnMinMinutes,
+		&i.HandsOnMaxMinutes,
+		&i.UnattendedMinMinutes,
+		&i.UnattendedMaxMinutes,
 	)
 	return i, err
 }
@@ -221,7 +239,7 @@ func (q *Queries) GetShoppingListByWeek(ctx context.Context, arg GetShoppingList
 }
 
 const getWeekRecipe = `-- name: GetWeekRecipe :one
-SELECT id, week_id, recipe_id, position, created_at, household_id FROM week_recipes WHERE household_id = $1 AND id = $2
+SELECT id, week_id, recipe_id, position, created_at, household_id, recipe_name, recipe_key, image_url, yield_text, hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes FROM week_recipes WHERE household_id = $1 AND id = $2
 `
 
 type GetWeekRecipeParams struct {
@@ -239,8 +257,98 @@ func (q *Queries) GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (W
 		&i.Position,
 		&i.CreatedAt,
 		&i.HouseholdID,
+		&i.RecipeName,
+		&i.RecipeKey,
+		&i.ImageUrl,
+		&i.YieldText,
+		&i.HandsOnMinMinutes,
+		&i.HandsOnMaxMinutes,
+		&i.UnattendedMinMinutes,
+		&i.UnattendedMaxMinutes,
 	)
 	return i, err
+}
+
+const listPastWeekRecipes = `-- name: ListPastWeekRecipes :many
+SELECT
+    wr.id,
+    wr.week_id,
+    wr.recipe_id,
+    wr.position,
+    wr.created_at,
+    wr.household_id,
+    wr.recipe_key,
+    wr.recipe_name,
+    wr.image_url,
+    wr.yield_text,
+    wr.hands_on_min_minutes,
+    wr.hands_on_max_minutes,
+    wr.unattended_min_minutes,
+    wr.unattended_max_minutes
+FROM week_recipes AS wr
+WHERE wr.household_id = $1 AND wr.week_id = $2
+ORDER BY wr.position, wr.id
+`
+
+type ListPastWeekRecipesParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+}
+
+type ListPastWeekRecipesRow struct {
+	ID                   int64          `db:"id" json:"id"`
+	WeekID               int64          `db:"week_id" json:"week_id"`
+	RecipeID             int64          `db:"recipe_id" json:"recipe_id"`
+	Position             int64          `db:"position" json:"position"`
+	CreatedAt            string         `db:"created_at" json:"created_at"`
+	HouseholdID          string         `db:"household_id" json:"household_id"`
+	RecipeKey            string         `db:"recipe_key" json:"recipe_key"`
+	RecipeName           string         `db:"recipe_name" json:"recipe_name"`
+	ImageUrl             sql.NullString `db:"image_url" json:"image_url"`
+	YieldText            sql.NullString `db:"yield_text" json:"yield_text"`
+	HandsOnMinMinutes    sql.NullInt64  `db:"hands_on_min_minutes" json:"hands_on_min_minutes"`
+	HandsOnMaxMinutes    sql.NullInt64  `db:"hands_on_max_minutes" json:"hands_on_max_minutes"`
+	UnattendedMinMinutes sql.NullInt64  `db:"unattended_min_minutes" json:"unattended_min_minutes"`
+	UnattendedMaxMinutes sql.NullInt64  `db:"unattended_max_minutes" json:"unattended_max_minutes"`
+}
+
+// A plan in History shows the recipe fields snapshotted on its occurrences, never live rows.
+func (q *Queries) ListPastWeekRecipes(ctx context.Context, arg ListPastWeekRecipesParams) ([]ListPastWeekRecipesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPastWeekRecipes, arg.HouseholdID, arg.WeekID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPastWeekRecipesRow{}
+	for rows.Next() {
+		var i ListPastWeekRecipesRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.WeekID,
+			&i.RecipeID,
+			&i.Position,
+			&i.CreatedAt,
+			&i.HouseholdID,
+			&i.RecipeKey,
+			&i.RecipeName,
+			&i.ImageUrl,
+			&i.YieldText,
+			&i.HandsOnMinMinutes,
+			&i.HandsOnMaxMinutes,
+			&i.UnattendedMinMinutes,
+			&i.UnattendedMaxMinutes,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listPastWeeks = `-- name: ListPastWeeks :many
@@ -364,6 +472,7 @@ SELECT
     ri.package_size_numerator,
     ri.package_size_denominator,
     ri.package_size_unit_id,
+    ri.source_text,
     ri.preparation,
     ri.is_optional,
     gi.id AS grocery_item_id,
@@ -413,6 +522,7 @@ type ListWeekIngredientRequirementsRow struct {
 	PackageSizeNumerator   sql.NullInt64  `db:"package_size_numerator" json:"package_size_numerator"`
 	PackageSizeDenominator sql.NullInt64  `db:"package_size_denominator" json:"package_size_denominator"`
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
+	SourceText             string         `db:"source_text" json:"source_text"`
 	Preparation            sql.NullString `db:"preparation" json:"preparation"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	GroceryItemID          int64          `db:"grocery_item_id" json:"grocery_item_id"`
@@ -454,6 +564,7 @@ func (q *Queries) ListWeekIngredientRequirements(ctx context.Context, arg ListWe
 			&i.PackageSizeNumerator,
 			&i.PackageSizeDenominator,
 			&i.PackageSizeUnitID,
+			&i.SourceText,
 			&i.Preparation,
 			&i.IsOptional,
 			&i.GroceryItemID,
@@ -516,7 +627,12 @@ func (q *Queries) ListWeekRecipeIDs(ctx context.Context, arg ListWeekRecipeIDsPa
 
 const listWeekRecipes = `-- name: ListWeekRecipes :many
 SELECT
-    wr.id, wr.week_id, wr.recipe_id, wr.position, wr.created_at, wr.household_id,
+    wr.id,
+    wr.week_id,
+    wr.recipe_id,
+    wr.position,
+    wr.created_at,
+    wr.household_id,
     r.key AS recipe_key,
     r.name AS recipe_name,
     r.image_url,
@@ -553,6 +669,7 @@ type ListWeekRecipesRow struct {
 	UnattendedMaxMinutes sql.NullInt64  `db:"unattended_max_minutes" json:"unattended_max_minutes"`
 }
 
+// The open plan shows live recipe values; History reads ListPastWeekRecipes instead.
 func (q *Queries) ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams) ([]ListWeekRecipesRow, error) {
 	rows, err := q.db.QueryContext(ctx, listWeekRecipes, arg.HouseholdID, arg.WeekID)
 	if err != nil {
@@ -666,19 +783,31 @@ func (q *Queries) TouchWeek(ctx context.Context, arg TouchWeekParams) error {
 }
 
 const updateWeekRecipeRecipe = `-- name: UpdateWeekRecipeRecipe :one
-UPDATE week_recipes SET recipe_id = $1
-WHERE household_id = $2 AND id = $3
-RETURNING id, week_id, recipe_id, position, created_at, household_id
+UPDATE week_recipes SET
+    recipe_id = r.id,
+    recipe_name = r.name,
+    recipe_key = r.key,
+    image_url = r.image_url,
+    yield_text = r.yield_text,
+    hands_on_min_minutes = r.hands_on_min_minutes,
+    hands_on_max_minutes = r.hands_on_max_minutes,
+    unattended_min_minutes = r.unattended_min_minutes,
+    unattended_max_minutes = r.unattended_max_minutes
+FROM recipes AS r
+WHERE week_recipes.household_id = $1 AND week_recipes.id = $2
+    AND r.household_id = $1 AND r.id = $3
+RETURNING week_recipes.id, week_recipes.week_id, week_recipes.recipe_id, week_recipes.position, week_recipes.created_at, week_recipes.household_id, week_recipes.recipe_name, week_recipes.recipe_key, week_recipes.image_url, week_recipes.yield_text, week_recipes.hands_on_min_minutes, week_recipes.hands_on_max_minutes, week_recipes.unattended_min_minutes, week_recipes.unattended_max_minutes
 `
 
 type UpdateWeekRecipeRecipeParams struct {
-	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
 	HouseholdID string `db:"household_id" json:"household_id"`
 	ID          int64  `db:"id" json:"id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
 }
 
+// A swap replaces the occurrence's snapshot with the new recipe's fields.
 func (q *Queries) UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekRecipeRecipeParams) (WeekRecipe, error) {
-	row := q.db.QueryRowContext(ctx, updateWeekRecipeRecipe, arg.RecipeID, arg.HouseholdID, arg.ID)
+	row := q.db.QueryRowContext(ctx, updateWeekRecipeRecipe, arg.HouseholdID, arg.ID, arg.RecipeID)
 	var i WeekRecipe
 	err := row.Scan(
 		&i.ID,
@@ -687,6 +816,14 @@ func (q *Queries) UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekReci
 		&i.Position,
 		&i.CreatedAt,
 		&i.HouseholdID,
+		&i.RecipeName,
+		&i.RecipeKey,
+		&i.ImageUrl,
+		&i.YieldText,
+		&i.HandsOnMinMinutes,
+		&i.HandsOnMaxMinutes,
+		&i.UnattendedMinMinutes,
+		&i.UnattendedMaxMinutes,
 	)
 	return i, err
 }
