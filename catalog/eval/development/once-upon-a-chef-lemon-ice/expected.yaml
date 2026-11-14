@@ -1,0 +1,98 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check: (1) "1 teaspoon
+  lemon zest, (from 1 lemon)" is drafted as 1 tsp of a lemon-zest item with the lemon as a note:
+  the stated amount is kept and nothing is converted to lemons (purchase-unit conversion is out
+  of scope, §10). Decide the citrus rule for the catalog. (2) "¼ cup + 2 tablespoons freshly
+  squeezed lemon juice" is additive, 3/8 cup on the list, on a fresh-lemon-juice item. New
+  grocery items not in the household vocabulary (check name, section, and shopping mode):
+  lemon-zest, fresh-lemon-juice, granulated-sugar, half-and-half.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Lemon Ice"
+  source:
+    relationship: source
+    attribution: "Once Upon a Chef"
+    url: https://www.onceuponachef.com/recipes/lemon-ice.html
+    checked_on: 2026-11-08
+  image_url: https://www.onceuponachef.com/images/2023/05/lemon-ice.jpg
+  yield: "4"
+  hands_on: {min: 15, max: 15}
+  source_lines:
+    - "1 teaspoon lemon zest, (from 1 lemon)"
+    - "¼ cup + 2 tablespoons freshly squeezed lemon juice, (from about 3 lemons)"
+    - "1 cup sugar"
+    - "1/8 teaspoon salt"
+    - "2 cups half & half"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 37}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: lemon-zest, name: "Lemon Zest", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tsp"}
+          note: "from 1 lemon"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 5}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: fresh-lemon-juice, name: "Fresh Lemon Juice", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 1, span: {start: 8, end: 50}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: fresh-lemon-juice, name: "Fresh Lemon Juice", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+          note: "from about 3 lemons"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 11}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: granulated-sugar, name: "Granulated Sugar", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 17}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/8", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 18}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: half-and-half, name: "Half and Half", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "cup"}
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "In a large bowl, whisk together the lemon zest, lemon juice, sugar, and salt. Gradually whisk in the half & half, and continue whisking until the sugar is completely dissolved, 1 to 2 minutes."
+        - "Pour the mixture into a shallow container, such as an 8-in (20-cm) cake pan, and cover with plastic wrap. Freeze until the mixture is solid around the edges yet still mushy in the middle, about 2 hours. Stir well, cover again, and continue to freeze until completely firm, 2 to 3 hours more. Once firm, scoop into chilled bowls to serve."
+grocery:
+  - item: lemon-zest
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: tsp
+    source_lines: [0]
+  - item: fresh-lemon-juice
+    section: produce
+    kind: exact
+    amount: 3/8
+    unit: cup
+    source_lines: [1, 1]
+  - item: granulated-sugar
+    section: baking
+    kind: exact
+    amount: "1"
+    unit: cup
+    source_lines: [2]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [3]
+  - item: half-and-half
+    section: dairy
+    kind: exact
+    amount: "2"
+    unit: cup
+    source_lines: [4]

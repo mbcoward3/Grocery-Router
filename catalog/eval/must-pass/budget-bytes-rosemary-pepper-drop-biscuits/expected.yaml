@@ -1,0 +1,131 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Check: (1) "8 Tbsp cold butter (salted)" maps to a new salted-butter item because salted is a
+  protected descriptor (§5.7); the household corpus has butter and unsalted-butter. (2) plain
+  "sugar" maps to granulated-sugar. (3) "freshly cracked pepper" is black pepper. Salt and black
+  pepper map to the presence-only catalog items (spec §5.9, §11 default), so the list shows them
+  with no amount even though the requirement keeps it; the household corpus still has them as
+  measured items. New grocery items not in the household vocabulary (check name, section, and
+  shopping mode): baking-powder, dried-rosemary, granulated-sugar, salted-butter.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Rosemary Pepper Drop Biscuits"
+  source:
+    relationship: source
+    attribution: "Budget Bytes"
+    url: https://www.budgetbytes.com/rosemary-pepper-drop-biscuits/
+    checked_on: 2026-11-08
+  image_url: https://www.budgetbytes.com/wp-content/uploads/2012/05/Baked-Rosemary-Pepper-Drop-Biscuits-front.jpg
+  yield: "8"
+  hands_on: {min: 15, max: 15}
+  unattended: {min: 20, max: 20}
+  source_lines:
+    - "2 cups all-purpose flour ($0.21)"
+    - "2 tsp baking powder ($0.08)"
+    - "3/4 tsp salt ($0.03)"
+    - "1 tsp dried rosemary ($0.10)"
+    - "1/2 tsp freshly cracked pepper ($0.03)"
+    - "1 tsp sugar ($0.02)"
+    - "8 Tbsp cold butter (salted) ($0.88)"
+    - "1 cup milk ($0.33)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 24}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: all-purpose-flour, name: "All-Purpose Flour", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 19}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: baking-powder, name: "Baking Powder", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 12}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "3/4", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 20}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: dried-rosemary, name: "Dried Rosemary", store_section: {key: spices, name: "Spices"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 30}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: black-pepper, name: "Black Pepper", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/2", unit: "tsp"}
+          preparation: "freshly cracked"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 11}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: granulated-sugar, name: "Granulated Sugar", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 27}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salted-butter, name: "Salted Butter", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "8", unit: "tbsp"}
+          preparation: "cold"
+        - provenance: {type: ingredient_line, line: 7, span: {start: 0, end: 10}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: milk, name: "Milk", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Preheat the oven to 400ºF. Roughly chop or crush the rosemary to prevent large, sharp pieces. In a large bowl, combine the dry ingredients (flour, baking powder, salt, rosemary, pepper, sugar) until well combined."
+        - "Take the butter out of the refrigerator just prior to using it. Slice the butter into pieces, then add them to the dry ingredients. Work the butter into the flour mixture until no large pieces remain and it looks a little like damp sand. I use my hands for this, but you can also use a pastry cutter."
+        - "Starting with 3/4 cup, add just enough milk to moisten the mixture into a thick, slightly sticky dough (see photos below). There should be no dry flour left on the bottom of the bowl, but the dough should not be so wet that it appears glossy. Line a baking sheet with parchment paper and scoop 8 dollops of the biscuit dough onto the paper (about 1/3 to 1/2 cup each)."
+        - "Bake the biscuits in the fully preheated 400ºF oven for 18-22 minutes or until they are golden brown on the edges. Serve warm."
+grocery:
+  - item: all-purpose-flour
+    section: baking
+    kind: exact
+    amount: "2"
+    unit: cup
+    source_lines: [0]
+  - item: baking-powder
+    section: baking
+    kind: exact
+    amount: "2"
+    unit: tsp
+    source_lines: [1]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [2]
+  - item: dried-rosemary
+    section: spices
+    kind: exact
+    amount: "1"
+    unit: tsp
+    source_lines: [3]
+  - item: black-pepper
+    section: spices
+    kind: presence
+    source_lines: [4]
+  - item: granulated-sugar
+    section: baking
+    kind: exact
+    amount: "1"
+    unit: tsp
+    source_lines: [5]
+  - item: salted-butter
+    section: dairy
+    kind: exact
+    amount: "8"
+    unit: tbsp
+    source_lines: [6]
+  - item: milk
+    section: dairy
+    kind: exact
+    amount: "1"
+    unit: cup
+    source_lines: [7]

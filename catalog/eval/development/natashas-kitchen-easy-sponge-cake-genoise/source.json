@@ -1,0 +1,187 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/easy-sponge-cake-genoise/",
+  "note": "Copied from local ingest.source_nodes id 296 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "4-Ingredient Sponge Cake (Video Recipe)",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "Once you master this easy European sponge cake (genoise), you can make hundreds of different cakes using this base!",
+    "datePublished": "2016-05-06T20:15:31+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2016\/05\/sponge-cake-biskvit.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2016\/05\/sponge-cake-biskvit-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2016\/05\/sponge-cake-biskvit-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2016\/05\/sponge-cake-biskvit-480x270.jpg"
+    ],
+    "recipeYield": [
+      "10",
+      "10 people, makes two, 9-inch round cakes"
+    ],
+    "prepTime": "PT10M",
+    "cookTime": "PT25M",
+    "totalTime": "PT35M",
+    "recipeIngredient": [
+      "6 large eggs (room temperature)",
+      "1 cup granulated sugar",
+      "1 cup all-purpose flour",
+      "1\/2 tsp baking powder",
+      "1 tsp vanilla extract (*)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToSection",
+        "name": "Prep:",
+        "itemListElement": [
+          {
+            "@type": "HowToStep",
+            "text": "Preheat Oven to 350˚F. Line bottoms of two 9″ cake pans with parchment paper (do not grease the sides).",
+            "name": "Preheat Oven to 350˚F. Line bottoms of two 9″ cake pans with parchment paper (do not grease the sides).",
+            "url": "https:\/\/natashaskitchen.com\/easy-sponge-cake-genoise\/#wprm-recipe-54364-step-0-0"
+          }
+        ]
+      },
+      {
+        "@type": "HowToSection",
+        "name": "How to Make this Sponge Cake:",
+        "itemListElement": [
+          {
+            "@type": "HowToStep",
+            "text": "In the bowl of an electric stand mixer fitted with whisk attachment (this is the one I have), beat 6 large eggs for 1 minute on high speed. With the mixer on, gradually add 1 cup sugar and continue beating 8-10 minutes until thick and fluffy.",
+            "name": "In the bowl of an electric stand mixer fitted with whisk attachment (this is the one I have), beat 6 large eggs for 1 minute on high speed. With the mixer on, gradually add 1 cup sugar and continue beating 8-10 minutes until thick and fluffy.",
+            "url": "https:\/\/natashaskitchen.com\/easy-sponge-cake-genoise\/#wprm-recipe-54364-step-1-0"
+          },
+          {
+            "@type": "HowToStep",
+            "text": "Whisk together 1 cup flour and 1\/2 tsp baking powder then sift this mixture into fluffy egg mixture one third at a time. Fold with a spatula with each addition just until incorporated. Scrape spatula from the bottom to catch any pockets of flour and stop mixing when no streaks of flour remain. Lastly, fold in the vanilla extract. Do not over-mix or you will deflate the batter.",
+            "name": "Whisk together 1 cup flour and 1\/2 tsp baking powder then sift this mixture into fluffy egg mixture one third at a time. Fold with a spatula with each addition just until incorporated. Scrape spatula from the bottom to catch any pockets of flour and stop mixing when no streaks of flour remain. Lastly, fold in the vanilla extract. Do not over-mix or you will deflate the batter.",
+            "url": "https:\/\/natashaskitchen.com\/easy-sponge-cake-genoise\/#wprm-recipe-54364-step-1-1"
+          },
+          {
+            "@type": "HowToStep",
+            "text": "Divide evenly between prepared cake pans (it helps if you have a kitchen scale to weight the pans). Bake at 350˚F for 23-28 minutes (my oven took 25 min), or until top is golden brown. Remove from pan by sliding a thin spatula (here’s the one I love for cakes) around the edges then transfer to a wire rack and remove parchment backing. Cool cakes to room temperature then slice layers equally in half with a serrated knife.",
+            "name": "Divide evenly between prepared cake pans (it helps if you have a kitchen scale to weight the pans). Bake at 350˚F for 23-28 minutes (my oven took 25 min), or until top is golden brown. Remove from pan by sliding a thin spatula (here’s the one I love for cakes) around the edges then transfer to a wire rack and remove parchment backing. Cool cakes to room temperature then slice layers equally in half with a serrated knife.",
+            "url": "https:\/\/natashaskitchen.com\/easy-sponge-cake-genoise\/#wprm-recipe-54364-step-1-2"
+          }
+        ]
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.88",
+      "ratingCount": "687",
+      "reviewCount": "6"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Dear Natasha! Thanks a lot for this easy and always-turning perfect European sponge!\r\nCould you please give some advice on how to adapt this recipe for a chocolate sponge?\r\nI am very grateful for your website and use your cookbook for all occasions!",
+        "author": {
+          "@type": "Person",
+          "name": "Elena"
+        },
+        "datePublished": "2026-10-28"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "The sponge cake recipe turned out really well. We ate most of it in one sitting it was so good! We all loved it and wanted more.  Thank you for sharing this recipe.",
+        "author": {
+          "@type": "Person",
+          "name": "Cynthia Daniels"
+        },
+        "datePublished": "2026-10-12"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I tried a different recipe and it turned into sweet scrambled eggs. I wanted to make a Swiss roll originally, but this sponge turned out wonderful!",
+        "author": {
+          "@type": "Person",
+          "name": "Andrea"
+        },
+        "datePublished": "2026-10-11"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was my first sponge cake and it came out perfect. I made it exactly as the recipe stated. Next time, since my boyfriend has type 1 diabetes, I'm going to try Stevia or monk fruit to see if they might work.",
+        "author": {
+          "@type": "Person",
+          "name": "Melissa"
+        },
+        "datePublished": "2026-09-20"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was so good and much easier to make than a recipe from the NY Times I was considering. \r\nThanks!",
+        "author": {
+          "@type": "Person",
+          "name": "Kathy"
+        },
+        "datePublished": "2026-09-13"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "2"
+        },
+        "reviewBody": "Nope - the sponge did not rise in the middle and was quite firmly stuck to the sides of the pan. I think the \"8-10minutes\" of beating is far too much. Still spread with jam in the middle and dusted with icing sugar on top. Tasted not too bad. I'll have to have another crack with less beating.",
+        "author": {
+          "@type": "Person",
+          "name": "Marette Schulz"
+        },
+        "datePublished": "2026-09-01"
+      }
+    ],
+    "recipeCategory": [
+      "Dessert"
+    ],
+    "recipeCuisine": [
+      "Russian",
+      "Ukrainian"
+    ],
+    "keywords": "sponge cake",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "162 kcal",
+      "carbohydrateContent": "30 g",
+      "proteinContent": "5 g",
+      "fatContent": "3 g",
+      "saturatedFatContent": "1 g",
+      "transFatContent": "0.01 g",
+      "cholesterolContent": "98 mg",
+      "sodiumContent": "38 mg",
+      "fiberContent": "0.3 g",
+      "sugarContent": "20 g",
+      "unsaturatedFatContent": "2 g",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/natashaskitchen.com\/easy-sponge-cake-genoise\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/easy-sponge-cake-genoise\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/easy-sponge-cake-genoise\/"
+  }
+}

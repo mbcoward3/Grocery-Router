@@ -1,0 +1,16 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Expected to reject: line 0 "P.S. If you want to speed up the process" is not an ingredient and
+  not a heading, so it has no publishable disposition (drafted as not_an_ingredient); line 8
+  "Pinch salt" is unsupported; the last step tops the crepes with "apricot raspberry sauce" and
+  "fresh berries" that no line names. Lines 1 and 9 are headings, line 2 is non-shopping water,
+  and line 5 "(melted. Plus more to sauté.)" is additive; those are fine on their own.
+outcome: reject
+categories: [non_shopping, additive]
+instructions_complete: false
+instructions_note: >-
+  Incomplete: the sauce and berries used to serve are not in the recipe.
+reject:
+  codes: [not_an_ingredient, unsupported_quantity, instruction_ingredient_discrepancy]

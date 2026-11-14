@@ -1,0 +1,122 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check "8 8-inch flour
+  tortillas" (8 each, size as a note) and "4 pieces mozzarella string cheese" (4 each). New
+  grocery items not in the household vocabulary (check name, section, and shopping mode):
+  flour-tortillas, basil-pesto, mozzarella-string-cheese, cooking-oil, tomato-paste.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Pesto Mozzarella Roll Ups"
+  source:
+    relationship: source
+    attribution: "Budget Bytes"
+    url: https://www.budgetbytes.com/pesto-mozzarella-roll-ups/
+    checked_on: 2026-11-08
+  image_url: https://www.budgetbytes.com/wp-content/uploads/2022/06/Pesto-Mozzarella-Roll-Ups-stack.jpg
+  yield: "8"
+  hands_on: {min: 15, max: 15}
+  unattended: {min: 15, max: 15}
+  source_lines:
+    - "8 8-inch flour tortillas ($2.23)"
+    - "4 Tbsp basil pesto ($1.00)"
+    - "4 pieces mozzarella string cheese ($1.00)"
+    - "1 Tbsp cooking oil ($0.04)"
+    - "1/4 cup mayonnaise ($0.29)"
+    - "1 Tbsp tomato paste ($0.07)"
+    - "1 clove garlic, minced ($0.08)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 24}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: flour-tortillas, name: "Flour Tortillas", store_section: {key: bakery, name: "Bakery"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "8", unit: "each"}
+          note: "8-inch"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 18}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: basil-pesto, name: "Basil Pesto", store_section: {key: condiments, name: "Condiments"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "4", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 33}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: mozzarella-string-cheese, name: "Mozzarella String Cheese", store_section: {key: dairy, name: "Dairy"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "4", unit: "each"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 18}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: cooking-oil, name: "Cooking Oil", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 18}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: mayonnaise, name: "Mayonnaise", store_section: {key: condiments, name: "Condiments"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 19}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: tomato-paste, name: "Tomato Paste", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 22}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: garlic, name: "Garlic", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "clove"}
+          preparation: "minced"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Preheat the oven to 400ºF. Stack the tortillas on a plate and cover with a damp paper towel. Microwave for 30 seconds to soften the tortillas."
+        - "Slice the string cheese in half length-wise. Spread ½ Tbsp pesto over the lower half of each tortilla, staying away from the edges. Place one piece of mozzarella on top of each."
+        - "Fold the sides of the tortilla in on top of the cheese, then begin rolling up from the bottom until the cheese is completely rolled up in the tortilla."
+        - "Place the roll ups on a parchment-lined baking sheet, seam side down. Brush the roll ups with a light coating of cooking oil."
+        - "Bake the roll ups in the preheated oven for about 13 minutes, or until they're lightly golden brown on the edges and the cheese is melted."
+        - "While the roll ups are in the oven, prepare the creamy tomato dip. Stir together the mayonnaise, tomato paste, and minced garlic."
+        - "Let the roll ups cool just enough to handle, then serve with the creamy tomato dip."
+grocery:
+  - item: flour-tortillas
+    section: bakery
+    kind: exact
+    amount: "8"
+    unit: each
+    source_lines: [0]
+  - item: basil-pesto
+    section: condiments
+    kind: exact
+    amount: "4"
+    unit: tbsp
+    source_lines: [1]
+  - item: mozzarella-string-cheese
+    section: dairy
+    kind: exact
+    amount: "4"
+    unit: each
+    source_lines: [2]
+  - item: cooking-oil
+    section: pantry
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [3]
+  - item: mayonnaise
+    section: condiments
+    kind: exact
+    amount: 1/4
+    unit: cup
+    source_lines: [4]
+  - item: tomato-paste
+    section: pantry
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [5]
+  - item: garlic
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: clove
+    source_lines: [6]

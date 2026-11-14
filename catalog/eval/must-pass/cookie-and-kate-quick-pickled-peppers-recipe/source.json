@@ -1,0 +1,175 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/quick-pickled-peppers-recipe/",
+  "note": "Copied from local ingest.source_nodes id 414 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "Quick Pickled Peppers",
+    "description": "Learn how to make homemade, spicy and sweet, gourmet jalapeño and bell pepper pickles! It's super easy and the pickles will keep in the refrigerator for months.",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2014\/10\/quick-pickled-peppers-1-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2014\/10\/quick-pickled-peppers-1-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2014\/10\/quick-pickled-peppers-1-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2014\/10\/quick-pickled-peppers-1.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/quick-pickled-peppers-recipe\/",
+    "recipeIngredient": [
+      "&frac12; pound jalapeños (choose larger jalapeños for less spicy pickles)",
+      "1 red bell pepper",
+      "1 cup apple cider vinegar (or white wine vinegar or distilled white vinegar)",
+      "1 cup water",
+      "2 tablespoons honey or sugar of choice",
+      "2 cloves garlic, peeled and smashed",
+      "1 teaspoon salt"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "First, prepare your peppers: Wear gloves to prevent your fingers from feeling burned. For less spicy pickles, use a paring knife to remove the jalapeño membranes and seeds before slicing (this is a lot of work, so I just pulled out the larger membranes from my sliced pickles). Slice the pickles thin with a mandoline or chef&#8217;s knife. If you&#8217;re still concerned about the spice level of the pickles, run the sliced jalapeños under running water in a colander to try to knock off any remaining seeds. (Beware, those pepper fumes made me cough.) Slice off the top of the bell pepper and remove the seeds and membranes. Chop the bell pepper.",
+        "url": "https:\/\/cookieandkate.com\/quick-pickled-peppers-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Combine the prepared peppers and smashed garlic in a 28-ounce (1.75 pints) or larger glass jar. In a small saucepan, combine the vinegar, water, honey and salt. Bring the mixture close to a boil on the stove, stirring occasionally to dissolve the sweetener into the liquid. Remove from heat and carefully pour the liquid over the peppers. Use a butter knife to poke down the peppers so they all fit and there aren&#8217;t any hidden air pockets.",
+        "url": "https:\/\/cookieandkate.com\/quick-pickled-peppers-recipe\/#instruction-step-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Let the pickles cool to room temperature in the jar, then screw on a lid and refrigerate the pickles. Depending on how thinly you sliced the peppers, they could be ready to eat immediately or might need a couple of days in the refrigerator before they taste fully pickled (just sample one every now and then to find out!). They are best when relatively fresh, but keep well for at least a month.",
+        "url": "https:\/\/cookieandkate.com\/quick-pickled-peppers-recipe\/#instruction-step-3"
+      }
+    ],
+    "prepTime": "PT20M",
+    "cookTime": "PT5M",
+    "totalTime": "PT25M",
+    "recipeYield": [
+      "1",
+      "1\/2 pound pickled peppers"
+    ],
+    "recipeCategory": "Pickles",
+    "recipeCuisine": "Mexican",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "53",
+      "ratingValue": "4.9"
+    },
+    "nutrition": {
+      "servingSize": "2 tbsp",
+      "calories": "18 calories",
+      "sugarContent": "3.1 g",
+      "sodiumContent": "147.5 mg",
+      "fatContent": "0.1 g",
+      "saturatedFatContent": "0 g",
+      "transFatContent": "0 g",
+      "carbohydrateContent": "3.7 g",
+      "fiberContent": "0.5 g",
+      "proteinContent": "0.2 g",
+      "cholesterolContent": "0 mg",
+      "@type": "nutritionInformation"
+    },
+    "video": {
+      "@context": "http:\/\/schema.org",
+      "@type": "VideoObject",
+      "name": "Quick Pickled Peppers",
+      "description": "Watch how to make quick pickled peppers in this short recipe video! It’s super easy and the pickles will keep in the refrigerator for months.",
+      "contentUrl": "https:\/\/content.jwplatform.com\/videos\/eCJZshhj.mp4",
+      "thumbnailUrl": [
+        "https:\/\/content.jwplatform.com\/thumbs\/eCJZshhj-720.jpg"
+      ],
+      "uploadDate": "2021-10-28T13:41:02+00:00"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "carlo kropp"
+        },
+        "datePublished": "2024-05-15",
+        "reviewBody": "very easy and produced a good pickled red pepper."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Michael Smoot"
+        },
+        "datePublished": "2024-08-17",
+        "reviewBody": "We do canning of tomatoes and peppers, but when I want some peppers canned quickly to eat soonest, this is the reciepe to use!\r\n\r\nYou can leave out the honey or sugar if you like your peppers hot, but I had some cayenne peppers I grew a few years back and they were too hot so I did use the honey.\r\n\r\nFantastic receipe Kate -- and so glad you're a dog lover too!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Nhoj Yesfnil"
+        },
+        "datePublished": "2024-09-21",
+        "reviewBody": "Does vinegar destroy some of the piquant of the peppers?? I need to pickle pureed peppers keeping the seeds and spines. This is for adding to cooked beans for the winter. I don't have a food dryer."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Marcie"
+        },
+        "datePublished": "2024-09-25",
+        "reviewBody": "This is the easiest recipe and the peppers are delicious! I have made it with both jalapeño and Serrano peppers (Serrano for those that want very spicy). This recipe is a great use of garden peppers. I give to friends and everyone loves them!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Karen Gamino"
+        },
+        "datePublished": "2024-11-20",
+        "reviewBody": "I have made these Quick pickled peppers twice now. I follow the recipe and they turn out delicious! I use Long hot Italian peppers from my garden. These are great for gift giving!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Melissa J"
+        },
+        "datePublished": "2025-06-01",
+        "reviewBody": "Keep coming back to this recipe- it’s so good! Trying a variety today- schoolhouse, jalepeno and banana. Thanks for sharing your recipe"
+      }
+    ],
+    "datePublished": "2014-10-11",
+    "@id": "https:\/\/cookieandkate.com\/quick-pickled-peppers-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/quick-pickled-peppers-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/quick-pickled-peppers-recipe\/"
+  }
+}

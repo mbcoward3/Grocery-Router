@@ -1,0 +1,261 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/italian-wonderpot/",
+  "note": "Copied from local ingest.source_nodes id 89 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Tomato Spinach One Pot Pasta",
+    "author": {
+      "@type": "Person",
+      "name": "Inspired by Apron Strings",
+      "url": "http:\/\/www.apronstringsblog.com\/one-pot-wonder-tomato-basil-pasta-recipe\/"
+    },
+    "description": "All the ingredients for this Tomato Spinach One Pot Pasta cook together to make an incredibly fast, flavorful, and easy weeknight meal.",
+    "datePublished": "2016-08-22T17:25:00+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/05\/Italian-Wonderpot-close-1.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/05\/Italian-Wonderpot-close-1-500x480.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/05\/Italian-Wonderpot-close-1-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/05\/Italian-Wonderpot-close-1-480x270.jpg"
+    ],
+    "recipeYield": [
+      "6"
+    ],
+    "prepTime": "PT10M",
+    "cookTime": "PT15M",
+    "totalTime": "PT25M",
+    "recipeIngredient": [
+      "4 cups vegetable broth ($0.52)",
+      "2 Tbsp olive oil ($0.22)",
+      "12 oz. fettuccine ($0.75)",
+      "8 oz. frozen chopped spinach ($0.72)",
+      "1 28oz. can diced tomatoes ($1.68)",
+      "1 yellow onion, sliced ($0.42)",
+      "4 cloves garlic, sliced ($0.32)",
+      "1\/2 Tbsp dried basil ($0.15)",
+      "1\/2 Tbsp dried oregano ($0.15)",
+      "1\/4 tsp crushed red pepper ($0.03)",
+      "freshly cracked black pepper to taste ($0.05)",
+      "2 oz. shaved Parmesan ($1.25)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Add four cups of vegetable broth to a large pot. Break the fettuccine in half and add it to the pot along with the canned tomatoes (with juices), olive oil, frozen spinach, onion, garlic, basil, oregano, red pepper, and some freshly cracked black pepper.",
+        "name": "Add four cups of vegetable broth to a large pot. Break the fettuccine in half and add it to the pot along with the canned tomatoes (with juices), olive oil, frozen spinach, onion, garlic, basil, oregano, red pepper, and some freshly cracked black pepper.",
+        "url": "https:\/\/www.budgetbytes.com\/italian-wonderpot\/#wprm-recipe-32311-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Make sure the ingredients are submerged under the liquid, place a lid on top of the pot, and then turn the heat on to high. Allow the pot to come up to a full boil over high heat, then remove the lid and turn the heat down to medium.",
+        "name": "Make sure the ingredients are submerged under the liquid, place a lid on top of the pot, and then turn the heat on to high. Allow the pot to come up to a full boil over high heat, then remove the lid and turn the heat down to medium.",
+        "url": "https:\/\/www.budgetbytes.com\/italian-wonderpot\/#wprm-recipe-32311-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Allow the pot to continue to boil over medium heat, without a lid, for 10-15 minutes, or until the pasta is cooked and most of the liquid has been absorbed. Stir the pot every few minutes as it cooks to prevent the pasta from sticking to the bottom, but avoid over stirring which can cause the pasta to become sticky.",
+        "name": "Allow the pot to continue to boil over medium heat, without a lid, for 10-15 minutes, or until the pasta is cooked and most of the liquid has been absorbed. Stir the pot every few minutes as it cooks to prevent the pasta from sticking to the bottom, but avoid over stirring which can cause the pasta to become sticky.",
+        "url": "https:\/\/www.budgetbytes.com\/italian-wonderpot\/#wprm-recipe-32311-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Sprinkle with shaved Parmesan just before serving.",
+        "name": "Sprinkle with shaved Parmesan just before serving.",
+        "url": "https:\/\/www.budgetbytes.com\/italian-wonderpot\/#wprm-recipe-32311-step-0-3"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.66",
+      "ratingCount": "293",
+      "reviewCount": "267"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I have added chopped egg plant, and, most important of all, a generous dollop of your favourite wine. WONDERFUL.",
+        "author": {
+          "@type": "Person",
+          "name": "Angela"
+        },
+        "datePublished": "2026-07-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "Personally I think it has a bit too much liquid and is a bit under salted, which one can solve by keeping the bullion amount the same and reducing the water by one cup when making the broth.\r\nI also used protein pasta, no idea if that impacts  the water needs",
+        "author": {
+          "@type": "Person",
+          "name": "Cynthia A DiPaula"
+        },
+        "datePublished": "2026-02-13"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I add chicken, usually use two breasts. Cook as you like, then add at the end (either on top or mixed in, I’ve done both)",
+        "author": {
+          "@type": "Person",
+          "name": "Abbie"
+        },
+        "datePublished": "2025-03-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "Would love to have this with a protein, for example grilled chicken breast. \r\nAny suggestions as when to add chicken and how much for this amount of pasta?",
+        "author": {
+          "@type": "Person",
+          "name": "Gus"
+        },
+        "datePublished": "2025-01-28"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Delicious recipe! I have to be Gluten-free. This recipe is an excellent one to mask Gluten-free noodles. I made some modifications. Added chicken breast chunks, 2 small ones, perfect amount. Used chicken broth and fresh spinach, about 1\/2 a 5 Oz bag, because I had these on hand. I had to add extra broth to get the spinach submerged. Next time, I will hold the spinach until the end, then steam it while the last bit of water evaporates. 10\/10 will make again.",
+        "author": {
+          "@type": "Person",
+          "name": "LoriAnn"
+        },
+        "datePublished": "2024-09-25"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I really loved this! The only things I did different way leave out the red pepper flakes, because someone in my family is sensitive to them, and use feta instead of Parmesan. I put out red pepper flakes and chili crisp oil for anyone who wanted to use it on top and it was delicious!",
+        "author": {
+          "@type": "Person",
+          "name": "Kristin"
+        },
+        "datePublished": "2024-03-24"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Love love love this recipe. Always a crowd pleaser. And very budget friendly.",
+        "author": {
+          "@type": "Person",
+          "name": "Kirsten Dugan"
+        },
+        "datePublished": "2024-03-07"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Have been wanting to make this recipe for the entire time I've been lurking on Budget Bytes (no joke, I've been skulking around for a decade and kept forgetting this recipe) and it did not disappoint! I did brown some chicken italian sausage in the pot before following the recipe exactly from step 1 onwards, as inspired by some of the comments. This is going into the rotation for sure :)",
+        "author": {
+          "@type": "Person",
+          "name": "A"
+        },
+        "datePublished": "2023-01-02"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "You'll get a wide variety of reactions to different cultures adapting the cuisine of other cultures. \r\n\r\nBut goddamn, this is petty as all hell. How much you want to @atides33 is Italian American and not actually Italian?",
+        "author": {
+          "@type": "Person",
+          "name": "Katie"
+        },
+        "datePublished": "2022-10-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Parmesan is good, but feta is betta. boyfriend and I agree, skim the parm and go for feta instead.\r\n\r\nBUT, this recipe is why I have frozen spinach on hand. It's so easy with pantry staples, it makes a great emergency meal",
+        "author": {
+          "@type": "Person",
+          "name": "Ludic"
+        },
+        "datePublished": "2022-08-18"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Tasted great, although it was very soupy by the time the pasta cooked, so I ended up having to drain it a bunch at the end.  I used fresh spinach instead of frozen, although I don't think that would be the issue since the water content should be the same.  Otherwise followed exactly, and I probably drained around 3 cups of liquid by the end.  Tasted great though!  Maybe next time I'll just add a bit less broth or drain some of the liquid from the diced tomatoes or something.",
+        "author": {
+          "@type": "Person",
+          "name": "kyle"
+        },
+        "datePublished": "2022-08-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "...just an old fart here... but gotta tell you ... this is really good ... and plenty to share ...\r\n\r\ngarnished with crumbled feta was sure different and good good ...add black olives, peppers, or a Chile, if you like ... but great as is with feta tho ...",
+        "author": {
+          "@type": "Person",
+          "name": "william gaukler"
+        },
+        "datePublished": "2022-07-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "...just an old fart here... but gotta tell you ... this is really good ... and plenty to share ...",
+        "author": {
+          "@type": "Person",
+          "name": "william gaukler"
+        },
+        "datePublished": "2022-07-19"
+      }
+    ],
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1 Serving",
+      "calories": "200.65 kcal",
+      "carbohydrateContent": "26.2 g",
+      "proteinContent": "8.63 g",
+      "fatContent": "7.82 g",
+      "fiberContent": "5.08 g",
+      "sodiumContent": "927.95 mg"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/italian-wonderpot\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/italian-wonderpot\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/italian-wonderpot\/"
+  }
+}

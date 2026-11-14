@@ -1,0 +1,15 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject: "1
+  ½ ounces Irish whiskey (that's 3 tablespoons ...)" and "6 ounces hot freshly brewed coffee
+  (that's ¾ cup ...)" use ounces for liquids, which may be fluid ounces; the parentheticals say
+  so, but reading oz as floz is a conversion the parser should not guess (ambiguous_unit).
+  "Whipped cream, for topping" has no amount and "for topping" is not on the closed list. Decide
+  whether either rule is too strict.
+outcome: reject
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [ambiguous_unit, missing_quantity]

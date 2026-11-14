@@ -1,0 +1,77 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/sausage-and-vegetable-skillet/",
+  "note": "Copied from local ingest.source_nodes id 8 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Sausage and Vegetable Skillet",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "This super fast and easy Sausage and Vegetable Skillet is the ultimate busy-day meal and is perfect for meal prep!",
+    "datePublished": "2022-07-09T22:17:00+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/04\/Sausage-and-Vegetable-Skillet-meal-prep.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/04\/Sausage-and-Vegetable-Skillet-meal-prep-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/04\/Sausage-and-Vegetable-Skillet-meal-prep-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2022\/04\/Sausage-and-Vegetable-Skillet-meal-prep-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4",
+      "4 about 1.25 cups each"
+    ],
+    "cookTime": "PT15M",
+    "totalTime": "PT15M",
+    "recipeIngredient": [
+      "1 Tbsp cooking oil ($0.04)",
+      "1 lb. Italian sausage ($5.99)",
+      "1\/2 lb. frozen cauliflower florets ($1.00)",
+      "1\/2 lb. frozen peppers and onions ($1.00)",
+      "1\/4 lb. frozen kale ($0.83)",
+      "½ tsp seasoning salt or seasoning blend (or to taste) ($0.05)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Add the cooking oil and sausage to a skillet. Cook the sausage over medium heat until brown and crispy.",
+        "name": "Add the cooking oil and sausage to a skillet. Cook the sausage over medium heat until brown and crispy."
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the cauliflower, peppers and onions, and kale to the skillet with the sausage. Continue to stir and cook until the vegetables are heated through.",
+        "name": "Add the cauliflower, peppers and onions, and kale to the skillet with the sausage. Continue to stir and cook until the vegetables are heated through."
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add a liberal amount (or to taste) of your favorite seasoning salt or seasoning blend and stir to combine. Serve hot.",
+        "name": "Add a liberal amount (or to taste) of your favorite seasoning salt or seasoning blend and stir to combine. Serve hot."
+      }
+    ],
+    "recipeCategory": [
+      "Dinner",
+      "Lunch",
+      "Main Course",
+      "Meal Prep"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "frozen vegetable recipes, meal prep recipes",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1.25 cups",
+      "calories": "484 kcal",
+      "carbohydrateContent": "12 g",
+      "proteinContent": "20 g",
+      "fatContent": "40 g",
+      "sodiumContent": "1178 mg",
+      "fiberContent": "5 g"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/sausage-and-vegetable-skillet\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/sausage-and-vegetable-skillet\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/sausage-and-vegetable-skillet\/"
+  }
+}

@@ -1,0 +1,14 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject:
+  "Lemon wedges and/or dipping sauce," is and/or with no amount and an unnamed sauce; "Generous
+  pinch flaky sea salt, (for serving (optional))" is a pinch. Decide whether a pinch with "for
+  serving" should be intentionally_unspecified instead.
+outcome: reject
+categories: [alternative, presence_only]
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [incoherent_alternative, unsupported_quantity, missing_quantity]

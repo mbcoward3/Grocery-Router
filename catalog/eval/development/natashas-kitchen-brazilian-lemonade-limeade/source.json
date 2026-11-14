@@ -1,0 +1,113 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/brazilian-lemonade-limeade/",
+  "note": "Copied from local ingest.source_nodes id 315 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Brazilian Lemonade",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "This Brazilian Lemonade is crisp and refreshing. It has a unique flavor and texture and makes for a very exciting summer party drink!",
+    "datePublished": "2015-07-13T09:49:51+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/06\/Brazilian-Lemonade-5.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/06\/Brazilian-Lemonade-5-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/06\/Brazilian-Lemonade-5-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2015\/06\/Brazilian-Lemonade-5-480x270.jpg"
+    ],
+    "recipeYield": [
+      "6",
+      "6 cups"
+    ],
+    "prepTime": "PT10M",
+    "totalTime": "PT10M",
+    "recipeIngredient": [
+      "7 cups cold water",
+      "3\/4 cup granulated sugar",
+      "1 cup fresh lime juice (from 5 limes)",
+      "1 Tbsp lime zest (from 1 of the limes)",
+      "1\/2 cup sweetened condensed milk Ice to serve"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Stir together 7 cups cold water with 3\/4 cup sugar and set aside.",
+        "name": "Stir together 7 cups cold water with 3\/4 cup sugar and set aside.",
+        "url": "https:\/\/natashaskitchen.com\/brazilian-lemonade-limeade\/#wprm-recipe-54505-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add 1 Tbsp lime zest add juice from 5 limes into your blender jar (it's super fast to juice limes if you have a citrus squeezer like this one). Pour 3 cups of your sugar water into the blender (I only add 3 cups at this time so my blender doesn't splash all over the place).",
+        "name": "Add 1 Tbsp lime zest add juice from 5 limes into your blender jar (it's super fast to juice limes if you have a citrus squeezer like this one). Pour 3 cups of your sugar water into the blender (I only add 3 cups at this time so my blender doesn't splash all over the place).",
+        "url": "https:\/\/natashaskitchen.com\/brazilian-lemonade-limeade\/#wprm-recipe-54505-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add 1\/2 cup sweetened condensed milk. Blend until smooth and frothy. Stir in remaining sugar water and serve over ice.",
+        "name": "Add 1\/2 cup sweetened condensed milk. Blend until smooth and frothy. Stir in remaining sugar water and serve over ice.",
+        "url": "https:\/\/natashaskitchen.com\/brazilian-lemonade-limeade\/#wprm-recipe-54505-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.87",
+      "ratingCount": "61",
+      "reviewCount": "3"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I just made this and it was amazing! My question is, can you use lime juice instead of fresh squeezed limes?",
+        "author": {
+          "@type": "Person",
+          "name": "Victoria StPierre"
+        },
+        "datePublished": "2024-02-11"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is really good! I found myself googling condensed sweetened milk ice though....maybe separate serve over ice part",
+        "author": {
+          "@type": "Person",
+          "name": "Chrissy"
+        },
+        "datePublished": "2021-07-25"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Something different that turned out quite delicious",
+        "author": {
+          "@type": "Person",
+          "name": "Chrissy"
+        },
+        "datePublished": "2021-07-22"
+      }
+    ],
+    "recipeCategory": [
+      "Beverage"
+    ],
+    "recipeCuisine": [
+      "Brazilian"
+    ],
+    "keywords": "Brazilian Lemonade",
+    "@id": "https:\/\/natashaskitchen.com\/brazilian-lemonade-limeade\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/brazilian-lemonade-limeade\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/brazilian-lemonade-limeade\/"
+  }
+}

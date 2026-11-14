@@ -1,0 +1,16 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Expected to reject because line 1 "Pinch fine sea salt" is a pinch (unsupported) and line 2
+  "Freshly ground black pepper" has no amount and none of the closed unspecified phrases
+  (unresolved, drafted as missing_quantity). Both are presence-only items, so the grocery list
+  would be the same either way; decide whether presence-only items should accept pinch or a bare
+  name as intentionally_unspecified. Reason codes are provisional.
+outcome: reject
+categories: [presence_only]
+instructions_complete: true
+instructions_note: >-
+  Four complete steps.
+reject:
+  codes: [unsupported_quantity, missing_quantity]

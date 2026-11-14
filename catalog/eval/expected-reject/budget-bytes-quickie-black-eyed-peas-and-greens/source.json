@@ -1,0 +1,285 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/quickie-black-eyed-peas-and-greens/",
+  "note": "Copied from local ingest.source_nodes id 10 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Quickie Black Eyed Peas and Greens",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Ring in good luck for the new year with this quick pot of black eyed peas and greens. Vegetarian and meat options included!",
+    "datePublished": "2020-12-29T20:27:57+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/12\/Quickie-Black-Eyed-Peas-and-Greens-side.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/12\/Quickie-Black-Eyed-Peas-and-Greens-side-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/12\/Quickie-Black-Eyed-Peas-and-Greens-side-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2020\/12\/Quickie-Black-Eyed-Peas-and-Greens-side-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4",
+      "4 1.5 cups each"
+    ],
+    "prepTime": "PT10M",
+    "cookTime": "PT25M",
+    "totalTime": "PT35M",
+    "recipeIngredient": [
+      "1 yellow onion ($0.32)",
+      "2 cloves garlic ($0.16)",
+      "2 Tbsp olive oil ($0.32)",
+      "3 15oz. cans black eyed peas ($2.37)",
+      "1\/2 tsp dried oregano ($0.05)",
+      "1\/2 tsp smoked paprika ($0.05)",
+      "1\/8 tsp cayenne pepper ($0.02)",
+      "1\/4 tsp freshly cracked black pepper ($0.03)",
+      "2 cups vegetable broth ($0.26)",
+      "4 oz. fresh spinach ($0.85)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Dice the onion and mince the garlic. Add both to a large soup pot with the olive oil and sauté over medium heat until the onions are soft and translucent.",
+        "name": "Dice the onion and mince the garlic. Add both to a large soup pot with the olive oil and sauté over medium heat until the onions are soft and translucent.",
+        "url": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/#wprm-recipe-53051-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Drain the canned black eyed peas, then add them to the pot along with the oregano, smoked paprika, cayenne pepper, black pepper, and vegetable broth. Stir to combine.",
+        "name": "Drain the canned black eyed peas, then add them to the pot along with the oregano, smoked paprika, cayenne pepper, black pepper, and vegetable broth. Stir to combine.",
+        "url": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/#wprm-recipe-53051-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Place a lid on the pot, turn the heat up to medium high, and bring the pot up to a boil. Once boiling, reduce the heat to medium-low, and allow the peas to simmer for 15 minutes, stirring occasionally.",
+        "name": "Place a lid on the pot, turn the heat up to medium high, and bring the pot up to a boil. Once boiling, reduce the heat to medium-low, and allow the peas to simmer for 15 minutes, stirring occasionally.",
+        "url": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/#wprm-recipe-53051-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "After the peas have simmered for about 15 minutes, use the back of a spoon to smash some of the peas against the side of the pot to thicken the broth (or use an immersion blender to blend a small portion of the peas).",
+        "name": "After the peas have simmered for about 15 minutes, use the back of a spoon to smash some of the peas against the side of the pot to thicken the broth (or use an immersion blender to blend a small portion of the peas).",
+        "url": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/#wprm-recipe-53051-step-0-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the fresh spinach to the pot and stir until it has wilted into the peas. Give the peas a taste and adjust the salt or seasoning to your liking. Serve hot with bread or rice.",
+        "name": "Add the fresh spinach to the pot and stir until it has wilted into the peas. Give the peas a taste and adjust the salt or seasoning to your liking. Serve hot with bread or rice.",
+        "url": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/#wprm-recipe-53051-step-0-4"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "14",
+      "reviewCount": "14"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "To my pleasant surprise my eight year old daughter really liked this recipe she ate two bowls with cornbread.  I will definitely keep this recipe in my cooking rotation.",
+        "author": {
+          "@type": "Person",
+          "name": "Shawnette"
+        },
+        "datePublished": "2026-10-02"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Used a can of Chicken stock since that is what I had. This came out delicious. Even my 6-yr old granddaughter had seconds!",
+        "author": {
+          "@type": "Person",
+          "name": "CynthiaT"
+        },
+        "datePublished": "2025-07-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was the perfect recipe for our New Year's Day traditional meal. I needed something quick and easy. I did add quite a bit more spiciness, because that's how we eat at our house. This meal with some added Sriracha was a great luncheon main course to start the New Year. Thanks for this and other good recipes on your website!",
+        "author": {
+          "@type": "Person",
+          "name": "Rose"
+        },
+        "datePublished": "2024-01-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Best recipie ever. Made this many times with lots of variations. The original is really good and appeals to a wide range of tastes. Best if you're serving to a family or kids. My normal mods include subbing spinach for kale since I get kale for cheaper. If it's just for myself, this recipie is super easy to make spicy. I used this recipe to test out my new cajun seasoning mix. If you're vegan, tofurky Italian and Lite life sausages go well in it. Also recommend adding okra if you want a slightly thicker soup and an extra cajun kick.",
+        "author": {
+          "@type": "Person",
+          "name": "KellyC"
+        },
+        "datePublished": "2023-01-05"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Do you think I could add a can of another kind of beans since we only have two cans of black eyed peas on hand?",
+        "author": {
+          "@type": "Person",
+          "name": "Laura"
+        },
+        "datePublished": "2022-12-30"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "It was delicious last year and I’m looking forward to enjoying it again this coming January 1. ",
+        "author": {
+          "@type": "Person",
+          "name": "Jordan"
+        },
+        "datePublished": "2021-12-31"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I actually didn't expect to like black eye peas and greens as well as I did. When I saw this recipe I just thought \"Hey, that looks like an iron rich meal\" and so I decided to try it. Now it is one of my favorite meals! I've tried this quickie method, but honestly prefer just using the slow simmered version of the recipe and just throwing it all in my slow cooker in the morning before work. Either way though, I definitely recommend trying it even if you think you may not like it!",
+        "author": {
+          "@type": "Person",
+          "name": "Kianarra"
+        },
+        "datePublished": "2021-12-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Love this easy recipe.  But, since I am my father’s daughter, I just couldn’ leave it alone😂.  To the onion and garlic I added celery, carrots and mushrooms.  I didn’t have spinach on hand, but I did have chopper kale.  When done I added cooked rice.  WOW, what a hearty dish!  I’ve enjoyed it every day since I made it, either for lunch or dinner, with a healthy sprinkling of dill weed. Yum!",
+        "author": {
+          "@type": "Person",
+          "name": "Daureen"
+        },
+        "datePublished": "2021-01-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Made your slow cooked black eyed peas and greens on New Year's Day 2021, as I wanted some GOOD new year luck after this last disastrous year.  It was the BEST I've ever had...and my neighbors agreed, since I just had to spread the luck.\r\nI added left over ham, ham hock and  little bacon and fresh collard greens from a neighbor (amazing find here in Hawaii).\r\nAbout to make me another batch it was so good!\r\nI've been a subscriber since way back, use your recipes often, but man oh man, this was some ono!",
+        "author": {
+          "@type": "Person",
+          "name": "Lori"
+        },
+        "datePublished": "2021-01-17"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This recipe is a winner!  My preference would be to add a bit more spinach, as we didn't have rice or bread with it.  We did top it with thinly sliced onions carmelized in salted butter.  [Husband's family tradition.).  He added some homemade hot sauce; i added only 1\/4 tsp., as I, really, enjoyed the flavors.",
+        "author": {
+          "@type": "Person",
+          "name": "M L"
+        },
+        "datePublished": "2021-01-04"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Wow. This was awesome. Made it 30 min ago. I decided to add smoked sausage and used chicken broth instead. Its very very very good. Def going in my books. Thank you for sharing this one. Happy New Year!!!",
+        "author": {
+          "@type": "Person",
+          "name": "Joseph Capano"
+        },
+        "datePublished": "2021-01-04"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was delicious! Made our New Years Day dinner spectacular!",
+        "author": {
+          "@type": "Person",
+          "name": "Nichole"
+        },
+        "datePublished": "2021-01-03"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Thank you for this simple and delicious recipe and all your advice on variations. I've always wanted to make (truthfully, EAT) black eyed peas and greens especially on New Year's Day, but never could make myself commit to the long process of making from scratch. Your recipe allowed me to make a quick version and gave me permission to tweak it; I used the greens I had on hand (baby kale and arurula) and chicken broth, because I like chicken broth, and I added andouille sausage to the pot. SO GOOD! Made cornbread to go with and couldn't stop eating it all!   I'll be making and eating this on other days of the year for a quick yummy meal!",
+        "author": {
+          "@type": "Person",
+          "name": "Elaine"
+        },
+        "datePublished": "2021-01-02"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I made this for new years day - so super simple, quick, and delicious! I loved using canned beans for the quickness of it, but still came out creamy and delicious. I used collard greens instead of spinach, and served it with brown rice. here's to a better 2021!",
+        "author": {
+          "@type": "Person",
+          "name": "Allison"
+        },
+        "datePublished": "2021-01-01"
+      }
+    ],
+    "recipeCategory": [
+      "Main Course",
+      "Side Dish"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Beans, beans and rice, Easy Vegetarian Recipe",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1.5 cups",
+      "calories": "330.33 kcal",
+      "carbohydrateContent": "56.3 g",
+      "proteinContent": "19.88 g",
+      "fatContent": "7.18 g",
+      "sodiumContent": "1414.65 mg",
+      "fiberContent": "14.68 g"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/quickie-black-eyed-peas-and-greens\/"
+  }
+}

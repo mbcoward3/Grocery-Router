@@ -1,0 +1,566 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/aji-verde-recipe/",
+  "note": "Copied from local ingest.source_nodes id 73 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "Aji Verde (Spicy Peruvian Green Sauce)",
+    "description": "Learn how to make the best aji verde sauce! Aji verde is spicy Peruvian green sauce, made with cilantro, jalapeños, and a little mayonnaise and Parmesan. It is utterly irresistible drizzled onto tacos and more! Recipe yields about 1 1\/4 cups.",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "keywords": "Aji verde",
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2019\/04\/aji-verde-recipe-1-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2019\/04\/aji-verde-recipe-1-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2019\/04\/aji-verde-recipe-1-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2019\/04\/aji-verde-recipe-1.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/aji-verde-recipe\/",
+    "recipeIngredient": [
+      "&frac12; cup mayonnaise",
+      "2 cups lightly packed fresh cilantro, mostly leaves but small stems are ok (from 1 big bunch of cilantro or 1 &frac12; medium)",
+      "2 medium jalapeños, seeds and membranes removed but reserved, roughly chopped",
+      "2 cloves garlic, roughly chopped",
+      "&#8531; cup (1 ounce) grated Cotija or Parmesan cheese",
+      "1 tablespoon lime juice",
+      "&frac14; teaspoon fine sea salt"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "In a food processor or blender, combine all of the ingredients. Blend until the cilantro has broken into very tiny pieces and the sauce is green and mostly smooth (no matter how long you blend it, it will still have some texture to it).",
+        "url": "https:\/\/cookieandkate.com\/aji-verde-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Taste, and adjust if necessary. This sauce is intentionally bold and spicy and I usually think it&#8217;s just right as written. However, if the flavor is too overwhelming, blend in 1 tablespoon of olive oil while running the food processor. If it&#8217;s not spicy enough, add some of the reserved jalapeño seeds and blend again. If it doesn&#8217;t have enough zip, add another tablespoon of lime juice and\/or a pinch of salt.",
+        "url": "https:\/\/cookieandkate.com\/aji-verde-recipe\/#instruction-step-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Aji verde keeps well in the refrigerator, covered, for about 1 week.",
+        "url": "https:\/\/cookieandkate.com\/aji-verde-recipe\/#instruction-step-3"
+      }
+    ],
+    "prepTime": "PT10M",
+    "totalTime": "PT10M",
+    "recipeYield": [
+      "1",
+      "1 1\/4 cups"
+    ],
+    "recipeCategory": "Sauce",
+    "cookingMethod": "Food processor",
+    "recipeCuisine": "Peruvian",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "109",
+      "ratingValue": "4.8"
+    },
+    "nutrition": {
+      "servingSize": "About 2 tablespoons",
+      "calories": "94 calories",
+      "sugarContent": "0.2 g",
+      "sodiumContent": "161.8 mg",
+      "fatContent": "9.6 g",
+      "saturatedFatContent": "1.3 g",
+      "transFatContent": "0 g",
+      "carbohydrateContent": "0.7 g",
+      "fiberContent": "0.2 g",
+      "proteinContent": "1.2 g",
+      "cholesterolContent": "13.9 mg",
+      "@type": "nutritionInformation"
+    },
+    "video": {
+      "@context": "http:\/\/schema.org",
+      "@type": "VideoObject",
+      "name": "Aji Verde (Spicy Peruvian Green Sauce)",
+      "description": "Watch this short recipe video on how to make aji verde (spicy Peruvian green sauce). It’s spicy and tangy, and packed with fresh flavor!",
+      "contentUrl": "https:\/\/content.jwplatform.com\/videos\/xN0YBO3M.mp4",
+      "thumbnailUrl": [
+        "https:\/\/content.jwplatform.com\/thumbs\/xN0YBO3M-720.jpg"
+      ],
+      "uploadDate": "2021-11-04T15:23:51+00:00"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Megan"
+        },
+        "datePublished": "2022-10-26",
+        "reviewBody": "Wow. This is so delicious I am licking the spatula while I finish making your Halloumi tacos!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Ken"
+        },
+        "datePublished": "2022-10-27",
+        "reviewBody": "This is very good. My wife is not a huge cilantro fan but she will eat it. I cut back on the cilantro but it would be better with more. I also did not have cotija so I used 1\/2 feta and 1\/2 parmesan. A good sauce that I will keep in mind to have with other dishes."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jayna P"
+        },
+        "datePublished": "2022-12-02",
+        "reviewBody": "This recipe is fire!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Lydia"
+        },
+        "datePublished": "2023-01-11",
+        "reviewBody": "Also tasted Aji Verde at The Rotary when they were at Avanti! lol \r\nthanks for the recipe! &lt;3"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Katie S"
+        },
+        "datePublished": "2023-01-24",
+        "reviewBody": "So freaking good. Did fish tacos with lettuce, avacado and pineapple! This was the perfect sauce!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jessica Ambrose"
+        },
+        "datePublished": "2024-10-23",
+        "reviewBody": "For some reason, this sauce seperates. It's oily on top. Why is this happening?"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Doreen"
+        },
+        "datePublished": "2025-05-31",
+        "reviewBody": "All the ingredients should be blended well and then add in the mayo and blend only for a few seconds … if you blend all the ingredients together at first the mayo will curdle and separate &amp; the sauce will get very watery…."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Louise"
+        },
+        "datePublished": "2023-06-12",
+        "reviewBody": "I’ve had these with your halloumi tacos and with quesadillas, both combinations were amazing! It’s delicious and gives some nice spice to everything (and the green looks really fun). Thank you!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Natasha"
+        },
+        "datePublished": "2023-11-19",
+        "reviewBody": "So good! I am not a mayo fan so used a little less and added extra lime. It was perfect and so spicy "
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Michelle"
+        },
+        "datePublished": "2024-04-20",
+        "reviewBody": "This was so good. I subscribe to the 'more garlic = better' school of thought but that was not the case here... stick to it as written! I tasted garlic for at least 24 hours after, lol. Still totally worth it and next time, I'll keep to 2 cloves."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Karen F"
+        },
+        "datePublished": "2024-05-20",
+        "reviewBody": "Where has this been all my life?  I tried it at a restaurant with cauliflower tempura, whoa!  I'm not a big fan of cilantro but this recipe makes it delicious!  We had one more garlic clove, I was suprised by the addition of parmesan cheese but it gives great saltiness.  Having this for lunch with grilled shrimp."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Joshua Knechtel"
+        },
+        "datePublished": "2025-05-19",
+        "reviewBody": "That isn't authentic, but it is what we do at home and we spent a month in Peru.  We are familiar with the original.   However, I recommend what we do and make it 3:1 Greek Yogurt to Mayo.  Still has some of the mayo flavor and creaminess but toned down a lot versus that much mayo.   \r\n\r\nIf I am really in the mood I make homemade mayo and mix it more 1:1 with GY.  Homemade mayo is another level compared with store bought but more effort.  \r\n\r\nAt the end of the day, most cuisines adapt to the tastes of the people they are brought to.   I try to start with the most authentic, try it, learn it and then tweak to your own tastes."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Janet"
+        },
+        "datePublished": "2024-07-11",
+        "reviewBody": "I make this all the time.  It's a staple in my kitchen.  my husband sears ahi and this sauce is just dynamite with it.  thank you.  I do omit the cheese and use 1\/4 cup plain yogurt with 1\/4 cup mayo.  And maybe 1 jalapeno - I don't like it too hot.  Super!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "JB"
+        },
+        "datePublished": "2024-07-15",
+        "reviewBody": "Thanks for the recipe! We just went to Chicken and Pickle and had a salad with dressing. It was so good we wanted to replicate it!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Dave"
+        },
+        "datePublished": "2024-09-05",
+        "reviewBody": "This sauce is so incredible I make it once a week. I always add some jalapeno seeds because I love it spicy. Thank you so much for introducing it into my life Kate!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Sherry"
+        },
+        "datePublished": "2024-11-04",
+        "reviewBody": "This is a wonderful sauce.  Lick the plate wonderful.  I used Mexican queso fresco."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Anu"
+        },
+        "datePublished": "2024-11-26",
+        "reviewBody": "Made this for the first time today! It came out so good!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "3"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jose"
+        },
+        "datePublished": "2025-04-15",
+        "reviewBody": "Definitely NOT Peruvian, we don’t use jalapeños and tacos and tortillas are not part of our regular cuisine. We have much better and tastier peppers like ají amarillo, limo and rocoto"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Nars"
+        },
+        "datePublished": "2026-10-24",
+        "reviewBody": "Tell me you didn't read the blog post without telling me you didn't read the blog post."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Suzana W."
+        },
+        "datePublished": "2025-05-10",
+        "reviewBody": "Thank you for sharing this delicious recipe!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Stillripples"
+        },
+        "datePublished": "2025-07-11",
+        "reviewBody": "Outstanding sauce that I note use with any and all roasted veggies and also with tacos.. the possibilities are endless!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Vanessa Moore"
+        },
+        "datePublished": "2025-07-21",
+        "reviewBody": "I usually try a new recipe exactly as given and then tweak it to my liking. This recipe was perfect just as is! We love the flavor and have made it several times now, always wanting more! Thank you!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Maria Pesce"
+        },
+        "datePublished": "2025-08-23",
+        "reviewBody": "I have been looking for the BEST Aji Verde or Peruvian Green Sauce (ala PioPio) for a while and this one nails it! It is so good and so easy and soo authentic! Thank you!!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Matt"
+        },
+        "datePublished": "2025-11-19",
+        "reviewBody": "Hi Kate, \r\n\r\nI havent made the your sauce yet but have had other Aje Verdes in the past and love it. \r\n\r\nJust a quick note: Chili seeds dont hold the spice, it's actually the pith! Capsaicin is concentrated in the pith which can rub on the seeds but best way to spice up anything is using that pith, more chili but definitely not the seeds :)"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Janet"
+        },
+        "datePublished": "2025-11-23",
+        "reviewBody": "the best sauce!   we use it on seared ahi\r\nthank you!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Anneli"
+        },
+        "datePublished": "2025-12-15",
+        "reviewBody": "This sauce is amazing. I made it the first time to go with the halloumi tacos but now serve it with potatoe wedges, shrimp tacos, meat, rice, sallad, toast chicken, crudités, or just on bread and cheese. It’s heavenly"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Michele"
+        },
+        "datePublished": "2026-03-13",
+        "reviewBody": "I can’t stop eating g this sauce! Like you said, I also put it on everything. It’s a dream on sweet potato fries and falafel, fish and chicken. I plan my meals on what I can put this on. I’ve shared the recipe at least ten times. Thank you so much!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "LP"
+        },
+        "datePublished": "2026-04-01",
+        "reviewBody": "This is a phenomenal 'put it on everything' recipe!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Leah"
+        },
+        "datePublished": "2026-04-06",
+        "reviewBody": "Made this and drizzled a little on your whole wheat pizza and also your roasted vegetables! DELICIOUS!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Kari"
+        },
+        "datePublished": "2026-05-13",
+        "reviewBody": "Had aji verde for the first time 2 days ago and was enthralled!\r\nToday I took some EXTRA HOT New Mexican Green Chiles that had been lingering in the freezer for a couple of years and skinned and seeded them, then puréed. Put by the teaspoon in small freezer tray. Used what was left in the blender jar, added a large crushed clove of garlic, 1\/2 lemon juiced, and a dab of salt. Then finished off the nice bunch of cilantro to blend. Added the last of the avocado mayonnaise and plain Greek yogurt to the blender jar to finish the recipe.\r\nTastes very similar to what I had at the Peruvian restaurant!!!\r\nVery pleased with the results :)"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Candy"
+        },
+        "datePublished": "2026-06-03",
+        "reviewBody": "Absolutely delicious! Used it on tacos and stirred the rest into some leftover macaroni. Made a slam dunk pasta salad! Threw in black beans and corn. Fantastic recipe and a great way to use up an abundance of cilantro."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "1"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Peruvian Food"
+        },
+        "datePublished": "2026-06-29",
+        "reviewBody": "Change the title already … spicy Toledo oh green sauce.\r\nHave you ever been to Peru? Zero! ZERO jalapeño’s you won’t find them. They have their own peppers Rocoto and Aji Amarillo. Ones red ones orange… NONE are green. Sauce is fine quit calling it Peruvian"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Dave"
+        },
+        "datePublished": "2026-07-22",
+        "reviewBody": "I have made this recipe over two dozen times. It’s always a solid favorite! I wanted a creamier for veggies this time, so I added an avocado. OMG! SO AWESOME…!!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Cindy"
+        },
+        "datePublished": "2026-08-30",
+        "reviewBody": "Amazing!  I absolutely love this recipe!   I have used it on chicken, steak, shrimp and tacos and everyone I have served it to raves."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "lk"
+        },
+        "datePublished": "2026-09-29",
+        "reviewBody": "use for every and any dishes, eggs, pasta, chicken you use it on everything, so good"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jennifer H"
+        },
+        "datePublished": "2026-10-14",
+        "reviewBody": "SO YUMMY! I used about 1\/3 C of non fat cottage cheese and a T of mayo to lower the fat. Turned out perfect."
+      }
+    ],
+    "datePublished": "2019-04-30",
+    "@id": "https:\/\/cookieandkate.com\/aji-verde-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/aji-verde-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/aji-verde-recipe\/"
+  }
+}

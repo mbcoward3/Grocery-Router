@@ -1,0 +1,104 @@
+{
+  "format_version": 1,
+  "site": "once-upon-a-chef",
+  "url": "https://www.onceuponachef.com/recipes/blistered-shishito-peppers.html",
+  "note": "Copied from local ingest.source_nodes id 47 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Blistered Shishito Peppers",
+    "author": {
+      "@id": "https:\/\/www.onceuponachef.com\/#\/schema\/person\/d09ca52c9e790675f71c46404845af62"
+    },
+    "description": "Whether you sizzle them in a skillet or give them a quick char under the broiler, blistered shishito peppers make a fun and tasty snack. Only one in ten is spicy, so you never know when you'll encounter the spicy one in the bunch, making each bite a fun surprise!",
+    "datePublished": "2024-01-18T13:09:46+00:00",
+    "image": [
+      "https:\/\/www.onceuponachef.com\/images\/2023\/12\/Blistered-Shishito-Peppers-Hero-6.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2023\/12\/Blistered-Shishito-Peppers-Hero-6-500x500.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2023\/12\/Blistered-Shishito-Peppers-Hero-6-500x375.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2023\/12\/Blistered-Shishito-Peppers-Hero-6-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4",
+      "4 servings"
+    ],
+    "prepTime": "PT5M",
+    "cookTime": "PT10M",
+    "totalTime": "PT15M",
+    "recipeIngredient": [
+      "½ lb shishito peppers, (rinsed and dried thoroughly)",
+      "1 tablespoon olive oil",
+      "¼ teaspoon salt",
+      "Generous pinch flaky sea salt, (for serving (optional))",
+      "Lemon wedges and\/or dipping sauce,"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Broiler Method: Adjust your oven rack so it&#39;s about 6 inches (15 cm) from the heating element and turn your broiler to high. Line a baking sheet with aluminum foil. Directly on the lined baking sheet, toss the peppers with the oil and salt. Spread the peppers in a single layer. Place the baking sheet under the broiler for 2 to 3 minutes, until blistered, then flip the peppers and broil for another 2 to 3 minutes, or until evenly blistered. Remove from the oven and serve warm with lemon wedges and\/or dipping sauce.Stovetop Method: Place a large skillet or frying pan over medium-high heat. Once hot, add the olive oil. Add the peppers to the pan in a single layer. Let them cook, occasionally turning with tongs, for 6 to 8 minutes, or until they are blistered and slightly charred on all sides.",
+        "name": "Broiler Method: Adjust your oven rack so it&#39;s about 6 inches (15 cm) from the heating element and turn your broiler to high. Line a baking sheet with aluminum foil. Directly on the lined baking sheet, toss the peppers with the oil and salt. Spread the peppers in a single layer. Place the baking sheet under the broiler for 2 to 3 minutes, until blistered, then flip the peppers and broil for another 2 to 3 minutes, or until evenly blistered. Remove from the oven and serve warm with lemon wedges and\/or dipping sauce.Stovetop Method: Place a large skillet or frying pan over medium-high heat. Once hot, add the olive oil. Add the peppers to the pan in a single layer. Let them cook, occasionally turning with tongs, for 6 to 8 minutes, or until they are blistered and slightly charred on all sides.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/blistered-shishito-peppers.html#wprm-recipe-72664-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Once blistered to your liking, transfer the peppers to a serving dish. Sprinkle with flaky sea salt, if using. Serve with lemon wedges and\/or dipping sauce.",
+        "name": "Once blistered to your liking, transfer the peppers to a serving dish. Sprinkle with flaky sea salt, if using. Serve with lemon wedges and\/or dipping sauce.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/blistered-shishito-peppers.html#wprm-recipe-72664-step-0-1"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "2",
+      "reviewCount": "2"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Had this dish at a restaurant in Charleston and oh my it was so good. It had a light sauce over top and server said it was Worcestershire, butter and lemon.  Jenn, do you think cooking in airfryer would work also?",
+        "author": {
+          "@type": "Person",
+          "name": "Janice"
+        },
+        "datePublished": "2024-06-23"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Love these. Like to serve them as an added appetizer.",
+        "author": {
+          "@type": "Person",
+          "name": "Tish"
+        },
+        "datePublished": "2024-01-18"
+      }
+    ],
+    "recipeCategory": [
+      "Appetizer"
+    ],
+    "recipeCuisine": [
+      "Asian"
+    ],
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "41 kcal",
+      "fatContent": "3 g",
+      "carbohydrateContent": "3 g",
+      "sugarContent": "1 g",
+      "fiberContent": "1 g",
+      "sodiumContent": "140 mg",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/www.onceuponachef.com\/recipes\/blistered-shishito-peppers.html#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.onceuponachef.com\/recipes\/blistered-shishito-peppers.html#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.onceuponachef.com\/recipes\/blistered-shishito-peppers.html"
+  }
+}

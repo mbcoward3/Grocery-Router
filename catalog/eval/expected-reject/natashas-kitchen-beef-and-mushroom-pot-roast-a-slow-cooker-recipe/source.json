@@ -1,0 +1,169 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/beef-and-mushroom-pot-roast-a-slow-cooker-recipe/",
+  "note": "Copied from local ingest.source_nodes id 371 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Beef and Mushroom Pot Roast (a Slow Cooker Recipe)",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "datePublished": "2013-12-09T22:58:00+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2013\/12\/Beef-and-Mushroom-Pot-Roast-Tall-2.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2013\/12\/Beef-and-Mushroom-Pot-Roast-Tall-2-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2013\/12\/Beef-and-Mushroom-Pot-Roast-Tall-2-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2013\/12\/Beef-and-Mushroom-Pot-Roast-Tall-2-480x270.jpg"
+    ],
+    "recipeYield": [
+      "12"
+    ],
+    "prepTime": "PT30M",
+    "cookTime": "PT375M",
+    "totalTime": "PT405M",
+    "recipeIngredient": [
+      "4 1\/2 lbs boneless Beef bottom round roast",
+      "2 cups 1\/2 lb peeled and thick sliced or baby carrots",
+      "1 lb fresh mushrooms (thickly sliced)",
+      "1 large onion (finely diced)",
+      "1\/2 head of garlic (6 cloves, pressed)",
+      "1\/3 cup all-purpose flour",
+      "1 oz Onion Soup or Dip mix",
+      "1\/2 Tbsp Mrs. Dash (our favorite salt-free seasoning)",
+      "2 cups reduced sodium vegetable or beef broth",
+      "1\/2 cup red wine",
+      "1 cup heavy whipping cream",
+      "2 tsp salt"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Line the bottom of the slow cooker with thickly sliced carrots.",
+        "name": "Line the bottom of the slow cooker with thickly sliced carrots.",
+        "url": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#wprm-recipe-54867-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Heat a large, heavy-bottomed skillet over very high heat and swirl in 4 Tbsp cooking oil (I used extra light olive oil since it has a high smoke point). Once the skillet is blazing hot, sear and brown all of the sides of your beef roast (2-3 min per side). Watch out for splatters and wear an apron! Transfer the roast to a slow cooker.",
+        "name": "Heat a large, heavy-bottomed skillet over very high heat and swirl in 4 Tbsp cooking oil (I used extra light olive oil since it has a high smoke point). Once the skillet is blazing hot, sear and brown all of the sides of your beef roast (2-3 min per side). Watch out for splatters and wear an apron! Transfer the roast to a slow cooker.",
+        "url": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#wprm-recipe-54867-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Saute your thickly sliced mushrooms and finely diced onions in the same skillet over medium\/high heat until soft (5-7 min) then stir in the pressed garlic and saute another minute then remove from heat.",
+        "name": "Saute your thickly sliced mushrooms and finely diced onions in the same skillet over medium\/high heat until soft (5-7 min) then stir in the pressed garlic and saute another minute then remove from heat.",
+        "url": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#wprm-recipe-54867-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "In a medium sauce pan, whisk together 2 cups broth, 1 cup heavy cream, 1 packet onion soup mix, 1\/2 Tbsp Mrs. Dash, 1 tsp salt, and 1\/3 cup all-purpose flour. Once it's whisked together, heat on med\/high whisking until you have a gravy consistency.",
+        "name": "In a medium sauce pan, whisk together 2 cups broth, 1 cup heavy cream, 1 packet onion soup mix, 1\/2 Tbsp Mrs. Dash, 1 tsp salt, and 1\/3 cup all-purpose flour. Once it's whisked together, heat on med\/high whisking until you have a gravy consistency.",
+        "url": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#wprm-recipe-54867-step-0-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Stir mushroom\/onion mixture into the gravy, whisk in the wine and bring to a simmer.",
+        "name": "Stir mushroom\/onion mixture into the gravy, whisk in the wine and bring to a simmer.",
+        "url": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#wprm-recipe-54867-step-0-4"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Pour mushroom gravy over the meat in the crockpot, cover with lid and cook on high heat for 6 hours.",
+        "name": "Pour mushroom gravy over the meat in the crockpot, cover with lid and cook on high heat for 6 hours.",
+        "url": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#wprm-recipe-54867-step-0-5"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Just before serving, transfer the beef to a serving dish and pull it apart with forks. Pour the gravy over the beef right after it's shredded, while it's hot, so it can absorb some of that gravy. Add more salt to taste.",
+        "name": "Just before serving, transfer the beef to a serving dish and pull it apart with forks. Pour the gravy over the beef right after it's shredded, while it's hot, so it can absorb some of that gravy. Add more salt to taste.",
+        "url": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#wprm-recipe-54867-step-0-6"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "5",
+      "ratingCount": "95",
+      "reviewCount": "5"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is the Best pot roast recipe! I am an experienced cook, and have tried so many different recipes looking for “the one” that had all the flavor I was looking for.  My search is over &amp; can delete all the other recipes in my “to try” file!",
+        "author": {
+          "@type": "Person",
+          "name": "Deb"
+        },
+        "datePublished": "2025-06-14"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Was a little more work than regular Amish  pot roast but well worth it.   I did add small potatoes too.",
+        "author": {
+          "@type": "Person",
+          "name": "Joe"
+        },
+        "datePublished": "2025-04-06"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Thanks for the slow cooker recipe.  I have a Cuisinart browning crock pot so I didn't have to use any other pots or pans.  Came out fantastic and served with mash potatoes.  Thanks for positing.  I only made 3 servings as there is only me and that was just the right amount with left overs for a couple of great sandwiches.",
+        "author": {
+          "@type": "Person",
+          "name": "Kathi"
+        },
+        "datePublished": "2025-01-24"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I Googled pot roast with mushrooms, found your recipe, and never looked for another!  So good!",
+        "author": {
+          "@type": "Person",
+          "name": "Alexandra"
+        },
+        "datePublished": "2024-11-24"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I made this yesterday for Sunday dinner.  It was absolutely delicious!!  I made it exactly as the recipe called for except I bought a chuck roast instead of a bottom roast.   Highly recommend!!",
+        "author": {
+          "@type": "Person",
+          "name": "Lynda"
+        },
+        "datePublished": "2024-09-30"
+      }
+    ],
+    "recipeCategory": [
+      "Main Course"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Beef and Mushroom Pot Roast",
+    "@id": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/beef-and-mushroom-pot-roast-a-slow-cooker-recipe\/"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/new-potatoes-in-a-garlic-cream-sauce/",
+  "note": "Copied from local ingest.source_nodes id 344 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "New Potatoes in a Garlic Cream Sauce",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "We used new yukon gold potatoes, but any variety of new potatoes, or red potatoes will work well.",
+    "datePublished": "2014-07-20T23:06:58+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/New-Potatoes-in-a-Garlic-Cream-Sauce-11.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/New-Potatoes-in-a-Garlic-Cream-Sauce-11-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/New-Potatoes-in-a-Garlic-Cream-Sauce-11-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2014\/07\/New-Potatoes-in-a-Garlic-Cream-Sauce-11-480x270.jpg"
+    ],
+    "recipeYield": [
+      "6",
+      "6 -8"
+    ],
+    "prepTime": "PT15M",
+    "cookTime": "PT17M",
+    "totalTime": "PT32M",
+    "recipeIngredient": [
+      "2 lbs new potatoes",
+      "1\/2 Tbsp sea salt for boiling potatoes + 1\/2 tsp more for seasoning the sauce",
+      "1 Tbsp olive oil or butter",
+      "1\/2 medium onion (finely diced)",
+      "1 garlic clove (pressed)",
+      "3\/4 cup heavy whipping cream",
+      "1\/4 cup fresh dill (chopped)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "How to cook new potatoes:",
+        "name": "How to cook new potatoes:",
+        "url": "https:\/\/natashaskitchen.com\/new-potatoes-in-a-garlic-cream-sauce\/#wprm-recipe-54710-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Scrub each potato clean with a scouring pad (or the abrasive side of a dish sponge). New potatoes have a very thin skin. You don't have to scrub all of it off, just get at least half of it off.",
+        "name": "Scrub each potato clean with a scouring pad (or the abrasive side of a dish sponge). New potatoes have a very thin skin. You don't have to scrub all of it off, just get at least half of it off.",
+        "url": "https:\/\/natashaskitchen.com\/new-potatoes-in-a-garlic-cream-sauce\/#wprm-recipe-54710-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Leave bite-sized potatoes whole and cut larger ones in halves or quarters so they are about 1\" thick pieces. Place potatoes in a pot and cover with cold water. Bring to a boil, add 1\/2 Tbsp salt and boil for 15-20 minutes or until easily pierced with a fork. Drain potatoes.",
+        "name": "Leave bite-sized potatoes whole and cut larger ones in halves or quarters so they are about 1\" thick pieces. Place potatoes in a pot and cover with cold water. Bring to a boil, add 1\/2 Tbsp salt and boil for 15-20 minutes or until easily pierced with a fork. Drain potatoes.",
+        "url": "https:\/\/natashaskitchen.com\/new-potatoes-in-a-garlic-cream-sauce\/#wprm-recipe-54710-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "In a separate pan, add 1 Tbsp olive oil. Add finely diced onion and saute over medium heat until golden and soft. Add 1 pressed garlic clove and sauté another minute, stirring constantly. Add 3\/4 cup heavy whipping cream and 1\/2 tsp salt, or add salt to taste, bring to a boil and let simmer an additional 2 minutes. Stir in 1\/4 cup chopped fresh dill then remove from heat and pour sauce over potatoes. Toss potatoes in sauce until evenly coated. Cover with lid to keep warm until ready to serve.",
+        "name": "In a separate pan, add 1 Tbsp olive oil. Add finely diced onion and saute over medium heat until golden and soft. Add 1 pressed garlic clove and sauté another minute, stirring constantly. Add 3\/4 cup heavy whipping cream and 1\/2 tsp salt, or add salt to taste, bring to a boil and let simmer an additional 2 minutes. Stir in 1\/4 cup chopped fresh dill then remove from heat and pour sauce over potatoes. Toss potatoes in sauce until evenly coated. Cover with lid to keep warm until ready to serve.",
+        "url": "https:\/\/natashaskitchen.com\/new-potatoes-in-a-garlic-cream-sauce\/#wprm-recipe-54710-step-0-3"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.82",
+      "ratingCount": "16",
+      "reviewCount": "6"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "My family is German and we would make something similar each spring\/summer. Except the cream sauce goes on new lettuce--We put the cold lettuce and cream over the boiled new potatoes. Often with some fresh green beans from the garden and we had a beautiful meal.",
+        "author": {
+          "@type": "Person",
+          "name": "Nicole"
+        },
+        "datePublished": "2019-03-06"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "3"
+        },
+        "reviewBody": "Hi \r\nshould i use soul cream?",
+        "author": {
+          "@type": "Person",
+          "name": "Germaine"
+        },
+        "datePublished": "2018-02-02"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "hi natasha, is there a way to make this \"make-ahead?\" could i maybe make the sauce a few hours ahead, reheat, and then add it to potatoes?",
+        "author": {
+          "@type": "Person",
+          "name": "Tania"
+        },
+        "datePublished": "2017-08-12"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "One of the best things I've ever made!  I only had red new potatoes (didn't peel) and heavy cream on hand but I still could have eaten the whole thing.  =)  It received a big thumbs up from everyone.  Thanks!",
+        "author": {
+          "@type": "Person",
+          "name": "Patricia"
+        },
+        "datePublished": "2017-02-26"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "Made this tonight and we really enjoyed it. Since we're vegans and eat low fat I substituted non-dairy milk and a little thickener for the cream. It was very tasty.",
+        "author": {
+          "@type": "Person",
+          "name": "Joan"
+        },
+        "datePublished": "2016-08-23"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This was a delicious recipe! I'm not good at creating sauces and am thrilled that this recipe came up in my search. I made some chicken breasts in the mini oven and was able to use some of the extra sauce from the potatoes with the chicken and added mozzarella to melt and it was a HIT!! I'm planning on doing a weekly meal from your site- this week I'm trying pork tenderloin and the creamy cucumber and tomatoes recipe. Thank you for all of your hard work on these recipes and the site is great and user-friendly! I've been recommending to my friends already and follow on facebook as well! :)",
+        "author": {
+          "@type": "Person",
+          "name": "Jimena"
+        },
+        "datePublished": "2016-08-15"
+      }
+    ],
+    "recipeCategory": [
+      "Side Dish"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Potatoes in a Garlic Cream Sauce",
+    "@id": "https:\/\/natashaskitchen.com\/new-potatoes-in-a-garlic-cream-sauce\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/new-potatoes-in-a-garlic-cream-sauce\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/new-potatoes-in-a-garlic-cream-sauce\/"
+  }
+}

@@ -1,0 +1,121 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check: "1 cup (½
+  pint)" berry lines are equivalent (1 cup, pint as a note), including the source typo "pint
+  pint"; the closing "sprig of fresh mint" garnish is covered by the mint line. New grocery items
+  not in the household vocabulary (check name, section, and shopping mode): peaches, blueberries,
+  fresh-lemon-juice, granulated-sugar, fresh-mint, raspberries, blackberries.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Peaches & Berries with Lemon-Mint Syrup"
+  source:
+    relationship: source
+    attribution: "Once Upon a Chef"
+    url: https://www.onceuponachef.com/recipes/peaches-berries-with-lemon-mint-syrup.html
+    checked_on: 2026-11-08
+  image_url: https://www.onceuponachef.com/images/2010/06/Peaches-and-Berries.jpg
+  yield: "4"
+  source_lines:
+    - "4 ripe peaches, (pitted and sliced)"
+    - "1 cup (½ pint) blueberries"
+    - "¼ cup freshly squeezed lemon juice, (from 2 lemons)"
+    - "¼ cup sugar"
+    - "2 tablespoons chopped fresh mint"
+    - "1 cup (½ pint) raspberries"
+    - "1 cup (½ pint) pint blackberries"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 35}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: peaches, name: "Peaches", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "4", unit: "each"}
+          preparation: "pitted and sliced"
+          note: "ripe"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 26}}
+          relationship: equivalent
+          state: resolved
+          grocery_item: {key: blueberries, name: "Blueberries", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+          note: "½ pint"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 51}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: fresh-lemon-juice, name: "Fresh Lemon Juice", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+          note: "from 2 lemons"
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 11}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: granulated-sugar, name: "Granulated Sugar", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 32}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: fresh-mint, name: "Fresh Mint", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+          preparation: "chopped"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 26}}
+          relationship: equivalent
+          state: resolved
+          grocery_item: {key: raspberries, name: "Raspberries", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+          note: "½ pint"
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 32}}
+          relationship: equivalent
+          state: resolved
+          grocery_item: {key: blackberries, name: "Blackberries", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+          note: "½ pint"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Combine peaches, blueberries, lemon juice, sugar and mint in a serving bowl and toss. Cover with plastic wrap and refrigerate until ready to serve (up to 6 hours)."
+        - "Right before serving, add raspberries and blackberries and toss gently. Taste and add a bit more sugar if necessary. Garnish with a sprig of fresh mint."
+grocery:
+  - item: peaches
+    section: produce
+    kind: exact
+    amount: "4"
+    unit: each
+    source_lines: [0]
+  - item: blueberries
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: cup
+    source_lines: [1]
+  - item: fresh-lemon-juice
+    section: produce
+    kind: exact
+    amount: 1/4
+    unit: cup
+    source_lines: [2]
+  - item: granulated-sugar
+    section: baking
+    kind: exact
+    amount: 1/4
+    unit: cup
+    source_lines: [3]
+  - item: fresh-mint
+    section: produce
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [4]
+  - item: raspberries
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: cup
+    source_lines: [5]
+  - item: blackberries
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: cup
+    source_lines: [6]

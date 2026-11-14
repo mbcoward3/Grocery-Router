@@ -1,0 +1,121 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Check: (1) "cooking oil" is mapped to a new generic cooking-oil item rather than guessed as
+  vegetable oil; decide whether Budget Bytes' "cooking oil" should be an alias of vegetable-oil.
+  (2) "1 lb. chopped collard greens" keeps "chopped" as preparation on a plain collard-greens
+  item; decide whether bagged chopped greens are a separate purchased form. (3) Prices such as
+  ($0.32) are left out of every span and are not notes. New grocery items not in the household
+  vocabulary (check name, section, and shopping mode): cooking-oil, jerk-seasoning, orange-juice,
+  collard-greens. New store sections: beverages.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Jerk Seasoned Collard Greens"
+  source:
+    relationship: source
+    attribution: "Budget Bytes"
+    url: https://www.budgetbytes.com/jerk-seasoned-collard-greens/
+    checked_on: 2026-11-08
+  image_url: https://www.budgetbytes.com/wp-content/uploads/2020/07/Jerk-Seasoned-Collard-Greens-plate.jpg
+  yield: "8"
+  hands_on: {min: 5, max: 5}
+  unattended: {min: 35, max: 35}
+  source_lines:
+    - "1 yellow onion ($0.32)"
+    - "1 clove garlic ($0.16)"
+    - "1 Tbsp cooking oil ($0.04)"
+    - "2 tsp jerk seasoning ($0.20)"
+    - "1/2 cup orange juice ($0.52)"
+    - "3 cups chicken broth ($0.36)"
+    - "1 lb. chopped collard greens ($2.50)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 14}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: yellow-onion, name: "Yellow Onion", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "each"}
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 14}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: garlic, name: "Garlic", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "clove"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 18}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: cooking-oil, name: "Cooking Oil", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 20}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: jerk-seasoning, name: "Jerk Seasoning", store_section: {key: spices, name: "Spices"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tsp"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 20}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: orange-juice, name: "Orange Juice", store_section: {key: beverages, name: "Beverages"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 20}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: chicken-broth, name: "Chicken Broth", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "3", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 28}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: collard-greens, name: "Collard Greens", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "lb"}
+          preparation: "chopped"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Slice the onion and mince the garlic. Add the onion, garlic, and cooking oil to a large pot. Sauté the onion and garlic over medium heat until the onions are soft and translucent (about 5 minutes)."
+        - "Add the jerk seasoning, orange juice, chicken broth, and collard greens to the pot. Stir to combine. Place a lid on the pot, turn the heat up to medium-high, and allow the broth to come up to a boil."
+        - "Once boiling, turn the heat down to medium-low and let the collard greens simmer, stirring occasionally, until they are tender (about 30 minutes, or to your liking). Keep the lid in place when not stirring. Serve hot."
+grocery:
+  - item: yellow-onion
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: each
+    source_lines: [0]
+  - item: garlic
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: clove
+    source_lines: [1]
+  - item: cooking-oil
+    section: pantry
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [2]
+  - item: jerk-seasoning
+    section: spices
+    kind: exact
+    amount: "2"
+    unit: tsp
+    source_lines: [3]
+  - item: orange-juice
+    section: beverages
+    kind: exact
+    amount: 1/2
+    unit: cup
+    source_lines: [4]
+  - item: chicken-broth
+    section: pantry
+    kind: exact
+    amount: "3"
+    unit: cup
+    source_lines: [5]
+  - item: collard-greens
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: lb
+    source_lines: [6]

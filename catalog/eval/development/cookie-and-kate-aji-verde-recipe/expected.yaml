@@ -1,0 +1,14 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject
+  under §5.6: step 2 says that if the flavor is too strong, "blend in 1 tablespoon of olive oil",
+  and no line names olive oil. This is a conditional, quantified mention; decide whether
+  conditional adjustments should count as discrepancies (it may be a false rejection).
+outcome: reject
+categories: [alternative, presence_only]
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [instruction_ingredient_discrepancy]

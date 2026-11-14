@@ -1,0 +1,223 @@
+{
+  "format_version": 1,
+  "site": "once-upon-a-chef",
+  "url": "https://www.onceuponachef.com/recipes/lemon-ice.html",
+  "note": "Copied from local ingest.source_nodes id 197 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Lemon Ice",
+    "author": {
+      "@id": "https:\/\/www.onceuponachef.com\/#\/schema\/person\/d09ca52c9e790675f71c46404845af62"
+    },
+    "description": "Refreshingly tart and sweet, lemon ice delivers a spoonful of summer in every bite.",
+    "datePublished": "2023-06-25T11:30:56+00:00",
+    "image": [
+      "https:\/\/www.onceuponachef.com\/images\/2023\/05\/lemon-ice.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2023\/05\/lemon-ice-500x500.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2023\/05\/lemon-ice-500x375.jpg",
+      "https:\/\/www.onceuponachef.com\/images\/2023\/05\/lemon-ice-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4"
+    ],
+    "prepTime": "PT15M",
+    "totalTime": "PT15M",
+    "recipeIngredient": [
+      "1 teaspoon lemon zest, (from 1 lemon)",
+      "¼ cup + 2 tablespoons freshly squeezed lemon juice, (from about 3 lemons)",
+      "1 cup sugar",
+      "1\/8 teaspoon salt",
+      "2 cups half & half"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "In a large bowl, whisk together the lemon zest, lemon juice, sugar, and salt. Gradually whisk in the half & half, and continue whisking until the sugar is completely dissolved, 1 to 2 minutes.",
+        "name": "In a large bowl, whisk together the lemon zest, lemon juice, sugar, and salt. Gradually whisk in the half & half, and continue whisking until the sugar is completely dissolved, 1 to 2 minutes.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/lemon-ice.html#wprm-recipe-81942-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Pour the mixture into a shallow container, such as an 8-in (20-cm) cake pan, and cover with plastic wrap. Freeze until the mixture is solid around the edges yet still mushy in the middle, about 2 hours. Stir well, cover again, and continue to freeze until completely firm, 2 to 3 hours more. Once firm, scoop into chilled bowls to serve.",
+        "name": "Pour the mixture into a shallow container, such as an 8-in (20-cm) cake pan, and cover with plastic wrap. Freeze until the mixture is solid around the edges yet still mushy in the middle, about 2 hours. Stir well, cover again, and continue to freeze until completely firm, 2 to 3 hours more. Once firm, scoop into chilled bowls to serve.",
+        "url": "https:\/\/www.onceuponachef.com\/recipes\/lemon-ice.html#wprm-recipe-81942-step-0-1"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.92",
+      "ratingCount": "61",
+      "reviewCount": "11"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Magnificent! 10,000 stars!!!!!!!!!!!!!!!!!!",
+        "author": {
+          "@type": "Person",
+          "name": "Francis"
+        },
+        "datePublished": "2026-08-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I made the lemon ice recipe with oranges reducing sugar by 2 tablespoons. I tasted the orange juice before adding it to the recipe and it was borderline sweet. Next time I'd reduce by 3 tablespoons. My husband loved the recipe as I made it but I thought it a bit too sweet. I think it also depends on how sweet the oj is. I will definitely make it again. Delicious and refreshing!",
+        "author": {
+          "@type": "Person",
+          "name": "Sherri"
+        },
+        "datePublished": "2026-07-26"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This-like all of your recipes Jenn- is amazing!",
+        "author": {
+          "@type": "Person",
+          "name": "Angelina"
+        },
+        "datePublished": "2026-06-02"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Greetings Jenn. I am not one to tell a recipe developer when I modified a recipe but this is too good not to share with you. I made the lemon ice as directed. Then I followed the same recipe with lime. Most recently I followed the same recipe using tart-ish Mandarins AND one scant teaspoon of Fiori di Sicilia. Oh. My. Goodness. Creamsicle heaven. I am sure there is a future dinner here with all three citrus flavors served in desert bowls. Thank you so, so much.",
+        "author": {
+          "@type": "Person",
+          "name": "Chip"
+        },
+        "datePublished": "2026-05-10"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Have made this twice in The past two weeks and will likely continue to make it on repeat throughout the spring\/summer…it is SO good and so easy to make! Everyone who’s tried it has raved about it. Thanks so much Jen for another winner recipe! When I make it, I lightly pack the lemon zest into the teaspoon and I also cut the sugar down to 3\/4c. I prefer to pour it into a silicone muffin pan before freezing…makes perfect individual portions and pops right out of the silicone pan really easily. Works great when entertaining!",
+        "author": {
+          "@type": "Person",
+          "name": "Tina"
+        },
+        "datePublished": "2026-04-27"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "So easy to make. Adored by so many! I’ve made it with lemons and Meyer lemons.",
+        "author": {
+          "@type": "Person",
+          "name": "Sally"
+        },
+        "datePublished": "2026-04-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I used a stick blender to mix it and my ice cream machine.  It got fantastic. And I used heavy cream and milk. I want to try oranges instead of lemon. As a child I loved an orange cream icicle.",
+        "author": {
+          "@type": "Person",
+          "name": "Paula Iwanowski"
+        },
+        "datePublished": "2026-04-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Oh my goodness. Half and half left over after weekend guests and  lemons fading fast resulted in a cold and creamy treat. It is so easy I feel like it is almost cheating.  I should have had to work harder to achieve something so delicious.  Thanks, Jenn.",
+        "author": {
+          "@type": "Person",
+          "name": "Chip"
+        },
+        "datePublished": "2026-04-19"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Has anyone doubled this in a 9x13 for a larger crowd?  Didn't want to risk so I kept in 2 \r\n8\" squares.\r\n\r\nIt is so delicious and will be on repeat around here as I have 3 lemon trees.",
+        "author": {
+          "@type": "Person",
+          "name": "Elizabeth H"
+        },
+        "datePublished": "2025-09-13"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Delicious! And easy. We made it with lime instead.",
+        "author": {
+          "@type": "Person",
+          "name": "Marnie"
+        },
+        "datePublished": "2025-08-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Wow!!! Just wow!!! 🤩 Perfect dessert when it is 100 degrees out!!!! So easy, so light, so cool and SO yummy!!! Thanks for all your recipes! You make me a good cook!",
+        "author": {
+          "@type": "Person",
+          "name": "Beverly"
+        },
+        "datePublished": "2025-07-29"
+      }
+    ],
+    "recipeCategory": [
+      "Dessert",
+      "Ice Cream, Pudding &amp; Custard"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "lemon ice",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "356 kcal",
+      "fatContent": "14 g",
+      "carbohydrateContent": "57 g",
+      "proteinContent": "4 g",
+      "saturatedFatContent": "9 g",
+      "sugarContent": "56 g",
+      "sodiumContent": "123 mg",
+      "cholesterolContent": "45 mg",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/www.onceuponachef.com\/recipes\/lemon-ice.html#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.onceuponachef.com\/recipes\/lemon-ice.html#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.onceuponachef.com\/recipes\/lemon-ice.html"
+  }
+}

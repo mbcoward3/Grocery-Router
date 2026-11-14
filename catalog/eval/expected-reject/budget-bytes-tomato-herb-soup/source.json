@@ -1,0 +1,241 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/tomato-herb-soup/",
+  "note": "Copied from local ingest.source_nodes id 100 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Tomato Herb Soup",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "Use basic pantry staples to create this quick and easy Tomato Herb Soup. It&#039;s thick, rich, flavorful, and perfect for grilled cheese dipping!",
+    "datePublished": "2020-10-12T15:15:41+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/09\/Tomato-Herb-Soup-plate.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/09\/Tomato-Herb-Soup-plate-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/09\/Tomato-Herb-Soup-plate-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2013\/09\/Tomato-Herb-Soup-plate-480x270.jpg"
+    ],
+    "video": {
+      "name": "Tomato Herb Soup",
+      "description": "Use basic pantry staples to create this quick and easy Tomato Herb Soup. It's thick, rich, flavorful, and perfect for grilled cheese dipping! FULL RECIPE BELOW.\n\nPRINTABLE RECIPE:\n\nIngredients\n2 cloves garlic ($0.16)\n1\/4 cup olive oil ($0.64)\n1\/2 tsp dried oregano ($0.05)\n1\/2 tsp dried basil ($0.05)\n1\/2 tsp dried thyme ($0.05)\n1\/4 tsp dried rosemary ($0.03)\n1 pinch crushed red pepper ($0.02)\n1\/4 tsp freshly cracked black pepper ($0.03)\n1 6oz. can tomato paste ($0.39)\n1 Tbsp brown sugar ($0.02)\n1 28oz. can crushed tomatoes ($0.79)\n3 cups vegetable broth ($0.39)\n\nInstructions\n1. Mince the garlic and add it to a sauce pot along with the olive oil, oregano, basil, thyme, rosemary, red pepper flakes, and freshly cracked pepper. Turn the heat on to medium-low and sauté for about 2 minutes, or until the garlic has softened.\n2. Add the tomato paste and brown sugar. Stir until everything is mixed (the oil may stay partially separated). Cook the mixture while stirring continuously for 3-5 minutes, or until the tomato paste takes on a darker, almost burgundy hue.\n3. Add the crushed tomatoes and vegetable broth. Whisk the mixture together until smooth. Turn the heat up to medium and heat through, stirring occasionally. Serve hot.\n\nSee how we calculate recipe costs here:\n\nInstagram: budgetbytes\nFacebook: budgetbytes1\nPinterest: budgetbytes\nTwitter: budget_bytes\n\nTIMESTAMPS\n0:00 Introduction\n0:10 Sauté Garlic and Herbs in Oil\n0:23 Add Tomato Paste and Brown Sugar\n0:31 Add Crushed Tomatoes and Vegetable Broth\n0:37 Heat Through\n0:45 Serve and Enjoy!",
+      "uploadDate": "2021-01-17T15:00:12+00:00",
+      "creator": {
+        "@type": "Organization",
+        "name": "Budget Bytes",
+        "url": "https:\/\/www.youtube.com\/channel\/UC17vdVOZBVxTSDcldUBBlRg"
+      },
+      "duration": "PT55S",
+      "interactionStatistic": [
+        {
+          "@type": "InteractionCounter",
+          "interactionType": {
+            "@type": "WatchAction"
+          },
+          "userInteractionCount": 3120
+        },
+        {
+          "@type": "InteractionCounter",
+          "interactionType": {
+            "@type": "LikeAction"
+          },
+          "userInteractionCount": 96
+        },
+        {
+          "@type": "InteractionCounter",
+          "interactionType": {
+            "@type": "CommentAction"
+          },
+          "userInteractionCount": 7
+        }
+      ],
+      "thumbnailUrl": "https:\/\/i.ytimg.com\/vi\/3w6Joo1XCnc\/hqdefault.jpg",
+      "embedUrl": "https:\/\/www.youtube.com\/embed\/3w6Joo1XCnc?feature=oembed",
+      "contentUrl": "https:\/\/www.youtube.com\/watch?v=3w6Joo1XCnc",
+      "@type": "VideoObject"
+    },
+    "recipeYield": [
+      "5",
+      "5 1.5 cups each"
+    ],
+    "prepTime": "PT5M",
+    "cookTime": "PT20M",
+    "totalTime": "PT25M",
+    "recipeIngredient": [
+      "2 cloves garlic ($0.16)",
+      "1\/4 cup olive oil ($0.64)",
+      "1\/2 tsp dried oregano ($0.05)",
+      "1\/2 tsp dried basil ($0.05)",
+      "1\/2 tsp dried thyme ($0.05)",
+      "1\/4 tsp dried rosemary ($0.03)",
+      "1 pinch red pepper (crushed, $0.02)",
+      "1\/4 tsp black pepper (freshly cracked, $0.03)",
+      "1 6oz. can tomato paste ($0.39)",
+      "1 Tbsp brown sugar ($0.02)",
+      "1 28oz. can crushed tomatoes ($0.79)",
+      "3 cups vegetable broth ($0.39)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Mince the garlic and add it to a sauce pot along with the olive oil, oregano, basil, thyme, rosemary, red pepper flakes, and freshly cracked pepper. Turn the heat on to medium-low and sauté for about 2 minutes, or until the garlic has softened.",
+        "name": "Mince the garlic and add it to a sauce pot along with the olive oil, oregano, basil, thyme, rosemary, red pepper flakes, and freshly cracked pepper. Turn the heat on to medium-low and sauté for about 2 minutes, or until the garlic has softened.",
+        "url": "https:\/\/www.budgetbytes.com\/tomato-herb-soup\/#wprm-recipe-32164-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the tomato paste and brown sugar. Stir until everything is mixed (the oil may stay partially separated). Cook the mixture while stirring continuously for 3-5 minutes, or until the tomato paste takes on a darker, almost burgundy hue.",
+        "name": "Add the tomato paste and brown sugar. Stir until everything is mixed (the oil may stay partially separated). Cook the mixture while stirring continuously for 3-5 minutes, or until the tomato paste takes on a darker, almost burgundy hue.",
+        "url": "https:\/\/www.budgetbytes.com\/tomato-herb-soup\/#wprm-recipe-32164-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Add the crushed tomatoes and vegetable broth. Whisk the mixture together until smooth. Turn the heat up to medium and heat through, stirring occasionally. Serve hot.",
+        "name": "Add the crushed tomatoes and vegetable broth. Whisk the mixture together until smooth. Turn the heat up to medium and heat through, stirring occasionally. Serve hot.",
+        "url": "https:\/\/www.budgetbytes.com\/tomato-herb-soup\/#wprm-recipe-32164-step-0-2"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.63",
+      "ratingCount": "70",
+      "reviewCount": "68"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I love the budget byte recipes! I'm excited to make this soup but now I'm intrigued by the secret ingredient soup. Could I get that recipe too?",
+        "author": {
+          "@type": "Person",
+          "name": "Rachel"
+        },
+        "datePublished": "2026-10-11"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "Please would you email me the secret ingredient tomato soup recipe. Thanks in advance.",
+        "author": {
+          "@type": "Person",
+          "name": "Sonya Jordan"
+        },
+        "datePublished": "2026-09-27"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Please email the recipe for the secret ingredient soup to me. Thanks!",
+        "author": {
+          "@type": "Person",
+          "name": "Tyra Merinar"
+        },
+        "datePublished": "2026-09-04"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I loved this recipe but after seeing other comments I am curious about the Secret Ingredient Tomato soup, is that going to come back?",
+        "author": {
+          "@type": "Person",
+          "name": "Kayla"
+        },
+        "datePublished": "2026-08-22"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "3"
+        },
+        "reviewBody": "Inferior to the secret ingredient tomato soup recipe, could you please send that one to me?",
+        "author": {
+          "@type": "Person",
+          "name": "Rachel"
+        },
+        "datePublished": "2026-04-27"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Hi, long time fan of budgetbytes and first time commenter! Can I also get a copy of the secret ingredient tomato soup recipe? It was a definite fave. Thank you so much, I've loved this site for years!",
+        "author": {
+          "@type": "Person",
+          "name": "Amelia"
+        },
+        "datePublished": "2026-01-31"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I like this recipe but I would like to try the secret ingredient tomato soup can you send it please?",
+        "author": {
+          "@type": "Person",
+          "name": "Sarah"
+        },
+        "datePublished": "2025-12-21"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Made this recipe tonight and we loved it! But I am curious about the secret ingredient tomato soup that everyone is raving about, if you could email it to me as well please :) Thank you!",
+        "author": {
+          "@type": "Person",
+          "name": "Amanda"
+        },
+        "datePublished": "2025-12-06"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "This is my go-to tomato soup recipe! My dad even likes it and he's pretty picky about his tomato soup. I've done it for a crowd with oven-baked grilled cheese sandwiches on local sourdough bread and also with Budget Bytes' Creamy White Bean and Spinach Quesadillas. Thanks for the recipe!",
+        "author": {
+          "@type": "Person",
+          "name": "Liz O"
+        },
+        "datePublished": "2025-11-22"
+      }
+    ],
+    "keywords": "Homemade soup, Quick Meals, Tomato Soup",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1.5 Cups",
+      "calories": "168.16 kcal",
+      "carbohydrateContent": "17.6 g",
+      "proteinContent": "2.86 g",
+      "fatContent": "11.44 g",
+      "fiberContent": "4.68 g",
+      "sodiumContent": "731.8 mg"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/tomato-herb-soup\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/tomato-herb-soup\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/tomato-herb-soup\/"
+  }
+}

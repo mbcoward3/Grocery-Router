@@ -1,0 +1,95 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/summertime-fruit-salad-recipe/",
+  "note": "Copied from local ingest.source_nodes id 468 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "Summertime Fruit Salad",
+    "description": "This simple fruit salad recipe is fresh and healthy! It features strawberries, peaches and blueberries with a little balsamic vinegar and basil. It's a delicious side dish or dessert (for dessert, you can serve it as is or add some whipped cream to make it more decadent). Recipe yields 6 side servings.",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "keywords": "Fruit Salad, summer",
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2016\/08\/summertime-fruit-salad-1-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2016\/08\/summertime-fruit-salad-1-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2016\/08\/summertime-fruit-salad-1-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2016\/08\/summertime-fruit-salad-1.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/summertime-fruit-salad-recipe\/",
+    "recipeIngredient": [
+      "1 pound strawberries, hulled and thinly sliced",
+      "3 medium peaches, thinly sliced (I peeled mine, but if you don&#8217;t mind the skin, you can leave it on)",
+      "6 ounces (1 cup) blueberries",
+      "1 heaping tablespoon fresh, chopped basil or mint",
+      "2 tablespoons lemon juice (about 1 medium lemon)",
+      "1 tablespoon maple syrup or honey",
+      "2 teaspoons balsamic vinegar"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "In a medium serving bowl, combine the strawberries, peaches, blueberries and basil. Drizzle the lemon juice, maple syrup and balsamic vinegar on top. Gently toss to combine.",
+        "url": "https:\/\/cookieandkate.com\/summertime-fruit-salad-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Serve immediately, or chill for later. This salad is best enjoyed promptly, but will keep well for about 2 days in the refrigerator (pour off excess juices if necessary).",
+        "url": "https:\/\/cookieandkate.com\/summertime-fruit-salad-recipe\/#instruction-step-2"
+      }
+    ],
+    "prepTime": "PT15M",
+    "totalTime": "PT15M",
+    "recipeYield": [
+      "6",
+      "6 servings"
+    ],
+    "recipeCategory": "Side Dish",
+    "cookingMethod": "By hand",
+    "recipeCuisine": "American",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "28",
+      "ratingValue": "4.9"
+    },
+    "nutrition": {
+      "servingSize": null,
+      "calories": "91 calories",
+      "sugarContent": "16.7 g",
+      "sodiumContent": "3.4 mg",
+      "fatContent": "0.6 g",
+      "saturatedFatContent": "0 g",
+      "transFatContent": "0 g",
+      "carbohydrateContent": "22.4 g",
+      "fiberContent": "4 g",
+      "proteinContent": "1.7 g",
+      "cholesterolContent": "0 mg",
+      "@type": "nutritionInformation"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Sarah"
+        },
+        "datePublished": "2026-07-25",
+        "reviewBody": "I didn't know I could crave fruit salad. But I recently made this for a coworker's birthday, and holy cow. I didn't want to stop eating it.\r\nI mixed the lemon\/honey\/balsamic vinegar together and kept it separate until morning, since I cut the fruit the night before. I would eat this over and over."
+      }
+    ],
+    "datePublished": "2016-08-12",
+    "@id": "https:\/\/cookieandkate.com\/summertime-fruit-salad-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/summertime-fruit-salad-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/summertime-fruit-salad-recipe\/"
+  }
+}

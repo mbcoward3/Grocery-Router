@@ -1,0 +1,13 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject:
+  the decorating step tops the cheesecakes with "chilled strawberry sauce (recipe here)", a
+  linked recipe whose ingredients are not in this node. The steps also reuse the heavy cream,
+  vanilla, and sugar lines for whipped cream, which is fine.
+outcome: reject
+instructions_complete: false
+instructions_note: >-
+  Incomplete: the strawberry sauce comes from another page.
+reject:
+  codes: [external_recipe_component]

@@ -1,0 +1,130 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check: (1) the first
+  HowToStep "How to cook new potatoes:" is a heading and becomes the section name. (2) line 1
+  "1/2 Tbsp sea salt for boiling potatoes + 1/2 tsp more for seasoning the sauce" is additive
+  salt. (3) "1 Tbsp olive oil or butter" takes olive oil; the steps say olive oil. (4) heavy
+  whipping cream is kept apart from heavy cream; decide whether they are aliases. New grocery
+  items not in the household vocabulary (check name, section, and shopping mode): new-potatoes,
+  heavy-whipping-cream, fresh-dill.
+outcome: publish
+categories: [alternative]
+instructions_complete: true
+document:
+  format_version: 1
+  name: "New Potatoes in a Garlic Cream Sauce"
+  source:
+    relationship: source
+    attribution: "Natasha's Kitchen"
+    url: https://natashaskitchen.com/new-potatoes-in-a-garlic-cream-sauce/
+    checked_on: 2026-11-08
+  image_url: https://natashaskitchen.com/wp-content/uploads/2014/07/New-Potatoes-in-a-Garlic-Cream-Sauce-11.jpg
+  yield: "6"
+  hands_on: {min: 15, max: 15}
+  unattended: {min: 17, max: 17}
+  source_lines:
+    - "2 lbs new potatoes"
+    - "1/2 Tbsp sea salt for boiling potatoes + 1/2 tsp more for seasoning the sauce"
+    - "1 Tbsp olive oil or butter"
+    - "1/2 medium onion (finely diced)"
+    - "1 garlic clove (pressed)"
+    - "3/4 cup heavy whipping cream"
+    - "1/4 cup fresh dill (chopped)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 18}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: new-potatoes, name: "New Potatoes", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "lb"}
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 38}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/2", unit: "tbsp"}
+          note: "sea salt, for boiling potatoes"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 41, end: 77}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/2", unit: "tsp"}
+          note: "for seasoning the sauce"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 16}}
+          relationship: alternative
+          state: resolved
+          grocery_item: {key: olive-oil, name: "Olive Oil", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+          note: "or butter"
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 31}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: onion, name: "Onion", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1/2", unit: "each"}
+          preparation: "finely diced"
+          note: "medium"
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 24}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: garlic, name: "Garlic", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "clove"}
+          preparation: "pressed"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 28}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: heavy-whipping-cream, name: "Heavy Whipping Cream", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "3/4", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 28}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: fresh-dill, name: "Fresh Dill", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/4", unit: "cup"}
+          preparation: "chopped"
+  instruction_sections:
+    - name: "How to cook new potatoes"
+      steps:
+        - "Scrub each potato clean with a scouring pad (or the abrasive side of a dish sponge). New potatoes have a very thin skin. You don't have to scrub all of it off, just get at least half of it off."
+        - "Leave bite-sized potatoes whole and cut larger ones in halves or quarters so they are about 1\" thick pieces. Place potatoes in a pot and cover with cold water. Bring to a boil, add 1/2 Tbsp salt and boil for 15-20 minutes or until easily pierced with a fork. Drain potatoes."
+        - "In a separate pan, add 1 Tbsp olive oil. Add finely diced onion and saute over medium heat until golden and soft. Add 1 pressed garlic clove and sauté another minute, stirring constantly. Add 3/4 cup heavy whipping cream and 1/2 tsp salt, or add salt to taste, bring to a boil and let simmer an additional 2 minutes. Stir in 1/4 cup chopped fresh dill then remove from heat and pour sauce over potatoes. Toss potatoes in sauce until evenly coated. Cover with lid to keep warm until ready to serve."
+grocery:
+  - item: new-potatoes
+    section: produce
+    kind: exact
+    amount: "2"
+    unit: lb
+    source_lines: [0]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [1, 1]
+  - item: olive-oil
+    section: pantry
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [2]
+  - item: onion
+    section: produce
+    kind: exact
+    amount: 1/2
+    unit: each
+    source_lines: [3]
+  - item: garlic
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: clove
+    source_lines: [4]
+  - item: heavy-whipping-cream
+    section: dairy
+    kind: exact
+    amount: 3/4
+    unit: cup
+    source_lines: [5]
+  - item: fresh-dill
+    section: produce
+    kind: exact
+    amount: 1/4
+    unit: cup
+    source_lines: [6]

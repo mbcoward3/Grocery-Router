@@ -1,0 +1,106 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check: (1) "8 oz.
+  pasta (any shape)" maps to a generic pasta item. (2) "1/8 tsp salt (or to taste)" is resolved
+  1/8 tsp with "or to taste" as a note. (3) The steps' pot of water is non-shopping and needs no
+  line. (4) ranch-seasoning is the household item, counted there (bought as a packet) but
+  measured here. New grocery items not in the household vocabulary (check name, section, and
+  shopping mode): pasta, frozen-broccoli-florets. New store sections: frozen.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Ranch Broccoli Pasta"
+  source:
+    relationship: source
+    attribution: "Budget Bytes"
+    url: https://www.budgetbytes.com/ranch-broccoli-pasta/
+    checked_on: 2026-11-08
+  image_url: https://www.budgetbytes.com/wp-content/uploads/2021/08/Ranch-Broccoli-Pasta-close.jpg
+  yield: "4"
+  hands_on: {min: 10, max: 10}
+  unattended: {min: 15, max: 15}
+  source_lines:
+    - "8 oz. pasta (any shape) ($0.50)"
+    - "1/2 lb. frozen broccoli florets ($0.72)"
+    - "2 Tbsp butter ($0.20)"
+    - "1.5 Tbsp ranch seasoning ($0.27)"
+    - "1/8 tsp salt (or to taste) ($0.01)"
+    - "1/8 tsp freshly cracked pepper ($0.01)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 23}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: pasta, name: "Pasta", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "8", unit: "oz"}
+          note: "any shape"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 31}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: frozen-broccoli-florets, name: "Frozen Broccoli Florets", store_section: {key: frozen, name: "Frozen"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "lb"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 13}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: butter, name: "Butter", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 24}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: ranch-seasoning, name: "Ranch Seasoning", store_section: {key: spices, name: "Spices"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1.5", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 26}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/8", unit: "tsp"}
+          note: "or to taste"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 30}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: black-pepper, name: "Black Pepper", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/8", unit: "tsp"}
+          preparation: "freshly cracked"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Bring a large pot of water to a boil for the pasta. Once boiling, add the pasta and continue to boil until the pasta is tender (about 7-10 minutes)."
+        - "When the pasta is just tender, add the frozen broccoli florets to the boiling water with the pasta, and let it sit for about one minute. Reserve a ¼ cup of the starchy pasta water, then drain the pasta and broccoli in a colander."
+        - "Return the drained pasta and broccoli to the pot with the burner turned off. Add the butter and ranch seasoning and stir until the butter is melted and everything is coated in the seasoning. If the pasta becomes dry while stirring, add a splash of the reserved pasta water."
+        - "Finally, season the pasta with salt and pepper to taste. Serve warm."
+grocery:
+  - item: pasta
+    section: pantry
+    kind: exact
+    amount: "8"
+    unit: oz
+    source_lines: [0]
+  - item: frozen-broccoli-florets
+    section: frozen
+    kind: exact
+    amount: 1/2
+    unit: lb
+    source_lines: [1]
+  - item: butter
+    section: dairy
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [2]
+  - item: ranch-seasoning
+    section: spices
+    kind: exact
+    amount: 3/2
+    unit: tbsp
+    source_lines: [3]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [4]
+  - item: black-pepper
+    section: spices
+    kind: presence
+    source_lines: [5]

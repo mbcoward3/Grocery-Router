@@ -1,0 +1,16 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject
+  only because "Pinch freshly chopped parsley, (for garnish (optional))" is a pinch. If the
+  household decides a pinch with "for garnish" is intentionally_unspecified, this becomes a
+  publish case: "extra large or jumbo shrimp" is a coherent alternative, "Lemon wedges, (for
+  serving (optional))" is optional and intentionally unspecified, and "freshly black pepper" is a
+  source typo for black pepper.
+outcome: reject
+categories: [alternative, presence_only]
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [unsupported_quantity]

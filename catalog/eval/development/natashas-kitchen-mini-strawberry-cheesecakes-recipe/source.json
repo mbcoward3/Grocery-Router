@@ -1,0 +1,181 @@
+{
+  "format_version": 1,
+  "site": "natashas-kitchen",
+  "url": "https://natashaskitchen.com/mini-strawberry-cheesecakes-recipe/",
+  "note": "Copied from local ingest.source_nodes id 49 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Mini Strawberry Cheesecakes Recipe",
+    "author": {
+      "@id": "https:\/\/natashaskitchen.com\/#\/schema\/person\/1a021db2549d0f8816d974eb82d2b76f"
+    },
+    "description": "These mini strawberry cheesecakes are easy to make (the simple ingredients will surprise you!) and they disappear fast. The texture of these is phenomenal! The cheesecake is creamy and smooth with a buttery crust and the fresh strawberry topping cuts the sweetness and makes every bite irresistible! ",
+    "datePublished": "2018-02-12T19:38:18+00:00",
+    "image": [
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2018\/02\/Mini-Strawberry-Cheesecakes-Recipe-5.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2018\/02\/Mini-Strawberry-Cheesecakes-Recipe-5-500x500.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2018\/02\/Mini-Strawberry-Cheesecakes-Recipe-5-500x375.jpg",
+      "https:\/\/natashaskitchen.com\/wp-content\/uploads\/2018\/02\/Mini-Strawberry-Cheesecakes-Recipe-5-480x270.jpg"
+    ],
+    "recipeYield": [
+      "24",
+      "24 mini strawberry cheesecakes"
+    ],
+    "prepTime": "PT30M",
+    "cookTime": "PT15M",
+    "totalTime": "PT45M",
+    "recipeIngredient": [
+      "1 1\/2 cups graham cracker crumbs (from 12 whole crackers)",
+      "6 Tbsp unsalted butter (melted)",
+      "16 oz Cream Cheese (from two 8 oz packages, softened)",
+      "3 large eggs (room temperature)",
+      "14 oz sweetened condensed milk (room temperature)",
+      "1 cup heavy whipping cream (chilled)",
+      "1\/2 tsp vanilla extract",
+      "1 Tbsp granulated sugar",
+      "12 strawberries (halved)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Preheat Oven to 350˚F. In a small bowl, combine 1 1\/2 cups graham cracker crumbs with 6 Tbsp butter and stir together to moisten crumbs. Line standard sized 24-count muffin tins with paper liners and divide crumbs between 24 liners (about 1 Tbsp each). Press crumbs into base with fingers or a small spoon.",
+        "name": "Preheat Oven to 350˚F. In a small bowl, combine 1 1\/2 cups graham cracker crumbs with 6 Tbsp butter and stir together to moisten crumbs. Line standard sized 24-count muffin tins with paper liners and divide crumbs between 24 liners (about 1 Tbsp each). Press crumbs into base with fingers or a small spoon.",
+        "url": "https:\/\/natashaskitchen.com\/mini-strawberry-cheesecakes-recipe\/#wprm-recipe-53249-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "To make the filling: In the bowl of a stand mixer fitted with whisk, add 16 oz softened cream cheese and 3 eggs. Beat on high speed 5 min or until smooth, scraping down the bowl a couple of times. Add condensed milk and mix on low speed until blended (2 min), scraping down the bowl as needed.",
+        "name": "To make the filling: In the bowl of a stand mixer fitted with whisk, add 16 oz softened cream cheese and 3 eggs. Beat on high speed 5 min or until smooth, scraping down the bowl a couple of times. Add condensed milk and mix on low speed until blended (2 min), scraping down the bowl as needed.",
+        "url": "https:\/\/natashaskitchen.com\/mini-strawberry-cheesecakes-recipe\/#wprm-recipe-53249-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Divide filling evenly between cupcake liners, filling each about 3\/4 full (For easy portioning, use a leveled ice cream scoop). Bake in preheated oven at 350˚F for 13-15 mins or until set with a very slight jiggle in the center. Slight cracking is normal but if deep cracking occurs, they are over-baking. Remove from oven and let cool to room temperature in pans then refrigerate until chilled.",
+        "name": "Divide filling evenly between cupcake liners, filling each about 3\/4 full (For easy portioning, use a leveled ice cream scoop). Bake in preheated oven at 350˚F for 13-15 mins or until set with a very slight jiggle in the center. Slight cracking is normal but if deep cracking occurs, they are over-baking. Remove from oven and let cool to room temperature in pans then refrigerate until chilled.",
+        "url": "https:\/\/natashaskitchen.com\/mini-strawberry-cheesecakes-recipe\/#wprm-recipe-53249-step-0-2"
+      },
+      {
+        "@type": "HowToSection",
+        "name": "To Decorate and Serve Cheesecakes:",
+        "itemListElement": [
+          {
+            "@type": "HowToStep",
+            "text": "Top with chilled strawberry sauce (recipe here). Make whipped cream by beating together 1 cup heavy cream with 1\/2 tsp vanilla and 1 Tbsp sugar for about 2 mins on high speed or until fluffy then pipe swirls using a large open star tip over the center of each cheesecake. Place a halved strawberry over whipped cream.",
+            "name": "Top with chilled strawberry sauce (recipe here). Make whipped cream by beating together 1 cup heavy cream with 1\/2 tsp vanilla and 1 Tbsp sugar for about 2 mins on high speed or until fluffy then pipe swirls using a large open star tip over the center of each cheesecake. Place a halved strawberry over whipped cream.",
+            "url": "https:\/\/natashaskitchen.com\/mini-strawberry-cheesecakes-recipe\/#wprm-recipe-53249-step-1-0"
+          }
+        ]
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.92",
+      "ratingCount": "92",
+      "reviewCount": "6"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Absolute go to party dessert! So delicious. I do want to ask, how far in advance I can make the whipped cream? Wondering if it would stay sturdy if I made the night before or even a few hours before the event versus making it on the spot.",
+        "author": {
+          "@type": "Person",
+          "name": "Viola"
+        },
+        "datePublished": "2026-06-10"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "When to remove paper liners, before storing or before serving?",
+        "author": {
+          "@type": "Person",
+          "name": "Kandee"
+        },
+        "datePublished": "2026-06-07"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "What is the reason for condensed milk? I see other recipes dont call for it.",
+        "author": {
+          "@type": "Person",
+          "name": "Sulamita Shum"
+        },
+        "datePublished": "2026-05-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Can i put them in silicone forms without using a cupcake liner do you think they'll pop out just fine?",
+        "author": {
+          "@type": "Person",
+          "name": "Ani"
+        },
+        "datePublished": "2026-04-28"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Thank you! If I make the sauce the night before do I put the sauce on the table for serving or put it on the cupcakes before I head to the party?",
+        "author": {
+          "@type": "Person",
+          "name": "Heather"
+        },
+        "datePublished": "2026-04-04"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Hi Natasha! I made these but the crust was super crumbly. I used 12 whole graham crackers and 6 tbsp of melted butter, and pressed it down. What could I do to avoid this in the future? Do the graham crackers equal exactly 1.5 c? I didnt measure out the graham crackers, I just used 12 whole ones. Does the consistency of crushed graham crackers need to be very fine? Thanks so much and Happy Thanksgiving!",
+        "author": {
+          "@type": "Person",
+          "name": "Michael"
+        },
+        "datePublished": "2025-11-26"
+      }
+    ],
+    "recipeCategory": [
+      "Dessert"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Mini Strawberry Cheesecakes",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "calories": "211 kcal",
+      "carbohydrateContent": "15 g",
+      "proteinContent": "3 g",
+      "fatContent": "15 g",
+      "saturatedFatContent": "8 g",
+      "cholesterolContent": "68 mg",
+      "sodiumContent": "128 mg",
+      "sugarContent": "11 g",
+      "servingSize": "1 serving"
+    },
+    "@id": "https:\/\/natashaskitchen.com\/mini-strawberry-cheesecakes-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/natashaskitchen.com\/mini-strawberry-cheesecakes-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/natashaskitchen.com\/mini-strawberry-cheesecakes-recipe\/"
+  }
+}

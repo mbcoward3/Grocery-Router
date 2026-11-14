@@ -1,0 +1,12 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject: "1
+  tsp vanilla extract (*)" points at a note that is not in the JSON-LD. Everything else is a
+  simple single line.
+outcome: reject
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [missing_note_dependency]

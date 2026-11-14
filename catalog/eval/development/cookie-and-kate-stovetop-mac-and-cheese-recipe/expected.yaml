@@ -1,0 +1,14 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Expected to reject:
+  "Tiny pinch of cayenne pepper, or a dash of your favorite hot sauce" offers two different items
+  with unsupported amounts and an unnamed sauce. "2 teaspoons salt, for the pasta cooking water"
+  and "regular or whole-wheat macaroni" are fine on their own.
+outcome: reject
+categories: [alternative, presence_only]
+instructions_complete: true
+instructions_note: >-
+  Complete.
+reject:
+  codes: [unsupported_quantity, incoherent_alternative]

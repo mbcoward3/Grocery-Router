@@ -1,0 +1,118 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Check: (1) "1 cup water" is non-shopping. (2) "apple cider vinegar (or white wine vinegar or
+  distilled white vinegar)" and "honey or sugar of choice" take the first option; the steps say
+  vinegar and honey. (3) The line text keeps the HTML entity "&frac12;" exactly as published; the
+  interpretation reads it as ½. Salt and black pepper map to the presence-only catalog items
+  (spec §5.9, §11 default), so the list shows them with no amount even though the requirement
+  keeps it; the household corpus still has them as measured items. New grocery items not in the
+  household vocabulary (check name, section, and shopping mode): jalapenos, red-bell-pepper,
+  apple-cider-vinegar, honey.
+outcome: publish
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Quick Pickled Peppers"
+  source:
+    relationship: source
+    attribution: "Cookie and Kate"
+    url: https://cookieandkate.com/quick-pickled-peppers-recipe/
+    checked_on: 2026-11-08
+  image_url: https://cookieandkate.com/images/2014/10/quick-pickled-peppers-1-225x225.jpg
+  yield: "1"
+  hands_on: {min: 20, max: 20}
+  unattended: {min: 5, max: 5}
+  source_lines:
+    - "&frac12; pound jalapeños (choose larger jalapeños for less spicy pickles)"
+    - "1 red bell pepper"
+    - "1 cup apple cider vinegar (or white wine vinegar or distilled white vinegar)"
+    - "1 cup water"
+    - "2 tablespoons honey or sugar of choice"
+    - "2 cloves garlic, peeled and smashed"
+    - "1 teaspoon salt"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 73}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: jalapenos, name: "Jalapeños", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "lb"}
+          note: "choose larger jalapeños for less spicy pickles"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 17}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: red-bell-pepper, name: "Red Bell Pepper", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "1", unit: "each"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 76}}
+          relationship: alternative
+          state: resolved
+          grocery_item: {key: apple-cider-vinegar, name: "Apple Cider Vinegar", store_section: {key: condiments, name: "Condiments"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+          note: "or white wine vinegar or distilled white vinegar"
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 11}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: water, name: "Water", store_section: {key: non-shopping, name: "Non-shopping"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "cup"}
+          non_shopping: true
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 19}}
+          relationship: alternative
+          state: resolved
+          grocery_item: {key: honey, name: "Honey", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+          note: "or sugar of choice"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 35}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: garlic, name: "Garlic", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "2", unit: "clove"}
+          preparation: "peeled and smashed"
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 15}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1", unit: "tsp"}
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "First, prepare your peppers: Wear gloves to prevent your fingers from feeling burned. For less spicy pickles, use a paring knife to remove the jalapeño membranes and seeds before slicing (this is a lot of work, so I just pulled out the larger membranes from my sliced pickles). Slice the pickles thin with a mandoline or chef’s knife. If you’re still concerned about the spice level of the pickles, run the sliced jalapeños under running water in a colander to try to knock off any remaining seeds. (Beware, those pepper fumes made me cough.) Slice off the top of the bell pepper and remove the seeds and membranes. Chop the bell pepper."
+        - "Combine the prepared peppers and smashed garlic in a 28-ounce (1.75 pints) or larger glass jar. In a small saucepan, combine the vinegar, water, honey and salt. Bring the mixture close to a boil on the stove, stirring occasionally to dissolve the sweetener into the liquid. Remove from heat and carefully pour the liquid over the peppers. Use a butter knife to poke down the peppers so they all fit and there aren’t any hidden air pockets."
+        - "Let the pickles cool to room temperature in the jar, then screw on a lid and refrigerate the pickles. Depending on how thinly you sliced the peppers, they could be ready to eat immediately or might need a couple of days in the refrigerator before they taste fully pickled (just sample one every now and then to find out!). They are best when relatively fresh, but keep well for at least a month."
+grocery:
+  - item: jalapenos
+    section: produce
+    kind: exact
+    amount: 1/2
+    unit: lb
+    source_lines: [0]
+  - item: red-bell-pepper
+    section: produce
+    kind: exact
+    amount: "1"
+    unit: each
+    source_lines: [1]
+  - item: apple-cider-vinegar
+    section: condiments
+    kind: exact
+    amount: "1"
+    unit: cup
+    source_lines: [2]
+  - item: honey
+    section: pantry
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [4]
+  - item: garlic
+    section: produce
+    kind: exact
+    amount: "2"
+    unit: clove
+    source_lines: [5]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [6]

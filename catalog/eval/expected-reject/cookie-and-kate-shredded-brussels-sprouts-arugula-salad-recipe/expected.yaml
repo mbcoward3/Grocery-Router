@@ -1,0 +1,16 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed by the household.
+  Expected to reject because line 5 "⅔ batch sunshine salad dressing" is another recipe, not a
+  grocery item, and its ingredients are not in this node (reason drafted as
+  external_recipe_component). Decide whether this should share the missing_note_dependency code.
+  Lines 2 and 3 ("pecan halves or pieces", "dried cherries or cranberries") are coherent
+  alternatives.
+outcome: reject
+categories: [alternative]
+instructions_complete: false
+instructions_note: >-
+  Incomplete: the dressing is made from a separate recipe.
+reject:
+  codes: [external_recipe_component]

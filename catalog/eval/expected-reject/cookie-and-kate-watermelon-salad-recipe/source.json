@@ -1,0 +1,333 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/watermelon-salad-recipe/",
+  "note": "Copied from local ingest.source_nodes id 458 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "Watermelon Salad",
+    "description": "This classic watermelon salad recipe features crumbled feta and fresh mint. Lightly pickled shallots and chopped pistachios make it amazing! Recipe yields 6 to 8 side salads.",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "keywords": "watermelon salad",
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2024\/06\/watermelon-salad-on-plate-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2024\/06\/watermelon-salad-on-plate-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2024\/06\/watermelon-salad-on-plate-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2024\/06\/watermelon-salad-on-plate.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/watermelon-salad-recipe\/",
+    "recipeIngredient": [
+      "1 medium-to-large shallot or ½ small red onion, sliced very thinly (about ½ cup)",
+      "3 tablespoons sherry vinegar or red wine vinegar",
+      "¼ teaspoon fine salt",
+      "3 pounds ripe seedless watermelon (about ½ small round watermelon or 4 cups cubed), cut into ¾″ cubes",
+      "½ cup crumbled feta (about 2 ounces)",
+      "⅓ cup roasted and salted pistachios, chopped",
+      "¼ cup extra-virgin olive oil",
+      "Small handful of fresh mint and\/or basil leaves, torn if large, for garnish",
+      "Flaky salt or kosher salt, to taste"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "In a small bowl, combine the sliced shallot with the vinegar and fine salt. Toss to combine, and place in the refrigerator to lightly pickle while you prepare the remaining ingredients (at least 10 minutes).",
+        "url": "https:\/\/cookieandkate.com\/watermelon-salad-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Spread the cubed watermelon over a large platter or shallow serving bowl. Arrange the pickled shallot on top, and spoon the leftover vinegar over the salad. Sprinkle the feta and pistachios on top. ",
+        "url": "https:\/\/cookieandkate.com\/watermelon-salad-recipe\/#instruction-step-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Drizzle the olive oil all over. Finish the salad with a sprinkle of fresh herbs and flaky salt. This salad is best enjoyed within an hour or two, but will keep in the refrigerator for up to 4 days.",
+        "url": "https:\/\/cookieandkate.com\/watermelon-salad-recipe\/#instruction-step-3"
+      }
+    ],
+    "recipeYield": [
+      "6",
+      "6 to 8 side servings"
+    ],
+    "recipeCategory": "Salad",
+    "cookingMethod": "By hand",
+    "recipeCuisine": "Mediterranean",
+    "suitableForDiet": "https:\/\/schema.org\/VegetarianDiet",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "18",
+      "ratingValue": "4.9"
+    },
+    "nutrition": {
+      "servingSize": "1 side salad",
+      "calories": "231 calories",
+      "sugarContent": "16.2 g",
+      "sodiumContent": "322.8 mg",
+      "fatContent": "15.5 g",
+      "saturatedFatContent": "3.6 g",
+      "transFatContent": "0 g",
+      "carbohydrateContent": "21.8 g",
+      "fiberContent": "2.1 g",
+      "proteinContent": "4.9 g",
+      "cholesterolContent": "11.1 mg",
+      "@type": "nutritionInformation"
+    },
+    "video": {
+      "@context": "http:\/\/schema.org",
+      "@type": "VideoObject",
+      "name": "Watermelon Salad Recipe",
+      "description": "Watch how to make classic watermelon salad in this short recipe video! This beautiful recipe features ripe watermelon with feta, mint and pistachios. ",
+      "contentUrl": "https:\/\/content.jwplatform.com\/videos\/x7nggABJ.mp4",
+      "thumbnailUrl": [
+        "https:\/\/content.jwplatform.com\/thumbs\/x7nggABJ-720.jpg"
+      ],
+      "uploadDate": "2024-07-01T15:52:55+00:00"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Catherine Cox"
+        },
+        "datePublished": "2024-06-27",
+        "reviewBody": "Kate!!!!! Watermelons are everywhere down here in the deep south. Thank you for this beautiful salad with the mighty melon! It's fantastic, fresh, light and so delicious! We'll be eating it all summer long!!! Thank you!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Karen"
+        },
+        "datePublished": "2024-07-01",
+        "reviewBody": "This was DELICIOUS!! So good and came together so quickly! Thank you!!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Anne Marie Tennison"
+        },
+        "datePublished": "2024-07-25",
+        "reviewBody": "Made this for our friendship potluck and it turned out amazing!  The flavor is amazing, and the pickled shallots and pistachio add depth. Will definitely make again - perfect summer side."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Gail"
+        },
+        "datePublished": "2024-08-11",
+        "reviewBody": "This was so refreshing - we all really loved it."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Aneel Gupta"
+        },
+        "datePublished": "2024-08-26",
+        "reviewBody": "This watermelon salad recipe is a summer delight! The combination of feta, mint, and pistachios is brilliant and refreshing."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Charlotte Bell"
+        },
+        "datePublished": "2024-09-02",
+        "reviewBody": "This salad is so good! It served as our main dish this evening. I used cinnamon basil from my back yard instead of the mint. The flavor is more subtle, but a nice complement."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Rosena Zarifian"
+        },
+        "datePublished": "2025-06-22",
+        "reviewBody": "This recipe is everything! Watermelon and feta have been my go-to summer combo for years. It reminds me of summers in the Mediterranean with my family, where we’d look forward to this staple dish. Sweet, salty, refreshing… it’s honestly summer in a bowl. Love that you’re sharing the magic too."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "3"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Helen"
+        },
+        "datePublished": "2025-07-01",
+        "reviewBody": "I have made a watermelon feta salad several times and thought i would give this a try with the added ingredients.  The pistachios add a nice touch but my family was not fond of the addition of the pickled shallots and vinegar. We didnt think it paired well with the watermelon.  I'll be back to my old recipe but with the addition of the pitachios for a nice crunch."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Carol"
+        },
+        "datePublished": "2025-06-28",
+        "reviewBody": "Love this salad.  Made it tonight with local watermelon and mint from my garden. We are in the south so I used pecans and toasted them in an iron skillet. I didn’t have pistachios handy."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Sally Shughart"
+        },
+        "datePublished": "2025-07-04",
+        "reviewBody": "This was fabulous and so easy. It literally took 10 minutes to make and it looked like a work of art. Everyone at the party loved it. (Also, my watermelon wasn’t even a super sweet one and the salad was still delicious.) Thanks for a great recipe, Kate!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Robin"
+        },
+        "datePublished": "2025-07-05",
+        "reviewBody": "I made this salad for the Fourth of July. It was delicious and so pretty on the platter. Will definitely be making it again!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Lynne"
+        },
+        "datePublished": "2025-07-06",
+        "reviewBody": "Excellent and easy! Followed directions exactly - definitely best right after assembly. We had leftovers the next day but the vinegar seems stronger and nuts not crisp."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Merrie"
+        },
+        "datePublished": "2025-07-29",
+        "reviewBody": "Oh my goodness!! Such a joyful dance of flavors on my tongue ~ I could literally eat this salad every day and never tire of it!! Thanks for such a wonderful recipe!! ❤️"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Cathy Bertanzetti"
+        },
+        "datePublished": "2025-09-12",
+        "reviewBody": "This is a delightfully refreshing watermelon explosion in a bowl. I cannot get enough of it. Thank you so much for this recipe."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Eileen"
+        },
+        "datePublished": "2026-06-01",
+        "reviewBody": "My favorite summer recipe of all time! It's simply perfect. I have been trying to share it with everyone I know for the past couple years."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Margaret"
+        },
+        "datePublished": "2026-07-25",
+        "reviewBody": "Delicious!   I contributed this salad to a cookout party with work colleagues and everyone raved about it- \"Wow, that is really, REALLY good!\" --   even though I realized later that I'd forgotten to add the olive oil.   So--  if you also forget, just know that this watermelon salad will still be a winner! \r\n\r\nI did prepare the watermelon cubes a few hours in advance and drained off (and drank!) the delicious juice. . . . then followed Kate's good advice about adding the salt flakes at the last minute. So glad-- the salad stayed beautiful, never became gloppy."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Ali K"
+        },
+        "datePublished": "2026-08-05",
+        "reviewBody": "Made this tonight and it was delicious and a perfect dish when we are worried about lettuce!"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Bethany"
+        },
+        "datePublished": "2026-08-11",
+        "reviewBody": "Yummy, easy salad! All the tangy and salty flavors make it the most interesting way I have ever had watermelon."
+      }
+    ],
+    "datePublished": "2024-06-27",
+    "@id": "https:\/\/cookieandkate.com\/watermelon-salad-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/watermelon-salad-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/watermelon-salad-recipe\/"
+  }
+}

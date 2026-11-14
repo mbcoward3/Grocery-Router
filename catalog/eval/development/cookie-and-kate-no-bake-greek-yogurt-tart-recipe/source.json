@@ -1,0 +1,131 @@
+{
+  "format_version": 1,
+  "site": "cookie-and-kate",
+  "url": "https://cookieandkate.com/no-bake-greek-yogurt-tart-recipe/",
+  "note": "Copied from local ingest.source_nodes id 425 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@context": "https:\/\/schema.org\/",
+    "@type": "Recipe",
+    "name": "No-Bake Greek Yogurt Tart",
+    "description": "This no-bake Greek yogurt tart recipe looks impressive, but it's very easy to make and nutritious, too! I topped mine with raspberries and strawberries, but use any fresh fruit you'd like. Recipe yields one 9-inch tart (6 slices).",
+    "author": {
+      "@type": "Person",
+      "name": "Cookie and Kate",
+      "url": "https:\/\/cookieandkate.com\/about\/"
+    },
+    "keywords": "Greek Yogurt Tart, fruit tart, make ahead",
+    "image": [
+      "https:\/\/cookieandkate.com\/images\/2018\/05\/no-bake-greek-yogurt-tart-recipe-4-225x225.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/05\/no-bake-greek-yogurt-tart-recipe-4-260x195.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/05\/no-bake-greek-yogurt-tart-recipe-4-320x180.jpg",
+      "https:\/\/cookieandkate.com\/images\/2018\/05\/no-bake-greek-yogurt-tart-recipe-4.jpg"
+    ],
+    "url": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/",
+    "recipeIngredient": [
+      "2 cups raw pecans",
+      "10 Medjool dates, soaked in warm water for 10 minutes and pitted",
+      "&frac14; teaspoon fine sea salt",
+      "1 &frac12; cups plain Greek yogurt",
+      "&frac12; cup raspberries or blueberries (or more—I went ahead and used an entire 6-ounce container)",
+      "4 strawberries, hulled and thinly sliced",
+      "2 tablespoons honey"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Make the crust: In a food processor, pulse the pecans until ground into a semi-fine meal. Add the dates and pulse until the mixture holds together when pinched and starts to look like dough (don&#8217;t overdo it like I did in the photos).",
+        "url": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/#instruction-step-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Press the dough into a 9 to 9 &frac12;-inch tart pan with a removable bottom to form an even crust along the base and sides. Chill in the freezer for 10 minutes.",
+        "url": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/#instruction-step-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Make the filling: Remove the crust from the freezer. Carefully remove the tart from the pan (leave it resting on the round base) and slide it onto a round serving platter. Spread the yogurt over the crust. Top the yogurt with the raspberries and strawberries, then drizzle with honey.",
+        "url": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/#instruction-step-3"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "To serve, slice the tart with a sharp knife, wiping off the blade after each cut. Use a thin pie server or spatula to serve.",
+        "url": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/#instruction-step-4"
+      }
+    ],
+    "prepTime": "PT30M",
+    "totalTime": "PT30M",
+    "recipeYield": [
+      "6",
+      "6 servings"
+    ],
+    "recipeCategory": "Dessert",
+    "cookingMethod": "No-Bake",
+    "recipeCuisine": "American",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "reviewCount": "28",
+      "ratingValue": "4.9"
+    },
+    "nutrition": {
+      "servingSize": "1 slice, made with lowfat Greek yogurt",
+      "calories": "404 calories",
+      "sugarContent": "36.2 g",
+      "sodiumContent": "110.7 mg",
+      "fatContent": "24.8 g",
+      "saturatedFatContent": "2.6 g",
+      "transFatContent": "0 g",
+      "carbohydrateContent": "44.1 g",
+      "fiberContent": "6.7 g",
+      "proteinContent": "8.8 g",
+      "cholesterolContent": "4.9 mg",
+      "@type": "nutritionInformation"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Debbi"
+        },
+        "datePublished": "2024-07-08",
+        "reviewBody": "You did it again (as always)!  Not only is this healthy and delicious, it is the perfect no-bake summertime dessert for the triple digit temperatures we are experiencing in the west. I just made it again for my daughter’s birthday. I have the shell in the freezer and will assemble when we are ready for it.    Thank you Kate and Ali."
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Jane"
+        },
+        "datePublished": "2025-08-17",
+        "reviewBody": "Such a clever recipe :\r\nI used walnuts and almonds as that was all I had in the cupboard and added lots of cinnamon too . Went down well and felt good knowing it was so healthy . \r\nThank you !"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Michelle"
+        },
+        "datePublished": "2026-09-25",
+        "reviewBody": "I just made your No-Bake Greek Yogurt Tart. It looks so good. It is chilling in the refrigerator right now. I forgot to add the salt to the crust because I didn't see it listed under the instructions. I'm hoping it will still be divine. Thank you for sharing your no-bake desserts."
+      }
+    ],
+    "datePublished": "2018-05-03",
+    "@id": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/cookieandkate.com\/no-bake-greek-yogurt-tart-recipe\/"
+  }
+}

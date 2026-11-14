@@ -1,0 +1,275 @@
+{
+  "format_version": 1,
+  "site": "budget-bytes",
+  "url": "https://www.budgetbytes.com/ranch-broccoli-pasta/",
+  "note": "Copied from local ingest.source_nodes id 12 (page fetched 2026-11-08, JSON-LD location /@graph/7); the node is byte-for-byte except re-indentation.",
+  "node": {
+    "@type": "Recipe",
+    "name": "Ranch Broccoli Pasta",
+    "author": {
+      "@id": "https:\/\/www.budgetbytes.com\/#\/schema\/person\/de533a4dad507aefcf8ea04e131701f9"
+    },
+    "description": "This Ranch Broccoli Pasta just takes minutes to make and is full of deliciously creamy, tangy, herby ranch flavor!",
+    "datePublished": "2021-08-21T17:07:54+00:00",
+    "image": [
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2021\/08\/Ranch-Broccoli-Pasta-close.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2021\/08\/Ranch-Broccoli-Pasta-close-500x500.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2021\/08\/Ranch-Broccoli-Pasta-close-500x375.jpg",
+      "https:\/\/www.budgetbytes.com\/wp-content\/uploads\/2021\/08\/Ranch-Broccoli-Pasta-close-480x270.jpg"
+    ],
+    "recipeYield": [
+      "4"
+    ],
+    "prepTime": "PT10M",
+    "cookTime": "PT15M",
+    "totalTime": "PT25M",
+    "recipeIngredient": [
+      "8 oz. pasta (any shape) ($0.50)",
+      "1\/2 lb. frozen broccoli florets ($0.72)",
+      "2 Tbsp butter ($0.20)",
+      "1.5 Tbsp ranch seasoning ($0.27)",
+      "1\/8 tsp salt (or to taste) ($0.01)",
+      "1\/8 tsp freshly cracked pepper ($0.01)"
+    ],
+    "recipeInstructions": [
+      {
+        "@type": "HowToStep",
+        "text": "Bring a large pot of water to a boil for the pasta. Once boiling, add the pasta and continue to boil until the pasta is tender (about 7-10 minutes).",
+        "name": "Bring a large pot of water to a boil for the pasta. Once boiling, add the pasta and continue to boil until the pasta is tender (about 7-10 minutes).",
+        "url": "https:\/\/www.budgetbytes.com\/ranch-broccoli-pasta\/#wprm-recipe-56727-step-0-0"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "When the pasta is just tender, add the frozen broccoli florets to the boiling water with the pasta, and let it sit for about one minute. Reserve a ¼ cup of the starchy pasta water, then drain the pasta and broccoli in a colander.",
+        "name": "When the pasta is just tender, add the frozen broccoli florets to the boiling water with the pasta, and let it sit for about one minute. Reserve a ¼ cup of the starchy pasta water, then drain the pasta and broccoli in a colander.",
+        "url": "https:\/\/www.budgetbytes.com\/ranch-broccoli-pasta\/#wprm-recipe-56727-step-0-1"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Return the drained pasta and broccoli to the pot with the burner turned off. Add the butter and ranch seasoning and stir until the butter is melted and everything is coated in the seasoning. If the pasta becomes dry while stirring, add a splash of the reserved pasta water.",
+        "name": "Return the drained pasta and broccoli to the pot with the burner turned off. Add the butter and ranch seasoning and stir until the butter is melted and everything is coated in the seasoning. If the pasta becomes dry while stirring, add a splash of the reserved pasta water.",
+        "url": "https:\/\/www.budgetbytes.com\/ranch-broccoli-pasta\/#wprm-recipe-56727-step-0-2"
+      },
+      {
+        "@type": "HowToStep",
+        "text": "Finally, season the pasta with salt and pepper to taste. Serve warm.",
+        "name": "Finally, season the pasta with salt and pepper to taste. Serve warm.",
+        "url": "https:\/\/www.budgetbytes.com\/ranch-broccoli-pasta\/#wprm-recipe-56727-step-0-3"
+      }
+    ],
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.74",
+      "ratingCount": "15",
+      "reviewCount": "15"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Another Budget Bytes winner! Ridiculously quick &amp; easy, packs a helluva flavor punch, and meal preps like a dream. I loved the tangy, rich flavors, multiple textures, and easy clean-up. :D For a little extra protein, I added a batch of your air-fried chickpeas (which have quickly become a goes-on-everything staple at my house), but to keep this truly one-pot, just adding a can of drained &amp; rinsed chickpeas at the end works bd equally delicious.",
+        "author": {
+          "@type": "Person",
+          "name": "Rose"
+        },
+        "datePublished": "2025-10-13"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Loved this!  It was easy to make and delicious!  I doubled the recipe so I could use a full box of pasta.  It was a hit!  I will definitely be making this again!",
+        "author": {
+          "@type": "Person",
+          "name": "Andy"
+        },
+        "datePublished": "2025-04-26"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "My toddler, husband, and I love this recipe! It’s so cheap but delicious 😋 I add a little more butter (definitely not healthy) and I use gluten free pasta to make it gluten free! Yum!",
+        "author": {
+          "@type": "Person",
+          "name": "Grace Goodwin"
+        },
+        "datePublished": "2024-01-15"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Next time I’ll double the ranch seasoning. Make sure to salt to taste to make sure it’s not bland. Served with roasted carrots, delicious. Easy vegetarian meal when I’m trying to reduce meat.",
+        "author": {
+          "@type": "Person",
+          "name": "Meredith"
+        },
+        "datePublished": "2023-06-01"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "It's a good recipe. I made the basic version and found it a little under-flavored,  bland. I will try it again but take the author's recommendation to add cherry tomatoes. That will likely add another counterpoint to just broccoli. \r\n\r\nOn the broccoli, I found only one minute in the pasta water, even after I left them out to thaw for about an hour, too little time to soften. The broccoli was cooked but still a bit too hard. I'd give it another minute next time around so it's firm, has some crunch, but isn't hard or over-boiled\/slimy. \r\n\r\nLast, I used pretty high-end butter (Kerry Gold) and the ranch at the specified amount yet found the flavor too light; I'll go heavier with both on my next attempt. If you don't mind adding a little to the cost, I'm going to try more like 2.5 tablespoons of ranch seasoning, and maybe another tablespoon of butter. Even that may be too light, but I doubt for many it would be over-kill. I may also pad the butter out with a tablespoon of ghee or replace it entirely. Clarified butter has a different taste which would make the butter-flavor more complex.\r\n\r\nI feel this will make the dish more to my personal taste, but liked what this recipe yielded as a jumping off point; the author likely prefers a lighter taste and firmer broccoli than I do.",
+        "author": {
+          "@type": "Person",
+          "name": "TRW"
+        },
+        "datePublished": "2023-02-11"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Dear budgetbyte$  My name is Jeff. R Yes, I love ranch broccoli\r\nPasta. I know how to cook ranch broccoli pasta easy fast. I like it. Good mmm 😘👌Rating ⭐⭐⭐⭐⭐😁👍",
+        "author": {
+          "@type": "Person",
+          "name": "Jeffrey"
+        },
+        "datePublished": "2023-01-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I love how simple and delicious this is. Even my toddler gobbled it up. Definitely one to keep handy for busy nights! I added chicken and a little parmesan and it was *chef's kiss*",
+        "author": {
+          "@type": "Person",
+          "name": "Kristi"
+        },
+        "datePublished": "2022-09-28"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "3"
+        },
+        "reviewBody": "I thought this was just ok. Made as directed and used chickpea pasta. I ate it but wouldn’t make again.",
+        "author": {
+          "@type": "Person",
+          "name": "Elizabeth"
+        },
+        "datePublished": "2022-09-08"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "I followed the basic recipe - only difference is that I cooked the pasta in enough water not to have to drain it. Then added butter and ranch seasoning mix to the pot when the pasta was done cooking. It makes a light creamy sauce that goes great with the veggies and pasta. It was a nice change from the usual. Would definitely make it again. Good flavor and a quick and easy dinner. 👍🏻👍🏻",
+        "author": {
+          "@type": "Person",
+          "name": "Melissa"
+        },
+        "datePublished": "2022-07-26"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "My family loves this recipe! It's in our regular rotation. I usually make a modified ranch version of the lemon chicken to go along with it.",
+        "author": {
+          "@type": "Person",
+          "name": "Stephanie"
+        },
+        "datePublished": "2022-05-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "Tried this with bacon as was suggested, and it was a hit! Will be making this with bacon pretty much from here on out.",
+        "author": {
+          "@type": "Person",
+          "name": "Shaun"
+        },
+        "datePublished": "2022-03-06"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "So good! This is perfect for my arsenal of quick, nutritious meals to make for my family on busy weekdays. Everybody loved it, but I think my toddler and baby would have consumed more broccoli if it was cooked longer and broken down into the pasta. They didn't like the big chunks. I added some grocery store rotisserie chicken (and more butter and ranch seasoning) and it was a perfect meal. Thanks!",
+        "author": {
+          "@type": "Person",
+          "name": "Kate McCubbins"
+        },
+        "datePublished": "2021-10-15"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "4"
+        },
+        "reviewBody": "I added a cut up cooked chicken breast.  I decided to use the whole batch of seasoning since I added the chicken.  I kept the same amount of butter, but I think next time I will add another tablespoon of butter and a little more reserved water.  I expected it to have more flavor than it did.",
+        "author": {
+          "@type": "Person",
+          "name": "Ann"
+        },
+        "datePublished": "2021-09-09"
+      },
+      {
+        "@type": "Review",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "reviewBody": "We made this for dinner last night and it was SO good, and couldn't have been easier! We added shredded parm on top for serving and had it alongside garlic bread and salad. The only thing I would change next time is adding more of the dry ranch seasoning to give it even more flavor :) definitely adding this one to our regular rotation of dinner recipes, thank you!",
+        "author": {
+          "@type": "Person",
+          "name": "Rachel B"
+        },
+        "datePublished": "2021-09-08"
+      }
+    ],
+    "recipeCategory": [
+      "Dinner",
+      "Lunch",
+      "Main Course"
+    ],
+    "recipeCuisine": [
+      "American"
+    ],
+    "keywords": "Easy Pasta Recipe",
+    "nutrition": {
+      "@type": "NutritionInformation",
+      "servingSize": "1.5 cups",
+      "calories": "296 kcal",
+      "carbohydrateContent": "49 g",
+      "proteinContent": "9 g",
+      "fatContent": "7 g",
+      "sodiumContent": "567 mg",
+      "fiberContent": "3 g"
+    },
+    "@id": "https:\/\/www.budgetbytes.com\/ranch-broccoli-pasta\/#recipe",
+    "isPartOf": {
+      "@id": "https:\/\/www.budgetbytes.com\/ranch-broccoli-pasta\/#article"
+    },
+    "mainEntityOfPage": "https:\/\/www.budgetbytes.com\/ranch-broccoli-pasta\/"
+  }
+}

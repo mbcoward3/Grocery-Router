@@ -1,0 +1,122 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check: (1) line 5 "2
+  Tbsp chives or green onion (chopped, plus more to garnish)" is both an alternative and a "plus
+  more" line; like the banana bread butter line it is drafted as additive (2 tbsp + unspecified
+  chives) with "or green onion" as a note. (2) "Salt (... to taste)" and "Black pepper (freshly
+  ground, to taste)" are intentionally unspecified presence-only items. (3) The last step's "I
+  used about 3/4 tsp salt" is a quantified mention of a listed item, not a discrepancy. New
+  grocery items not in the household vocabulary (check name, section, and shopping mode):
+  red-potatoes, fresh-chives.
+outcome: publish
+categories: [alternative]
+instructions_complete: true
+document:
+  format_version: 1
+  name: "Crisp Sautéed Red Potatoes Recipe"
+  source:
+    relationship: source
+    attribution: "Natasha's Kitchen"
+    url: https://natashaskitchen.com/crisp-sauteed-red-potatoes-recipe/
+    checked_on: 2026-11-08
+  image_url: https://natashaskitchen.com/wp-content/uploads/2014/05/Crisp-SautC3A9ed-Red-Potatoes-4.jpg
+  yield: "4"
+  hands_on: {min: 5, max: 5}
+  unattended: {min: 20, max: 20}
+  source_lines:
+    - "1 1/2 lbs small red potatoes (cut in half or quartered to make 3/4-inch thick pieces)"
+    - "1 Tbsp unsalted butter"
+    - "2 Tbsp olive oil"
+    - "Salt (preferably kosher or sea salt, to taste)"
+    - "Black pepper (freshly ground, to taste)"
+    - "2 Tbsp chives or green onion (chopped, plus more to garnish)"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 85}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: red-potatoes, name: "Red Potatoes", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1 1/2", unit: "lb"}
+          preparation: "cut in half or quartered to make 3/4-inch thick pieces"
+          note: "small"
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 22}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: unsalted-butter, name: "Unsalted Butter", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 16}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: olive-oil, name: "Olive Oil", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 46}}
+          relationship: single
+          state: intentionally_unspecified
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: unspecified}
+          note: "preferably kosher or sea salt, to taste"
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 39}}
+          relationship: single
+          state: intentionally_unspecified
+          grocery_item: {key: black-pepper, name: "Black Pepper", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: unspecified}
+          preparation: "freshly ground"
+          note: "to taste"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 13}}
+          relationship: additive
+          state: resolved
+          grocery_item: {key: fresh-chives, name: "Fresh Chives", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+          preparation: "chopped"
+          note: "or green onion"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 39, end: 59}}
+          relationship: additive
+          state: intentionally_unspecified
+          grocery_item: {key: fresh-chives, name: "Fresh Chives", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: unspecified}
+          note: "to garnish"
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Heat a large skillet over medium heat and add 1 Tbsp butter and 2 Tbsp olive oil. Once butter is melted and hot, arrange potatoes in the skillet, cut-side-down in one layer. Cook uncovered and undisturbed 8-10 minutes or until golden brown crust forms on the bottoms."
+        - "Turn potatoes then cover and cook another 5 minutes or until golden brown on the second side, you'll hear it spit and splatter under the lid; just be careful when you first lift of the lid as juices from the lid can dribble into the pan and splatter. Keep the wee ones away from the stove. In hind sight, a dutch oven with taller walls might have been a better choice to cook these."
+        - "Turn the potatoes again, cover and cook another 5 minutes or until you can easily pierce potatoes with a knife. Remove from heat and sprinkle with salt & pepper (I used about 3/4 tsp salt and 1/8 tsp pepper), toss with 2 Tbsp chives. Sprinkle with more fresh chives just before serving and enjoy."
+grocery:
+  - item: red-potatoes
+    section: produce
+    kind: exact
+    amount: 3/2
+    unit: lb
+    source_lines: [0]
+  - item: unsalted-butter
+    section: dairy
+    kind: exact
+    amount: "1"
+    unit: tbsp
+    source_lines: [1]
+  - item: olive-oil
+    section: pantry
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [2]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [3]
+  - item: black-pepper
+    section: spices
+    kind: presence
+    source_lines: [4]
+  - item: fresh-chives
+    section: produce
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [5]
+  - item: fresh-chives
+    section: produce
+    kind: unspecified
+    source_lines: [5]

@@ -1,0 +1,124 @@
+format_version: 1
+reviewed: false
+draft_note: >-
+  Drafted by a coding agent from the stored source node; not yet reviewed. Check: (1) the salt
+  line is never used in the steps; drafted as instructions_complete true with the salt kept as a
+  requirement, but decide whether a listed ingredient missing from the steps makes the
+  instructions incomplete. (2) "10 Medjool dates, soaked in warm water ..." has no separate water
+  requirement; the water is preparation. (3) "raw pecans" keeps the protected descriptor raw. (4)
+  "plain Greek yogurt" maps to greek-yogurt with plain as a note. New grocery items not in the
+  household vocabulary (check name, section, and shopping mode): raw-pecans, medjool-dates,
+  greek-yogurt, raspberries, strawberries, honey.
+outcome: publish
+categories: [alternative]
+instructions_complete: true
+document:
+  format_version: 1
+  name: "No-Bake Greek Yogurt Tart"
+  source:
+    relationship: source
+    attribution: "Cookie and Kate"
+    url: https://cookieandkate.com/no-bake-greek-yogurt-tart-recipe/
+    checked_on: 2026-11-08
+  image_url: https://cookieandkate.com/images/2018/05/no-bake-greek-yogurt-tart-recipe-4-225x225.jpg
+  yield: "6"
+  hands_on: {min: 30, max: 30}
+  source_lines:
+    - "2 cups raw pecans"
+    - "10 Medjool dates, soaked in warm water for 10 minutes and pitted"
+    - "&frac14; teaspoon fine sea salt"
+    - "1 &frac12; cups plain Greek yogurt"
+    - "&frac12; cup raspberries or blueberries (or more—I went ahead and used an entire 6-ounce container)"
+    - "4 strawberries, hulled and thinly sliced"
+    - "2 tablespoons honey"
+  ingredient_sections:
+    - name: Ingredients
+      requirements:
+        - provenance: {type: ingredient_line, line: 0, span: {start: 0, end: 17}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: raw-pecans, name: "Raw Pecans", store_section: {key: baking, name: "Baking"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "cup"}
+        - provenance: {type: ingredient_line, line: 1, span: {start: 0, end: 64}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: medjool-dates, name: "Medjool Dates", store_section: {key: produce, name: "Produce"}, shopping_mode: counted}
+          quantity: {kind: exact, amount: "10", unit: "each"}
+          preparation: "soaked in warm water for 10 minutes and pitted"
+        - provenance: {type: ingredient_line, line: 2, span: {start: 0, end: 31}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: salt, name: "Salt", store_section: {key: spices, name: "Spices"}, shopping_mode: presence-only}
+          quantity: {kind: exact, amount: "1/4", unit: "tsp"}
+          note: "fine sea salt"
+        - provenance: {type: ingredient_line, line: 3, span: {start: 0, end: 34}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: greek-yogurt, name: "Greek Yogurt", store_section: {key: dairy, name: "Dairy"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1 1/2", unit: "cup"}
+          note: "plain"
+        - provenance: {type: ingredient_line, line: 4, span: {start: 0, end: 24}}
+          relationship: alternative
+          state: resolved
+          grocery_item: {key: raspberries, name: "Raspberries", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "1/2", unit: "cup"}
+          note: "or blueberries; or more—I went ahead and used an entire 6-ounce container"
+        - provenance: {type: ingredient_line, line: 5, span: {start: 0, end: 40}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: strawberries, name: "Strawberries", store_section: {key: produce, name: "Produce"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "4", unit: "each"}
+          preparation: "hulled and thinly sliced"
+        - provenance: {type: ingredient_line, line: 6, span: {start: 0, end: 19}}
+          relationship: single
+          state: resolved
+          grocery_item: {key: honey, name: "Honey", store_section: {key: pantry, name: "Pantry"}, shopping_mode: measured}
+          quantity: {kind: exact, amount: "2", unit: "tbsp"}
+  instruction_sections:
+    - name: "Instructions"
+      steps:
+        - "Make the crust: In a food processor, pulse the pecans until ground into a semi-fine meal. Add the dates and pulse until the mixture holds together when pinched and starts to look like dough (don’t overdo it like I did in the photos)."
+        - "Press the dough into a 9 to 9 ½-inch tart pan with a removable bottom to form an even crust along the base and sides. Chill in the freezer for 10 minutes."
+        - "Make the filling: Remove the crust from the freezer. Carefully remove the tart from the pan (leave it resting on the round base) and slide it onto a round serving platter. Spread the yogurt over the crust. Top the yogurt with the raspberries and strawberries, then drizzle with honey."
+        - "To serve, slice the tart with a sharp knife, wiping off the blade after each cut. Use a thin pie server or spatula to serve."
+grocery:
+  - item: raw-pecans
+    section: baking
+    kind: exact
+    amount: "2"
+    unit: cup
+    source_lines: [0]
+  - item: medjool-dates
+    section: produce
+    kind: exact
+    amount: "10"
+    unit: each
+    source_lines: [1]
+  - item: salt
+    section: spices
+    kind: presence
+    source_lines: [2]
+  - item: greek-yogurt
+    section: dairy
+    kind: exact
+    amount: 3/2
+    unit: cup
+    source_lines: [3]
+  - item: raspberries
+    section: produce
+    kind: exact
+    amount: 1/2
+    unit: cup
+    source_lines: [4]
+  - item: strawberries
+    section: produce
+    kind: exact
+    amount: "4"
+    unit: each
+    source_lines: [5]
+  - item: honey
+    section: pantry
+    kind: exact
+    amount: "2"
+    unit: tbsp
+    source_lines: [6]
