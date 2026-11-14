@@ -1,8 +1,13 @@
 # Grocery Router — Recipe library: shared catalog recipes and household edits
 
-Status: **proposed; awaiting owner approval** (#55, revision 2). Direction approved by the owner on
+Status: **approved by the owner on 2026-11-14** (#55, revision 2). Delivery steps 1 (#56) and 2
+(#57) are authorized; steps 3 and 4 are authorized only once the catalog slices they need exist
+(§4). Direction approved by the owner on
 2026-11-12: catalog fixes flow to households unless a household edits the recipe, the family's 24
 starter recipes stay household recipes, and household edits apply without a second approval.
+Reconfirmed by the owner on 2026-11-14: catalog recipes are templates only the pipeline changes,
+a household's edits are seen only by that household, past plans never change, and removing a
+recipe from a household never removes it from the catalog.
 Depends on: [`PRODUCT.md`](PRODUCT.md), [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md)
 
 ## 1. Problem
@@ -28,6 +33,9 @@ not scale: a catalog fix would need a copy per household, and every change would
 
 - Household recipes (the existing `recipes` table, household-owned) and `catalog_recipes`
   (shared, published by the pipeline) stay separate tables.
+- Catalog recipes act as templates. No household can edit one; only the catalog pipeline
+  publishes changes to it. A household's edits live in its own copy and no other household sees
+  them.
 - A household's library is its own recipes plus `household_catalog_follows (household_id,
   catalog_key)`. Following a catalog recipe copies nothing.
 - What a followed recipe contains is the catalog's **active publication** for that key
@@ -72,6 +80,10 @@ Snapshots, as #56 specifies: each recipe occurrence stores what History shows ab
 and each contribution stores the recipe name, ingredient source text and preparation. History reads
 only the snapshots. This applies to both kinds of recipe, because both can now change.
 
+A past plan is never brought up to date. When starting a new plan from a past plan's meals is
+built (UP_NEXT §5), it takes the same recipes as they are now, not the past plan's snapshots, and
+the past plan stays as it was.
+
 ### 3.5 The current plan
 
 When a recipe in the current plan changes (a household edit, or a new catalog publication of a
@@ -106,14 +118,18 @@ household's own recipe with others, and edit history beyond History snapshots.
 
 1. **#56: History snapshots.** As written. Prerequisite for everything below.
 2. **In-app recipe editing** for household recipes (§3.3 without the catalog parts), with an API
-   endpoint, validation errors, and a current-plan rebuild. Replaces #57.
+   endpoint, validation errors, and a current-plan rebuild. #57, rewritten from the withdrawn
+   `corpus-sync` plan. Starts after #56 merges. Until catalog items exist, a line picks an existing
+   household item or creates a new household item from a name, store section and shopping mode
+   (owner, 2026-11-14). Archiving a household recipe is its own small issue after #57.
 3. **Item mapping** (§3.2): `catalog_item_key`, the proposing command, and aggregation by resolved
    identity. Needs catalog slice 3 items to exist.
 4. **Following catalog recipes** (§3.1, §3.6): follows, selectability, occurrences of catalog
    recipes, rebuild on publication, withdrawal handling, and copy-on-edit. Needs catalog slice 4
    publications.
 
-Each step is its own issue and leaves the app working.
+Each step is its own issue and leaves the app working. Issues for steps 3 and 4 are written when
+the catalog slice each needs has merged, so they can name real tables and keys.
 
 ## 5. Acceptance
 

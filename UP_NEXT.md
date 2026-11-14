@@ -79,7 +79,8 @@ scope requires a new phase with its own acceptance criteria.
   current plan at a time).
 - **Start from a past plan.** Start a new plan from an earlier plan's meals without reopening it
   (reopening exists, D051), only after grocery recomputation and confirmation behavior are
-  deliberately specified.
+  deliberately specified. The new plan uses the recipes as they are now, never the past plan's
+  snapshots (`RECIPE_LIBRARY_SPEC.md` §3.4).
 - **History comparison.** Compare meals or grocery outcomes across retained weeks.
 - **Sophisticated edit reconciliation.** Warn and resolve when recipe changes collide with
   grocery quantity overrides, removals, or completed lines.
