@@ -29,11 +29,16 @@ type Package struct {
 	SizeUnit *Unit
 }
 
-// Requirement is one shoppable ingredient from one week-recipe occurrence.
+// Requirement is one shoppable ingredient from one week-recipe occurrence. SourceText and
+// Preparation are the ingredient's text, snapshotted on its contribution; an empty Preparation
+// means none.
 type Requirement struct {
 	WeekRecipeID       int64
 	RecipeIngredientID int64
+	RecipeID           int64
 	RecipeName         string
+	SourceText         string
+	Preparation        string
 	GroceryItemID      int64
 	GroceryItemKey     string
 	GroceryItemName    string
@@ -52,7 +57,10 @@ type Requirement struct {
 type Contribution struct {
 	WeekRecipeID       int64
 	RecipeIngredientID int64
+	RecipeID           int64
 	RecipeName         string
+	SourceText         string
+	Preparation        string
 	QuantityKind       string
 	Minimum            *Rational
 	Maximum            *Rational
@@ -195,8 +203,10 @@ func aggregationKey(requirement Requirement) string {
 func contribution(requirement Requirement) Contribution {
 	return Contribution{
 		WeekRecipeID: requirement.WeekRecipeID, RecipeIngredientID: requirement.RecipeIngredientID,
-		RecipeName: requirement.RecipeName, QuantityKind: requirement.QuantityKind,
-		Minimum: requirement.Minimum, Maximum: requirement.Maximum, Unit: requirement.Unit,
+		RecipeID: requirement.RecipeID, RecipeName: requirement.RecipeName,
+		SourceText: requirement.SourceText, Preparation: requirement.Preparation,
+		QuantityKind: requirement.QuantityKind,
+		Minimum:      requirement.Minimum, Maximum: requirement.Maximum, Unit: requirement.Unit,
 		Package: requirement.Package, Optional: requirement.Optional,
 	}
 }

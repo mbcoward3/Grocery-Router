@@ -58,16 +58,32 @@ UPDATE weeks SET updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYY
 WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND closed_at IS NULL;
 
 -- name: CreateWeekRecipe :one
-INSERT INTO week_recipes (household_id, week_id, recipe_id, position)
-VALUES (sqlc.arg(household_id), $1, $2, $3)
+-- Snapshots the recipe fields History shows, so later recipe edits never change a past plan.
+INSERT INTO week_recipes (
+    household_id, week_id, recipe_id, position,
+    recipe_name, recipe_key, image_url, yield_text,
+    hands_on_min_minutes, hands_on_max_minutes, unattended_min_minutes, unattended_max_minutes
+)
+SELECT
+    r.household_id, sqlc.arg(week_id), r.id, sqlc.arg(position),
+    r.name, r.key, r.image_url, r.yield_text,
+    r.hands_on_min_minutes, r.hands_on_max_minutes, r.unattended_min_minutes, r.unattended_max_minutes
+FROM recipes AS r
+WHERE r.household_id = sqlc.arg(household_id) AND r.id = sqlc.arg(recipe_id)
 RETURNING *;
 
 -- name: GetWeekRecipe :one
 SELECT * FROM week_recipes WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
 
 -- name: ListWeekRecipes :many
+-- The open plan shows live recipe values; History reads ListPastWeekRecipes instead.
 SELECT
-    wr.*,
+    wr.id,
+    wr.week_id,
+    wr.recipe_id,
+    wr.position,
+    wr.created_at,
+    wr.household_id,
     r.key AS recipe_key,
     r.name AS recipe_name,
     r.image_url,
@@ -81,6 +97,27 @@ JOIN recipes r ON r.id = wr.recipe_id
 WHERE wr.household_id = sqlc.arg(household_id) AND wr.week_id = sqlc.arg(week_id)
 ORDER BY wr.position, wr.id;
 
+-- name: ListPastWeekRecipes :many
+-- A plan in History shows the recipe fields snapshotted on its occurrences, never live rows.
+SELECT
+    wr.id,
+    wr.week_id,
+    wr.recipe_id,
+    wr.position,
+    wr.created_at,
+    wr.household_id,
+    wr.recipe_key,
+    wr.recipe_name,
+    wr.image_url,
+    wr.yield_text,
+    wr.hands_on_min_minutes,
+    wr.hands_on_max_minutes,
+    wr.unattended_min_minutes,
+    wr.unattended_max_minutes
+FROM week_recipes AS wr
+WHERE wr.household_id = sqlc.arg(household_id) AND wr.week_id = sqlc.arg(week_id)
+ORDER BY wr.position, wr.id;
+
 -- name: ListWeekRecipeIDs :many
 SELECT recipe_id FROM week_recipes
 WHERE household_id = sqlc.arg(household_id) AND week_id = sqlc.arg(week_id);
@@ -90,9 +127,21 @@ SELECT CAST(coalesce(max(position) + 1, 0) AS BIGINT) FROM week_recipes
 WHERE household_id = sqlc.arg(household_id) AND week_id = sqlc.arg(week_id);
 
 -- name: UpdateWeekRecipeRecipe :one
-UPDATE week_recipes SET recipe_id = sqlc.arg(recipe_id)
-WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id)
-RETURNING *;
+-- A swap replaces the occurrence's snapshot with the new recipe's fields.
+UPDATE week_recipes SET
+    recipe_id = r.id,
+    recipe_name = r.name,
+    recipe_key = r.key,
+    image_url = r.image_url,
+    yield_text = r.yield_text,
+    hands_on_min_minutes = r.hands_on_min_minutes,
+    hands_on_max_minutes = r.hands_on_max_minutes,
+    unattended_min_minutes = r.unattended_min_minutes,
+    unattended_max_minutes = r.unattended_max_minutes
+FROM recipes AS r
+WHERE week_recipes.household_id = sqlc.arg(household_id) AND week_recipes.id = sqlc.arg(id)
+    AND r.household_id = sqlc.arg(household_id) AND r.id = sqlc.arg(recipe_id)
+RETURNING week_recipes.*;
 
 -- name: DeleteWeekRecipe :execrows
 DELETE FROM week_recipes WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
@@ -127,6 +176,7 @@ SELECT
     ri.package_size_numerator,
     ri.package_size_denominator,
     ri.package_size_unit_id,
+    ri.source_text,
     ri.preparation,
     ri.is_optional,
     gi.id AS grocery_item_id,

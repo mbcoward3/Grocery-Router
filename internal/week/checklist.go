@@ -44,15 +44,9 @@ func loadChecklist(ctx context.Context, queries *store.Queries, householdID stri
 	if err != nil {
 		return Checklist{}, err
 	}
-	associations, err := queries.ListShoppingLineRecipeNames(ctx, store.ListShoppingLineRecipeNamesParams{
-		HouseholdID: householdID, ShoppingListID: list.ID,
-	})
+	recipeNames, err := loadRecipeNames(ctx, queries, householdID, list.ID, weekRow.ClosedAt.Valid)
 	if err != nil {
 		return Checklist{}, err
-	}
-	recipeNames := make(map[int64][]string)
-	for _, association := range associations {
-		recipeNames[association.ShoppingLineID] = append(recipeNames[association.ShoppingLineID], association.RecipeName)
 	}
 	quantityRows, err := queries.ListShoppingLineQuantities(ctx, store.ListShoppingLineQuantitiesParams{HouseholdID: householdID, ShoppingListID: list.ID})
 	if err != nil {
@@ -73,6 +67,34 @@ func loadChecklist(ctx context.Context, queries *store.Queries, householdID stri
 	return Checklist{
 		StartsOn: weekRow.StartsOn, List: list, Lines: lines, RecipeNames: recipeNames, Quantities: quantities, Unspecified: unspecified,
 	}, nil
+}
+
+// loadRecipeNames returns each line's recipe names: live for the open plan, and from the
+// occurrences' snapshots for a plan in History.
+func loadRecipeNames(ctx context.Context, queries *store.Queries, householdID string, listID int64, past bool) (map[int64][]string, error) {
+	recipeNames := make(map[int64][]string)
+	if past {
+		associations, err := queries.ListPastShoppingLineRecipeNames(ctx, store.ListPastShoppingLineRecipeNamesParams{
+			HouseholdID: householdID, ShoppingListID: listID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		for _, association := range associations {
+			recipeNames[association.ShoppingLineID] = append(recipeNames[association.ShoppingLineID], association.RecipeName)
+		}
+		return recipeNames, nil
+	}
+	associations, err := queries.ListShoppingLineRecipeNames(ctx, store.ListShoppingLineRecipeNamesParams{
+		HouseholdID: householdID, ShoppingListID: listID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	for _, association := range associations {
+		recipeNames[association.ShoppingLineID] = append(recipeNames[association.ShoppingLineID], association.RecipeName)
+	}
+	return recipeNames, nil
 }
 
 // Contributions returns the recipe traces behind a current generated line.

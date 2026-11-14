@@ -105,7 +105,9 @@ func carryStates(states []store.ListGeneratedShoppingLineStatesRow) func(grocery
 func requirementFromRow(row store.ListWeekIngredientRequirementsRow) grocery.Requirement {
 	requirement := grocery.Requirement{
 		WeekRecipeID: row.WeekRecipeID, RecipeIngredientID: row.RecipeIngredientID,
-		RecipeName: row.RecipeName, GroceryItemID: row.GroceryItemID,
+		RecipeID: row.RecipeID, RecipeName: row.RecipeName,
+		SourceText: row.SourceText, Preparation: row.Preparation.String,
+		GroceryItemID:  row.GroceryItemID,
 		GroceryItemKey: row.GroceryItemKey, GroceryItemName: row.GroceryItemName,
 		ShoppingMode: row.ShoppingMode, StoreSectionID: row.StoreSectionID,
 		StoreSectionName: row.StoreSectionName, QuantityKind: row.QuantityKind,
@@ -184,8 +186,11 @@ func unitAndPackage(unit *grocery.Unit, pkg *grocery.Package) (unitID sql.NullIn
 func contributionParams(householdID string, lineID int64, contribution grocery.Contribution) store.CreateShoppingLineContributionParams {
 	params := store.CreateShoppingLineContributionParams{
 		HouseholdID: householdID, ShoppingLineID: lineID, WeekRecipeID: contribution.WeekRecipeID,
-		RecipeIngredientID: contribution.RecipeIngredientID,
-		QuantityKind:       contribution.QuantityKind, IsOptional: boolInt(contribution.Optional),
+		RecipeIngredientID: sql.NullInt64{Int64: contribution.RecipeIngredientID, Valid: true},
+		RecipeID:           contribution.RecipeID, RecipeName: contribution.RecipeName,
+		SourceText:   contribution.SourceText,
+		Preparation:  sql.NullString{String: contribution.Preparation, Valid: contribution.Preparation != ""},
+		QuantityKind: contribution.QuantityKind, IsOptional: boolInt(contribution.Optional),
 	}
 	params.AmountMinNumerator, params.AmountMinDenominator = nullRational(contribution.Minimum)
 	params.AmountMaxNumerator, params.AmountMaxDenominator = nullRational(contribution.Maximum)

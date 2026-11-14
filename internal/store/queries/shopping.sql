@@ -26,8 +26,11 @@ INSERT INTO shopping_line_contributions (
     amount_min_numerator, amount_min_denominator,
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
-    is_optional
-) VALUES (sqlc.arg(household_id), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    is_optional, recipe_id, recipe_name, source_text, preparation
+) VALUES (
+    sqlc.arg(household_id), $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
+    sqlc.arg(recipe_id), sqlc.arg(recipe_name), sqlc.arg(source_text), sqlc.narg(preparation)
+)
 RETURNING *;
 
 -- name: ListShoppingLines :many
@@ -60,13 +63,28 @@ WHERE
 GROUP BY c.shopping_line_id, r.id, r.name
 ORDER BY c.shopping_line_id, min(wr.position), r.name, r.id;
 
+-- name: ListPastShoppingLineRecipeNames :many
+-- History's recipe names per line, from the occurrences' snapshots instead of live recipes.
+SELECT
+    c.shopping_line_id,
+    wr.recipe_id,
+    wr.recipe_name
+FROM shopping_line_contributions AS c
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = c.household_id AND sl.id = c.shopping_line_id
+INNER JOIN week_recipes AS wr
+    ON wr.household_id = c.household_id AND wr.id = c.week_recipe_id
+WHERE
+    c.household_id = sqlc.arg(household_id)
+    AND sl.shopping_list_id = sqlc.arg(shopping_list_id)
+GROUP BY c.shopping_line_id, wr.recipe_id, wr.recipe_name
+ORDER BY c.shopping_line_id, min(wr.position), wr.recipe_name, wr.recipe_id;
+
 -- name: ListShoppingLineContributions :many
-SELECT c.*, r.id AS recipe_id, r.name AS recipe_name, ri.source_text, ri.preparation,
-    u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol
+-- Recipe name and ingredient text come from the contribution's snapshot.
+SELECT c.*, u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol
 FROM shopping_line_contributions c
 JOIN week_recipes wr ON wr.household_id = c.household_id AND wr.id = c.week_recipe_id
-JOIN recipes r ON r.household_id = wr.household_id AND r.id = wr.recipe_id
-JOIN recipe_ingredients ri ON ri.id = c.recipe_ingredient_id
 LEFT JOIN units u ON u.id = c.unit_id
 LEFT JOIN units psu ON psu.id = c.package_size_unit_id
 WHERE c.household_id = sqlc.arg(household_id)

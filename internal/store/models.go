@@ -325,7 +325,7 @@ type ShoppingLineContribution struct {
 	ID                     int64          `db:"id" json:"id"`
 	ShoppingLineID         int64          `db:"shopping_line_id" json:"shopping_line_id"`
 	WeekRecipeID           int64          `db:"week_recipe_id" json:"week_recipe_id"`
-	RecipeIngredientID     int64          `db:"recipe_ingredient_id" json:"recipe_ingredient_id"`
+	RecipeIngredientID     sql.NullInt64  `db:"recipe_ingredient_id" json:"recipe_ingredient_id"`
 	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
 	AmountMinNumerator     sql.NullInt64  `db:"amount_min_numerator" json:"amount_min_numerator"`
 	AmountMinDenominator   sql.NullInt64  `db:"amount_min_denominator" json:"amount_min_denominator"`
@@ -338,6 +338,10 @@ type ShoppingLineContribution struct {
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	HouseholdID            string         `db:"household_id" json:"household_id"`
+	RecipeID               int64          `db:"recipe_id" json:"recipe_id"`
+	RecipeName             string         `db:"recipe_name" json:"recipe_name"`
+	SourceText             string         `db:"source_text" json:"source_text"`
+	Preparation            sql.NullString `db:"preparation" json:"preparation"`
 }
 
 type ShoppingLineQuantity struct {
@@ -407,10 +411,18 @@ type Week struct {
 }
 
 type WeekRecipe struct {
-	ID          int64  `db:"id" json:"id"`
-	WeekID      int64  `db:"week_id" json:"week_id"`
-	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
-	Position    int64  `db:"position" json:"position"`
-	CreatedAt   string `db:"created_at" json:"created_at"`
-	HouseholdID string `db:"household_id" json:"household_id"`
+	ID                   int64          `db:"id" json:"id"`
+	WeekID               int64          `db:"week_id" json:"week_id"`
+	RecipeID             int64          `db:"recipe_id" json:"recipe_id"`
+	Position             int64          `db:"position" json:"position"`
+	CreatedAt            string         `db:"created_at" json:"created_at"`
+	HouseholdID          string         `db:"household_id" json:"household_id"`
+	RecipeName           string         `db:"recipe_name" json:"recipe_name"`
+	RecipeKey            string         `db:"recipe_key" json:"recipe_key"`
+	ImageUrl             sql.NullString `db:"image_url" json:"image_url"`
+	YieldText            sql.NullString `db:"yield_text" json:"yield_text"`
+	HandsOnMinMinutes    sql.NullInt64  `db:"hands_on_min_minutes" json:"hands_on_min_minutes"`
+	HandsOnMaxMinutes    sql.NullInt64  `db:"hands_on_max_minutes" json:"hands_on_max_minutes"`
+	UnattendedMinMinutes sql.NullInt64  `db:"unattended_min_minutes" json:"unattended_min_minutes"`
+	UnattendedMaxMinutes sql.NullInt64  `db:"unattended_max_minutes" json:"unattended_max_minutes"`
 }

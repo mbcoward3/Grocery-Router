@@ -164,15 +164,18 @@ INSERT INTO shopping_line_contributions (
     amount_min_numerator, amount_min_denominator,
     amount_max_numerator, amount_max_denominator, unit_id,
     package_type, package_size_numerator, package_size_denominator, package_size_unit_id,
-    is_optional
-) VALUES ($15, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-RETURNING id, shopping_line_id, week_recipe_id, recipe_ingredient_id, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, household_id
+    is_optional, recipe_id, recipe_name, source_text, preparation
+) VALUES (
+    $15, $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14,
+    $16, $17, $18, $19
+)
+RETURNING id, shopping_line_id, week_recipe_id, recipe_ingredient_id, quantity_kind, amount_min_numerator, amount_min_denominator, amount_max_numerator, amount_max_denominator, unit_id, package_type, package_size_numerator, package_size_denominator, package_size_unit_id, is_optional, household_id, recipe_id, recipe_name, source_text, preparation
 `
 
 type CreateShoppingLineContributionParams struct {
 	ShoppingLineID         int64          `db:"shopping_line_id" json:"shopping_line_id"`
 	WeekRecipeID           int64          `db:"week_recipe_id" json:"week_recipe_id"`
-	RecipeIngredientID     int64          `db:"recipe_ingredient_id" json:"recipe_ingredient_id"`
+	RecipeIngredientID     sql.NullInt64  `db:"recipe_ingredient_id" json:"recipe_ingredient_id"`
 	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
 	AmountMinNumerator     sql.NullInt64  `db:"amount_min_numerator" json:"amount_min_numerator"`
 	AmountMinDenominator   sql.NullInt64  `db:"amount_min_denominator" json:"amount_min_denominator"`
@@ -185,6 +188,10 @@ type CreateShoppingLineContributionParams struct {
 	PackageSizeUnitID      sql.NullInt64  `db:"package_size_unit_id" json:"package_size_unit_id"`
 	IsOptional             int64          `db:"is_optional" json:"is_optional"`
 	HouseholdID            string         `db:"household_id" json:"household_id"`
+	RecipeID               int64          `db:"recipe_id" json:"recipe_id"`
+	RecipeName             string         `db:"recipe_name" json:"recipe_name"`
+	SourceText             string         `db:"source_text" json:"source_text"`
+	Preparation            sql.NullString `db:"preparation" json:"preparation"`
 }
 
 func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg CreateShoppingLineContributionParams) (ShoppingLineContribution, error) {
@@ -204,6 +211,10 @@ func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg Create
 		arg.PackageSizeUnitID,
 		arg.IsOptional,
 		arg.HouseholdID,
+		arg.RecipeID,
+		arg.RecipeName,
+		arg.SourceText,
+		arg.Preparation,
 	)
 	var i ShoppingLineContribution
 	err := row.Scan(
@@ -223,6 +234,10 @@ func (q *Queries) CreateShoppingLineContribution(ctx context.Context, arg Create
 		&i.PackageSizeUnitID,
 		&i.IsOptional,
 		&i.HouseholdID,
+		&i.RecipeID,
+		&i.RecipeName,
+		&i.SourceText,
+		&i.Preparation,
 	)
 	return i, err
 }
@@ -450,6 +465,58 @@ func (q *Queries) ListGeneratedShoppingLineStates(ctx context.Context, arg ListG
 	return items, nil
 }
 
+const listPastShoppingLineRecipeNames = `-- name: ListPastShoppingLineRecipeNames :many
+SELECT
+    c.shopping_line_id,
+    wr.recipe_id,
+    wr.recipe_name
+FROM shopping_line_contributions AS c
+INNER JOIN shopping_lines AS sl
+    ON sl.household_id = c.household_id AND sl.id = c.shopping_line_id
+INNER JOIN week_recipes AS wr
+    ON wr.household_id = c.household_id AND wr.id = c.week_recipe_id
+WHERE
+    c.household_id = $1
+    AND sl.shopping_list_id = $2
+GROUP BY c.shopping_line_id, wr.recipe_id, wr.recipe_name
+ORDER BY c.shopping_line_id, min(wr.position), wr.recipe_name, wr.recipe_id
+`
+
+type ListPastShoppingLineRecipeNamesParams struct {
+	HouseholdID    string `db:"household_id" json:"household_id"`
+	ShoppingListID int64  `db:"shopping_list_id" json:"shopping_list_id"`
+}
+
+type ListPastShoppingLineRecipeNamesRow struct {
+	ShoppingLineID int64  `db:"shopping_line_id" json:"shopping_line_id"`
+	RecipeID       int64  `db:"recipe_id" json:"recipe_id"`
+	RecipeName     string `db:"recipe_name" json:"recipe_name"`
+}
+
+// History's recipe names per line, from the occurrences' snapshots instead of live recipes.
+func (q *Queries) ListPastShoppingLineRecipeNames(ctx context.Context, arg ListPastShoppingLineRecipeNamesParams) ([]ListPastShoppingLineRecipeNamesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listPastShoppingLineRecipeNames, arg.HouseholdID, arg.ShoppingListID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListPastShoppingLineRecipeNamesRow{}
+	for rows.Next() {
+		var i ListPastShoppingLineRecipeNamesRow
+		if err := rows.Scan(&i.ShoppingLineID, &i.RecipeID, &i.RecipeName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listRememberedItemSections = `-- name: ListRememberedItemSections :many
 SELECT ris.name_key, ris.display_name, ris.store_section_id, ss.name AS store_section_name
 FROM remembered_item_sections ris
@@ -494,12 +561,9 @@ func (q *Queries) ListRememberedItemSections(ctx context.Context, householdID st
 }
 
 const listShoppingLineContributions = `-- name: ListShoppingLineContributions :many
-SELECT c.id, c.shopping_line_id, c.week_recipe_id, c.recipe_ingredient_id, c.quantity_kind, c.amount_min_numerator, c.amount_min_denominator, c.amount_max_numerator, c.amount_max_denominator, c.unit_id, c.package_type, c.package_size_numerator, c.package_size_denominator, c.package_size_unit_id, c.is_optional, c.household_id, r.id AS recipe_id, r.name AS recipe_name, ri.source_text, ri.preparation,
-    u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol
+SELECT c.id, c.shopping_line_id, c.week_recipe_id, c.recipe_ingredient_id, c.quantity_kind, c.amount_min_numerator, c.amount_min_denominator, c.amount_max_numerator, c.amount_max_denominator, c.unit_id, c.package_type, c.package_size_numerator, c.package_size_denominator, c.package_size_unit_id, c.is_optional, c.household_id, c.recipe_id, c.recipe_name, c.source_text, c.preparation, u.symbol AS unit_symbol, psu.symbol AS package_size_unit_symbol
 FROM shopping_line_contributions c
 JOIN week_recipes wr ON wr.household_id = c.household_id AND wr.id = c.week_recipe_id
-JOIN recipes r ON r.household_id = wr.household_id AND r.id = wr.recipe_id
-JOIN recipe_ingredients ri ON ri.id = c.recipe_ingredient_id
 LEFT JOIN units u ON u.id = c.unit_id
 LEFT JOIN units psu ON psu.id = c.package_size_unit_id
 WHERE c.household_id = $1
@@ -516,7 +580,7 @@ type ListShoppingLineContributionsRow struct {
 	ID                     int64          `db:"id" json:"id"`
 	ShoppingLineID         int64          `db:"shopping_line_id" json:"shopping_line_id"`
 	WeekRecipeID           int64          `db:"week_recipe_id" json:"week_recipe_id"`
-	RecipeIngredientID     int64          `db:"recipe_ingredient_id" json:"recipe_ingredient_id"`
+	RecipeIngredientID     sql.NullInt64  `db:"recipe_ingredient_id" json:"recipe_ingredient_id"`
 	QuantityKind           string         `db:"quantity_kind" json:"quantity_kind"`
 	AmountMinNumerator     sql.NullInt64  `db:"amount_min_numerator" json:"amount_min_numerator"`
 	AmountMinDenominator   sql.NullInt64  `db:"amount_min_denominator" json:"amount_min_denominator"`
@@ -537,6 +601,7 @@ type ListShoppingLineContributionsRow struct {
 	PackageSizeUnitSymbol  sql.NullString `db:"package_size_unit_symbol" json:"package_size_unit_symbol"`
 }
 
+// Recipe name and ingredient text come from the contribution's snapshot.
 func (q *Queries) ListShoppingLineContributions(ctx context.Context, arg ListShoppingLineContributionsParams) ([]ListShoppingLineContributionsRow, error) {
 	rows, err := q.db.QueryContext(ctx, listShoppingLineContributions, arg.HouseholdID, arg.ShoppingLineID)
 	if err != nil {

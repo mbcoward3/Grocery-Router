@@ -39,6 +39,7 @@ type Querier interface {
 	CreateStoreSection(ctx context.Context, arg CreateStoreSectionParams) (StoreSection, error)
 	CreateUnit(ctx context.Context, arg CreateUnitParams) (Unit, error)
 	CreateWeek(ctx context.Context, arg CreateWeekParams) (Week, error)
+	// Snapshots the recipe fields History shows, so later recipe edits never change a past plan.
 	CreateWeekRecipe(ctx context.Context, arg CreateWeekRecipeParams) (WeekRecipe, error)
 	// Pushes the next allowed time later (for example after a retryable failure); never earlier.
 	DeferIngestHost(ctx context.Context, arg DeferIngestHostParams) error
@@ -100,6 +101,10 @@ type Querier interface {
 	ListIngredientSections(ctx context.Context, arg ListIngredientSectionsParams) ([]RecipeIngredientSection, error)
 	ListInstructionSections(ctx context.Context, arg ListInstructionSectionsParams) ([]RecipeInstructionSection, error)
 	ListOpenIngestSitePauses(ctx context.Context) ([]IngestSitePause, error)
+	// History's recipe names per line, from the occurrences' snapshots instead of live recipes.
+	ListPastShoppingLineRecipeNames(ctx context.Context, arg ListPastShoppingLineRecipeNamesParams) ([]ListPastShoppingLineRecipeNamesRow, error)
+	// A plan in History shows the recipe fields snapshotted on its occurrences, never live rows.
+	ListPastWeekRecipes(ctx context.Context, arg ListPastWeekRecipesParams) ([]ListPastWeekRecipesRow, error)
 	ListPastWeeks(ctx context.Context, householdID string) ([]ListPastWeeksRow, error)
 	// The recipes in the household's most recently closed plans, which selection avoids (D052).
 	ListRecentPlanRecipeIDs(ctx context.Context, arg ListRecentPlanRecipeIDsParams) ([]int64, error)
@@ -109,6 +114,7 @@ type Querier interface {
 	ListRecipeSteps(ctx context.Context, arg ListRecipeStepsParams) ([]ListRecipeStepsRow, error)
 	ListRememberedItemSections(ctx context.Context, householdID string) ([]ListRememberedItemSectionsRow, error)
 	ListRunningIngestRuns(ctx context.Context) ([]IngestRun, error)
+	// Recipe name and ingredient text come from the contribution's snapshot.
 	ListShoppingLineContributions(ctx context.Context, arg ListShoppingLineContributionsParams) ([]ListShoppingLineContributionsRow, error)
 	ListShoppingLineQuantities(ctx context.Context, arg ListShoppingLineQuantitiesParams) ([]ListShoppingLineQuantitiesRow, error)
 	ListShoppingLineRecipeNames(ctx context.Context, arg ListShoppingLineRecipeNamesParams) ([]ListShoppingLineRecipeNamesRow, error)
@@ -119,6 +125,7 @@ type Querier interface {
 	ListVerifiedRecipes(ctx context.Context, householdID string) ([]Recipe, error)
 	ListWeekIngredientRequirements(ctx context.Context, arg ListWeekIngredientRequirementsParams) ([]ListWeekIngredientRequirementsRow, error)
 	ListWeekRecipeIDs(ctx context.Context, arg ListWeekRecipeIDsParams) ([]int64, error)
+	// The open plan shows live recipe values; History reads ListPastWeekRecipes instead.
 	ListWeekRecipes(ctx context.Context, arg ListWeekRecipesParams) ([]ListWeekRecipesRow, error)
 	// Taken before a plan is opened, closed, or reopened, so those changes run one at a time per
 	// household and a household never has two open plans. Changes inside the open plan lock only
@@ -169,6 +176,7 @@ type Querier interface {
 	// concurrent change to another.
 	UpdateHouseholdSettings(ctx context.Context, arg UpdateHouseholdSettingsParams) (UpdateHouseholdSettingsRow, error)
 	UpdateIngestRunCounters(ctx context.Context, arg UpdateIngestRunCountersParams) error
+	// A swap replaces the occurrence's snapshot with the new recipe's fields.
 	UpdateWeekRecipeRecipe(ctx context.Context, arg UpdateWeekRecipeRecipeParams) (WeekRecipe, error)
 	UpsertIngestSite(ctx context.Context, arg UpsertIngestSiteParams) error
 	// Records a page found in a registered sitemap. A known URL keeps its queue state; only sighting

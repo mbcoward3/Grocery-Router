@@ -115,7 +115,7 @@ func TestCompatibilityFixture(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, contribution := range contributions {
-			row.SourceLines = append(row.SourceLines, sourceLines[contribution.RecipeIngredientID])
+			row.SourceLines = append(row.SourceLines, sourceLines[contribution.RecipeIngredientID.Int64])
 		}
 		slices.Sort(row.SourceLines)
 		imported[item] = row
