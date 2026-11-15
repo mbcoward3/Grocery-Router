@@ -24,27 +24,45 @@ type Clock func() time.Time
 // AuthorizeHousehold checks membership after ServeMux has resolved the path value.
 type AuthorizeHousehold func(context.Context, string) bool
 
+// CurrentUser returns the signed-in application user's ID, or false without a session.
+type CurrentUser func(context.Context) (string, bool)
+
+// Option configures a Server.
+type Option func(*Server)
+
+// WithCurrentUser names the signed-in user, whose recipe edits record them as the approver.
+// Without it, recipe edits are refused as unauthenticated.
+func WithCurrentUser(currentUser CurrentUser) Option {
+	return func(server *Server) { server.currentUser = currentUser }
+}
+
 // Server is the HTTP boundary around corpus reads, week operations, and household settings.
 type Server struct {
-	queries   *store.Queries
-	weeks     *week.Service
-	now       Clock
-	authorize AuthorizeHousehold
-	handler   http.Handler
+	db          *sql.DB
+	queries     *store.Queries
+	weeks       *week.Service
+	now         Clock
+	authorize   AuthorizeHousehold
+	currentUser CurrentUser
+	handler     http.Handler
 }
 
 // New constructs an API handler. A nil clock uses time.Now.
-func New(db *sql.DB, weeks *week.Service, clock Clock, authorize AuthorizeHousehold) *Server {
+func New(db *sql.DB, weeks *week.Service, clock Clock, authorize AuthorizeHousehold, options ...Option) *Server {
 	if clock == nil {
 		clock = time.Now
 	}
 	if authorize == nil {
 		panic("HTTP API requires an authorizer")
 	}
-	server := &Server{queries: store.New(db), weeks: weeks, now: clock, authorize: authorize}
+	server := &Server{db: db, queries: store.New(db), weeks: weeks, now: clock, authorize: authorize}
+	for _, option := range options {
+		option(server)
+	}
 	mux := http.NewServeMux()
 	mux.Handle("GET /api/v2/households/{householdID}/recipes", server.guard(http.HandlerFunc(server.listRecipes)))
 	mux.Handle("GET /api/v2/households/{householdID}/recipes/{recipeID}", server.guard(http.HandlerFunc(server.getRecipe)))
+	mux.Handle("PUT /api/v2/households/{householdID}/recipes/{recipeID}", server.guard(http.HandlerFunc(server.editRecipe)))
 	mux.Handle("GET /api/v2/households/{householdID}/week/current", server.guard(http.HandlerFunc(server.currentWeek)))
 	mux.Handle("GET /api/v2/households/{householdID}/weeks/history", server.guard(http.HandlerFunc(server.weekHistory)))
 	mux.Handle("GET /api/v2/households/{householdID}/weeks/history/{weekID}", server.guard(http.HandlerFunc(server.historicalWeek)))
@@ -110,6 +128,8 @@ type weekResponse struct {
 
 type recipeDetail struct {
 	recipeSummary
+	VerifiedAt   *string                    `json:"verifiedAt"`
+	VerifiedBy   *string                    `json:"verifiedBy"`
 	Sources      []recipeSource             `json:"sources"`
 	Ingredients  []recipeIngredientSection  `json:"ingredientSections"`
 	Instructions []recipeInstructionSection `json:"instructionSections"`
@@ -128,12 +148,31 @@ type recipeIngredientSection struct {
 }
 
 type recipeIngredient struct {
-	ID           int64   `json:"id"`
-	SourceText   string  `json:"sourceText"`
-	Preparation  *string `json:"preparation"`
-	Optional     bool    `json:"optional"`
-	DisplayNote  *string `json:"displayNote"`
-	ShoppingItem *string `json:"shoppingItem"`
+	ID            int64          `json:"id"`
+	SourceText    string         `json:"sourceText"`
+	Preparation   *string        `json:"preparation"`
+	Optional      bool           `json:"optional"`
+	DisplayNote   *string        `json:"displayNote"`
+	ShoppingItem  *string        `json:"shoppingItem"`
+	GroceryItemID *int64         `json:"groceryItemId"`
+	Quantity      recipeQuantity `json:"quantity"`
+	OnGroceryList bool           `json:"onGroceryList"`
+}
+
+// recipeQuantity is an ingredient's structured quantity, as the recipe editor reads and writes
+// it. Amounts are exact rationals written as "2", "3/4", or "1 1/2".
+type recipeQuantity struct {
+	Kind    string         `json:"kind"`
+	Amount  *string        `json:"amount"`
+	Maximum *string        `json:"maximum"`
+	Unit    *string        `json:"unit"`
+	Package *recipePackage `json:"package"`
+}
+
+type recipePackage struct {
+	Type string  `json:"type"`
+	Size *string `json:"size"`
+	Unit *string `json:"unit"`
 }
 
 type recipeInstructionSection struct {
@@ -244,7 +283,7 @@ func (server *Server) getRecipe(response http.ResponseWriter, request *http.Requ
 	if !ok {
 		return
 	}
-	recipe, err := server.queries.GetVerifiedRecipe(request.Context(), store.GetVerifiedRecipeParams{HouseholdID: request.PathValue("householdID"), ID: recipeID})
+	detail, err := server.recipeDetail(request.Context(), request.PathValue("householdID"), recipeID)
 	if errors.Is(err, sql.ErrNoRows) {
 		writeError(response, http.StatusNotFound, "recipe_not_found", "The recipe was not found.")
 		return
@@ -253,24 +292,38 @@ func (server *Server) getRecipe(response http.ResponseWriter, request *http.Requ
 		writeInternalError(response, request, err)
 		return
 	}
-	sources, err := server.queries.ListRecipeSources(request.Context(), store.ListRecipeSourcesParams{HouseholdID: request.PathValue("householdID"), RecipeID: recipeID})
+	writeJSON(response, http.StatusOK, detail)
+}
+
+// recipeDetail reads one complete verified recipe. A missing recipe is sql.ErrNoRows.
+func (server *Server) recipeDetail(ctx context.Context, householdID string, recipeID int64) (recipeDetail, error) {
+	recipe, err := server.queries.GetVerifiedRecipe(ctx, store.GetVerifiedRecipeParams{HouseholdID: householdID, ID: recipeID})
 	if err != nil {
-		writeInternalError(response, request, err)
-		return
+		return recipeDetail{}, err
 	}
-	ingredientRows, err := server.queries.ListRecipeIngredients(request.Context(), store.ListRecipeIngredientsParams{HouseholdID: request.PathValue("householdID"), RecipeID: recipeID})
+	sources, err := server.queries.ListRecipeSources(ctx, store.ListRecipeSourcesParams{HouseholdID: householdID, RecipeID: recipeID})
 	if err != nil {
-		writeInternalError(response, request, err)
-		return
+		return recipeDetail{}, err
 	}
-	stepRows, err := server.queries.ListRecipeSteps(request.Context(), store.ListRecipeStepsParams{HouseholdID: request.PathValue("householdID"), RecipeID: recipeID})
+	ingredientRows, err := server.queries.ListRecipeIngredients(ctx, store.ListRecipeIngredientsParams{HouseholdID: householdID, RecipeID: recipeID})
 	if err != nil {
-		writeInternalError(response, request, err)
-		return
+		return recipeDetail{}, err
+	}
+	stepRows, err := server.queries.ListRecipeSteps(ctx, store.ListRecipeStepsParams{HouseholdID: householdID, RecipeID: recipeID})
+	if err != nil {
+		return recipeDetail{}, err
 	}
 	detail := recipeDetail{
-		recipeSummary: summaryFromRecipe(recipe), Sources: make([]recipeSource, 0, len(sources)),
+		recipeSummary: summaryFromRecipe(recipe), VerifiedAt: nullableString(recipe.VerifiedAt),
+		Sources:     make([]recipeSource, 0, len(sources)),
 		Ingredients: make([]recipeIngredientSection, 0), Instructions: make([]recipeInstructionSection, 0),
+	}
+	if recipe.VerifiedBy.Valid {
+		name, err := server.queries.GetUserDisplayName(ctx, recipe.VerifiedBy.String)
+		if err != nil {
+			return recipeDetail{}, err
+		}
+		detail.VerifiedBy = &name
 	}
 	for _, source := range sources {
 		detail.Sources = append(detail.Sources, recipeSource{
@@ -278,28 +331,55 @@ func (server *Server) getRecipe(response http.ResponseWriter, request *http.Requ
 			URL: nullableString(source.Url), Primary: source.IsPrimary == 1,
 		})
 	}
+	// Sections are told apart by position, not by name: two sections may share a name.
+	sectionPosition := int64(-1)
 	for _, row := range ingredientRows {
-		if len(detail.Ingredients) == 0 || detail.Ingredients[len(detail.Ingredients)-1].Name != row.SectionName {
+		if len(detail.Ingredients) == 0 || row.SectionPosition != sectionPosition {
+			sectionPosition = row.SectionPosition
 			detail.Ingredients = append(detail.Ingredients, recipeIngredientSection{Name: row.SectionName, Ingredients: make([]recipeIngredient, 0)})
-		}
-		var shoppingItem *string
-		if row.GroceryItemName.Valid {
-			shoppingItem = &row.GroceryItemName.String
 		}
 		section := &detail.Ingredients[len(detail.Ingredients)-1]
 		section.Ingredients = append(section.Ingredients, recipeIngredient{
 			ID: row.ID, SourceText: row.SourceText, Preparation: nullableString(row.Preparation),
-			Optional: row.IsOptional == 1, DisplayNote: nullableString(row.DisplayNote), ShoppingItem: shoppingItem,
+			Optional: row.IsOptional == 1, DisplayNote: nullableString(row.DisplayNote),
+			ShoppingItem: nullableString(row.GroceryItemName), GroceryItemID: nullableInt(row.GroceryItemID),
+			Quantity: quantityFromRow(row), OnGroceryList: row.IncludeOnGroceryList == 1,
 		})
 	}
+	sectionPosition = -1
 	for _, row := range stepRows {
-		if len(detail.Instructions) == 0 || detail.Instructions[len(detail.Instructions)-1].Name != row.SectionName {
+		if len(detail.Instructions) == 0 || row.SectionPosition != sectionPosition {
+			sectionPosition = row.SectionPosition
 			detail.Instructions = append(detail.Instructions, recipeInstructionSection{Name: row.SectionName, Steps: make([]recipeStep, 0)})
 		}
 		section := &detail.Instructions[len(detail.Instructions)-1]
 		section.Steps = append(section.Steps, recipeStep{ID: row.ID, Instruction: row.Instruction})
 	}
-	writeJSON(response, http.StatusOK, detail)
+	return detail, nil
+}
+
+func quantityFromRow(row store.ListRecipeIngredientsRow) recipeQuantity {
+	rationalText := func(numerator, denominator sql.NullInt64) *string {
+		if !numerator.Valid {
+			return nil
+		}
+		text := formatRational(numerator.Int64, denominator.Int64)
+		return &text
+	}
+	quantity := recipeQuantity{
+		Kind:    row.QuantityKind,
+		Amount:  rationalText(row.AmountMinNumerator, row.AmountMinDenominator),
+		Maximum: rationalText(row.AmountMaxNumerator, row.AmountMaxDenominator),
+		Unit:    nullableString(row.UnitKey),
+	}
+	if row.PackageType.Valid {
+		quantity.Package = &recipePackage{
+			Type: row.PackageType.String,
+			Size: rationalText(row.PackageSizeNumerator, row.PackageSizeDenominator),
+			Unit: nullableString(row.PackageSizeUnitKey),
+		}
+	}
+	return quantity
 }
 
 func (server *Server) currentWeek(response http.ResponseWriter, request *http.Request) {

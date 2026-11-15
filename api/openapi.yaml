@@ -63,6 +63,35 @@ paths:
         "400": { $ref: "#/components/responses/InvalidRequest" }
         "404": { $ref: "#/components/responses/NotFound" }
         "500": { $ref: "#/components/responses/InternalError" }
+    put:
+      operationId: editRecipe
+      summary: Replace a household recipe's content.
+      description: >-
+        Saves the recipe at once. The save is the household's approval: the recipe stays verified
+        with a new verifiedAt and verifiedBy (the signed-in member). The recipe keeps its id and
+        key. When the current plan contains it, the plan's grocery list is rebuilt, carrying
+        checked, removed, and adjusted rows. Past plans never change. Invalid content changes
+        nothing and returns 422 naming each rejected field.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RecipeEdit" }
+      responses:
+        "200":
+          description: The saved recipe.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/RecipeDetail" }
+        "400": { $ref: "#/components/responses/InvalidRequest" }
+        "401": { $ref: "#/components/responses/Unauthenticated" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422":
+          description: The content was rejected; nothing was stored.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/InvalidRecipe" }
+        "500": { $ref: "#/components/responses/InternalError" }
   /households/{householdID}/week/current:
     parameters:
       - $ref: "#/components/parameters/HouseholdID"
@@ -487,9 +516,34 @@ components:
         attribution: { type: string }
         url: { type: [string, "null"] }
         primary: { type: boolean }
+    RecipeQuantity:
+      type: object
+      additionalProperties: false
+      required: [kind, amount, maximum, unit, package]
+      description: >-
+        A structured ingredient quantity. Amounts are exact positive rationals written as "2",
+        "3/4", or "1 1/2". An exact or range quantity has exactly one of unit or package;
+        unspecified has neither and no amount.
+      properties:
+        kind: { type: string, enum: [exact, range, unspecified] }
+        amount: { type: [string, "null"] }
+        maximum: { type: [string, "null"], description: "The upper bound of a range." }
+        unit: { type: [string, "null"], description: "A unit key, for example cup or lb." }
+        package:
+          oneOf:
+            - { type: "null" }
+            - { $ref: "#/components/schemas/RecipePackage" }
+    RecipePackage:
+      type: object
+      additionalProperties: false
+      required: [type, size, unit]
+      properties:
+        type: { type: string, description: "For example can or jar." }
+        size: { type: [string, "null"] }
+        unit: { type: [string, "null"], description: "The unit key of size." }
     RecipeIngredient:
       type: object
-      required: [id, sourceText, preparation, optional, displayNote, shoppingItem]
+      required: [id, sourceText, preparation, optional, displayNote, shoppingItem, groceryItemId, quantity, onGroceryList]
       properties:
         id: { type: integer }
         sourceText: { type: string }
@@ -497,6 +551,9 @@ components:
         optional: { type: boolean }
         displayNote: { type: [string, "null"] }
         shoppingItem: { type: [string, "null"] }
+        groceryItemId: { type: [integer, "null"] }
+        quantity: { $ref: "#/components/schemas/RecipeQuantity" }
+        onGroceryList: { type: boolean, description: "False for a line that never reaches the grocery list, such as water." }
     RecipeIngredientSection:
       type: object
       required: [name, ingredients]
@@ -523,8 +580,12 @@ components:
       allOf:
         - { $ref: "#/components/schemas/RecipeSummary" }
         - type: object
-          required: [sources, ingredientSections, instructionSections]
+          required: [verifiedAt, verifiedBy, sources, ingredientSections, instructionSections]
           properties:
+            verifiedAt: { type: [string, "null"], description: "When the recipe was last approved." }
+            verifiedBy:
+              type: [string, "null"]
+              description: The display name of the member whose save approved it; null for a starter recipe.
             sources:
               type: array
               items: { $ref: "#/components/schemas/RecipeSource" }
@@ -534,6 +595,88 @@ components:
             instructionSections:
               type: array
               items: { $ref: "#/components/schemas/RecipeInstructionSection" }
+    RecipeEdit:
+      type: object
+      additionalProperties: false
+      description: A recipe's complete new content. It mirrors RecipeDetail without ids, sources, or derived fields.
+      required: [name, imageUrl, yield, handsOn, unattended, ingredientSections, instructionSections]
+      properties:
+        name: { type: string }
+        imageUrl: { type: [string, "null"] }
+        yield: { type: [string, "null"] }
+        handsOn: { $ref: "#/components/schemas/DurationRange" }
+        unattended: { $ref: "#/components/schemas/DurationRange" }
+        ingredientSections:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [name, ingredients]
+            properties:
+              name: { type: string }
+              ingredients:
+                type: array
+                items: { $ref: "#/components/schemas/RecipeIngredientEdit" }
+        instructionSections:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [name, steps]
+            properties:
+              name: { type: string }
+              steps:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  required: [instruction]
+                  properties:
+                    instruction: { type: string }
+    RecipeIngredientEdit:
+      type: object
+      additionalProperties: false
+      description: One ingredient line. It names an existing household grocery item (groceryItemId) or a new one (newGroceryItem).
+      required: [sourceText, quantity, preparation, optional, displayNote, onGroceryList]
+      properties:
+        sourceText: { type: string }
+        quantity: { $ref: "#/components/schemas/RecipeQuantity" }
+        preparation: { type: [string, "null"] }
+        optional: { type: boolean }
+        displayNote: { type: [string, "null"] }
+        onGroceryList: { type: boolean }
+        groceryItemId: { type: integer, minimum: 1 }
+        newGroceryItem: { $ref: "#/components/schemas/NewGroceryItem" }
+    NewGroceryItem:
+      type: object
+      additionalProperties: false
+      description: >-
+        A household grocery item the save creates. Its key comes from the name. A name that
+        matches an existing household item is rejected: pick that item instead.
+      required: [name, storeSectionId, shoppingMode]
+      properties:
+        name: { type: string }
+        storeSectionId: { type: integer, minimum: 1 }
+        shoppingMode: { type: string, enum: [measured, counted, presence-only] }
+    InvalidRecipe:
+      type: object
+      required: [error, fields]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+        fields:
+          type: array
+          description: Each rejected field, by its path in the request, for example ingredientSections[1].ingredients[3].quantity.
+          items:
+            type: object
+            required: [path, message]
+            properties:
+              path: { type: string }
+              message: { type: string }
     StoreSection:
       type: object
       required: [id, name, key]

@@ -8,6 +8,7 @@ import {
 import { AppShell } from './ui/app-shell'
 import { GroceriesPage } from './features/groceries/groceries-page'
 import { HistoricalWeekPage, HistoryPage } from './features/history/history-page'
+import { RecipeEditPage } from './features/recipe/recipe-edit-page'
 import { RecipePage } from './features/recipe/recipe-page'
 import { RecipesPage } from './features/recipes/recipes-page'
 import { SettingsPage } from './features/settings/settings-page'
@@ -75,6 +76,12 @@ const recipeRoute = createRoute({
   component: RecipePage,
 })
 
+const recipeEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/recipes/$recipeId/edit',
+  component: RecipeEditPage,
+})
+
 function StatePage({
   eyebrow,
   title,
@@ -100,6 +107,7 @@ const routeTree = rootRoute.addChildren([
   historyRoute,
   historicalWeekRoute,
   recipeRoute,
+  recipeEditRoute,
   settingsRoute,
 ])
 

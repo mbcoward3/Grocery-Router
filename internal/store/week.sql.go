@@ -748,6 +748,38 @@ func (q *Queries) NextWeekRecipePosition(ctx context.Context, arg NextWeekRecipe
 	return column_1, err
 }
 
+const refreshWeekRecipeSnapshots = `-- name: RefreshWeekRecipeSnapshots :execrows
+UPDATE week_recipes SET
+    recipe_name = r.name,
+    recipe_key = r.key,
+    image_url = r.image_url,
+    yield_text = r.yield_text,
+    hands_on_min_minutes = r.hands_on_min_minutes,
+    hands_on_max_minutes = r.hands_on_max_minutes,
+    unattended_min_minutes = r.unattended_min_minutes,
+    unattended_max_minutes = r.unattended_max_minutes
+FROM recipes AS r
+WHERE week_recipes.household_id = $1 AND week_recipes.week_id = $2
+    AND week_recipes.recipe_id = $3
+    AND r.household_id = $1 AND r.id = $3
+`
+
+type RefreshWeekRecipeSnapshotsParams struct {
+	HouseholdID string `db:"household_id" json:"household_id"`
+	WeekID      int64  `db:"week_id" json:"week_id"`
+	RecipeID    int64  `db:"recipe_id" json:"recipe_id"`
+}
+
+// After a recipe edit, the open plan's occurrences of it show the edited fields. Callers pass
+// only the open plan's week; past plans keep their snapshots.
+func (q *Queries) RefreshWeekRecipeSnapshots(ctx context.Context, arg RefreshWeekRecipeSnapshotsParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, refreshWeekRecipeSnapshots, arg.HouseholdID, arg.WeekID, arg.RecipeID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const reopenWeek = `-- name: ReopenWeek :execrows
 UPDATE weeks SET closed_at = NULL, ends_on = NULL
 WHERE household_id = $1 AND id = $2 AND closed_at IS NOT NULL

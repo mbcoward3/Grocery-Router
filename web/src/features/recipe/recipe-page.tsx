@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams, useSearch } from '@tanstack/react-router'
 import { getRecipe, type RecipeSummary } from '../../api/client'
-import { ArrowIcon, ExternalIcon } from '../../ui/icons'
+import { ArrowIcon, EditIcon, ExternalIcon } from '../../ui/icons'
 
 export function RecipePage() {
   const { recipeId } = useParams({ strict: false }) as { recipeId: string }
@@ -34,8 +34,13 @@ export function RecipePage() {
         ? <Link className="recipe-back" to="/recipes" search={{ q: search.q }}><span aria-hidden="true">←</span> Recipes</Link>
         : <Link className="recipe-back" to="/"><span aria-hidden="true">←</span> This week</Link>}
       <header className="recipe-detail-header">
-        <div className="eyebrow">Recipe</div>
-        <h1>{recipe.name}</h1>
+        <div className="recipe-title-row">
+          <div>
+            <div className="eyebrow">Recipe</div>
+            <h1>{recipe.name}</h1>
+          </div>
+          <Link className="button" to="/recipes/$recipeId/edit" params={{ recipeId: String(recipe.id) }}><EditIcon /> Edit</Link>
+        </div>
         <div className="recipe-facts">
           <Fact label="Hands-on" value={duration(recipe.handsOn)} />
           <Fact label="Unattended" value={duration(recipe.unattended)} />
@@ -47,13 +52,16 @@ export function RecipePage() {
             {primarySource.url && <a href={primarySource.url} target="_blank" rel="noreferrer">View source <ExternalIcon /></a>}
           </div>
         )}
+        {recipe.verifiedBy && recipe.verifiedAt && (
+          <p className="recipe-approval">Last saved by {recipe.verifiedBy} on {savedOn(recipe.verifiedAt)}</p>
+        )}
       </header>
 
       <div className="recipe-detail-grid">
         <aside className="ingredients-panel">
           <div className="section-title"><span>Ingredients</span><span>{recipe.ingredientSections.reduce((sum, section) => sum + section.ingredients.length, 0)}</span></div>
-          {recipe.ingredientSections.map((section) => (
-            <section className="ingredient-section" key={section.name}>
+          {recipe.ingredientSections.map((section, index) => (
+            <section className="ingredient-section" key={index}>
               <h2>{section.name}</h2>
               <ul>
                 {section.ingredients.map((ingredient) => (
@@ -70,8 +78,8 @@ export function RecipePage() {
 
         <main className="instructions-panel">
           <div className="section-title"><span>Instructions</span></div>
-          {recipe.instructionSections.map((section) => (
-            <section className="instruction-section" key={section.name}>
+          {recipe.instructionSections.map((section, index) => (
+            <section className="instruction-section" key={index}>
               {recipe.instructionSections.length > 1 && <h2>{section.name}</h2>}
               <ol>
                 {section.steps.map((step) => <li key={step.id}><span>{step.instruction}</span></li>)}
@@ -95,4 +103,9 @@ function duration(value: RecipeSummary['handsOn']): string {
   if (min === max || max === null) return `${min} min`
   if (min === null) return `Up to ${max} min`
   return `${min}–${max} min`
+}
+
+function savedOn(timestamp: string): string {
+  const date = new Date(timestamp)
+  return Number.isNaN(date.getTime()) ? timestamp : date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
 }

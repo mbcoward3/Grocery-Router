@@ -43,8 +43,8 @@ func TestBootstrapValidatorKeepsEveryRejection(t *testing.T) {
 		{"hands_on inverted", func(d *ingest.Document) { d.HandsOn = &ingest.Duration{Min: 10, Max: 5} }, "hands_on range is invalid"},
 		{"unattended inverted", func(d *ingest.Document) { d.Unattended = &ingest.Duration{Min: 10, Max: 5} }, "unattended range is invalid"},
 		{"no ingredient sections", func(d *ingest.Document) { d.IngredientSections = nil }, "at least one ingredient section is required"},
-		{"unnamed ingredient section", func(d *ingest.Document) { d.IngredientSections[0].Name = "" }, "ingredient section 0 needs a name and ingredients"},
-		{"empty ingredient section", func(d *ingest.Document) { d.IngredientSections[0].Ingredients = nil }, "ingredient section 0 needs a name and ingredients"},
+		{"unnamed ingredient section", func(d *ingest.Document) { d.IngredientSections[0].Name = "" }, "ingredient_sections[0]: ingredient section needs a name and ingredients"},
+		{"empty ingredient section", func(d *ingest.Document) { d.IngredientSections[0].Ingredients = nil }, "ingredient_sections[0]: ingredient section needs a name and ingredients"},
 		{"empty source text", func(d *ingest.Document) { firstIngredient(d).SourceText = " " }, "source_text is required"},
 		{"grocery item key", func(d *ingest.Document) { firstIngredient(d).GroceryItem.Key = "Bad Key" }, "grocery item needs valid key and name"},
 		{"grocery item name", func(d *ingest.Document) { firstIngredient(d).GroceryItem.Name = "" }, "grocery item needs valid key and name"},
@@ -79,9 +79,9 @@ func TestBootstrapValidatorKeepsEveryRejection(t *testing.T) {
 		{"package size", func(d *ingest.Document) { firstIngredient(d).Quantity.Package.Size = "big" }, "invalid package size"},
 		{"package unit key", func(d *ingest.Document) { firstIngredient(d).Quantity.Package.Unit = "Ounce" }, "invalid package unit key"},
 		{"no instruction sections", func(d *ingest.Document) { d.InstructionSections = nil }, "at least one instruction section is required"},
-		{"unnamed instruction section", func(d *ingest.Document) { d.InstructionSections[0].Name = "" }, "instruction section 0 needs a name and steps"},
-		{"empty instruction section", func(d *ingest.Document) { d.InstructionSections[0].Steps = nil }, "instruction section 0 needs a name and steps"},
-		{"blank step", func(d *ingest.Document) { d.InstructionSections[0].Steps[0] = " " }, "steps[0] is empty"},
+		{"unnamed instruction section", func(d *ingest.Document) { d.InstructionSections[0].Name = "" }, "instruction_sections[0]: instruction section needs a name and steps"},
+		{"empty instruction section", func(d *ingest.Document) { d.InstructionSections[0].Steps = nil }, "instruction_sections[0]: instruction section needs a name and steps"},
+		{"blank step", func(d *ingest.Document) { d.InstructionSections[0].Steps[0] = " " }, "instruction_sections[0].steps[0]: step is empty"},
 		{"review field", func(d *ingest.Document) {
 			withReview(d, ingest.ReviewDecision{Kind: "rewritten", Note: "n", Approved: true})
 		}, "needs field and note"},

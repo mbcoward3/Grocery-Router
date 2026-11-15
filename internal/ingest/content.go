@@ -23,78 +23,125 @@ type RecipeContent struct {
 	InstructionSections []InstructionSection
 }
 
+// FieldError is one rejected field of recipe content. Path names the field the way the
+// content's format does (ingredient_sections[1].ingredients[3].quantity); an empty Path means
+// the content as a whole. Message is safe to show a household member.
+type FieldError struct {
+	Path    string
+	Message string
+}
+
+func (e *FieldError) Error() string {
+	if e.Path == "" {
+		return e.Message
+	}
+	return e.Path + ": " + e.Message
+}
+
+func fieldError(path, format string, args ...any) *FieldError {
+	return &FieldError{Path: path, Message: fmt.Sprintf(format, args...)}
+}
+
+// ContentError is rejected recipe content: every field problem found, in content order.
+// Match it with errors.As against a *ContentError.
+type ContentError struct {
+	Fields []FieldError
+}
+
+func (e *ContentError) Error() string {
+	parts := make([]string, 0, len(e.Fields))
+	for _, field := range e.Fields {
+		parts = append(parts, field.Error())
+	}
+	return strings.Join(parts, "; ")
+}
+
+// validationErrors collects field problems into a *ContentError.
+type validationErrors []FieldError
+
+func (v *validationErrors) add(err *FieldError) {
+	if err != nil {
+		*v = append(*v, *err)
+	}
+}
+
+func (v validationErrors) err() error {
+	if len(v) == 0 {
+		return nil
+	}
+	return &ContentError{Fields: v}
+}
+
 // ValidateRecipeContent is the shared recipe content validation used by every recipe format.
 // It checks the name, source, yield, durations, ingredient and instruction sections, and
 // every quantity, including that each unit exists in the unit vocabulary and each rational
-// fits the database's 64-bit numerator and denominator columns. It returns the first problem.
+// fits the database's 64-bit numerator and denominator columns. It returns a
+// *ContentError naming every rejected field, at most one per ingredient.
 func ValidateRecipeContent(content RecipeContent) error {
-	if err := validateRecipeMetadata(content.Name, content.Source, content.ImageURL, content.Yield, content.HandsOn, content.Unattended); err != nil {
-		return err
-	}
+	var problems validationErrors
+	problems = append(problems, validateRecipeMetadata(content.Name, content.Source, content.ImageURL, content.Yield, content.HandsOn, content.Unattended)...)
 	if len(content.IngredientSections) == 0 {
-		return errors.New("at least one ingredient section is required")
+		problems.add(fieldError("ingredient_sections", "at least one ingredient section is required"))
 	}
 	items := make(groceryItemSet)
 	for sectionIndex, section := range content.IngredientSections {
-		if err := validateIngredientSectionShape(sectionIndex, section.Name, len(section.Ingredients)); err != nil {
-			return err
-		}
+		problems.add(validateIngredientSectionShape(sectionIndex, section.Name, len(section.Ingredients)))
 		for ingredientIndex, ingredient := range section.Ingredients {
 			location := fmt.Sprintf("ingredient_sections[%d].ingredients[%d]", sectionIndex, ingredientIndex)
-			if err := validateIngredient(location, ingredient, items); err != nil {
-				return err
-			}
+			problems.add(validateIngredient(location, ingredient, items))
 		}
 	}
-	return validateInstructionSections(content.InstructionSections)
+	problems.add(validateInstructionSections(content.InstructionSections))
+	return problems.err()
 }
 
-func validateRecipeMetadata(name string, source Source, imageURL, yield string, handsOn, unattended *Duration) error {
+// validateRecipeMetadata returns every problem with a recipe's name, source, and display fields.
+func validateRecipeMetadata(name string, source Source, imageURL, yield string, handsOn, unattended *Duration) validationErrors {
+	var problems validationErrors
 	if strings.TrimSpace(name) == "" {
-		return errors.New("name is required")
+		problems.add(fieldError("name", "name is required"))
 	}
 	if source.Relationship != "source" && source.Relationship != "adapted-from" {
-		return fmt.Errorf("invalid source relationship %q", source.Relationship)
+		problems.add(fieldError("source.relationship", "invalid source relationship %q", source.Relationship))
 	}
 	if strings.TrimSpace(source.Attribution) == "" {
-		return errors.New("source attribution is required")
+		problems.add(fieldError("source.attribution", "source attribution is required"))
 	}
 	if source.URL != "" {
 		parsed, err := url.ParseRequestURI(source.URL)
 		if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") || parsed.Host == "" {
-			return fmt.Errorf("invalid source URL %q", source.URL)
+			problems.add(fieldError("source.url", "invalid source URL %q", source.URL))
 		}
 	}
 	if source.CheckedOn != "" {
 		if _, err := time.Parse(time.DateOnly, source.CheckedOn); err != nil {
-			return errors.New("source checked_on must be YYYY-MM-DD")
+			problems.add(fieldError("source.checked_on", "source checked_on must be YYYY-MM-DD"))
 		}
 	}
 	if imageURL != "" && strings.TrimSpace(imageURL) == "" {
-		return errors.New("image_url cannot be blank")
+		problems.add(fieldError("image_url", "image_url cannot be blank"))
 	}
 	if yield != "" && strings.TrimSpace(yield) == "" {
-		return errors.New("yield cannot be blank")
+		problems.add(fieldError("yield", "yield cannot be blank"))
 	}
-	if err := validateDuration("hands_on", handsOn); err != nil {
-		return err
-	}
-	return validateDuration("unattended", unattended)
+	problems.add(validateDuration("hands_on", handsOn))
+	problems.add(validateDuration("unattended", unattended))
+	return problems
 }
 
-func validateDuration(name string, duration *Duration) error {
+func validateDuration(name string, duration *Duration) *FieldError {
 	if duration == nil {
 		return nil
 	}
 	if duration.Min < 0 || duration.Max < duration.Min {
-		return fmt.Errorf("%s range is invalid", name)
+		return fieldError(name, "%s range is invalid", name)
 	}
 	return nil
 }
 
-func validateIngredientSectionShape(index int, name string, ingredients int) error {
+func validateIngredientSectionShape(index int, name string, ingredients int) *FieldError {
 	if strings.TrimSpace(name) == "" || ingredients == 0 {
-		return fmt.Errorf("ingredient section %d needs a name and ingredients", index)
+		return fieldError(fmt.Sprintf("ingredient_sections[%d]", index), "ingredient section needs a name and ingredients")
 	}
 	return nil
 }
@@ -102,40 +149,42 @@ func validateIngredientSectionShape(index int, name string, ingredients int) err
 // groceryItemSet requires every use of a grocery item key within one recipe to agree.
 type groceryItemSet map[string]GroceryItem
 
-func validateIngredient(location string, ingredient Ingredient, items groceryItemSet) error {
+// validateIngredient returns the first problem with one ingredient, at the field it concerns.
+func validateIngredient(location string, ingredient Ingredient, items groceryItemSet) *FieldError {
 	if strings.TrimSpace(ingredient.SourceText) == "" {
-		return fmt.Errorf("%s source_text is required", location)
+		return fieldError(location+".source_text", "source_text is required")
 	}
 	if err := ingredient.GroceryItem.validate(); err != nil {
-		return fmt.Errorf("%s: %w", location, err)
+		return fieldError(location+".grocery_item", "%v", err)
 	}
 	if existing, ok := items[ingredient.GroceryItem.Key]; ok && existing != ingredient.GroceryItem {
-		return fmt.Errorf("%s redefines grocery item %q inconsistently", location, ingredient.GroceryItem.Key)
+		return fieldError(location+".grocery_item", "redefines grocery item %q inconsistently", ingredient.GroceryItem.Key)
 	}
 	items[ingredient.GroceryItem.Key] = ingredient.GroceryItem
 	if _, err := ingredient.Quantity.rationals(); err != nil {
-		return fmt.Errorf("%s: %w", location, err)
+		return fieldError(location+".quantity", "%v", err)
 	}
 	if ingredient.Preparation != "" && strings.TrimSpace(ingredient.Preparation) == "" {
-		return fmt.Errorf("%s preparation cannot be blank", location)
+		return fieldError(location+".preparation", "preparation cannot be blank")
 	}
 	if ingredient.Note != "" && strings.TrimSpace(ingredient.Note) == "" {
-		return fmt.Errorf("%s note cannot be blank", location)
+		return fieldError(location+".note", "note cannot be blank")
 	}
 	return nil
 }
 
-func validateInstructionSections(sections []InstructionSection) error {
+// validateInstructionSections returns the first problem with a recipe's steps.
+func validateInstructionSections(sections []InstructionSection) *FieldError {
 	if len(sections) == 0 {
-		return errors.New("at least one instruction section is required")
+		return fieldError("instruction_sections", "at least one instruction section is required")
 	}
 	for sectionIndex, section := range sections {
 		if strings.TrimSpace(section.Name) == "" || len(section.Steps) == 0 {
-			return fmt.Errorf("instruction section %d needs a name and steps", sectionIndex)
+			return fieldError(fmt.Sprintf("instruction_sections[%d]", sectionIndex), "instruction section needs a name and steps")
 		}
 		for stepIndex, step := range section.Steps {
 			if strings.TrimSpace(step) == "" {
-				return fmt.Errorf("instruction_sections[%d].steps[%d] is empty", sectionIndex, stepIndex)
+				return fieldError(fmt.Sprintf("instruction_sections[%d].steps[%d]", sectionIndex, stepIndex), "step is empty")
 			}
 		}
 	}

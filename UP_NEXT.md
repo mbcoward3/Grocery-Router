@@ -57,8 +57,8 @@ scope requires a new phase with its own acceptance criteria.
 
 - **Recipe onboarding UI.** Add linked, pasted, photographed, or typed recipes using the
   same ingestion and verification services built for true-up.
-- **Household correction UI.** Edit ingredients, quantities, mappings, times, instructions,
-  and source relationships from the application.
+- **Source editing.** The recipe editor (#57) changes everything but a recipe's source; edit the
+  source relationship, attribution, and link from the application too.
 - **Agent-assisted onboarding.** Package true-up rules, fixtures, and context as SDK/ADK
   agents rather than relying on a coding-session agent.
 - **Agent context tools.** Controlled database queries, exports, and skills that build model

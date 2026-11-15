@@ -22,15 +22,20 @@ function householdPath(path: string): string {
   return `/households/${encodeURIComponent(householdId)}${path}`
 }
 
+export type FieldProblem = components['schemas']['InvalidRecipe']['fields'][number]
+
 export class ApiRequestError extends Error {
   readonly status: number
   readonly code: string
+  /** Each rejected field of a 422 response that names fields, by request path. */
+  readonly fields: FieldProblem[]
 
-  constructor(status: number, error: ApiError['error']) {
+  constructor(status: number, error: ApiError['error'], fields: FieldProblem[] = []) {
     super(error.message)
     this.name = 'ApiRequestError'
     this.status = status
     this.code = error.code
+    this.fields = fields
   }
 }
 
@@ -51,9 +56,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       message: 'The request could not be completed.',
     }
     const error = isApiError(body) ? body.error : fallback
-    throw new ApiRequestError(response.status, error)
+    throw new ApiRequestError(response.status, error, fieldProblems(body))
   }
   return body as T
+}
+
+function fieldProblems(value: unknown): FieldProblem[] {
+  if (!value || typeof value !== 'object' || !('fields' in value) || !Array.isArray(value.fields)) return []
+  return value.fields.filter((field: unknown): field is FieldProblem => Boolean(
+    field && typeof field === 'object' && 'path' in field && typeof field.path === 'string' &&
+      'message' in field && typeof field.message === 'string',
+  ))
 }
 
 function isApiError(value: unknown): value is ApiError {
@@ -78,6 +91,17 @@ export function listRecipes(): Promise<{ recipes: RecipeSummary[] }> {
 
 export function getRecipe(recipeId: number): Promise<RecipeDetail> {
   return request(householdPath(`/recipes/${recipeId}`))
+}
+
+export type RecipeEdit = components['schemas']['RecipeEdit']
+export type RecipeIngredientEdit = components['schemas']['RecipeIngredientEdit']
+export type RecipeQuantity = components['schemas']['RecipeQuantity']
+export type ShoppingMode = components['schemas']['NewGroceryItem']['shoppingMode']
+
+// editRecipe saves a recipe's complete new content. A rejected save throws an ApiRequestError
+// whose fields name each problem.
+export function editRecipe(recipeId: number, edit: RecipeEdit): Promise<RecipeDetail> {
+  return request(householdPath(`/recipes/${recipeId}`), { method: 'PUT', body: JSON.stringify(edit) })
 }
 
 export async function getCurrentWeek(): Promise<Week | null> {

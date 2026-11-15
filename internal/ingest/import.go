@@ -80,11 +80,9 @@ func Import(ctx context.Context, db *sql.DB, householdID string, documents []Doc
 	}
 
 	queries := store.New(tx)
-	sections := make(map[string]store.StoreSection)
-	items := make(map[string]store.GroceryItem)
-	units := make(map[string]store.Unit)
+	cache := newContentCache()
 	for _, document := range documents {
-		if err := importDocument(ctx, queries, householdID, document, sections, items, units); err != nil {
+		if err := importDocument(ctx, queries, householdID, document, cache); err != nil {
 			return fmt.Errorf("import recipe %s: %w", document.Key, err)
 		}
 	}
@@ -94,86 +92,41 @@ func Import(ctx context.Context, db *sql.DB, householdID string, documents []Doc
 	return nil
 }
 
-func importDocument(
-	ctx context.Context,
-	queries *store.Queries,
-	householdID string,
-	document Document,
-	sections map[string]store.StoreSection,
-	items map[string]store.GroceryItem,
-	units map[string]store.Unit,
-) error {
+// contentCache remembers the store sections, grocery items, and units one transaction has
+// already resolved, so a recipe set reads each only once.
+type contentCache struct {
+	sections map[string]store.StoreSection
+	items    map[string]store.GroceryItem
+	units    map[string]store.Unit
+}
+
+func newContentCache() *contentCache {
+	return &contentCache{
+		sections: make(map[string]store.StoreSection),
+		items:    make(map[string]store.GroceryItem),
+		units:    make(map[string]store.Unit),
+	}
+}
+
+func importDocument(ctx context.Context, queries *store.Queries, householdID string, document Document, cache *contentCache) error {
+	content := document.Content()
 	recipe, err := queries.CreateDraftRecipe(ctx, store.CreateDraftRecipeParams{
 		HouseholdID:          householdID,
 		Key:                  document.Key,
-		Name:                 document.Name,
-		ImageUrl:             nullString(document.ImageURL),
-		YieldText:            nullString(document.Yield),
-		HandsOnMinMinutes:    durationMinimum(document.HandsOn),
-		HandsOnMaxMinutes:    durationMaximum(document.HandsOn),
-		UnattendedMinMinutes: durationMinimum(document.Unattended),
-		UnattendedMaxMinutes: durationMaximum(document.Unattended),
+		Name:                 content.Name,
+		ImageUrl:             nullString(content.ImageURL),
+		YieldText:            nullString(content.Yield),
+		HandsOnMinMinutes:    durationMinimum(content.HandsOn),
+		HandsOnMaxMinutes:    durationMaximum(content.HandsOn),
+		UnattendedMinMinutes: durationMinimum(content.Unattended),
+		UnattendedMaxMinutes: durationMaximum(content.Unattended),
 	})
 	if err != nil {
 		return err
 	}
-	if _, err := queries.CreateRecipeSource(ctx, store.CreateRecipeSourceParams{
-		RecipeID:     recipe.ID,
-		Relationship: document.Source.Relationship,
-		Attribution:  document.Source.Attribution,
-		Url:          nullString(document.Source.URL),
-		CheckedOn:    nullString(document.Source.CheckedOn),
-		IsPrimary:    1,
-		Position:     0,
-	}); err != nil {
+	if err := insertRecipeContent(ctx, queries, householdID, recipe.ID, content, cache); err != nil {
 		return err
 	}
-
-	for sectionPosition, ingredientSection := range document.IngredientSections {
-		section, err := queries.CreateIngredientSection(ctx, store.CreateIngredientSectionParams{
-			HouseholdID: householdID,
-			RecipeID:    recipe.ID,
-			Name:        ingredientSection.Name,
-			Position:    int64(sectionPosition),
-		})
-		if err != nil {
-			return err
-		}
-		for ingredientPosition, ingredient := range ingredientSection.Ingredients {
-			item, err := ensureGroceryItem(ctx, queries, householdID, ingredient.GroceryItem, sections, items)
-			if err != nil {
-				return err
-			}
-			params, err := ingredientParams(ctx, queries, householdID, ingredient, section.ID, item.ID, int64(ingredientPosition), units)
-			if err != nil {
-				return err
-			}
-			if _, err := queries.CreateRecipeIngredient(ctx, params); err != nil {
-				return err
-			}
-		}
-	}
-
-	for sectionPosition, instructionSection := range document.InstructionSections {
-		section, err := queries.CreateInstructionSection(ctx, store.CreateInstructionSectionParams{
-			RecipeID: recipe.ID,
-			Name:     instructionSection.Name,
-			Position: int64(sectionPosition),
-		})
-		if err != nil {
-			return err
-		}
-		for stepPosition, instruction := range instructionSection.Steps {
-			if _, err := queries.CreateRecipeStep(ctx, store.CreateRecipeStepParams{
-				SectionID:   section.ID,
-				Position:    int64(stepPosition),
-				Instruction: instruction,
-			}); err != nil {
-				return err
-			}
-		}
-	}
-
 	for _, decision := range document.Review {
 		flag, err := queries.CreateReviewFlag(ctx, store.CreateReviewFlagParams{
 			RecipeID:  recipe.ID,
@@ -190,14 +143,84 @@ func importDocument(
 			}
 		}
 	}
-	if _, err := queries.MarkRecipeReviewable(ctx, store.MarkRecipeReviewableParams{HouseholdID: householdID, ID: recipe.ID}); err != nil {
+	_, err = verifyDraftRecipe(ctx, queries, householdID, recipe.ID, document.ApprovedOn+"T00:00:00Z", "")
+	return err
+}
+
+// insertRecipeContent writes a draft recipe's primary source, ingredient sections, and
+// instruction sections. The recipe row itself already holds the content's metadata. Both the
+// bootstrap import and an in-app edit use it.
+func insertRecipeContent(ctx context.Context, queries *store.Queries, householdID string, recipeID int64, content RecipeContent, cache *contentCache) error {
+	if _, err := queries.CreateRecipeSource(ctx, store.CreateRecipeSourceParams{
+		RecipeID:     recipeID,
+		Relationship: content.Source.Relationship,
+		Attribution:  content.Source.Attribution,
+		Url:          nullString(content.Source.URL),
+		CheckedOn:    nullString(content.Source.CheckedOn),
+		IsPrimary:    1,
+		Position:     0,
+	}); err != nil {
 		return err
 	}
-	_, err = queries.VerifyRecipe(ctx, store.VerifyRecipeParams{
-		HouseholdID: householdID, VerifiedAt: sql.NullString{String: document.ApprovedOn + "T00:00:00Z", Valid: true},
-		ID: recipe.ID,
+
+	for sectionPosition, ingredientSection := range content.IngredientSections {
+		section, err := queries.CreateIngredientSection(ctx, store.CreateIngredientSectionParams{
+			HouseholdID: householdID,
+			RecipeID:    recipeID,
+			Name:        ingredientSection.Name,
+			Position:    int64(sectionPosition),
+		})
+		if err != nil {
+			return err
+		}
+		for ingredientPosition, ingredient := range ingredientSection.Ingredients {
+			item, err := ensureGroceryItem(ctx, queries, householdID, ingredient.GroceryItem, cache.sections, cache.items)
+			if err != nil {
+				return err
+			}
+			params, err := ingredientParams(ctx, queries, householdID, ingredient, section.ID, item.ID, int64(ingredientPosition), cache.units)
+			if err != nil {
+				return err
+			}
+			if _, err := queries.CreateRecipeIngredient(ctx, params); err != nil {
+				return err
+			}
+		}
+	}
+
+	for sectionPosition, instructionSection := range content.InstructionSections {
+		section, err := queries.CreateInstructionSection(ctx, store.CreateInstructionSectionParams{
+			RecipeID: recipeID,
+			Name:     instructionSection.Name,
+			Position: int64(sectionPosition),
+		})
+		if err != nil {
+			return err
+		}
+		for stepPosition, instruction := range instructionSection.Steps {
+			if _, err := queries.CreateRecipeStep(ctx, store.CreateRecipeStepParams{
+				SectionID:   section.ID,
+				Position:    int64(stepPosition),
+				Instruction: instruction,
+			}); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+// verifyDraftRecipe moves a draft recipe through reviewable to verified. verifiedBy is the
+// approving member's user ID, or empty for the bootstrap import.
+func verifyDraftRecipe(ctx context.Context, queries *store.Queries, householdID string, recipeID int64, verifiedAt, verifiedBy string) (store.Recipe, error) {
+	if _, err := queries.MarkRecipeReviewable(ctx, store.MarkRecipeReviewableParams{HouseholdID: householdID, ID: recipeID}); err != nil {
+		return store.Recipe{}, err
+	}
+	return queries.VerifyRecipe(ctx, store.VerifyRecipeParams{
+		HouseholdID: householdID, ID: recipeID,
+		VerifiedAt: sql.NullString{String: verifiedAt, Valid: true},
+		VerifiedBy: sql.NullString{String: verifiedBy, Valid: verifiedBy != ""},
 	})
-	return err
 }
 
 func ensureGroceryItem(

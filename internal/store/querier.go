@@ -46,6 +46,10 @@ type Querier interface {
 	DeleteAllIngestSiteHosts(ctx context.Context) error
 	DeleteGeneratedShoppingLines(ctx context.Context, arg DeleteGeneratedShoppingLinesParams) error
 	DeleteIngestSiteSitemaps(ctx context.Context, siteID string) error
+	DeleteRecipeIngredientSections(ctx context.Context, arg DeleteRecipeIngredientSectionsParams) error
+	DeleteRecipeInstructionSections(ctx context.Context, recipeID int64) error
+	DeleteRecipeReviewFlags(ctx context.Context, recipeID int64) error
+	DeleteRecipeSources(ctx context.Context, recipeID int64) error
 	DeleteWeekRecipe(ctx context.Context, arg DeleteWeekRecipeParams) (int64, error)
 	DeleteWeekRecipes(ctx context.Context, arg DeleteWeekRecipesParams) error
 	FinishIngestRun(ctx context.Context, arg FinishIngestRunParams) (int64, error)
@@ -54,6 +58,8 @@ type Querier interface {
 	GetAvoidRecentPlans(ctx context.Context, householdID string) (int16, error)
 	GetGroceryItemByKey(ctx context.Context, arg GetGroceryItemByKeyParams) (GroceryItem, error)
 	GetGroceryItemSection(ctx context.Context, arg GetGroceryItemSectionParams) (int64, error)
+	// A household grocery item with its reviewed (corpus) store section, as recipe content names it.
+	GetGroceryItemWithSection(ctx context.Context, arg GetGroceryItemWithSectionParams) (GetGroceryItemWithSectionRow, error)
 	GetHouseholdName(ctx context.Context, householdID string) (string, error)
 	GetHouseholdSettings(ctx context.Context, householdID string) (GetHouseholdSettingsRow, error)
 	GetHouseholdTimezone(ctx context.Context, householdID string) (string, error)
@@ -73,8 +79,10 @@ type Querier interface {
 	GetRecipeByKey(ctx context.Context, arg GetRecipeByKeyParams) (Recipe, error)
 	GetRememberedItemSection(ctx context.Context, arg GetRememberedItemSectionParams) (int64, error)
 	GetShoppingListByWeek(ctx context.Context, arg GetShoppingListByWeekParams) (ShoppingList, error)
+	GetStoreSection(ctx context.Context, arg GetStoreSectionParams) (StoreSection, error)
 	GetStoreSectionByKey(ctx context.Context, arg GetStoreSectionByKeyParams) (StoreSection, error)
 	GetUnitByKey(ctx context.Context, key string) (Unit, error)
+	GetUserDisplayName(ctx context.Context, id string) (string, error)
 	GetVerifiedRecipe(ctx context.Context, arg GetVerifiedRecipeParams) (Recipe, error)
 	GetWeekRecipe(ctx context.Context, arg GetWeekRecipeParams) (WeekRecipe, error)
 	InsertIngestEvidence(ctx context.Context, arg InsertIngestEvidenceParams) (int64, error)
@@ -134,6 +142,8 @@ type Querier interface {
 	// Taken before a change to the open week or its list. A concurrent close waits for the change,
 	// or, if it closed the week first, this finds no open week once it commits.
 	LockOpenWeek(ctx context.Context, householdID string) (Week, error)
+	// Locks a household recipe for an edit. NO KEY UPDATE still lets plans reference the recipe.
+	LockRecipe(ctx context.Context, arg LockRecipeParams) (Recipe, error)
 	LockSectionOrder(ctx context.Context, id string) (string, error)
 	MarkIngestSourcePageFailed(ctx context.Context, arg MarkIngestSourcePageFailedParams) error
 	MarkIngestSourcePageFetched(ctx context.Context, arg MarkIngestSourcePageFetchedParams) error
@@ -145,6 +155,10 @@ type Querier interface {
 	// Opens a persistent pause. Returns 0 rows affected when the site is already paused; the first
 	// open pause and its reason are kept.
 	PauseIngestSite(ctx context.Context, arg PauseIngestSiteParams) (int64, error)
+	RecipeNameTaken(ctx context.Context, arg RecipeNameTakenParams) (bool, error)
+	// After a recipe edit, the open plan's occurrences of it show the edited fields. Callers pass
+	// only the open plan's week; past plans keep their snapshots.
+	RefreshWeekRecipeSnapshots(ctx context.Context, arg RefreshWeekRecipeSnapshotsParams) (int64, error)
 	// Releases a lease and sets the next allowed request time at least interval_ms (never less than
 	// 5 seconds) from now. Returns 0 rows affected when the lease was lost to expiry.
 	ReleaseIngestHostSlot(ctx context.Context, arg ReleaseIngestHostSlotParams) (int64, error)
@@ -172,6 +186,7 @@ type Querier interface {
 	TouchWeek(ctx context.Context, arg TouchWeekParams) error
 	// Stage locks (§7.3). Session-level: call on one *sql.Conn and unlock on the same connection.
 	TryIngestStageLock(ctx context.Context, lockKey int64) (bool, error)
+	UpdateDraftRecipeContent(ctx context.Context, arg UpdateDraftRecipeContentParams) (Recipe, error)
 	// A NULL argument keeps the stored value, so a change to one setting cannot overwrite a
 	// concurrent change to another.
 	UpdateHouseholdSettings(ctx context.Context, arg UpdateHouseholdSettingsParams) (UpdateHouseholdSettingsRow, error)
@@ -182,6 +197,7 @@ type Querier interface {
 	// Records a page found in a registered sitemap. A known URL keeps its queue state; only sighting
 	// metadata changes. Returns the page and whether it was newly inserted.
 	UpsertIngestSourcePage(ctx context.Context, arg UpsertIngestSourcePageParams) (UpsertIngestSourcePageRow, error)
+	// verified_by is the member whose save approved the recipe; the bootstrap import leaves it NULL.
 	VerifyRecipe(ctx context.Context, arg VerifyRecipeParams) (Recipe, error)
 }
 
