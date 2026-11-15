@@ -33,8 +33,9 @@ WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND status IN 
 RETURNING *;
 
 -- name: VerifyRecipe :one
+-- verified_by is the member whose save approved the recipe; the bootstrap import leaves it NULL.
 UPDATE recipes
-SET status = 'verified', verified_at = $1,
+SET status = 'verified', verified_at = $1, verified_by = sqlc.narg(verified_by),
     updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
 WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND status = 'reviewable'
 RETURNING *;
@@ -194,3 +195,59 @@ ORDER BY field_path, kind;
 SELECT count(*) FROM recipe_review_flags f
 JOIN recipes r ON r.id = f.recipe_id
 WHERE r.household_id = sqlc.arg(household_id) AND f.recipe_id = sqlc.arg(recipe_id) AND approved = 0;
+
+-- name: LockRecipe :one
+-- Locks a household recipe for an edit. NO KEY UPDATE still lets plans reference the recipe.
+SELECT * FROM recipes
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id)
+FOR NO KEY UPDATE;
+
+-- name: UpdateDraftRecipeContent :one
+UPDATE recipes
+SET name = sqlc.arg(name), image_url = sqlc.narg(image_url), yield_text = sqlc.narg(yield_text),
+    hands_on_min_minutes = sqlc.narg(hands_on_min_minutes),
+    hands_on_max_minutes = sqlc.narg(hands_on_max_minutes),
+    unattended_min_minutes = sqlc.narg(unattended_min_minutes),
+    unattended_max_minutes = sqlc.narg(unattended_max_minutes),
+    updated_at = to_char(clock_timestamp() AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id) AND status = 'draft'
+RETURNING *;
+
+-- name: DeleteRecipeSources :exec
+DELETE FROM recipe_sources WHERE recipe_id = sqlc.arg(recipe_id);
+
+-- name: DeleteRecipeIngredientSections :exec
+DELETE FROM recipe_ingredient_sections
+WHERE household_id = sqlc.arg(household_id) AND recipe_id = sqlc.arg(recipe_id);
+
+-- name: DeleteRecipeInstructionSections :exec
+DELETE FROM recipe_instruction_sections WHERE recipe_id = sqlc.arg(recipe_id);
+
+-- name: DeleteRecipeReviewFlags :exec
+DELETE FROM recipe_review_flags WHERE recipe_id = sqlc.arg(recipe_id);
+
+-- name: GetGroceryItemWithSection :one
+-- A household grocery item with its reviewed (corpus) store section, as recipe content names it.
+SELECT
+    gi.id,
+    gi.key,
+    gi.name,
+    gi.shopping_mode,
+    ss.id AS store_section_id,
+    ss.key AS store_section_key,
+    ss.name AS store_section_name
+FROM grocery_items AS gi
+JOIN store_sections AS ss ON ss.household_id = gi.household_id AND ss.id = gi.store_section_id
+WHERE gi.household_id = sqlc.arg(household_id) AND gi.id = sqlc.arg(id);
+
+-- name: GetStoreSection :one
+SELECT * FROM store_sections WHERE household_id = sqlc.arg(household_id) AND id = sqlc.arg(id);
+
+-- name: GetUserDisplayName :one
+SELECT display_name FROM app_users WHERE id = sqlc.arg(id);
+
+-- name: RecipeNameTaken :one
+SELECT EXISTS (
+    SELECT 1 FROM recipes
+    WHERE household_id = sqlc.arg(household_id) AND name = sqlc.arg(name) AND id <> sqlc.arg(id)
+);

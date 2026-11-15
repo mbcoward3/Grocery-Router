@@ -25,7 +25,9 @@ export function AppShell() {
           ? 'History'
           : pathname === '/settings'
             ? 'Settings'
-            : 'Recipe detail'
+            : pathname.endsWith('/edit')
+              ? 'Edit recipe'
+              : 'Recipe detail'
 
   return (
     <div className="app-shell">

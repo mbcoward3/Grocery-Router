@@ -308,7 +308,10 @@ func serve(databasePath, address, webRoot string, authConfig auth.Config) error 
 	defer db.Close()
 
 	weekService := week.NewService(db, nil)
-	api := httpapi.New(db, weekService, nil, auth.AuthorizeHousehold)
+	api := httpapi.New(db, weekService, nil, auth.AuthorizeHousehold, httpapi.WithCurrentUser(func(ctx context.Context) (string, bool) {
+		session, ok := auth.SessionFromContext(ctx)
+		return session.User.ID, ok
+	}))
 	provider, err := auth.NewGoogleProvider(context.Background(), authConfig)
 	if err != nil {
 		return err

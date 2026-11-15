@@ -69,7 +69,11 @@ export interface paths {
         };
         /** Fetch one complete verified recipe. */
         get: operations["getRecipe"];
-        put?: never;
+        /**
+         * Replace a household recipe's content.
+         * @description Saves the recipe at once. The save is the household's approval: the recipe stays verified with a new verifiedAt and verifiedBy (the signed-in member). The recipe keeps its id and key. When the current plan contains it, the plan's grocery list is rebuilt, carrying checked, removed, and adjusted rows. Past plans never change. Invalid content changes nothing and returns 422 naming each rejected field.
+         */
+        put: operations["editRecipe"];
         post?: never;
         delete?: never;
         options?: never;
@@ -420,6 +424,24 @@ export interface components {
             url: string | null;
             primary: boolean;
         };
+        /** @description A structured ingredient quantity. Amounts are exact positive rationals written as "2", "3/4", or "1 1/2". An exact or range quantity has exactly one of unit or package; unspecified has neither and no amount. */
+        RecipeQuantity: {
+            /** @enum {string} */
+            kind: "exact" | "range" | "unspecified";
+            amount: string | null;
+            /** @description The upper bound of a range. */
+            maximum: string | null;
+            /** @description A unit key, for example cup or lb. */
+            unit: string | null;
+            package: null | components["schemas"]["RecipePackage"];
+        };
+        RecipePackage: {
+            /** @description For example can or jar. */
+            type: string;
+            size: string | null;
+            /** @description The unit key of size. */
+            unit: string | null;
+        };
         RecipeIngredient: {
             id: number;
             sourceText: string;
@@ -427,6 +449,10 @@ export interface components {
             optional: boolean;
             displayNote: string | null;
             shoppingItem: string | null;
+            groceryItemId: number | null;
+            quantity: components["schemas"]["RecipeQuantity"];
+            /** @description False for a line that never reaches the grocery list, such as water. */
+            onGroceryList: boolean;
         };
         RecipeIngredientSection: {
             name: string;
@@ -441,9 +467,60 @@ export interface components {
             steps: components["schemas"]["RecipeStep"][];
         };
         RecipeDetail: components["schemas"]["RecipeSummary"] & {
+            /** @description When the recipe was last approved. */
+            verifiedAt: string | null;
+            /** @description The display name of the member whose save approved it; null for a starter recipe. */
+            verifiedBy: string | null;
             sources: components["schemas"]["RecipeSource"][];
             ingredientSections: components["schemas"]["RecipeIngredientSection"][];
             instructionSections: components["schemas"]["RecipeInstructionSection"][];
+        };
+        /** @description A recipe's complete new content. It mirrors RecipeDetail without ids, sources, or derived fields. */
+        RecipeEdit: {
+            name: string;
+            imageUrl: string | null;
+            yield: string | null;
+            handsOn: components["schemas"]["DurationRange"];
+            unattended: components["schemas"]["DurationRange"];
+            ingredientSections: {
+                name: string;
+                ingredients: components["schemas"]["RecipeIngredientEdit"][];
+            }[];
+            instructionSections: {
+                name: string;
+                steps: {
+                    instruction: string;
+                }[];
+            }[];
+        };
+        /** @description One ingredient line. It names an existing household grocery item (groceryItemId) or a new one (newGroceryItem). */
+        RecipeIngredientEdit: {
+            sourceText: string;
+            quantity: components["schemas"]["RecipeQuantity"];
+            preparation: string | null;
+            optional: boolean;
+            displayNote: string | null;
+            onGroceryList: boolean;
+            groceryItemId?: number;
+            newGroceryItem?: components["schemas"]["NewGroceryItem"];
+        };
+        /** @description A household grocery item the save creates. Its key comes from the name. A name that matches an existing household item is rejected: pick that item instead. */
+        NewGroceryItem: {
+            name: string;
+            storeSectionId: number;
+            /** @enum {string} */
+            shoppingMode: "measured" | "counted" | "presence-only";
+        };
+        InvalidRecipe: {
+            error: {
+                code: string;
+                message: string;
+            };
+            /** @description Each rejected field, by its path in the request, for example ingredientSections[1].ingredients[3].quantity. */
+            fields: {
+                path: string;
+                message: string;
+            }[];
         };
         StoreSection: {
             id: number;
@@ -753,6 +830,46 @@ export interface operations {
             };
             400: components["responses"]["InvalidRequest"];
             404: components["responses"]["NotFound"];
+            500: components["responses"]["InternalError"];
+        };
+    };
+    editRecipe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                householdID: components["parameters"]["HouseholdID"];
+                recipeID: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RecipeEdit"];
+            };
+        };
+        responses: {
+            /** @description The saved recipe. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecipeDetail"];
+                };
+            };
+            400: components["responses"]["InvalidRequest"];
+            401: components["responses"]["Unauthenticated"];
+            404: components["responses"]["NotFound"];
+            /** @description The content was rejected; nothing was stored. */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InvalidRecipe"];
+                };
+            };
             500: components["responses"]["InternalError"];
         };
     };

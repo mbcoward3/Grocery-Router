@@ -363,8 +363,8 @@ func (d CatalogDocument) validationIssues() []Issue {
 	if d.FormatVersion != CatalogFormatVersion {
 		add(IssueUnsupportedFormatVersion, "format_version", "format_version = %d, want %d", d.FormatVersion, CatalogFormatVersion)
 	}
-	if err := validateRecipeMetadata(d.Name, d.Source, d.ImageURL, d.Yield, d.HandsOn, d.Unattended); err != nil {
-		add(IssueInvalidContent, "", "%v", err)
+	for _, problem := range validateRecipeMetadata(d.Name, d.Source, d.ImageURL, d.Yield, d.HandsOn, d.Unattended) {
+		add(IssueInvalidContent, problem.Path, "%s", problem.Message)
 	}
 	for index, line := range d.SourceLines {
 		if strings.TrimSpace(line) == "" {
@@ -393,8 +393,8 @@ func (d CatalogDocument) validationIssues() []Issue {
 	items := make(groceryItemSet)
 	for sectionIndex, section := range d.IngredientSections {
 		sectionPath := fmt.Sprintf("ingredient_sections[%d]", sectionIndex)
-		if err := validateIngredientSectionShape(sectionIndex, section.Name, len(section.Requirements)); err != nil {
-			add(IssueInvalidContent, sectionPath, "%v", err)
+		if problem := validateIngredientSectionShape(sectionIndex, section.Name, len(section.Requirements)); problem != nil {
+			add(IssueInvalidContent, sectionPath, "%s", problem.Message)
 		}
 		if section.Heading != nil {
 			headingPath := sectionPath + ".heading"
@@ -435,8 +435,8 @@ func (d CatalogDocument) validationIssues() []Issue {
 		validateLineRelationship(linePath, lineUse.requirements, add)
 	}
 
-	if err := validateInstructionSections(d.InstructionSections); err != nil {
-		add(IssueInvalidContent, "instruction_sections", "%v", err)
+	if problem := validateInstructionSections(d.InstructionSections); problem != nil {
+		add(IssueInvalidContent, problem.Path, "%s", problem.Message)
 	}
 	return issues
 }
@@ -499,8 +499,8 @@ func (d CatalogDocument) validateRequirement(path string, requirement Requiremen
 		}
 		sourceText, _ := d.SourceText(requirement.Provenance)
 		ingredient, _ := requirement.Ingredient(sourceText)
-		if err := validateIngredient(path, ingredient, items); err != nil {
-			add(IssueInvalidContent, path, "%v", err)
+		if problem := validateIngredient(path, ingredient, items); problem != nil {
+			add(IssueInvalidContent, problem.Path, "%s", problem.Message)
 		}
 		return
 	}

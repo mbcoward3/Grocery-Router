@@ -67,7 +67,13 @@ store-ordered grocery checklist.
   adjusted rows), and offers **Reopen this plan** (§4).
 - **Recipe detail** (`/recipes/:id`). Name, optional image, hands-on and unattended time or
   "unknown", source yield, source link, ordered ingredient sections with source-aware quantities
-  and preparation, and read-only ordered steps.
+  and preparation, ordered steps, who last saved it, and **Edit**.
+- **Recipe edit** (`/recipes/:id/edit`). Every field a member can change: name, image, times,
+  yield, ingredient sections and lines (as written, grocery item, quantity, unit or package,
+  preparation, note, optional, on the grocery list), and steps. Lines, sections, and steps can be
+  added, removed, and reordered. A line's grocery item is one the household has, found with the
+  grocery search, or a new household item with a store section and shopping mode; a name the
+  household already has is refused so the existing item is picked instead (§9).
 
 Settings (`/settings`) holds the household's preferences (§6).
 
@@ -161,9 +167,14 @@ recipe occurrence and ingredient. `internal/database/migrations/` is the schema 
   explicitly excluded. Evidence is archived under `archive/`.
 - Recipe lifecycle: draft → reviewable → verified. Verified recipes cannot be edited in place.
 - A household's recipes are loaded once, into an empty database (`corpus-ingest`, or `bootstrap`
-  at container start). Changing them afterwards is not yet possible. The approved recipe library
-  ([`RECIPE_LIBRARY_SPEC.md`](RECIPE_LIBRARY_SPEC.md), #55) adds in-app editing and following
-  shared catalog recipes.
+  at container start). Nothing at startup changes them afterwards.
+- **Editing a recipe** (`PUT /recipes/{id}`, RECIPE_LIBRARY_SPEC §3.3). A save is validated with
+  the same content rules as the bootstrap and applies at once in one transaction: the recipe
+  returns to draft, its content is replaced, and it is verified again with `verified_at` and
+  `verified_by` (the member who saved). A member's save is the household's approval. The recipe
+  keeps its ID and key. An invalid save changes nothing and names each rejected field. When the
+  current plan contains the recipe, its meals show the new fields and its list is rebuilt, with
+  checked, removed, and adjusted rows carried by item (§5). Past plans never change (§4).
 
 ## 10. Stack and commands
 
@@ -179,5 +190,5 @@ tests check every response against it. Commands and setup: [`README.md`](README.
 - [`CATALOG_INGEST_SPEC.md`](CATALOG_INGEST_SPEC.md): the shared recipe catalog pipeline (slices
   1-2 built; slices 3-5 continue per its gates, #62).
 - [`SUBSTITUTIONS_SPEC.md`](SUBSTITUTIONS_SPEC.md): household substitution groups (direction only).
-- The recipe library: in-app editing and followed catalog recipes (#55, approved; delivery starts
-  with #56 and #57).
+- The rest of the recipe library: archiving household recipes, item mapping, and followed catalog
+  recipes (#55, approved; history snapshots #56 and household editing #57 are built).

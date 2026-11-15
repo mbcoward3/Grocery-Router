@@ -218,6 +218,7 @@ type Recipe struct {
 	CreatedAt            string         `db:"created_at" json:"created_at"`
 	UpdatedAt            string         `db:"updated_at" json:"updated_at"`
 	HouseholdID          string         `db:"household_id" json:"household_id"`
+	VerifiedBy           sql.NullString `db:"verified_by" json:"verified_by"`
 }
 
 type RecipeIngredient struct {

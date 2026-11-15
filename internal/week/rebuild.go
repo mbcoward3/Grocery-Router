@@ -10,6 +10,49 @@ import (
 	"github.com/mbcoward3/grocery-router/internal/store"
 )
 
+// RecipeChanged brings the household's current plan up to date after one of its recipes was
+// edited, inside the caller's transaction. When the current plan contains the recipe, its
+// occurrences' snapshots take the recipe's new fields and the grocery list is rebuilt: checked,
+// removed, and adjusted rows carry over by carryStates, manual rows are untouched, and rows no
+// longer needed go (RECIPE_LIBRARY_SPEC §3.5). Past plans are never touched. It reports whether
+// the current plan contained the recipe.
+func RecipeChanged(ctx context.Context, queries *store.Queries, householdID string, recipeID int64) (bool, error) {
+	open, err := queries.LockOpenWeek(ctx, householdID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	refreshed, err := queries.RefreshWeekRecipeSnapshots(ctx, store.RefreshWeekRecipeSnapshotsParams{
+		HouseholdID: householdID, WeekID: open.ID, RecipeID: recipeID,
+	})
+	if err != nil || refreshed == 0 {
+		return false, err
+	}
+	if err := RebuildCurrentList(ctx, queries, householdID); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+// RebuildCurrentList rebuilds the current plan's generated grocery rows from its recipes inside
+// the caller's transaction, carrying row state by carryStates. Without a current plan it does
+// nothing.
+func RebuildCurrentList(ctx context.Context, queries *store.Queries, householdID string) error {
+	open, err := queries.LockOpenWeek(ctx, householdID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if err := recompute(ctx, queries, householdID, open.ID); err != nil {
+		return err
+	}
+	return queries.TouchWeek(ctx, store.TouchWeekParams{HouseholdID: householdID, ID: open.ID})
+}
+
 func recompute(ctx context.Context, queries *store.Queries, householdID string, weekID int64) error {
 	list, err := queries.GetShoppingListByWeek(ctx, store.GetShoppingListByWeekParams{HouseholdID: householdID, WeekID: weekID})
 	if err != nil {
